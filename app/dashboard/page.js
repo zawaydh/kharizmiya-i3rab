@@ -1,132 +1,179 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { TOPICS, loadProgress, saveProgress } from "@/lib/db";
-import { supabase } from "@/lib/supabaseClient";
+import { getMyProgress } from "../../lib/db";
+import { getTopicRoutes, getTopicByCode } from "../../lib/topics";
+import { supabase } from "../../lib/supabaseClient";
+import AuthLockGate from "../components/AuthLockGate";
 
-export default function Dashboard() {
-  const [userEmail, setUserEmail] = useState(null);
+export default function DashboardPage() {
   const [rows, setRows] = useState([]);
-  const [msg, setMsg] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserEmail(data?.user?.email ?? null));
+    let active = true;
+    async function load() {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getMyProgress();
+        if (!active) return;
+        setRows(data || []);
+      } catch {
+        if (!active) return;
+        setError("تعذر تحميل التقدم من Supabase");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
   }, []);
 
-  async function refresh() {
-    const data = await loadProgress();
-    setRows(data);
-  }
+  useEffect(() => {
+    let active = true;
+    async function loadUser() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!active) return;
+        setUserName(user?.user_metadata?.full_name || "");
+      } catch {
+        if (active) setUserName("");
+      }
+    }
+    loadUser();
+    return () => { active = false; };
+  }, []);
 
-  useEffect(() => { if (userEmail) refresh(); }, [userEmail]);
-
-  const progressMap = useMemo(() => {
-    const m = new Map();
-    for (const r of rows) m.set(r.topic_code, r);
-    return m;
+  const summary = useMemo(() => {
+    const totalTopics = rows.length;
+    const completedLearn = rows.filter((r) => r.learn_completed).length;
+    const completedPractice = rows.filter((r) => r.practice_completed).length;
+    const passedQuiz = rows.filter((r) => r.quiz_passed).length;
+    const avgLearnPercent = totalTopics > 0 ? Math.round(rows.reduce((acc, r) => acc + (Number(r.percent) || 0), 0) / totalTopics) : 0;
+    const avgPracticePercent = totalTopics > 0 ? Math.round(rows.reduce((acc, r) => acc + (Number(r.practice_percent) || 0), 0) / totalTopics) : 0;
+    return { totalTopics, completedLearn, completedPractice, passedQuiz, avgLearnPercent, avgPracticePercent };
   }, [rows]);
 
-  const overall = useMemo(() => {
-    if (!TOPICS.length) return 0;
-    const sum = TOPICS.reduce((acc, t) => acc + (progressMap.get(t.topic_code)?.percent ?? 0), 0);
-    return Math.round(sum / TOPICS.length);
-  }, [progressMap]);
-
-  const canCertificate = overall >= 100;
-
-  async function setPercent(topic_code, percent) {
-    setMsg(null);
-    try {
-      await saveProgress({ topic_code, level: "متوسط", percent });
-      await refresh();
-      setMsg("تم الحفظ.");
-    } catch (e) {
-      setMsg("خطأ: " + (e?.message || String(e)));
-    }
-  }
-
-  function downloadCertificate() {
-    const now = new Date();
-    const html = `<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>شهادة</title>
-<body style="font-family:Arial,'Noto Sans Arabic';background:#f6f7fb;margin:0">
-<div style="max-width:900px;margin:40px auto;background:#fff;border:2px solid #0b1220;padding:28px;border-radius:16px">
-<h1 style="margin:0">شهادة اجتياز المستوى المتوسط</h1>
-<p style="margin:10px 0 0;line-height:1.8;color:#333">تشهد منصة <b>خوارزمية الإعراب</b> أن الطالب/ـة أتم المتطلبات.</p>
-<div style="margin-top:18px;border:1px dashed #555;padding:18px;border-radius:12px">
-<div><b>البريد:</b> ${userEmail ?? "-"}</div>
-<div style="margin-top:8px"><b>التاريخ:</b> ${now.toLocaleDateString("ar-JO")}</div>
-<div style="margin-top:8px"><b>الإكمال:</b> ${overall}%</div>
-</div>
-<p style="margin-top:18px;color:#555;font-size:12px">شهادة رقمية أولية (MVP)</p>
-</div></body></html>`;
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "certificate-kharizmiya-i3rab.html";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  if (!userEmail) {
-    return (
-      <div className="card">
-        <h1 className="h1">لوحة التقدم</h1>
-        <p className="p">سجّل دخول أولاً.</p>
-        <div style={{marginTop:12}}><a className="btn btn-primary" href="/auth">تسجيل الدخول</a></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid" style={{gap:16}}>
-      <div className="card">
-        <div className="kpi"><strong>لوحة التقدم</strong><span className="pill">{userEmail}</span></div>
-        <p className="p" style={{marginTop:8}}>MVP لحفظ التقدم. لاحقاً سنربطه بالتدريب الفعلي.</p>
+    <AuthLockGate title="لوحة التقدم تفتح بعد تسجيل الدخول" text="يجب تسجيل الدخول أولًا حتى تُفتح لوحة التقدم والشهادة وروابط الموضوعات المرتبطة بحساب الطالب.">
+      <div className="dashboard-page-modern">
+        <section className="card dashboard-hero-modern card-glow">
+          <div className="dashboard-hero-copy">
+            <div className="section-kicker">لوحة التقدم</div>
+            <h1 className="h1">{userName ? `مرحبًا يا ${userName}` : "تابع تقدّمك"}</h1>
+            <p className="p">هنا تظهر حالة <strong>التعلّم</strong> و<strong>التدرّب</strong> و<strong>الاختبار</strong> لكل موضوع بشكل واضح ومنظّم.</p>
+          </div>
+          <div className="dashboard-hero-actions">
+            <a href="/topics" className="btn btn-primary">اذهب إلى الموضوعات</a>
+            <a href="/auth" className="btn btn-soft">إدارة الحساب</a>
+          </div>
+        </section>
 
-        <div className="hr" />
+        <section className="dashboard-summary-grid">
+          <StatCard value={summary.totalTopics} label="موضوعات محفوظة" />
+          <StatCard value={summary.completedLearn} label="مكتمل تعلّم" />
+          <StatCard value={summary.completedPractice} label="مكتمل تدرّب" />
+          <StatCard value={summary.passedQuiz} label="اختبارات ناجحة" />
+          <ProgressStatCard value={summary.avgLearnPercent} label="متوسط التعلّم" />
+          <ProgressStatCard value={summary.avgPracticePercent} label="متوسط التدرّب" />
+        </section>
 
-        <div className="kpi">
-          <strong>الإكمال العام</strong>
-          <span className="pill">{overall}%</span>
-        </div>
+        <section className="card dashboard-list-card">
+          <div className="dashboard-list-head">
+            <h2>تفصيل المسارات</h2>
+            <span className="pill">{rows.length} سجل</span>
+          </div>
 
-        <div style={{marginTop:12, display:"flex", gap:10, flexWrap:"wrap"}}>
-          <button className={"btn " + (canCertificate ? "btn-primary" : "")} disabled={!canCertificate} onClick={downloadCertificate}>
-            تحميل الشهادة
-          </button>
-          {!canCertificate && <span className="small">الشهادة تتفعل عند 100% (مؤقتاً)</span>}
-        </div>
+          {loading && <div className="dashboard-empty-state">جارٍ تحميل البيانات...</div>}
+          {!loading && error && <div className="dashboard-message dashboard-message-error">{error}</div>}
+          {!loading && !error && rows.length === 0 && <div className="dashboard-empty-state">لا يوجد تقدم محفوظ بعد. ابدأ من صفحة التعلّم ثم ارجع إلى هنا.</div>}
 
-        {msg && <div className="card" style={{marginTop:14}}><p className="p">{msg}</p></div>}
+          {!loading && !error && rows.length > 0 && (
+            <div className="dashboard-topic-grid">
+              {rows.map((row) => {
+                const learnPercent = Number(row.percent) || 0;
+                const practicePercent = Number(row.practice_percent) || 0;
+                const quizPercent = row.quiz_total && row.quiz_total > 0 ? Math.round((Number(row.quiz_score || 0) / Number(row.quiz_total)) * 100) : 0;
+                const topicCode = row.topic_code || row.topic_id || "موضوع";
+                const routes = getTopicRoutes(topicCode);
+                const topicMeta = getTopicByCode(topicCode);
+                const certificateAllowed = !!row.learn_completed && !!row.practice_completed && quizPercent >= 80;
+                const requiredKeys = topicMeta?.coverageKeysOrdered || [];
+                const learnCoveredCount = Array.isArray(row.coverage) ? row.coverage.filter((k) => requiredKeys.includes(k)).length : 0;
+                const practiceCoveredCount = Array.isArray(row.practice_coverage) ? row.practice_coverage.filter((k) => requiredKeys.includes(k)).length : 0;
+                const requiredCount = requiredKeys.length;
+
+                return (
+                  <article key={`${topicCode}-${row.level}`} className="dashboard-topic-card">
+                    <div className="dashboard-topic-head">
+                      <div>
+                        <h3>{topicMeta?.name_ar || topicCode}</h3>
+                        <p>المستوى {row.level} • آخر تحديث: {formatDate(row.updated_at)}</p>
+                      </div>
+                      <span className="pill pill-accent">{quizPercent ? `${quizPercent}%` : "—"}</span>
+                    </div>
+
+                    <div className="dashboard-bars">
+                      <ProgressLine title={`التعلّم${requiredCount ? ` (${learnCoveredCount}/${requiredCount} فروع)` : ""}`} value={learnPercent} />
+                      <ProgressLine title={`التدرّب${requiredCount ? ` (${practiceCoveredCount}/${requiredCount} فروع)` : ""}`} value={practicePercent} />
+                      <ProgressLine title="الاختبار" value={quizPercent} />
+                    </div>
+
+                    <div className="dashboard-chip-row">
+                      <StatusPill ok={!!row.learn_completed} text="تعلّم" />
+                      <StatusPill ok={!!row.practice_completed} text="تدرّب" />
+                      <StatusPill ok={!!row.quiz_passed} text="اختبار" />
+                    </div>
+
+                    <div className="dashboard-action-row">
+                      <a href={routes.paths} className="btn btn-primary">المسارات</a>
+                      <a href={routes.learn} className="btn btn-soft">تعلّم</a>
+                      <a href={routes.practice} className={`btn btn-soft ${!row.learn_completed ? "is-disabled-link" : ""}`}>تدرّب</a>
+                      <a href={routes.quiz} className={`btn btn-soft ${!row.practice_completed ? "is-disabled-link" : ""}`}>اختبر</a>
+                      <a href={certificateAllowed ? `/certificate?topicId=${topicCode}&level=${row.level}` : "#"} className={`btn btn-soft ${!certificateAllowed ? "is-disabled-link" : ""}`}>الشهادة</a>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </div>
+    </AuthLockGate>
+  );
+}
 
-      <div className="card">
-        <h2 style={{margin:"0 0 10px"}}>موضوعات المستوى</h2>
-        <div className="grid" style={{gap:12}}>
-          {TOPICS.map((t) => {
-            const p = progressMap.get(t.topic_code)?.percent ?? 0;
-            return (
-              <div className="card" key={t.topic_code}>
-                <div className="topic">
-                  <div>
-                    <h3>{t.name_ar}</h3>
-                    <p>{t.desc}</p>
-                  </div>
-                  <span className="pill">{p}%</span>
-                </div>
-                <div style={{display:"flex", gap:10, marginTop:12, flexWrap:"wrap"}}>
-                  <button className="btn" onClick={() => setPercent(t.topic_code, Math.min(100, p + 10))}>+10%</button>
-                  <button className="btn" onClick={() => setPercent(t.topic_code, Math.max(0, p - 10))}>-10%</button>
-                  <button className="btn btn-primary" onClick={() => setPercent(t.topic_code, 100)}>إكمال</button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+function StatCard({ value, label }) {
+  return <article className="card dashboard-stat-card"><strong>{value}</strong><span>{label}</span></article>;
+}
+
+function ProgressStatCard({ value, label }) {
+  return (
+    <article className="card dashboard-stat-card dashboard-stat-card-wide">
+      <strong>{value}%</strong>
+      <span>{label}</span>
+      <div className="dashboard-progress-track"><div className="dashboard-progress-fill" style={{ width: `${value}%` }} /></div>
+    </article>
+  );
+}
+
+function ProgressLine({ title, value }) {
+  return (
+    <div className="dashboard-progress-line">
+      <div className="dashboard-progress-meta"><span>{title}</span><strong>{value}%</strong></div>
+      <div className="dashboard-progress-track"><div className="dashboard-progress-fill" style={{ width: `${value}%` }} /></div>
     </div>
   );
+}
+
+function StatusPill({ ok, text }) {
+  return <span className={`pill ${ok ? "pill-accent" : "pill-muted"}`}>{ok ? `✓ ${text}` : `— ${text}`}</span>;
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  try { return new Date(value).toLocaleDateString("ar-JO"); } catch { return "—"; }
 }
