@@ -161,7 +161,7 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
     node: null,
   };
 
-  const all = [startNode, ...placed.values()];
+  const all = [startNode, ...Array.from(placed.values())];
   const minX = Math.min(...all.map((n) => n.x));
   const maxX = Math.max(...all.map((n) => n.x + n.w));
   const maxY = Math.max(...all.map((n) => n.y + n.h));
