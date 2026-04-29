@@ -1,5 +1,6 @@
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "خوارزمية الإعراب",
@@ -17,7 +18,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
       <body>
-        <Navbar />
+
+        {/* 👇 الحل هنا */}
+        <Suspense fallback={null}>
+          <Navbar />
+        </Suspense>
+
         <main className="container">{children}</main>
 
         <footer className="footer">

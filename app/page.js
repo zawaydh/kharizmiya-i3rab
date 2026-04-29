@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useMemo } from "react";
 import { getReadyTopics, getTopicRoutes } from "../lib/topics";
 import { useAuthUser } from "./components/useAuthUser";
