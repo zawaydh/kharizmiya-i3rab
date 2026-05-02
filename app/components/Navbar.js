@@ -36,7 +36,7 @@ export default function Navbar() {
       <div className="nav-clean-inner nav-final-inner">
         <div className="nav-final-mobile-bar">
           <a href="/" className="brand-logo-link nav-final-logo-link nav-final-logo-badge" aria-label="العودة إلى الصفحة الرئيسية">
-            <img src="/logo-khwarizmia-icon-new.png" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo" />
+            <img src="/logo.svg" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo" />
           </a>
           <button type="button" className="menu-btn nav-final-menu-btn" onClick={() => setOpen((v) => !v)} aria-label="فتح القائمة" aria-expanded={open}>☰</button>
         </div>
@@ -44,7 +44,7 @@ export default function Navbar() {
         <div className="nav-final-desktop-bar nav-tree-mainbar">
           <a href="/" className="nav-final-brand nav-final-brand-icon-only" aria-label="العودة إلى الصفحة الرئيسية">
             <span className="nav-final-logo-link nav-final-logo-badge nav-final-logo-badge-icon-only">
-              <img src="/logo-khwarizmia-icon-new.png" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo" />
+              <img src="/logo.svg" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo" />
             </span>
           </a>
           <nav className="desktop-links nav-final-links nav-tree-links" aria-label="التنقل الرئيسي">
