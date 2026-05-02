@@ -35,17 +35,18 @@ export default function Navbar() {
     <header className="nav-clean nav-modern-shell nav-final-shell">
       <div className="nav-clean-inner nav-final-inner">
         <div className="nav-final-mobile-bar">
-          <a href="/" className="brand-logo-link nav-final-logo-link nav-final-logo-badge" aria-label="العودة إلى الصفحة الرئيسية">
-            <img src="/logo.svg" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo" />
+          <a href="/" className="brand-logo-link nav-final-logo-link nav-final-logo-badge kh-nav-logo-box" aria-label="العودة إلى الصفحة الرئيسية">
+            <img src="/logo.svg" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo kh-nav-logo" />
           </a>
           <button type="button" className="menu-btn nav-final-menu-btn" onClick={() => setOpen((v) => !v)} aria-label="فتح القائمة" aria-expanded={open}>☰</button>
         </div>
 
         <div className="nav-final-desktop-bar nav-tree-mainbar">
-          <a href="/" className="nav-final-brand nav-final-brand-icon-only" aria-label="العودة إلى الصفحة الرئيسية">
-            <span className="nav-final-logo-link nav-final-logo-badge nav-final-logo-badge-icon-only">
-              <img src="/logo.svg" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo" />
+          <a href="/" className="nav-final-brand kh-nav-brand" aria-label="العودة إلى الصفحة الرئيسية">
+            <span className="nav-final-logo-link nav-final-logo-badge nav-final-logo-badge-icon-only kh-nav-logo-box">
+              <img src="/logo.svg" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo kh-nav-logo" />
             </span>
+            <span className="kh-nav-name">خوارزمية الإعراب</span>
           </a>
           <nav className="desktop-links nav-final-links nav-tree-links" aria-label="التنقل الرئيسي">
             <a href="/">الرئيسية</a>
@@ -56,9 +57,10 @@ export default function Navbar() {
         </div>
 
         <nav className={`mobile-menu-clean nav-final-mobile-menu ${open ? "open" : ""}`}>
+          <div className="kh-mobile-menu-title">خوارزمية الإعراب</div>
           <a href="/" onClick={() => setOpen(false)}>الرئيسية</a>
           <a href={protectedHref("/dashboard")} onClick={() => setOpen(false)} aria-disabled={locked}>لوحتي</a>
-          <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} />
+          <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={() => setOpen(false)} />
           <a href={accountHref} onClick={() => setOpen(false)} className="login-link mobile-login nav-account-chip">{accountLabel}</a>
         </nav>
       </div>
