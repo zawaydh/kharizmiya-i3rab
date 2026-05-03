@@ -43,11 +43,11 @@ type PositionedNode = {
 };
 
 const BOX_W = 250;
-const BOX_H = 116;
-const DIA_W = 230;
-const DIA_H = 132;
-const LEVEL_GAP = 190;
-const SIBLING_GAP = 46;
+const BOX_H = 112;
+const DIA_W = 226;
+const DIA_H = 128;
+const LEVEL_GAP = 178;
+const SIBLING_GAP = 42;
 
 function splitText(text?: string, max = 28) {
   if (!text) return [];
@@ -205,7 +205,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [visitedNodes, setVisitedNodes] = useState<string[]>([]);
   const [visitedEdges, setVisitedEdges] = useState<string[]>([]);
-  const [message, setMessage] = useState("ابدأ بهدوء: اضغط «هيا نبدأ» لعرض أول مثال داخل المسار، ثم اتبع الأسهم خطوة خطوة.");
+  const [message, setMessage] = useState("ابدأ بهدوء: اضغط «هيا نبدأ» وسيركّز المسار على أول مثال من هذا الموضوع.");
   const [showHint, setShowHint] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [hintBubble, setHintBubble] = useState(null as null | { left: number; top: number; text: string });
@@ -229,7 +229,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setVisitedEdges([]);
     setActiveNodeId(null);
     setShowHint(false);
-    setMessage("ابدأ بهدوء: اضغط «هيا نبدأ» لعرض أول مثال داخل المسار، ثم اتبع الأسهم خطوة خطوة.");
+    setMessage("ابدأ بهدوء: اضغط «هيا نبدأ» وسيركّز المسار على أول مثال من هذا الموضوع.");
     setHintBubble(null);
     setCurrentExampleIndex(-1);
     setFinalNodeId(null);
@@ -265,12 +265,12 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     };
   }, []);
 
-  function focusNode(nodeId: string, targetZoom = 1.08) {
+  function focusNode(nodeId: string, targetZoom = 1.04) {
     if (!layout || !canvasScrollRef.current) return;
     const node = layoutNodeMap.get(nodeId);
     if (!node) return;
 
-    const nextZoom = Math.max(1, Math.min(1.22, targetZoom));
+    const nextZoom = Math.max(1, Math.min(1.25, targetZoom));
     setZoom(nextZoom);
 
     requestAnimationFrame(() => {
@@ -282,7 +282,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const scaledW = node.w * nextZoom;
       const scaledH = node.h * nextZoom;
       const left = Math.max(0, scaledLeft - (el.clientWidth - scaledW) / 2);
-      const top = Math.max(0, scaledTop - Math.max(28, (el.clientHeight - scaledH) * 0.32));
+      const top = Math.max(0, scaledTop - Math.max(20, (el.clientHeight - scaledH) * 0.40));
       el.scrollTo({ left, top, behavior: "smooth" });
     });
   }
@@ -301,7 +301,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     const startX = node.x + (node.w - totalW) / 2;
     const bx = startX + idx * (btnW + 5);
     const by = node.y + node.h - 24;
-    return { x: bx + btnW / 2, y: by + 10 };
+    return { x: bx + btnW / 2, y: by };
   }
 
   function resetProgress(nextExample: Example | null) {
@@ -314,7 +314,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setHighlightedAnswerKey(null);
     setHighlightedAnswerKind(null);
     setFinalNodeId(null);
-    setMessage("ابدأ من السؤال الأول داخل الشجرة. عند الخطأ سيظهر تلميح بجانب اختيارك.");
+    setMessage("ابدأ من السؤال الأول، واختر الإجابة داخل الشجرة نفسها.");
     setPathSteps([]);
   }
 
@@ -431,8 +431,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       setHighlightedAnswerKind("wrong");
       if (anchor) {
         setHintBubble({
-          left: anchor.x * zoom + 18,
-          top: anchor.y * zoom + 18,
+          left: anchor.x * zoom,
+          top: Math.max(10, anchor.y * zoom - 92),
           text: hintText,
         });
       }
@@ -574,9 +574,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                       d={pathD(start, end)}
                       fill="none"
                       stroke={active ? "rgba(52,211,153,.98)" : "rgba(125,179,255,.58)"}
-                      strokeWidth={active ? 3.2 : 1.45}
+                      strokeWidth={active ? 2.05 : 1.05}
                       markerEnd={active ? "url(#pathsArrowActive)" : "url(#pathsArrow)"}
-                      style={{ filter: active ? "drop-shadow(0 0 9px rgba(52,211,153,.72)) drop-shadow(0 0 18px rgba(34,211,238,.26))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
+                      style={{ filter: active ? "drop-shadow(0 0 6px rgba(52,211,153,.38))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
                     />
                     {edge.label ? (
                       <text x={midX} y={midY} textAnchor="middle" className="paths-react-edge-label">
@@ -607,8 +607,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                         points={diamondPoints(n.x, n.y, n.w, n.h)}
                         fill="rgba(224,236,255,.98)"
                         stroke={active ? "rgba(52,211,153,.98)" : visited ? "rgba(125,179,255,.82)" : "rgba(125,179,255,.46)"}
-                        strokeWidth={active ? 2.8 : 1.45}
-                        style={{ filter: active ? "drop-shadow(0 0 11px rgba(52,211,153,.52))" : visited ? "drop-shadow(0 0 5px rgba(125,179,255,.18))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
+                        strokeWidth={active ? 1.85 : 1.05}
+                        style={{ filter: active ? "drop-shadow(0 0 7px rgba(52,211,153,.34))" : visited ? "drop-shadow(0 0 5px rgba(125,179,255,.18))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
                       />
                     ) : (
                       <rect
@@ -619,9 +619,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                         rx={18}
                         fill={isStart ? "#fff3b0" : isResult ? "#fff3b0" : "#dcfce7"}
                         stroke={isResult ? "rgba(52,211,153,.82)" : "rgba(125,179,255,.55)"}
-                        strokeWidth={1.55}
+                        strokeWidth={1.05}
                         className={`${isStart && !example ? "paths-react-start-pulse" : ""} ${isFinalResult ? "paths-react-result-pulse" : ""}`}
-                        style={{ filter: isFinalResult ? "drop-shadow(0 0 16px rgba(52,211,153,.75))" : visited ? "drop-shadow(0 0 8px rgba(52,211,153,.18))" : undefined, transition: "stroke .2s ease, filter .2s ease" }}
+                        style={{ filter: isFinalResult ? "drop-shadow(0 0 10px rgba(52,211,153,.45))" : visited ? "drop-shadow(0 0 8px rgba(52,211,153,.18))" : undefined, transition: "stroke .2s ease, filter .2s ease" }}
                       />
                     )}
 
@@ -641,7 +641,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     {isQuestion && active && n.node?.answers ? (
                       <g>
                         {n.node.answers.map((answer, idx) => {
-                          const btnW = Math.max(48, Math.min(82, n.w / Math.max(2, n.node!.answers!.length) - 8));
+                          const btnW = Math.max(54, Math.min(88, n.w / Math.max(2, n.node!.answers!.length) - 7));
                           const totalW = n.node!.answers!.length * btnW + (n.node!.answers!.length - 1) * 5;
                           const startX = n.x + (n.w - totalW) / 2;
                           const bx = startX + idx * (btnW + 5);
@@ -650,7 +650,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                           const answerHighlighted = highlightedAnswerKey === `${n.id}:${answer.id}`;
                           return (
                             <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + 10 })}>
-                              <rect x={bx} y={by} width={btnW} height={20} rx={10} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" strokeWidth={1.15} />
+                              <rect x={bx} y={by} width={btnW} height={22} rx={11} fill="rgba(255,255,255,.10)" stroke="rgba(15,23,42,.12)" strokeWidth={0.85} />
                               <text x={bx + btnW / 2} y={by + 10} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
                                 {answer.text}
                               </text>

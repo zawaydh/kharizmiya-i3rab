@@ -1,91 +1,96 @@
-import Link from "next/link";
+"use client";
 
-const pillars = [
-  {
-    title: "مسار واضح",
-    text: "ابدأ من سؤال صغير، ثم انتقل خطوة خطوة حتى تصل إلى الإعراب الكامل دون تخمين.",
-    icon: "مسار",
-  },
-  {
-    title: "تلميحات موجّهة",
-    text: "عند الخطأ يظهر توجيه قريب من اختيار الطالب، فيفهم لماذا لم يكن الجواب مناسبًا.",
-    icon: "تلميح",
-  },
-  {
-    title: "تدريب وقياس",
-    text: "تعلّم، تدرّب، ثم اختبر نفسك بنظام يحفظ التقدم ويقيس الفروع التي أتقنتها.",
-    icon: "إتقان",
-  },
-];
+import { useMemo } from "react";
+import { getReadyTopics, getTopicRoutes } from "../lib/topics";
+import { useAuthUser } from "./components/useAuthUser";
 
-const steps = [
-  "اختر الموضوع",
-  "شاهد المسار البصري",
-  "تعلّم مع التلميحات",
-  "تدرّب ثم اختبر نفسك",
+const studentCards = [
+  {
+    title: "اختَر كلمة واحدة",
+    text: "لا نحل الجملة دفعة واحدة؛ نبدأ بالكلمة الهدف حتى لا يتشتّت الطالب.",
+    icon: "🎯",
+  },
+  {
+    title: "اتبع السؤال التالي",
+    text: "كل إجابة تفتح خطوة جديدة: نوع الكلمة، موقعها، ثم علامة الإعراب.",
+    icon: "🧭",
+  },
+  {
+    title: "افهم سبب الإعراب",
+    text: "التلميحات تظهر عند الحاجة لتشرح لماذا اخترنا هذا المسار.",
+    icon: "💡",
+  },
 ];
 
 export default function HomePage() {
+  const { isAuthenticated } = useAuthUser();
+  const readyTopics = useMemo(() => getReadyTopics(), []);
+  const featuredTopic = readyTopics[0] ?? null;
+  const featuredRoutes = featuredTopic ? getTopicRoutes(featuredTopic.code) : null;
+  const gatedHref = (href) => (isAuthenticated ? href : "/auth");
+
   return (
-    <section className="landing-page kh-landing" aria-label="خوارزمية الإعراب">
-      <div className="kh-hero">
-        <div className="kh-hero-copy">
-          <span className="kh-kicker">مدرّب تفكير نحوي موجّه</span>
-          <h1>خوارزمية الإعراب</h1>
-          <p className="kh-subtitle">
-            منصة تفاعلية تساعد الطالب على تعلّم الإعراب خطوة بخطوة عبر مسارات بصرية،
-            وأسئلة متتابعة، وتلميحات تظهر عند الحاجة.
-          </p>
-          <div className="kh-hero-actions">
-            <Link className="kh-btn kh-btn-primary" href="/topics">ابدأ التعلم الآن</Link>
-            <Link className="kh-btn kh-btn-secondary" href="/paths">شاهد المسار البصري</Link>
-            <Link className="kh-btn kh-btn-ghost" href="/dashboard">لوحتي</Link>
-          </div>
+    <div className="landing-shell student-home">
+      <section className="student-hero card">
+        <div className="student-hero-bg" />
+        <div className="student-logo-wrap">
+          <img
+            src="/logo-khwarizmia-main-new.png"
+            alt="شعار خوارزمية الإعراب"
+            className="student-main-logo"
+          />
         </div>
 
-        <div className="kh-hero-logo-card" aria-hidden="true">
-          <img src="/logo.svg" alt="" className="kh-hero-logo" />
-          <div className="kh-logo-caption">فكّر قبل أن تُعرب</div>
-        </div>
-      </div>
+        <h1 className="student-title">خوارزمية الإعراب</h1>
+        <p className="student-tagline">مدرّب تفكير نحوي موجّه</p>
 
-      <div className="kh-pillars">
-        {pillars.map((item) => (
-          <article key={item.title} className="kh-pillar-card">
-            <span className="kh-pillar-icon">{item.icon}</span>
-            <h2>{item.title}</h2>
-            <p>{item.text}</p>
+        <p className="student-lead">
+          تعلّم الإعراب بطريقة هادئة وجذّابة: اختر الكلمة الهدف، اتبع المسار،
+          ثم اكتشف كيف وصلت إلى الإعراب الكامل خطوة بخطوة.
+        </p>
+
+        <div className="student-actions">
+          <a href={gatedHref("/topics")} className="btn btn-primary student-primary-btn">
+            ابدأ التعلّم الآن
+          </a>
+          <a href={gatedHref("/paths")} className="btn btn-soft student-secondary-btn">
+            شاهد المسار البصري
+          </a>
+          {isAuthenticated ? (
+            <a href="/dashboard" className="btn btn-soft student-secondary-btn">لوحتي</a>
+          ) : (
+            <a href="/auth" className="btn btn-soft student-secondary-btn">تسجيل الدخول</a>
+          )}
+        </div>
+      </section>
+
+      <section className="student-cards-grid">
+        {studentCards.map((card) => (
+          <article className="student-card card" key={card.title}>
+            <div className="student-card-icon">{card.icon}</div>
+            <h2>{card.title}</h2>
+            <p>{card.text}</p>
           </article>
         ))}
-      </div>
+      </section>
 
-      <section className="kh-steps-card" aria-label="طريقة العمل">
+      <section className="student-start-panel card">
         <div>
-          <span className="kh-kicker">كيف يعمل؟</span>
-          <h2>رحلة قصيرة ومنظمة</h2>
+          <div className="section-kicker">رحلة قصيرة للطالب</div>
+          <h2>من الرؤية إلى الإتقان</h2>
           <p>
-            لا يبدأ الطالب من الإعراب النهائي، بل من تحديد نوع الكلمة وموقعها،
-            ثم يتدرج حتى يفهم سبب العلامة أو محل الإعراب.
+            ابدأ بالمسار البصري لتفهم الطريق، ثم انتقل إلى التعلّم والتدرّب،
+            وبعدها اختبر نفسك عندما يكتمل الاستعداد.
           </p>
         </div>
-        <ol className="kh-steps">
-          {steps.map((step, index) => (
-            <li key={step}>
-              <span>{index + 1}</span>
-              {step}
-            </li>
-          ))}
-        </ol>
+        {featuredTopic && featuredRoutes ? (
+          <div className="student-topic-callout">
+            <span>الموضوع المقترح</span>
+            <strong>{featuredTopic.name_ar}</strong>
+            <a href={gatedHref(featuredRoutes.learn)} className="btn btn-primary">ابدأ هذا الموضوع</a>
+          </div>
+        ) : null}
       </section>
-
-      <section className="kh-seo-card">
-        <h2>تعلّم الإعراب بطريقة تفكير لا بطريقة حفظ</h2>
-        <p>
-          تساعد خوارزمية الإعراب الطالب على فهم الجملة الاسمية والفعلية،
-          وتمييز المبتدأ والخبر والفاعل والمفعول به والأفعال، من خلال مسارات
-          واضحة تسأل: ما نوع الكلمة؟ ما موقعها؟ وما علامة إعرابها؟
-        </p>
-      </section>
-    </section>
+    </div>
   );
 }
