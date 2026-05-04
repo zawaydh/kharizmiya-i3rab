@@ -210,10 +210,12 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [visitedNodes, setVisitedNodes] = useState<string[]>([]);
   const [visitedEdges, setVisitedEdges] = useState<string[]>([]);
-  const [message, setMessage] = useState("هيا نطبق بصريًا: اضغط هيا نبدأ ليظهر أول مثال من هذا الموضوع داخل المربع الأول.");
+  const [message, setMessage] = useState("اضغط هيا نبدأ، ثم اتبع السؤال داخل المسار.");
   const [showHint, setShowHint] = useState(false);
   const [zoom, setZoom] = useState(1);
-  const [hintBubble, setHintBubble] = useState(null as null | { left: number; top: number; text: string });
+  // التوجيه المختصر يظهر في لوحة ثابتة فوق الشجرة، والشرح التفصيلي في أسفل الصفحة.
+  // لا نستخدم فقاعات عائمة حتى لا تغطي المثال أو الخيارات.
+  const [activeGuidance, setActiveGuidance] = useState<string | null>(null);
   const [currentExampleIndex, setCurrentExampleIndex] = useState(-1);
   const [finalNodeId, setFinalNodeId] = useState<string | null>(null);
   const [highlightedAnswerKey, setHighlightedAnswerKey] = useState<string | null>(null);
@@ -361,8 +363,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setVisitedEdges([]);
     setActiveNodeId(null);
     setShowHint(false);
-    setMessage("هيا نطبق بصريًا: اضغط هيا نبدأ ليظهر أول مثال من هذا الموضوع داخل المربع الأول.");
-    setHintBubble(null);
+    setMessage("اضغط هيا نبدأ، ثم اتبع السؤال داخل المسار.");
+    setActiveGuidance(null);
     setCurrentExampleIndex(-1);
     setFinalNodeId(null);
     setHighlightedAnswerKey(null);
@@ -442,11 +444,12 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setVisitedEdges([`__exercise__->${tree.startNodeId}`]);
     setActiveNodeId(tree.startNodeId);
     setShowHint(false);
-    setHintBubble(null);
+    setActiveGuidance(null);
     setHighlightedAnswerKey(null);
     setHighlightedAnswerKind(null);
     setFinalNodeId(null);
     setMessage("ابدأ من السؤال الأول داخل الشجرة.");
+    setActiveGuidance("اقرأ المثال والكلمة الهدف، ثم اختر الإجابة التي تثبتها الجملة.");
     setPathSteps([]);
   }
 
@@ -531,6 +534,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       : "راجع الإجابة الصحيحة ثم تابع.";
     setShowHint(true);
     setMessage(hintText);
+    setActiveGuidance(hintText);
 
     const correctAnswer = node?.answers?.find((a: any) => answerIsCorrect(a, example));
     if (correctAnswer) {
@@ -538,20 +542,15 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       if (anchor) {
         setHighlightedAnswerKey(`${nodeId}:${correctAnswer.id}`);
         setHighlightedAnswerKind("hint");
-        setHintBubble({ left: Math.max(135, anchor.x * zoom), top: Math.max(18, anchor.y * zoom - 16), text: hintText });
+        setActiveGuidance(hintText);
       }
     }
   }
 
   function showBubbleBesideNode(nodeId: string, text: string, bubbleZoom = zoom) {
-    const n = layoutNodeMap.get(nodeId);
-    if (!n) return;
-    setHintBubble({
-      left: Math.max(16, (n.x + n.w / 2) * bubbleZoom - 150),
-      top: Math.max(10, (n.y - 78) * bubbleZoom),
-      text,
-    });
+    setActiveGuidance(cleanLearningText(text, 170));
   }
+
 
   function handleAnswer(nodeId: string, answerId: string, anchor?: { x: number; y: number }) {
     if (!example || nodeId !== activeNodeId) return;
@@ -565,14 +564,11 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const hintText = targetedHintForWrongAnswer(node, answer, example);
       setShowHint(true);
       setMessage(hintText);
+      setActiveGuidance(hintText);
       setHighlightedAnswerKey(`${nodeId}:${answerId}`);
       setHighlightedAnswerKind("wrong");
       if (anchor) {
-        setHintBubble({
-          left: Math.max(135, anchor.x * zoom),
-          top: Math.max(18, anchor.y * zoom - 16),
-          text: hintText,
-        });
+        setActiveGuidance(hintText);
       }
       return;
     }
@@ -586,13 +582,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setHighlightedAnswerKind("correct");
     setShowHint(false);
     if (anchor) {
-      setHintBubble({
-        left: anchor.x * zoom + 18,
-        top: anchor.y * zoom + 18,
-        text: `اختيار صحيح: ${answer.text}. ننتقل للخطوة التالية.`,
-      });
+      setActiveGuidance(`اختيار صحيح: ${answer.text}. ننتقل للخطوة التالية.`);
     } else {
-      setHintBubble(null);
+      setActiveGuidance(null);
     }
 
     if (nextNode?.type === "result") {
@@ -602,6 +594,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const targetWord = example?.target ? `كلمة: ${example.target}` : "الكلمة المطلوبة";
       const finalText = `هكذا وصلنا لإعراب ${targetWord}: ${nextNode.text}. السبب: ${finalReason}`;
       setMessage(finalText);
+      setActiveGuidance("اكتمل المسار. راجع كيف وصلنا إلى الإعراب النهائي في الأسئلة أسفل الصفحة.");
       setTimeout(() => {
         focusNode(nextId, 1.06);
         showBubbleBesideNode(nextId, finalText, 1.06);
@@ -615,6 +608,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       setActiveNodeId(nextId);
       const stepText = teacherSequenceText(nextNode, nextNode?.teaching_note || "أحسنت. تابع إلى العقدة التالية.");
       setMessage(stepText);
+      setActiveGuidance(stepText);
       setTimeout(() => {
         focusNode(nextId, 1.03);
         showBubbleBesideNode(nextId, stepText, 1.03);
@@ -650,7 +644,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 if (!activeNodeId) return;
                 if (showHint) {
                   setShowHint(false);
-                  setHintBubble(null);
+                  setActiveGuidance(null);
                   setHighlightedAnswerKey(null);
                   setHighlightedAnswerKind(null);
                   return;
@@ -677,15 +671,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
         <div className="paths-react-tree-title">شجرة المسار النحوي</div>
         <div className="paths-step-hint-panel" aria-live="polite">
           <span className="paths-step-hint-label">تلميح الخطوة</span>
-          <span>{activeNodeId ? stepHintForNode(tree.nodes[activeNodeId]) : "اضغط هيا نبدأ، ثم اتبع السؤال داخل المسار."}</span>
+          <span>{activeGuidance || (activeNodeId ? stepHintForNode(tree.nodes[activeNodeId]) : "اضغط هيا نبدأ، ثم اتبع السؤال داخل المسار.")}</span>
         </div>
         <div ref={canvasScrollRef} className="paths-react-canvas-scroll">
           <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
-            {hintBubble ? (
-              <div className="paths-react-answer-hint" style={{ left: hintBubble.left, top: hintBubble.top }}>
-                {hintBubble.text}
-              </div>
-            ) : null}
             <svg
               viewBox={`0 0 ${layout.width} ${layout.height}`}
               width={layout.width * zoom}

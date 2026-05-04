@@ -3512,3 +3512,103 @@ main.container{padding:24px 0 40px}
   .paths-thinking-item h3{font-size:13px;}
   .paths-thinking-item p{font-size:12px;}
 }
+
+/* ===== Smart hints final: short node guidance + Q/A details below ===== */
+.paths-react-answer-hint,
+.paths-teacher-panel,
+.paths-react-message,
+.teacher-box {
+  display: none !important;
+}
+.paths-step-hint-panel{
+  display:flex !important;
+  align-items:flex-start;
+  gap:10px;
+  margin:12px 0 14px;
+  padding:10px 12px;
+  border-radius:16px;
+  background:linear-gradient(135deg,rgba(255,247,214,.92),rgba(240,253,250,.92));
+  border:1px solid rgba(224,184,76,.36);
+  color:#172033;
+  box-shadow:0 10px 24px rgba(15,35,55,.10);
+  font-size:13px;
+  line-height:1.75;
+  text-align:right;
+}
+.paths-step-hint-label{
+  flex:0 0 auto;
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(15,118,110,.10);
+  color:#0f766e;
+  font-weight:800;
+  font-size:12px;
+}
+.paths-thinking-dock{
+  margin-top:14px;
+  display:grid;
+  gap:10px;
+}
+.paths-thinking-dock details{
+  border:1px solid rgba(148,163,184,.22);
+  background:rgba(15,23,42,.78);
+  border-radius:18px;
+  overflow:hidden;
+}
+.paths-thinking-dock summary{
+  cursor:pointer;
+  list-style:none;
+  padding:14px 16px;
+  font-weight:900;
+  color:#f8fafc;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.paths-thinking-dock summary::-webkit-details-marker{display:none;}
+.paths-thinking-dock summary::after{
+  content:"⌄";
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  color:#e0b84c;
+  transition:transform .18s ease;
+}
+.paths-thinking-dock details[open] summary::after{transform:rotate(180deg);}
+.paths-thinking-list{
+  padding:0 14px 14px;
+  display:grid;
+  gap:10px;
+}
+.paths-thinking-item{
+  padding:12px 14px;
+  border-radius:15px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
+}
+.paths-thinking-item h3{
+  margin:0 0 6px;
+  font-size:14px;
+  color:#e0b84c;
+}
+.paths-thinking-item p{
+  margin:0;
+  color:#dbeafe;
+  font-size:13px;
+  line-height:1.8;
+}
+.paths-react-question-text,.paths-react-box-text,.paths-react-answer-text,.paths-react-edge-label{
+  font-weight:500 !important;
+}
+.paths-react-answer rect{
+  stroke-width:.8px !important;
+}
+@media (max-width: 760px){
+  .paths-step-hint-panel{font-size:12px;padding:9px 10px;}
+  .paths-step-hint-label{font-size:11px;padding:3px 8px;}
+  .paths-thinking-item h3{font-size:13px;}
+  .paths-thinking-item p{font-size:12px;}
+}
