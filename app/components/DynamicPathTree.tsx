@@ -8,6 +8,7 @@ type TreeNode = {
   text: string;
   teaching_note?: string;
   hint?: string;
+  thinking?: { q: string; a: string }[];
   answers?: { id: string; text: string; next: string; eval?: { fact: string; equals: string }; hint?: string; why?: string }[];
 };
 
@@ -91,10 +92,6 @@ function answerIsCorrect(answer: { eval?: { fact: string; equals: string } }, ex
 
 function sourceMasdarHint(target = "المصدر المؤول") {
   return `توضيح مهم: المصدر المؤول ليس كلمة واحدة فقط؛ هو تركيب مثل (أن + فعل مضارع)، ونستطيع تأويله بمصدر صريح. مثال: (أن تنجح) = نجاحك. لذلك يعامل معاملة الاسم ويأخذ موقعًا إعرابيًا مثل: في محل رفع مبتدأ.`;
-}
-
-function builtNounFormulaHint(role = "محله الإعرابي") {
-  return `قاعدة ثابتة للأسماء المبنية: نذكر اسم النوع أولًا، ثم نقول: مبني في محل... ثم نحدد المحل حسب موقعه في الجملة. مثال: كتبتُ: التاء ضمير متصل مبني في محل رفع فاعل. وإذا حلّ محل منصوب قلنا: ضمير متصل مبني في محل نصب مفعول به، وإذا جاء بعد حرف جر قلنا: ضمير متصل مبني في محل جر اسم مجرور. المحل هنا: ${role}.`;
 }
 
 function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
@@ -224,14 +221,132 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [pathSteps, setPathSteps] = useState<string[]>([]);
   const autoNextTimerRef = useRef(null as null | ReturnType<typeof setTimeout>);
 
-  function teacherSequenceText(node: TreeNode | null | undefined, baseText?: string) {
-    const currentStep = node?.text ? `الخطوة الحالية: ${node.text}` : "الخطوة الحالية: نحدد مسار الكلمة الهدف.";
-    const sequence = pathSteps.length ? `ما ثبتناه حتى الآن: ${pathSteps.slice(-3).join(" ← ")}.` : "نحن في بداية المسار؛ نقرأ السؤال ثم نختار الدليل النحوي الأقرب.";
-    const target = example?.target ? `الكلمة الهدف: ${example.target}.` : "";
-    return `يا بطل، ${target} ${currentStep}
-${sequence}
-${baseText || node?.teaching_note || node?.hint || "اختر الإجابة التي يثبتها المثال."}`;
+  function cleanLearningText(text?: string, limit = 170) {
+    const cleaned = (text || "")
+      .replace(/يا بطل[،,]?/g, "")
+      .replace(/عزيزي الطالب[،:]?/g, "")
+      .replace(/أنا معك خطوة خطوة[.،]?/g, "")
+      .replace(/المعلّم اللطيف[:：]?/g, "")
+      .replace(/المعلم اللطيف[:：]?/g, "")
+      .replace(/دعنا/g, "نبدأ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (cleaned.length <= limit) return cleaned;
+    const parts = cleaned.split(/(?<=[.؟!])\s+/).filter(Boolean);
+    let out = "";
+    for (const part of parts) {
+      if ((out + " " + part).trim().length > limit) break;
+      out = (out + " " + part).trim();
+    }
+    return out || cleaned.slice(0, limit - 1).trim() + "…";
   }
+
+  function teacherSequenceText(node: TreeNode | null | undefined, baseText?: string) {
+    const text = baseText || node?.hint || node?.teaching_note || "اختر الدليل النحوي الذي يثبته المثال.";
+    return cleanLearningText(text, 165);
+  }
+
+  function stepHintForNode(node: TreeNode | null | undefined) {
+    const id = String(node?.id || "");
+    const text = String(node?.text || "");
+    const facts = example?.facts || {};
+
+    if (id.includes("present") || text.includes("مضارع")) {
+      return "بعد أن عرفنا أنه فعل مضارع نحدّد أولًا: هل سبقته أداة نصب أو جزم؟ ثم نحدّد علامة الإعراب.";
+    }
+    if (id.includes("past") || text.includes("ماض")) {
+      return "الفعل الماضي مبني دائمًا؛ نبحث هل اتصل به ضمير، ثم نحدد أثر الضمير في حركة البناء.";
+    }
+    if (id.includes("imperative") || text.includes("أمر")) {
+      return "في فعل الأمر نحدد: صحيح الآخر، معتل الآخر، أو متصل بألف الاثنين/واو الجماعة/ياء المخاطبة.";
+    }
+    if (id.includes("built") || id.includes("mabni") || text.includes("مبني") || facts.nounKind === "mabni") {
+      return "في الاسم المبني نحدّد نوعه أولًا، ثم نقول: مبني في محل رفع أو نصب أو جر حسب موقعه.";
+    }
+    if (id.includes("masdar") || text.includes("مصدر مؤول") || facts.nounKind === "masdar") {
+      return "المصدر المؤول تركيب مثل (أن + فعل مضارع)، يؤول بمصدر صريح ويعامل معاملة الاسم.";
+    }
+    if (text.includes("اسم أم فعل أم حرف") || id.includes("wordType")) {
+      return "أول قرار في الإعراب هو تصنيف الكلمة: اسم أو فعل أو حرف؛ لأن التصنيف يحدد المسار التالي.";
+    }
+    if (id.includes("number") || text.includes("مفرد") || text.includes("مثنى") || text.includes("جمع")) {
+      return "بعد تحديد أن الكلمة اسم معرب نحدد العدد أو نوع الجمع؛ لأن العلامة تختلف باختلافه.";
+    }
+    if (id.includes("khabar") || text.includes("خبر")) {
+      return "في الخبر نسأل: ماذا أخبرنا عن المبتدأ؟ ثم نحدد هل الخبر مفرد أم جملة أم شبه جملة.";
+    }
+    if (node?.hint || node?.teaching_note) return cleanLearningText(node.hint || node.teaching_note, 150);
+    return "اقرأ المثال والكلمة الهدف، ثم اختر الإجابة التي يثبتها الدليل النحوي.";
+  }
+
+  function thinkingItemsForNode(node: TreeNode | null | undefined) {
+    const id = String(node?.id || "");
+    const text = String(node?.text || "");
+    const facts = example?.facts || {};
+    const target = example?.target || "الكلمة الهدف";
+
+    const custom = Array.isArray(node?.thinking) ? node!.thinking! : [];
+    if (custom.length) return custom;
+
+    if (id.includes("present") || text.includes("مضارع")) {
+      return [
+        { q: "ما أول سؤال بعد معرفة أن الفعل مضارع؟", a: "أسأل: هل سبق الفعل أداة نصب أو أداة جزم؟" },
+        { q: "إذا لم يسبق بناصب أو جازم؟", a: "يكون الفعل المضارع مرفوعًا." },
+        { q: "متى تظهر الأفعال الخمسة؟", a: "هي أفعال مضارعة اتصلت بألف الاثنين أو واو الجماعة أو ياء المخاطبة، وتتبع أحكام المضارع لكن تختلف علامتها." },
+        { q: "كيف أكتب النتيجة؟", a: "أقول: فعل مضارع مرفوع/منصوب/مجزوم، ثم أذكر العلامة، وأعرب الضمير المتصل إن وجد." },
+      ];
+    }
+    if (id.includes("past") || text.includes("ماض")) {
+      return [
+        { q: "هل الفعل الماضي معرب؟", a: "لا، الفعل الماضي مبني دائمًا." },
+        { q: "ما الذي أبحث عنه؟", a: "أبحث هل اتصل بالفعل ضمير، وما نوع هذا الضمير." },
+        { q: "متى يبنى على السكون؟", a: "إذا اتصل به ضمير رفع متحرك مثل: تُ، تَ، تِ، نا، تم، تما، تنّ." },
+        { q: "كيف أعرب الضمير في كتبتُ؟", a: "التاء: ضمير متصل مبني في محل رفع فاعل." },
+      ];
+    }
+    if (id.includes("imperative") || text.includes("أمر")) {
+      return [
+        { q: "ما أصل فعل الأمر؟", a: "فعل الأمر مبني، ونبحث عن علامة بنائه حسب آخره وما اتصل به." },
+        { q: "إذا كان معتل الآخر؟", a: "يبنى على حذف حرف العلة، مثل: ادعُ أصلها يدعو." },
+        { q: "إذا اتصل بألف الاثنين أو واو الجماعة أو ياء المخاطبة؟", a: "يبنى على حذف حرف النون من آخره، مثل: اذهبي أصلها اذهبين." },
+      ];
+    }
+    if (id.includes("built") || id.includes("mabni") || text.includes("مبني") || facts.nounKind === "mabni") {
+      return [
+        { q: "ما القاعدة العامة في الاسم المبني؟", a: "الأسماء الأصل فيها الإعراب، والمبني استثناء يلزم آخره صورة واحدة." },
+        { q: "لماذا نحدد نوع الاسم المبني أولًا؟", a: "لأن بداية الإعراب تكون باسمه: ضمير، اسم إشارة، اسم موصول، اسم استفهام، اسم شرط…" },
+        { q: "كيف أحدد المحل الإعرابي؟", a: "أنظر إلى موقعه في الجملة أو الاسم الذي حل محله: رفع أو نصب أو جر." },
+        { q: "ما الصياغة الثابتة للضمير المتصل؟", a: "ضمير متصل مبني في محل… ثم نكمل: رفع فاعل، أو نصب مفعول به، أو جر اسم مجرور." },
+      ];
+    }
+    if (id.includes("masdar") || text.includes("مصدر مؤول") || facts.nounKind === "masdar") {
+      return [
+        { q: "ما المصدر المؤول؟", a: "هو تركيب يؤول بمصدر صريح، مثل: أن تنجح = نجاحك." },
+        { q: "هل نعرب (أن) وحدها هنا؟", a: "لا، ننظر إلى التركيب كاملًا: أن + الفعل المضارع." },
+        { q: "كيف يعامل في الإعراب؟", a: "يعامل معاملة الاسم، لذلك قد يكون في محل رفع مبتدأ أو غير ذلك حسب موقعه." },
+      ];
+    }
+    if (text.includes("اسم أم فعل أم حرف") || id.includes("wordType")) {
+      return [
+        { q: "لماذا أبدأ بتحديد نوع الكلمة؟", a: "لأن الاسم والفعل والحرف لكل واحد منها مسار إعرابي مختلف." },
+        { q: "كيف أميز الاسم؟", a: "الاسم يقبل غالبًا أل التعريف أو التنوين، ويقع في مواقع الأسماء مثل مبتدأ أو فاعل." },
+        { q: "كيف أميز الفعل؟", a: "الفعل مرتبط بزمن: ماضٍ أو مضارع أو أمر." },
+        { q: "كيف أميز الحرف؟", a: "الحرف لا يظهر معناه مستقلًا، بل يعمل مع غيره." },
+      ];
+    }
+    if (id.includes("number") || text.includes("مفرد") || text.includes("مثنى") || text.includes("جمع")) {
+      return [
+        { q: "لماذا أحدد العدد أو نوع الجمع؟", a: "لأن علامة الإعراب تختلف: المفرد غالبًا بالضمة/الفتحة/الكسرة، والمثنى بالألف/الياء، وجمع المذكر السالم بالواو/الياء." },
+        { q: "ما الخطوة التالية؟", a: "بعد معرفة النوع نحدد العلامة المناسبة للموقع الإعرابي." },
+      ];
+    }
+    return [
+      { q: "ما المطلوب في هذه العقدة؟", a: cleanLearningText(node?.text || "حدد الاختيار الذي يثبته المثال.", 180) },
+      { q: "كيف أختار؟", a: `أربط السؤال بالكلمة الهدف (${target})، ثم أبحث عن الدليل في الجملة.` },
+      { q: "ماذا بعد الاختيار الصحيح؟", a: "ننتقل إلى العقدة التالية حتى نصل إلى الإعراب الكامل." },
+    ];
+  }
+
   const canvasScrollRef = useRef<HTMLDivElement | null>(null);
 
   const layout = useMemo(() => buildTreeLayout(tree, example), [tree, example]);
@@ -352,7 +467,7 @@ ${baseText || node?.teaching_note || node?.hint || "اختر الإجابة ال
 
   function targetedHintForWrongAnswer(node: TreeNode, answer: { text: string; eval?: { fact: string; equals: string }; hint?: string; why?: string }, currentExample: Example | null) {
     const target = currentExample?.target || "الكلمة الهدف";
-    const teacherPrefix = "أنا معك خطوة خطوة. ";
+    const teacherPrefix = "";
     const facts = currentExample?.facts || {};
     const picked = answer.text;
     if (answer.hint) return teacherSequenceText(node, answer.hint);
@@ -386,7 +501,7 @@ ${baseText || node?.teaching_note || node?.hint || "اختر الإجابة ال
     }
 
     if (node.id === "m2_mabniType" || node.id === "mubtada_built_type") {
-      return teacherSequenceText(node, teacherPrefix + `راجع نوع الاسم المبني نفسه: هل هو ضمير، اسم إشارة، اسم موصول، اسم استفهام، اسم شرط، أو كم الخبرية؟ اختر النوع المطابق للكلمة: ${target}. ${builtNounFormulaHint("رفع مبتدأ أو المحل المطلوب في هذه العقدة")}`);
+      return teacherSequenceText(node, teacherPrefix + `راجع نوع الاسم المبني نفسه: هل هو ضمير، اسم إشارة، اسم موصول، اسم استفهام، اسم شرط، أو كم الخبرية؟ اختر النوع المطابق للكلمة: ${target}.`);
     }
 
     if (node.id === "m2_number") {
@@ -403,7 +518,7 @@ ${baseText || node?.teaching_note || node?.hint || "اختر الإجابة ال
 
     if (String(node.id || "").includes("built_type") || String(node.id || "").includes("mabniType")) {
       const examples = "ضمير مثل (هو، إياه)، اسم إشارة مثل (هذا، هذه)، اسم موصول مثل (الذي، التي)، اسم استفهام مثل (من، ما)، اسم شرط مثل (من، مهما)، أو كم الخبرية";
-      return teacherSequenceText(node, teacherPrefix + `حدّد نوع الاسم المبني في ${target}. الأسماء المبنية لا تتغير حركة آخرها. قارن الكلمة بالأمثلة: ${examples}. بعد تحديد النوع يبدأ الإعراب باسمه لا بكلمة عامة. ${builtNounFormulaHint("رفع أو نصب أو جر حسب الموقع")}`);
+      return teacherSequenceText(node, teacherPrefix + `حدّد نوع الاسم المبني في ${target}. الأسماء المبنية لا تتغير حركة آخرها. قارن الكلمة بالأمثلة: ${examples}. بعد تحديد النوع يبدأ الإعراب باسمه: اسم موصول مبني في محل...`);
     }
 
     return teacherSequenceText(node, teacherPrefix + (node.hint || node.teaching_note || "راجع خصائص الكلمة ثم اختر الإجابة التي تطابق المثال."));
@@ -474,7 +589,7 @@ ${baseText || node?.teaching_note || node?.hint || "اختر الإجابة ال
       setHintBubble({
         left: anchor.x * zoom + 18,
         top: anchor.y * zoom + 18,
-        text: `أحسنت. اختيارك صحيح: ${answer.text}، والآن ننتقل بهدوء للخطوة التالية. تذكّر: كل خطوة تغلق احتمالًا وتفتح المسار المناسب.`,
+        text: `اختيار صحيح: ${answer.text}. ننتقل للخطوة التالية.`,
       });
     } else {
       setHintBubble(null);
@@ -560,9 +675,9 @@ ${baseText || node?.teaching_note || node?.hint || "اختر الإجابة ال
         </div>
 
         <div className="paths-react-tree-title">شجرة المسار النحوي</div>
-        <div className="paths-teacher-panel" aria-live="polite">
-          <strong>المعلّم اللطيف:</strong>
-          <span>{message}</span>
+        <div className="paths-step-hint-panel" aria-live="polite">
+          <span className="paths-step-hint-label">تلميح الخطوة</span>
+          <span>{activeNodeId ? stepHintForNode(tree.nodes[activeNodeId]) : "اضغط هيا نبدأ، ثم اتبع السؤال داخل المسار."}</span>
         </div>
         <div ref={canvasScrollRef} className="paths-react-canvas-scroll">
           <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
@@ -691,6 +806,32 @@ ${baseText || node?.teaching_note || node?.hint || "اختر الإجابة ال
               })}
             </svg>
           </div>
+        </div>
+        <div className="paths-thinking-dock">
+          <details open>
+            <summary>كيف أفكر في هذه الخطوة؟</summary>
+            <div className="paths-thinking-list">
+              {thinkingItemsForNode(activeNodeId ? tree.nodes[activeNodeId] : null).map((item, idx) => (
+                <div className="paths-thinking-item" key={`${item.q}-${idx}`}>
+                  <h3>{item.q}</h3>
+                  <p>{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </details>
+          {finalNodeId ? (
+            <details>
+              <summary>كيف وصلنا إلى الإعراب النهائي؟</summary>
+              <div className="paths-thinking-list">
+                {pathSteps.map((step, idx) => (
+                  <div className="paths-thinking-item" key={`${step}-${idx}`}>
+                    <h3>الخطوة {idx + 1}</h3>
+                    <p>{step}</p>
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : null}
         </div>
       </div>
     </section>
