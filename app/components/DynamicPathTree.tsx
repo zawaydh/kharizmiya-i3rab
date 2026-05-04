@@ -47,7 +47,7 @@ const BOX_W = 250;
 const BOX_H = 112;
 const DIA_W = 230;
 const DIA_H = 126;
-const LEVEL_GAP = 184;
+const LEVEL_GAP = 230;
 const SIBLING_GAP = 48;
 
 function splitText(text?: string, max = 28) {
@@ -421,6 +421,20 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     });
   }
 
+  function answerButtonLayout(node: PositionedNode, count: number, idx: number) {
+    const cols = Math.min(3, Math.max(1, count));
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    const gapX = 7;
+    const gapY = 7;
+    const btnW = Math.max(62, Math.min(92, (node.w - 18 - (cols - 1) * gapX) / cols));
+    const btnH = 22;
+    const totalW = cols * btnW + (cols - 1) * gapX;
+    const bx = node.x + (node.w - totalW) / 2 + col * (btnW + gapX);
+    const by = node.y + node.h + 8 + row * (btnH + gapY);
+    return { bx, by, btnW, btnH };
+  }
+
   function answerAnchorFor(nodeId: string, answerId: string) {
     const node = layoutNodeMap.get(nodeId);
     const treeNode = tree.nodes[nodeId];
@@ -429,13 +443,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     const idx = treeNode.answers.findIndex((a: any) => a.id === answerId);
     if (idx < 0) return null;
 
-    const count = treeNode.answers.length;
-    const btnW = Math.max(48, Math.min(82, node.w / Math.max(2, count) - 8));
-    const totalW = count * btnW + (count - 1) * 5;
-    const startX = node.x + (node.w - totalW) / 2;
-    const bx = startX + idx * (btnW + 5);
-    const by = node.y + node.h - 24;
-    return { x: bx + btnW / 2, y: by + 10 };
+    const { bx, by, btnW, btnH } = answerButtonLayout(node, treeNode.answers.length, idx);
+    return { x: bx + btnW / 2, y: by + btnH / 2 };
   }
 
   function resetProgress(nextExample: Example | null) {
@@ -772,17 +781,13 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     {isQuestion && active && n.node?.answers ? (
                       <g>
                         {n.node.answers.map((answer, idx) => {
-                          const btnW = Math.max(48, Math.min(82, n.w / Math.max(2, n.node!.answers!.length) - 8));
-                          const totalW = n.node!.answers!.length * btnW + (n.node!.answers!.length - 1) * 5;
-                          const startX = n.x + (n.w - totalW) / 2;
-                          const bx = startX + idx * (btnW + 5);
-                          const by = n.y + n.h - 24;
+                          const { bx, by, btnW, btnH } = answerButtonLayout(n, n.node!.answers!.length, idx);
                           const hintCorrect = showHint && active && answerIsCorrect(answer, example);
                           const answerHighlighted = highlightedAnswerKey === `${n.id}:${answer.id}`;
                           return (
-                            <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + 10 })}>
-                              <rect x={bx} y={by} width={btnW} height={20} rx={10} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" strokeWidth={0.9} />
-                              <text x={bx + btnW / 2} y={by + 10} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
+                            <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 })}>
+                              <rect x={bx} y={by} width={btnW} height={btnH} rx={11} fill="rgba(255,255,255,.09)" stroke="rgba(15,118,110,.36)" strokeWidth={0.85} />
+                              <text x={bx + btnW / 2} y={by + btnH / 2} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
                                 {answer.text}
                               </text>
                             </g>

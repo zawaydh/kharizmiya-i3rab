@@ -3612,3 +3612,65 @@ main.container{padding:24px 0 40px}
   .paths-thinking-item h3{font-size:13px;}
   .paths-thinking-item p{font-size:12px;}
 }
+
+/* ===== Publication readiness: professional quiz + reusable Q/A + path button spacing ===== */
+.thinking-qa{
+  margin:28px auto 0;
+  max-width:920px;
+  border-radius:24px;
+  border:1px solid rgba(148,163,184,.16);
+  background:linear-gradient(180deg,rgba(11,24,39,.86),rgba(8,17,31,.92));
+  color:#eef6ff;
+  box-shadow:0 18px 46px rgba(0,0,0,.18);
+  overflow:hidden;
+}
+.thinking-qa-head{padding:20px 22px 12px;text-align:right;border-bottom:1px solid rgba(148,163,184,.12)}
+.thinking-qa-kicker{display:inline-flex;padding:4px 10px;border-radius:999px;background:rgba(224,184,76,.11);border:1px solid rgba(224,184,76,.22);color:#f7d978;font-size:12px;font-weight:900;margin-bottom:8px}
+.thinking-qa h2{margin:0 0 7px;font-size:22px;color:#fff;letter-spacing:-.2px}
+.thinking-qa p{margin:0;color:#bed3e7;line-height:1.8;font-size:14px}
+.thinking-qa-list{display:grid}
+.thinking-qa-item{border-bottom:1px solid rgba(148,163,184,.12)}
+.thinking-qa-item:last-child{border-bottom:0}
+.thinking-qa-question{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 22px;background:transparent;border:0;color:#f8fafc;text-align:right;font-weight:900;font-size:15px;cursor:pointer}
+.thinking-qa-icon{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.08);color:#e0b84c;transition:transform .18s ease;flex:0 0 auto}
+.thinking-qa-item.is-open .thinking-qa-icon{transform:rotate(180deg)}
+.thinking-qa-answer{padding:0 22px 18px;color:#dbeafe;line-height:1.9;font-weight:600;font-size:14px;text-align:right}
+
+/* Make path answer choices less crowded, especially on mobile */
+.paths-react-answer-text{font-size:9.8px!important;font-weight:500!important;letter-spacing:0!important;pointer-events:none}
+.paths-react-answer rect{filter:drop-shadow(0 5px 10px rgba(15,23,42,.08));transition:fill .18s ease,stroke .18s ease,filter .18s ease}
+.paths-react-answer:hover rect{fill:rgba(15,118,110,.13)!important;stroke:rgba(15,118,110,.58)!important}
+.paths-react-edge-label{font-size:9px!important;font-weight:450!important;opacity:.78!important}
+.paths-react-svg path{stroke-linecap:round;stroke-linejoin:round}
+.paths-step-hint-panel{max-width:100%;}
+.paths-react-canvas-scroll{overflow:auto!important;scrollbar-width:thin}
+@media (max-width:760px){
+  .paths-react-answer-text{font-size:8.6px!important}
+  .paths-react-edge-label{font-size:8px!important}
+  .thinking-qa{margin-top:20px;border-radius:20px}
+  .thinking-qa-head{padding:16px 16px 10px}
+  .thinking-qa h2{font-size:19px}
+  .thinking-qa-question{padding:14px 16px;font-size:14px}
+  .thinking-qa-answer{padding:0 16px 16px;font-size:13px}
+}
+
+/* Google-Forms-like quiz polish */
+.exercise-page-shell{max-width:940px!important}
+.exercise-quiz-summary,.exercise-panel{scroll-margin-top:96px}
+.quiz-form-card-options{counter-reset:quizOption;display:grid!important;gap:14px!important}
+.quiz-form-option{
+  min-height:64px!important;
+  padding:14px 16px!important;
+  border-radius:18px!important;
+  border:1px solid rgba(148,163,184,.18)!important;
+  background:rgba(255,255,255,.045)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.08);
+  transition:transform .16s ease,border-color .16s ease,background .16s ease;
+}
+.quiz-form-option:hover{transform:translateY(-1px);border-color:rgba(94,234,212,.42)!important;background:rgba(94,234,212,.08)!important}
+.quiz-form-option.is-selected{background:linear-gradient(135deg,rgba(47,158,158,.24),rgba(224,184,76,.08))!important;border-color:rgba(94,234,212,.64)!important}
+.quiz-form-actions{padding-top:12px;border-top:1px solid rgba(148,163,184,.12)}
+.quiz-form-helper{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+.exercise-sentence-panel{border-inline-start:4px solid rgba(224,184,76,.72)!important}
+.exercise-sentence{font-size:clamp(19px,3vw,26px)!important;line-height:2.1!important}
+.exercise-target-word{background:linear-gradient(180deg,rgba(224,184,76,.28),rgba(224,184,76,.14));border-bottom:2px solid rgba(224,184,76,.85);border-radius:7px;padding:0 4px}

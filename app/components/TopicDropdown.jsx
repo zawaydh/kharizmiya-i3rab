@@ -31,6 +31,28 @@ const TOPIC_TREE = [
       },
       { id: "fael", label: "الفاعل", topicCode: "fael" },
       { id: "mafool", label: "المفعول به", topicCode: "mafool-bih" },
+      {
+        id: "mafaeel",
+        label: "المفاعيل",
+        note: "مهيأة للإضافة لاحقًا: المفعول المطلق، المفعول لأجله، المفعول فيه، المفعول معه.",
+        children: [
+          { id: "mafool-mutlaq", label: "المفعول المطلق", disabled: true },
+          { id: "mafool-liajlih", label: "المفعول لأجله", disabled: true },
+          { id: "mafool-fih", label: "المفعول فيه", disabled: true },
+          { id: "mafool-maah", label: "المفعول معه", disabled: true },
+        ],
+      },
+      {
+        id: "tawabi",
+        label: "التوابع",
+        note: "مهيأة للإضافة لاحقًا: النعت، العطف، التوكيد، البدل.",
+        children: [
+          { id: "naat", label: "النعت", disabled: true },
+          { id: "atf", label: "العطف", disabled: true },
+          { id: "tawkid", label: "التوكيد", disabled: true },
+          { id: "badal", label: "البدل", disabled: true },
+        ],
+      },
     ],
   },
   {
