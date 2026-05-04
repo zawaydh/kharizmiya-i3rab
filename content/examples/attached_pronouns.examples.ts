@@ -8,15 +8,15 @@ export const attachedPronounsExamples: Example[] = [
   { id: "pr-05", sentence: "هذا كتابُهُ.", target: "هُ", facts: { position: "jar" }, covers: ["pronoun.jar"] }
 ];
 const resultByCover: Record<string, string> = {
-  "pronoun.raf3.attached": "ضمير متصل مبني في محل رفع فاعل",
-  "pronoun.raf3.separate": "ضمير منفصل مبني في محل رفع مبتدأ",
-  "pronoun.nasb.attached": "ضمير متصل مبني في محل نصب مفعول به",
-  "pronoun.nasb.separate": "ضمير منفصل مبني في محل نصب مفعول به",
-  "pronoun.jar": "ضمير متصل مبني في محل جر مضاف إليه"
+  "pronoun.raf3.attached": "ضمير رفع متصل مبني في محل رفع",
+  "pronoun.raf3.separate": "ضمير رفع منفصل مبني في محل رفع",
+  "pronoun.nasb.attached": "ضمير نصب متصل مبني في محل نصب",
+  "pronoun.nasb.separate": "ضمير نصب منفصل مبني في محل نصب",
+  "pronoun.jar": "ضمير متصل مبني في محل جر"
 };
 const all = Object.values(resultByCover);
 export const attachedPronounsQuizExamples = attachedPronounsExamples.map((ex, i) => {
   const correct = resultByCover[ex.covers[0]];
   const options = Array.from(new Set([correct, ...all.slice(i, i + 4), ...all])).slice(0, 4);
-  return { ...ex, prompt: "ما التصنيف الصحيح للضمير المحدد؟", options, correctI3rab: correct, whyCorrect: "نثبت الصياغة أولًا: ضمير متصل/منفصل مبني في محل... ثم نحدد المحل: رفع أو نصب أو جر حسب الاسم الذي حلّ محله أو موقعه في الجملة.", optionReasons: Object.fromEntries(options.map((o) => [o, o === correct ? "صحيح؛ بدأنا بعبارة الضمير المبني، ثم حددنا محله الإعرابي حسب موقعه في الجملة." : "خطأ؛ لا نغيّر عبارة (ضمير متصل/منفصل مبني في محل)، بل نراجع المحل: هل حلّ محل مرفوع أو منصوب أو مجرور؟"])) };
+  return { ...ex, prompt: "ما التصنيف الصحيح للضمير المحدد؟", options, correctI3rab: correct, whyCorrect: "نحدد هل حل الضمير محل اسم مرفوع أو منصوب أو مجرور، ثم نحدد اتصاله أو انفصاله.", optionReasons: Object.fromEntries(options.map((o) => [o, o === correct ? "صحيح؛ الضمير أخذ محل الاسم الذي ناب عنه." : "خطأ؛ راجع محل الاسم الذي ناب عنه الضمير: مرفوع أم منصوب أم مجرور."])) };
 });

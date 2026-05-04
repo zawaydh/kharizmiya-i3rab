@@ -37,10 +37,10 @@ export const attachedPronounsTree: ExerciseTree = {
         { id: "b", text: "ضمير نصب منفصل", next: "R_pronoun_nasb_separate", eval: { fact: "form", equals: "separate" } }
       ]
     },
-    R_pronoun_raf3_attached: { id: "R_pronoun_raf3_attached", type: "result", coverage: "pronoun.raf3.attached", text: "ضمير متصل مبني في محل رفع فاعل" },
-    R_pronoun_raf3_separate: { id: "R_pronoun_raf3_separate", type: "result", coverage: "pronoun.raf3.separate", text: "ضمير منفصل مبني في محل رفع مبتدأ" },
-    R_pronoun_nasb_attached: { id: "R_pronoun_nasb_attached", type: "result", coverage: "pronoun.nasb.attached", text: "ضمير متصل مبني في محل نصب مفعول به" },
-    R_pronoun_nasb_separate: { id: "R_pronoun_nasb_separate", type: "result", coverage: "pronoun.nasb.separate", text: "ضمير منفصل مبني في محل نصب مفعول به" },
-    R_pronoun_jar: { id: "R_pronoun_jar", type: "result", coverage: "pronoun.jar", text: "ضمير متصل مبني في محل جر مضاف إليه" }
+    R_pronoun_raf3_attached: { id: "R_pronoun_raf3_attached", type: "result", coverage: "pronoun.raf3.attached", text: "ضمير رفع متصل مبني في محل رفع" },
+    R_pronoun_raf3_separate: { id: "R_pronoun_raf3_separate", type: "result", coverage: "pronoun.raf3.separate", text: "ضمير رفع منفصل مبني في محل رفع" },
+    R_pronoun_nasb_attached: { id: "R_pronoun_nasb_attached", type: "result", coverage: "pronoun.nasb.attached", text: "ضمير نصب متصل مبني في محل نصب" },
+    R_pronoun_nasb_separate: { id: "R_pronoun_nasb_separate", type: "result", coverage: "pronoun.nasb.separate", text: "ضمير نصب منفصل مبني في محل نصب" },
+    R_pronoun_jar: { id: "R_pronoun_jar", type: "result", coverage: "pronoun.jar", text: "ضمير متصل مبني في محل جر" }
   }
 };
