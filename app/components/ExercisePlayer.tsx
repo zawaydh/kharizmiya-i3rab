@@ -217,6 +217,11 @@ function stableShuffle<T>(items: T[], seed: string) {
   return arr;
 }
 
+
+function builtNounFixedRuleText(target = "الضمير أو الاسم المبني") {
+  return `قاعدة صياغة ثابتة: نبدأ باسم النوع، ثم نقول: مبني في محل... ثم نحدد المحل حسب موقعه في الجملة. مثال: كتبتُ: التاء ضمير متصل مبني في محل رفع فاعل. وإذا كان الضمير مفعولًا به نقول: ضمير متصل مبني في محل نصب مفعول به، وإذا جاء بعد حرف جر أو بالإضافة نقول: ضمير متصل مبني في محل جر. طبّق هذه القاعدة على ${target}.`;
+}
+
 function builtNounSmartHint(target = "الكلمة الهدف", role = "في محلها الإعرابي") {
   return `هل ${target} من الأسماء المبنية؟ جرّب أن تقارنه بالأمثلة: ضمير مثل (هو، إياه)، اسم إشارة مثل (هذا، هذه)، اسم موصول مثل (الذي، التي)، اسم استفهام مثل (من، ما)، اسم شرط مثل (من، مهما)، أو كم الخبرية. بعد تحديد النوع نبدأ الإعراب باسمه، مثل: اسم موصول مبني ${role}.`;
 }
@@ -440,6 +445,7 @@ export default function ExercisePlayer({
   }, [mode, quizCursor, quizAnswers]);
 
   const currentFollowUp = (example as QuizExampleLike | undefined)?.followUp;
+  const isBuiltNounDecision = Boolean(String(node?.id || "").includes("built") || String(node?.id || "").includes("mabni") || String(node?.text || "").includes("مبني") || String(node?.text || "").includes("الضمير"));
   const chosenFollowUp = currentFollowUp?.options?.find((o) => o.label === followUpChoice);
   const followUpIsCorrect = Boolean(chosenFollowUp?.correct);
   const canMoveAfterResult = !currentFollowUp || mode === "learn" || followUpIsCorrect;
@@ -784,6 +790,7 @@ export default function ExercisePlayer({
               <>
                 <div className="exercise-question-title">{node.text}</div>
                 {mode === "learn" && node?.teaching_note && <div className="exercise-note-box">💡 {node.teaching_note}</div>}
+                {isBuiltNounDecision && <div className="exercise-built-rule"><strong>قاعدة الاسم المبني:</strong> {builtNounFixedRuleText(state.currentTarget)}</div>}
 
                 {node.answers.map((a: any) => {
                   const answerClass = [
@@ -798,7 +805,7 @@ export default function ExercisePlayer({
                   );
                 })}
 
-                {mode === "learn" && <div className="exercise-inline-hint">💡 {(String(node?.id || "").includes("built_type") || String(node?.id || "").includes("mabniType")) ? builtNounSmartHint(state.currentTarget, "في محل الإعراب المطلوب") : node?.hint ?? ""}</div>}
+                {mode === "learn" && <div className="exercise-inline-hint">💡 {isBuiltNounDecision ? builtNounSmartHint(state.currentTarget, "في محل الإعراب المطلوب") : node?.hint ?? ""}</div>}
                 {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {feedback?.hint ?? node?.hint}</div>}
                 {mode === "practice" && feedback?.wrongId && <div className="exercise-practice-warning">(تدرّب): يجب اختيار الإجابة الصحيحة حتى نكمل.</div>}
                 <div className="exercise-question-nav">
@@ -810,6 +817,7 @@ export default function ExercisePlayer({
             ) : node?.type === "result" ? (
               <>
                 {mode === "learn" && node?.teaching_note && <div className="exercise-note-box">💡 {node.teaching_note}</div>}
+                {isBuiltNounDecision && <div className="exercise-built-rule"><strong>قاعدة الاسم المبني:</strong> {builtNounFixedRuleText(state.currentTarget)}</div>}
                 <div className="exercise-result-reason-box">
                   <strong>كيف وصلنا للإعراب؟</strong>
                   <span>اتبعنا أسئلة المسار الخاصة بالكلمة الهدف، ثم ثبتنا النوع والعلامة أو محل الإعراب. النتيجة الكاملة:</span>

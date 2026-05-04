@@ -93,6 +93,10 @@ function sourceMasdarHint(target = "المصدر المؤول") {
   return `توضيح مهم: المصدر المؤول ليس كلمة واحدة فقط؛ هو تركيب مثل (أن + فعل مضارع)، ونستطيع تأويله بمصدر صريح. مثال: (أن تنجح) = نجاحك. لذلك يعامل معاملة الاسم ويأخذ موقعًا إعرابيًا مثل: في محل رفع مبتدأ.`;
 }
 
+function builtNounFormulaHint(role = "محله الإعرابي") {
+  return `قاعدة ثابتة للأسماء المبنية: نذكر اسم النوع أولًا، ثم نقول: مبني في محل... ثم نحدد المحل حسب موقعه في الجملة. مثال: كتبتُ: التاء ضمير متصل مبني في محل رفع فاعل. وإذا حلّ محل منصوب قلنا: ضمير متصل مبني في محل نصب مفعول به، وإذا جاء بعد حرف جر قلنا: ضمير متصل مبني في محل جر اسم مجرور. المحل هنا: ${role}.`;
+}
+
 function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
   const nodes = tree.nodes;
   const rootId = tree.startNodeId;
@@ -382,7 +386,7 @@ ${baseText || node?.teaching_note || node?.hint || "اختر الإجابة ال
     }
 
     if (node.id === "m2_mabniType" || node.id === "mubtada_built_type") {
-      return teacherSequenceText(node, teacherPrefix + `راجع نوع الاسم المبني نفسه: هل هو ضمير، اسم إشارة، اسم موصول، اسم استفهام، اسم شرط، أو كم الخبرية؟ اختر النوع المطابق للكلمة: ${target}.`);
+      return teacherSequenceText(node, teacherPrefix + `راجع نوع الاسم المبني نفسه: هل هو ضمير، اسم إشارة، اسم موصول، اسم استفهام، اسم شرط، أو كم الخبرية؟ اختر النوع المطابق للكلمة: ${target}. ${builtNounFormulaHint("رفع مبتدأ أو المحل المطلوب في هذه العقدة")}`);
     }
 
     if (node.id === "m2_number") {
@@ -399,7 +403,7 @@ ${baseText || node?.teaching_note || node?.hint || "اختر الإجابة ال
 
     if (String(node.id || "").includes("built_type") || String(node.id || "").includes("mabniType")) {
       const examples = "ضمير مثل (هو، إياه)، اسم إشارة مثل (هذا، هذه)، اسم موصول مثل (الذي، التي)، اسم استفهام مثل (من، ما)، اسم شرط مثل (من، مهما)، أو كم الخبرية";
-      return teacherSequenceText(node, teacherPrefix + `حدّد نوع الاسم المبني في ${target}. الأسماء المبنية لا تتغير حركة آخرها. قارن الكلمة بالأمثلة: ${examples}. بعد تحديد النوع يبدأ الإعراب باسمه: اسم موصول مبني في محل...`);
+      return teacherSequenceText(node, teacherPrefix + `حدّد نوع الاسم المبني في ${target}. الأسماء المبنية لا تتغير حركة آخرها. قارن الكلمة بالأمثلة: ${examples}. بعد تحديد النوع يبدأ الإعراب باسمه لا بكلمة عامة. ${builtNounFormulaHint("رفع أو نصب أو جر حسب الموقع")}`);
     }
 
     return teacherSequenceText(node, teacherPrefix + (node.hint || node.teaching_note || "راجع خصائص الكلمة ثم اختر الإجابة التي تطابق المثال."));
@@ -470,7 +474,7 @@ ${baseText || node?.teaching_note || node?.hint || "اختر الإجابة ال
       setHintBubble({
         left: anchor.x * zoom + 18,
         top: anchor.y * zoom + 18,
-        text: `أحسنت. اختيارك صحيح: ${answer.text}، والآن ننتقل بهدوء للخطوة التالية.`,
+        text: `أحسنت. اختيارك صحيح: ${answer.text}، والآن ننتقل بهدوء للخطوة التالية. تذكّر: كل خطوة تغلق احتمالًا وتفتح المسار المناسب.`,
       });
     } else {
       setHintBubble(null);
