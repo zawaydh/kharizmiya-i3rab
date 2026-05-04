@@ -8,7 +8,7 @@ type TreeNode = {
   text: string;
   teaching_note?: string;
   hint?: string;
-  answers?: { id: string; text: string; next: string; eval?: { fact: string; equals: string } }[];
+  answers?: { id: string; text: string; next: string; eval?: { fact: string; equals: string }; hint?: string; why?: string }[];
 };
 
 type ExerciseTree = {
@@ -87,6 +87,10 @@ function pathD(a: { x: number; y: number }, b: { x: number; y: number }) {
 function answerIsCorrect(answer: { eval?: { fact: string; equals: string } }, example: Example | null) {
   if (!example || !answer.eval) return false;
   return example.facts?.[answer.eval.fact] === answer.eval.equals;
+}
+
+function sourceMasdarHint(target = "المصدر المؤول") {
+  return `توضيح مهم: المصدر المؤول ليس كلمة واحدة فقط؛ هو تركيب مثل (أن + فعل مضارع)، ونستطيع تأويله بمصدر صريح. مثال: (أن تنجح) = نجاحك. لذلك يعامل معاملة الاسم ويأخذ موقعًا إعرابيًا مثل: في محل رفع مبتدأ.`;
 }
 
 function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
@@ -215,6 +219,15 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [highlightedAnswerKind, setHighlightedAnswerKind] = useState<"correct" | "wrong" | "hint" | null>(null);
   const [pathSteps, setPathSteps] = useState<string[]>([]);
   const autoNextTimerRef = useRef(null as null | ReturnType<typeof setTimeout>);
+
+  function teacherSequenceText(node: TreeNode | null | undefined, baseText?: string) {
+    const currentStep = node?.text ? `الخطوة الحالية: ${node.text}` : "الخطوة الحالية: نحدد مسار الكلمة الهدف.";
+    const sequence = pathSteps.length ? `ما ثبتناه حتى الآن: ${pathSteps.slice(-3).join(" ← ")}.` : "نحن في بداية المسار؛ نقرأ السؤال ثم نختار الدليل النحوي الأقرب.";
+    const target = example?.target ? `الكلمة الهدف: ${example.target}.` : "";
+    return `يا بطل، ${target} ${currentStep}
+${sequence}
+${baseText || node?.teaching_note || node?.hint || "اختر الإجابة التي يثبتها المثال."}`;
+  }
   const canvasScrollRef = useRef<HTMLDivElement | null>(null);
 
   const layout = useMemo(() => buildTreeLayout(tree, example), [tree, example]);
@@ -333,58 +346,63 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   }
 
 
-  function targetedHintForWrongAnswer(node: TreeNode, answer: { text: string; eval?: { fact: string; equals: string } }, currentExample: Example | null) {
+  function targetedHintForWrongAnswer(node: TreeNode, answer: { text: string; eval?: { fact: string; equals: string }; hint?: string; why?: string }, currentExample: Example | null) {
     const target = currentExample?.target || "الكلمة الهدف";
     const teacherPrefix = "أنا معك خطوة خطوة. ";
     const facts = currentExample?.facts || {};
     const picked = answer.text;
+    if (answer.hint) return teacherSequenceText(node, answer.hint);
 
-    if (node.id === "m0_wordType") {
+    if (node.id === "m0_wordType" || node.id === "first_word_type") {
       if ((picked === "حرف" || picked === "فعل") && facts.nounKind === "masdar") {
-        return teacherPrefix + `انتبه: ${target} ليست حرفًا منفردًا هنا؛ هذا مصدر مؤول. يمكن أن تضع بدل (أن تحفظ) كلمة (حفظ)، فيستقيم المعنى؛ لذلك فالمصدر المؤول مجتمعًا يُعامل معاملة الاسم، ويكون في محل رفع مبتدأ.`;
+        return teacherSequenceText(node, teacherPrefix + `انتبه: ${target} ليست حرفًا منفردًا هنا؛ هذا مصدر مؤول. يمكن أن تضع بدل (أن تحفظ) كلمة (حفظ)، فيستقيم المعنى؛ لذلك فالمصدر المؤول مجتمعًا يُعامل معاملة الاسم، ويكون في محل رفع مبتدأ.`);
       }
       if ((picked === "حرف" || picked === "فعل") && facts.nounKind === "mabni") {
-        return teacherPrefix + `انتبه: ${target} ليس حرفًا هنا؛ بل هو من الأسماء المبنية. الاسم المبني قد يشبه الحرف في ثبات آخره، لكنه يبقى اسمًا، ولذلك يمكن أن يقع مبتدأ ويُعرب في محل رفع.`;
+        return teacherSequenceText(node, teacherPrefix + `انتبه: ${target} ليس حرفًا هنا؛ بل هو من الأسماء المبنية. الاسم المبني قد يشبه الحرف في ثبات آخره، لكنه يبقى اسمًا، ولذلك يمكن أن يقع مبتدأ ويُعرب في محل رفع.`);
       }
       if ((picked === "حرف" || picked === "فعل") && facts.wordType === "noun") {
-        return teacherPrefix + `انتبه: ${target} اسم وليس ${picked}. اختبره بعلامات الاسم: قد يقبل التعريف أو يقع في موقع اسم داخل الجملة، لذلك نتابع في مسار المبتدأ.`;
+        return teacherSequenceText(node, teacherPrefix + `انتبه: ${target} اسم وليس ${picked}. اختبره بعلامات الاسم: قد يقبل التعريف أو يقع في موقع اسم داخل الجملة، لذلك نتابع في مسار المبتدأ.`);
       }
+    }
+
+    if (node.id === "mubtada_type" && facts.nounKind === "masdar") {
+      return teacherSequenceText(node, teacherPrefix + sourceMasdarHint(target) + " اختر (مصدر مؤول) لأننا لا نعرب (أن) وحدها هنا، بل التركيب المؤول كله.");
     }
 
     if (node.id === "m1_nounKind") {
       if (facts.nounKind === "masdar") {
-        return teacherPrefix + `هذا مصدر مؤول: يمكن أن تستبدل تركيب (أن + الفعل) بمصدر صريح مثل: حفظ، فيستقيم المعنى. لذلك لا نتعامل مع (أن) وحدها كحرف في هذا الموضع، بل مع المصدر المؤول كله كاسم في محل رفع مبتدأ.`;
+        return teacherSequenceText(node, teacherPrefix + `هذا مصدر مؤول: يمكن أن تستبدل تركيب (أن + الفعل) بمصدر صريح مثل: حفظ، فيستقيم المعنى. لذلك لا نتعامل مع (أن) وحدها كحرف في هذا الموضع، بل مع المصدر المؤول كله كاسم في محل رفع مبتدأ.`);
       }
       if (facts.nounKind === "mabni") {
-        return teacherPrefix + `انتبه: ${target} من الأسماء المبنية، وليس اسمًا معربًا. الاسم المبني يلزم آخره صورة واحدة، لكنه يعرب بحسب موقعه: هنا في محل رفع مبتدأ.`;
+        return teacherSequenceText(node, teacherPrefix + `انتبه: ${target} من الأسماء المبنية، وليس اسمًا معربًا. الاسم المبني يلزم آخره صورة واحدة، لكنه يعرب بحسب موقعه: هنا في محل رفع مبتدأ.`);
       }
       if (facts.nounKind === "mu3rab") {
-        return teacherPrefix + `انتبه: ${target} اسم معرب؛ أي تتغير علامته بحسب موقعه. لذلك نتابع إلى العدد ونوع آخر الكلمة لتحديد علامة الرفع.`;
+        return teacherSequenceText(node, teacherPrefix + `انتبه: ${target} اسم معرب؛ أي تتغير علامته بحسب موقعه. لذلك نتابع إلى العدد ونوع آخر الكلمة لتحديد علامة الرفع.`);
       }
     }
 
-    if (node.id === "m2_mabniType") {
-      return teacherPrefix + `راجع نوع الاسم المبني نفسه: هل هو ضمير، اسم إشارة، اسم موصول، اسم استفهام، اسم شرط، أو كم الخبرية؟ اختر النوع المطابق للكلمة: ${target}.`;
+    if (node.id === "m2_mabniType" || node.id === "mubtada_built_type") {
+      return teacherSequenceText(node, teacherPrefix + `راجع نوع الاسم المبني نفسه: هل هو ضمير، اسم إشارة، اسم موصول، اسم استفهام، اسم شرط، أو كم الخبرية؟ اختر النوع المطابق للكلمة: ${target}.`);
     }
 
     if (node.id === "m2_number") {
-      return teacherPrefix + `راجع صورة ${target}: هل تدل على واحد، اثنين، أم جماعة؟ العدد يحدد علامة الرفع في مسار المبتدأ.`;
+      return teacherSequenceText(node, teacherPrefix + `راجع صورة ${target}: هل تدل على واحد، اثنين، أم جماعة؟ العدد يحدد علامة الرفع في مسار المبتدأ.`);
     }
 
     if (node.id === "m3_singularKind") {
-      return teacherPrefix + `ركز في آخر ${target}: هل آخره حرف صحيح، أم حرف علة، أم أنه من الأسماء الخمسة؟ نوع الآخر هو الذي يحدد علامة الرفع.`;
+      return teacherSequenceText(node, teacherPrefix + `ركز في آخر ${target}: هل آخره حرف صحيح، أم حرف علة، أم أنه من الأسماء الخمسة؟ نوع الآخر هو الذي يحدد علامة الرفع.`);
     }
 
     if (node.id === "m3_pluralType") {
-      return teacherPrefix + `راجع نوع الجمع في ${target}: جمع المذكر السالم يرفع بالواو، أما جمع المؤنث السالم وجمع التكسير فيرفعان بالضمة في هذا المسار.`;
+      return teacherSequenceText(node, teacherPrefix + `راجع نوع الجمع في ${target}: جمع المذكر السالم يرفع بالواو، أما جمع المؤنث السالم وجمع التكسير فيرفعان بالضمة في هذا المسار.`);
     }
 
     if (String(node.id || "").includes("built_type") || String(node.id || "").includes("mabniType")) {
       const examples = "ضمير مثل (هو، إياه)، اسم إشارة مثل (هذا، هذه)، اسم موصول مثل (الذي، التي)، اسم استفهام مثل (من، ما)، اسم شرط مثل (من، مهما)، أو كم الخبرية";
-      return teacherPrefix + `حدّد نوع الاسم المبني في ${target}. الأسماء المبنية لا تتغير حركة آخرها. قارن الكلمة بالأمثلة: ${examples}. بعد تحديد النوع يبدأ الإعراب باسمه: اسم موصول مبني في محل...`;
+      return teacherSequenceText(node, teacherPrefix + `حدّد نوع الاسم المبني في ${target}. الأسماء المبنية لا تتغير حركة آخرها. قارن الكلمة بالأمثلة: ${examples}. بعد تحديد النوع يبدأ الإعراب باسمه: اسم موصول مبني في محل...`);
     }
 
-    return teacherPrefix + (node.hint || node.teaching_note || "راجع خصائص الكلمة ثم اختر الإجابة التي تطابق المثال.");
+    return teacherSequenceText(node, teacherPrefix + (node.hint || node.teaching_note || "راجع خصائص الكلمة ثم اختر الإجابة التي تطابق المثال."));
   }
 
   function showHintNearAnswer(nodeId: string) {
@@ -401,7 +419,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       if (anchor) {
         setHighlightedAnswerKey(`${nodeId}:${correctAnswer.id}`);
         setHighlightedAnswerKind("hint");
-        setHintBubble({ left: anchor.x * zoom + 18, top: anchor.y * zoom + 18, text: hintText });
+        setHintBubble({ left: Math.max(135, anchor.x * zoom), top: Math.max(18, anchor.y * zoom - 16), text: hintText });
       }
     }
   }
@@ -432,8 +450,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       setHighlightedAnswerKind("wrong");
       if (anchor) {
         setHintBubble({
-          left: Math.max(16, anchor.x * zoom - 150),
-          top: Math.max(10, anchor.y * zoom - 92),
+          left: Math.max(135, anchor.x * zoom),
+          top: Math.max(18, anchor.y * zoom - 16),
           text: hintText,
         });
       }
@@ -476,11 +494,11 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     } else {
       setFinalNodeId(null);
       setActiveNodeId(nextId);
-      const stepText = nextNode?.teaching_note || "أحسنت. تابع إلى العقدة التالية.";
+      const stepText = teacherSequenceText(nextNode, nextNode?.teaching_note || "أحسنت. تابع إلى العقدة التالية.");
       setMessage(stepText);
       setTimeout(() => {
-        focusNode(nextId, 1.04);
-        showBubbleBesideNode(nextId, stepText, 1.04);
+        focusNode(nextId, 1.03);
+        showBubbleBesideNode(nextId, stepText, 1.03);
       }, 90);
     }
   }
@@ -538,6 +556,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
         </div>
 
         <div className="paths-react-tree-title">شجرة المسار النحوي</div>
+        <div className="paths-teacher-panel" aria-live="polite">
+          <strong>المعلّم اللطيف:</strong>
+          <span>{message}</span>
+        </div>
         <div ref={canvasScrollRef} className="paths-react-canvas-scroll">
           <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
             {hintBubble ? (
