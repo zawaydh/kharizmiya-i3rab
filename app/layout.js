@@ -3,11 +3,13 @@ import Navbar from "./components/Navbar";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "تعلم الإعراب خطوة بخطوة | خوارزمية الإعراب",
-  description: "منصة تعليمية تفاعلية تساعد الطلاب على فهم الإعراب عبر مسارات بصرية وخوارزميات نحوية وتلميحات موجهة.",
-  keywords: ["الإعراب", "تعلم الإعراب", "شرح الإعراب", "تعلم النحو", "خوارزمية الإعراب", "الجملة الاسمية", "الفعل المضارع"],
+  title: "خوارزمية الإعراب | تعلّم الإعراب خطوة بخطوة",
+  description: "منصة تعليمية تفاعلية تساعد الطلاب على فهم الإعراب عبر مسارات نحوية بصرية، تلميحات موجّهة، وتدريب خطوة بخطوة.",
+  keywords: ["خوارزمية الإعراب", "تعلم الإعراب", "شرح الإعراب", "تعلم النحو", "الجملة الاسمية", "الفعل المضارع", "المبتدأ والخبر"],
   icons: {
     icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/brand-icon.svg",
   },
 };
 
@@ -22,8 +24,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
       <body>
-
-        {/* 👇 الحل هنا */}
         <Suspense fallback={null}>
           <Navbar />
         </Suspense>

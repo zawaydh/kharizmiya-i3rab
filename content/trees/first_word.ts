@@ -7,8 +7,8 @@ export const firstWordTree: ExerciseTree = {
       id: "first_word_type",
       type: "question",
       text: "هل الكلمة الأولى اسم أم فعل أم حرف؟",
-      teaching_note: "هذا مفتاح التفكير الأول: لا نبدأ بالإعراب قبل تحديد نوع الكلمة الأولى.",
-      hint: "اسأل: هل تدل على اسم؟ أم حدث بزمن؟ أم حرف يربط أو يؤثر؟",
+      teaching_note: "عزيزي الطالب، أول خطوة لإعراب الكلمة الأولى هي تحديد نوعها؛ لأن تصنيف الكلمة يحدد مسار الإعراب الخاص بها.",
+      hint: "انتبه: الاسم يقبل أل التعريف أو التنوين، والفعل مرتبط بزمن، والحرف لا يدل على معنى كامل وحده بل يؤدي وظيفة في الجملة.",
       answers: [
         { id: "a", text: "اسم", next: "R_first_noun", eval: { fact: "wordType", equals: "noun" } },
         { id: "b", text: "فعل", next: "first_verb_type", eval: { fact: "wordType", equals: "verb" } },

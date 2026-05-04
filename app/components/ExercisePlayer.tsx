@@ -420,8 +420,9 @@ export default function ExercisePlayer({
   const isDone = coveredPercent >= 100;
   const stepLabel = coverageKeysOrdered.find((k) => !covered[k]) || "مكتمل";
   const quizFinished = mode === "quiz" && quizOrder.length > 0 && quizCursor >= quizOrder.length;
-  const quizScore = quizAnswers.filter((a) => a.isCorrect).length;
-  const quizPercent = quizAnswers.length ? Math.round((quizScore / quizAnswers.length) * 100) : 0;
+  const answeredQuizRows = quizAnswers.filter(Boolean);
+  const quizScore = answeredQuizRows.filter((a) => a.isCorrect).length;
+  const quizPercent = answeredQuizRows.length ? Math.round((quizScore / answeredQuizRows.length) * 100) : 0;
   const canDownloadCertificate = quizFinished && quizPercent >= QUIZ_PASS_PERCENT && learnReady && practiceReady;
   const quizOptions = React.useMemo(() => {
     return buildBalancedQuizOptions(
@@ -430,6 +431,13 @@ export default function ExercisePlayer({
       quizCursor
     );
   }, [example, currentIdx, quizCursor, topicId]);
+
+  React.useEffect(() => {
+    if (mode !== "quiz") return;
+    const existing = quizAnswers[quizCursor];
+    setSelectedQuizOption(existing?.actualLabel || null);
+    setQuizLocked(Boolean(existing?.actualLabel));
+  }, [mode, quizCursor, quizAnswers]);
 
   const currentFollowUp = (example as QuizExampleLike | undefined)?.followUp;
   const chosenFollowUp = currentFollowUp?.options?.find((o) => o.label === followUpChoice);
@@ -554,6 +562,10 @@ export default function ExercisePlayer({
   }
 
   async function finalizeQuizExample() {
+    if (!selectedQuizOption) {
+      setToast("اختر إجابة أولًا");
+      return;
+    }
     const quizExample = example as QuizExampleLike;
     const expectedCoverage = getExampleCoverageKeys(quizExample)[0] || "";
     const expectedLabel = quizExample?.correctI3rab || findResultLabelByCoverage(tree, expectedCoverage) || expectedCoverage;
@@ -571,20 +583,20 @@ export default function ExercisePlayer({
       actualOptionReason: actualLabel ? quizExample?.optionReasons?.[actualLabel] : undefined,
     };
 
-    const nextAnswers = [...quizAnswers, row];
+    const nextAnswers = [...quizAnswers];
+    nextAnswers[quizCursor] = row;
     setQuizAnswers(nextAnswers);
-    setSelectedQuizOption(null);
-    setQuizLocked(false);
 
     const nextCursor = quizCursor + 1;
     if (nextCursor >= quizOrder.length) {
       setQuizCursor(nextCursor);
-      const nextPercent = nextAnswers.length ? Math.round((nextAnswers.filter((a) => a.isCorrect).length / nextAnswers.length) * 100) : 0;
+      const answeredRows = nextAnswers.filter(Boolean);
+      const nextPercent = answeredRows.length ? Math.round((answeredRows.filter((a) => a.isCorrect).length / answeredRows.length) * 100) : 0;
       try {
         await persist(buildEmptyCovered(coverageKeysOrdered), {
           quiz_passed: nextPercent >= QUIZ_PASS_PERCENT,
-          quiz_score: nextAnswers.filter((a) => a.isCorrect).length,
-          quiz_total: nextAnswers.length,
+          quiz_score: answeredRows.filter((a) => a.isCorrect).length,
+          quiz_total: answeredRows.length,
         });
       } catch {
         setToast("تعذر حفظ نتيجة الاختبار الآن");
@@ -593,6 +605,10 @@ export default function ExercisePlayer({
     }
 
     setQuizCursor(nextCursor);
+  }
+
+  function previousQuizQuestion() {
+    setQuizCursor((c) => Math.max(0, c - 1));
   }
 
   function restartQuiz() {
@@ -682,7 +698,7 @@ export default function ExercisePlayer({
             <div>
               <div className="exercise-summary-kicker">النتيجة النهائية</div>
               <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>انتهى الاختبار</div>
-              <div style={{ opacity: 0.9 }}>نتيجتك: {quizScore} / {quizAnswers.length} ({quizPercent}%)</div>
+              <div style={{ opacity: 0.9 }}>نتيجتك: {quizScore} / {answeredQuizRows.length} ({quizPercent}%)</div>
             </div>
             <div className={`exercise-result-pill ${quizPercent >= QUIZ_PASS_PERCENT ? "is-pass" : "is-fail"}`}>
               {quizPercent >= QUIZ_PASS_PERCENT ? "نجاح" : "بحاجة إلى إعادة"}
@@ -701,7 +717,7 @@ export default function ExercisePlayer({
           )}
 
           <div style={{ display: "grid", gap: 10 }}>
-            {quizAnswers.map((a, idx) => (
+            {answeredQuizRows.map((a, idx) => (
               <div key={a.exampleId} className={`exercise-review-card ${a.isCorrect ? "is-correct" : "is-wrong"}`} style={{ padding: 12, border: "1px solid rgba(255,255,255,.12)", borderRadius: 16, background: a.isCorrect ? "rgba(34,197,94,.12)" : "rgba(251,146,60,.12)" }}>
                 <div style={{ fontWeight: 800, marginBottom: 6 }}>السؤال {idx + 1}: {a.isCorrect ? "✅ صحيح" : "❌ خطأ"}</div>
                 <div style={{ marginBottom: 6 }}>الجملة: <span style={{ fontSize: 18 }}>{renderSentence(a.sentence, a.target)}</span></div>
@@ -725,32 +741,35 @@ export default function ExercisePlayer({
           </section>
 
           <section className="exercise-panel" style={box}>
-            {quizOptions.map((option, idx) => (
+            <div className="quiz-form-card-options">
+              {quizOptions.map((option, idx) => (
                 <button
                   key={`${option}-${idx}`}
                   onClick={() => {
-                    if (quizLocked) return;
                     setSelectedQuizOption(option);
                     setQuizLocked(true);
                   }}
-                  className={`exercise-answer-btn ${selectedQuizOption === option ? "is-selected" : ""}`}
+                  className={`exercise-answer-btn quiz-form-option ${selectedQuizOption === option ? "is-selected" : ""}`}
                   style={{
                     ...answerBtn,
-                    background: selectedQuizOption === option ? "rgba(99,102,241,.22)" : "rgba(255,255,255,.05)",
-                    borderColor: selectedQuizOption === option ? "#818cf8" : "rgba(255,255,255,.14)",
+                    background: selectedQuizOption === option ? "rgba(47,158,158,.22)" : "rgba(255,255,255,.05)",
+                    borderColor: selectedQuizOption === option ? "#2f9e9e" : "rgba(255,255,255,.14)",
                   }}
                 >
-                  {option}
+                  <span className="quiz-option-dot">{idx + 1}</span>
+                  <span>{option}</span>
                 </button>
               ))}
+            </div>
 
-            {!quizLocked && <div style={{ marginTop: 10, opacity: 0.8 }}>اختر أفضل صياغة للإعراب النهائي.</div>}
-            {quizLocked && (
-              <div style={{ marginTop: 12 }}>
-                <div style={{ marginBottom: 10, opacity: 0.85 }}>تم تسجيل إجابتك لهذا السؤال. سيظهر التصحيح الكامل بعد انتهاء الاختبار.</div>
-                <button onClick={finalizeQuizExample} style={ghostBtn} disabled={!selectedQuizOption}>السؤال التالي</button>
-              </div>
-            )}
+            <div className="quiz-form-actions">
+              <button onClick={previousQuizQuestion} style={ghostBtn} disabled={quizCursor <= 0}>السابق</button>
+              <button onClick={restartQuiz} style={ghostBtn}>إعادة</button>
+              <button onClick={finalizeQuizExample} style={primaryNavBtn} disabled={!selectedQuizOption}>
+                {quizCursor + 1 >= quizOrder.length ? "تسليم الاختبار" : "التالي"}
+              </button>
+            </div>
+            <div className="quiz-form-helper">يمكنك تعديل اختيارك قبل الضغط على التالي. التصحيح يظهر بعد التسليم.</div>
           </section>
         </>
       ) : (
@@ -782,6 +801,11 @@ export default function ExercisePlayer({
                 {mode === "learn" && <div className="exercise-inline-hint">💡 {(String(node?.id || "").includes("built_type") || String(node?.id || "").includes("mabniType")) ? builtNounSmartHint(state.currentTarget, "في محل الإعراب المطلوب") : node?.hint ?? ""}</div>}
                 {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {feedback?.hint ?? node?.hint}</div>}
                 {mode === "practice" && feedback?.wrongId && <div className="exercise-practice-warning">(تدرّب): يجب اختيار الإجابة الصحيحة حتى نكمل.</div>}
+                <div className="exercise-question-nav">
+                  <button type="button" onClick={() => setExampleIndex((i) => Math.max(0, i - 1))} style={ghostBtn}>السابق</button>
+                  <button type="button" onClick={() => { setFeedback(null); setState(buildRunnerState(tree, mode, example)); }} style={ghostBtn}>إعادة</button>
+                  <button type="button" onClick={() => setExampleIndex((i) => Math.min(examples.length - 1, i + 1))} style={ghostBtn}>التالي</button>
+                </div>
               </>
             ) : node?.type === "result" ? (
               <>

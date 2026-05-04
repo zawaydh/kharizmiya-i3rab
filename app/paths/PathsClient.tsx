@@ -6,7 +6,7 @@ import AuthLockGate from "../components/AuthLockGate";
 import DynamicPathTree from "../components/DynamicPathTree";
 import { getTopicByCode } from "../../lib/topics";
 
-export default function PathsPage() {
+export default function PathsClient() {
   const searchParams = useSearchParams();
   const requestedTopic = searchParams.get("topic") || "first-word-key";
   const topic = useMemo(() => getTopicByCode(requestedTopic) || getTopicByCode("first-word-key"), [requestedTopic]);

@@ -10,6 +10,7 @@ export default function TopicDropdown({
   buttonLabel = "الموضوعات",
   className = "",
   locked = false,
+  onNavigate,
 }) {
   const [open, setOpen] = useState(false);
   const [activeTopic, setActiveTopic] = useState(null);
@@ -43,11 +44,13 @@ export default function TopicDropdown({
     setOpen(false);
     setActiveTopic(null);
     router.push(locked ? "/auth" : href);
+    onNavigate?.();
   }
 
   function toggle() {
     if (locked) {
       router.push("/auth");
+      onNavigate?.();
       return;
     }
     setOpen((v) => !v);

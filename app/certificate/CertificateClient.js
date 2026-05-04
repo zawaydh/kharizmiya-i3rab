@@ -6,7 +6,7 @@ import { getTopicProgress } from "../../lib/db";
 import { supabase } from "../../lib/supabaseClient";
 import { getTopicByCode } from "../../lib/topics";
 
-export default function CertificatePage() {
+export default function CertificateClient() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [allowed, setAllowed] = useState(false);

@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import TopicDropdown from "./TopicDropdown";
 import { useAuthUser } from "./useAuthUser";
+import { supabase } from "../../lib/supabaseClient";
 
 function getDisplayName(user) {
   const fullName = user?.user_metadata?.full_name?.trim?.();
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuthUser();
   const locked = !isLoading && !isAuthenticated;
   const accountLabel = !isLoading && isAuthenticated ? `حسابي: ${getDisplayName(user)}` : "الحساب";
@@ -31,35 +33,36 @@ export default function Navbar() {
     return undefined;
   }, [pathname, searchParams]);
 
+  async function logout() {
+    await supabase.auth.signOut();
+    setOpen(false);
+    router.push("/");
+  }
+
   return (
-    <header className="nav-clean nav-modern-shell nav-final-shell">
-      <div className="nav-clean-inner nav-final-inner">
-        <div className="nav-final-mobile-bar">
-          <a href="/" className="brand-logo-link nav-final-logo-link nav-final-logo-badge" aria-label="العودة إلى الصفحة الرئيسية">
-            <img src="/logo-khwarizmia-icon-new.png" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo" />
-          </a>
-          <button type="button" className="menu-btn nav-final-menu-btn" onClick={() => setOpen((v) => !v)} aria-label="فتح القائمة" aria-expanded={open}>☰</button>
-        </div>
+    <header className="nav-clean nav-modern-shell nav-final-shell luxe-navbar">
+      <div className="nav-clean-inner nav-final-inner luxe-nav-inner">
+        <a href="/" className="luxe-nav-brand" aria-label="العودة إلى الصفحة الرئيسية">
+          <img src="/brand-icon.svg" alt="أيقونة خوارزمية الإعراب" className="luxe-nav-icon" />
+          <span>خوارزمية الإعراب</span>
+        </a>
 
-        <div className="nav-final-desktop-bar nav-tree-mainbar">
-          <a href="/" className="nav-final-brand nav-final-brand-icon-only" aria-label="العودة إلى الصفحة الرئيسية">
-            <span className="nav-final-logo-link nav-final-logo-badge nav-final-logo-badge-icon-only">
-              <img src="/logo-khwarizmia-icon-new.png" alt="أيقونة خوارزمية الإعراب" className="brand-logo contain-logo nav-final-logo" />
-            </span>
-          </a>
-          <nav className="desktop-links nav-final-links nav-tree-links" aria-label="التنقل الرئيسي">
-            <a href="/">الرئيسية</a>
-            <a href={protectedHref("/dashboard")} aria-disabled={locked}>لوحتي</a>
-            <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="الموضوعات" locked={locked} />
-            <a href={accountHref} className="login-link nav-auth-link nav-account-chip">{accountLabel}</a>
-          </nav>
-        </div>
+        <nav className="desktop-links nav-final-links luxe-desktop-nav" aria-label="التنقل الرئيسي">
+          <a href="/">الرئيسية</a>
+          <a href={protectedHref("/dashboard")} aria-disabled={locked}>لوحتي</a>
+          <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="الموضوعات" locked={locked} />
+          <a href={accountHref} className="login-link nav-account-chip">{accountLabel}</a>
+          {isAuthenticated ? <button type="button" className="nav-logout-btn" onClick={logout}>خروج</button> : null}
+        </nav>
 
-        <nav className={`mobile-menu-clean nav-final-mobile-menu ${open ? "open" : ""}`}>
+        <button type="button" className="menu-btn nav-final-menu-btn luxe-menu-btn" onClick={() => setOpen((v) => !v)} aria-label="فتح القائمة" aria-expanded={open}>☰</button>
+
+        <nav className={`mobile-menu-clean nav-final-mobile-menu luxe-mobile-menu ${open ? "open" : ""}`}>
           <a href="/" onClick={() => setOpen(false)}>الرئيسية</a>
           <a href={protectedHref("/dashboard")} onClick={() => setOpen(false)} aria-disabled={locked}>لوحتي</a>
-          <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} />
+          <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={() => setOpen(false)} />
           <a href={accountHref} onClick={() => setOpen(false)} className="login-link mobile-login nav-account-chip">{accountLabel}</a>
+          {isAuthenticated ? <button type="button" className="nav-logout-btn mobile-logout" onClick={logout}>تسجيل الخروج</button> : null}
         </nav>
       </div>
     </header>

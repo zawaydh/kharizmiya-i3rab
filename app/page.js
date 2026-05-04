@@ -4,22 +4,10 @@ import { useMemo } from "react";
 import { getReadyTopics, getTopicRoutes } from "../lib/topics";
 import { useAuthUser } from "./components/useAuthUser";
 
-const studentCards = [
-  {
-    title: "اختَر كلمة واحدة",
-    text: "لا نحل الجملة دفعة واحدة؛ نبدأ بالكلمة الهدف حتى لا يتشتّت الطالب.",
-    icon: "🎯",
-  },
-  {
-    title: "اتبع السؤال التالي",
-    text: "كل إجابة تفتح خطوة جديدة: نوع الكلمة، موقعها، ثم علامة الإعراب.",
-    icon: "🧭",
-  },
-  {
-    title: "افهم سبب الإعراب",
-    text: "التلميحات تظهر عند الحاجة لتشرح لماذا اخترنا هذا المسار.",
-    icon: "💡",
-  },
+const featureCards = [
+  { title: "مسار بصري قبل الحل", text: "يرى الطالب طريق الإعراب كاملًا قبل أن يبدأ، فيفهم لماذا ينتقل من خطوة إلى أخرى.", icon: "🧭" },
+  { title: "تلميحات مع معلّم لطيف", text: "عند الخطأ لا نكتفي بالتصحيح؛ نشرح الفكرة بلغة هادئة ونوجّه الطالب للسؤال الصحيح.", icon: "💡" },
+  { title: "اختبار سهل التعامل", text: "أسئلة منظمة مثل النماذج، بخيارات متوازنة ومراجعة نهائية بعد التسليم.", icon: "📝" },
 ];
 
 export default function HomePage() {
@@ -30,66 +18,47 @@ export default function HomePage() {
   const gatedHref = (href) => (isAuthenticated ? href : "/auth");
 
   return (
-    <div className="landing-shell student-home">
-      <section className="student-hero card">
-        <div className="student-hero-bg" />
-        <div className="student-logo-wrap">
-          <img
-            src="/logo-khwarizmia-main-new.png"
-            alt="شعار خوارزمية الإعراب"
-            className="student-main-logo"
-          />
+    <div className="landing-page luxe-home-page">
+      <section className="luxe-hero card">
+        <div className="luxe-hero-bg" />
+        <div className="luxe-hero-copy">
+          <img src="/brand-wordmark.svg" alt="خوارزمية الإعراب" className="luxe-wordmark" />
+          <h1>تعلّم الإعراب خطوة بخطوة</h1>
+          <p className="luxe-hero-lead">
+            منصة تفاعلية تساعد الطالب على الوصول إلى الإعراب بنفسه عبر أسئلة متتابعة،
+            مسارات بصرية، وتلميحات تظهر عند الحاجة.
+          </p>
+          <div className="luxe-hero-actions">
+            <a href={gatedHref(featuredRoutes?.learn || "/topics")} className="btn luxe-primary">ابدأ التعلّم الآن</a>
+            <a href={gatedHref(featuredRoutes?.paths || "/paths")} className="btn luxe-soft">شاهد المسار البصري</a>
+            <a href={isAuthenticated ? "/dashboard" : "/auth"} className="btn luxe-ghost">لوحتي</a>
+          </div>
         </div>
-
-        <h1 className="student-title">خوارزمية الإعراب</h1>
-        <p className="student-tagline">مدرّب تفكير نحوي موجّه</p>
-
-        <p className="student-lead">
-          تعلّم الإعراب بطريقة هادئة وجذّابة: اختر الكلمة الهدف، اتبع المسار،
-          ثم اكتشف كيف وصلت إلى الإعراب الكامل خطوة بخطوة.
-        </p>
-
-        <div className="student-actions">
-          <a href={gatedHref("/topics")} className="btn btn-primary student-primary-btn">
-            ابدأ التعلّم الآن
-          </a>
-          <a href={gatedHref("/paths")} className="btn btn-soft student-secondary-btn">
-            شاهد المسار البصري
-          </a>
-          {isAuthenticated ? (
-            <a href="/dashboard" className="btn btn-soft student-secondary-btn">لوحتي</a>
-          ) : (
-            <a href="/auth" className="btn btn-soft student-secondary-btn">تسجيل الدخول</a>
-          )}
+        <div className="luxe-hero-mark" aria-hidden="true">
+          <img src="/brand-icon.svg" alt="" />
         </div>
       </section>
 
-      <section className="student-cards-grid">
-        {studentCards.map((card) => (
-          <article className="student-card card" key={card.title}>
-            <div className="student-card-icon">{card.icon}</div>
+      <section className="luxe-feature-grid">
+        {featureCards.map((card) => (
+          <article className="card luxe-feature-card" key={card.title}>
+            <span className="luxe-feature-icon">{card.icon}</span>
             <h2>{card.title}</h2>
             <p>{card.text}</p>
           </article>
         ))}
       </section>
 
-      <section className="student-start-panel card">
+      <section className="card luxe-topic-strip">
         <div>
-          <div className="section-kicker">رحلة قصيرة للطالب</div>
-          <h2>من الرؤية إلى الإتقان</h2>
-          <p>
-            ابدأ بالمسار البصري لتفهم الطريق، ثم انتقل إلى التعلّم والتدرّب،
-            وبعدها اختبر نفسك عندما يكتمل الاستعداد.
-          </p>
+          <span className="section-kicker">الموضوع المقترح</span>
+          <h2>{featuredTopic?.name_ar || "ابدأ من أول مسار"}</h2>
+          <p>{featuredTopic?.desc || "اختر موضوعًا لتبدأ رحلة الإعراب بطريقة منظمة."}</p>
         </div>
-        {featuredTopic && featuredRoutes ? (
-          <div className="student-topic-callout">
-            <span>الموضوع المقترح</span>
-            <strong>{featuredTopic.name_ar}</strong>
-            <a href={gatedHref(featuredRoutes.learn)} className="btn btn-primary">ابدأ هذا الموضوع</a>
-          </div>
-        ) : null}
+        <div className="luxe-topic-actions">
+          {featuredRoutes ? <a href={gatedHref(featuredRoutes.paths)} className="btn luxe-soft">المسار البصري</a> : null}
+          {featuredRoutes ? <a href={gatedHref(featuredRoutes.learn)} className="btn luxe-primary">تعلّم</a> : null}
+        </div>
       </section>
     </div>
   );
