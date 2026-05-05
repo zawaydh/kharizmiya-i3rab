@@ -15,8 +15,7 @@ export default function HomePage() {
   const readyTopics = useMemo(() => getReadyTopics(), []);
   const featuredTopic = readyTopics[0] ?? null;
   const featuredRoutes = featuredTopic ? getTopicRoutes(featuredTopic.code) : null;
-  const gatedHref = (href) => (is
-    Authenticated ? href : "/auth");
+const gatedHref = (href) => (isAuthenticated ? href : "/auth");
 
   return (
     <div className="landing-page luxe-home-page">
