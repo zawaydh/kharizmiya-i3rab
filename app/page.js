@@ -15,7 +15,8 @@ export default function HomePage() {
   const readyTopics = useMemo(() => getReadyTopics(), []);
   const featuredTopic = readyTopics[0] ?? null;
   const featuredRoutes = featuredTopic ? getTopicRoutes(featuredTopic.code) : null;
-  const gatedHref = (href) => (isAuthenticated ? href : "/auth");
+  const gatedHref = (href) => (is
+    Authenticated ? href : "/auth");
 
   return (
     <div className="landing-page luxe-home-page">
@@ -29,6 +30,9 @@ export default function HomePage() {
             مسارات بصرية، وتلميحات تظهر عند الحاجة.
           </p>
           <div className="luxe-hero-actions">
+            <a href={gatedHref("/learn/start")} className="btn luxe-primary">
+  ابدأ بالتعلّم
+</a>
             <a href={gatedHref(featuredRoutes?.learn || "/topics")} className="btn luxe-primary">ابدأ التعلّم الآن</a>
             <a href={gatedHref(featuredRoutes?.paths || "/paths")} className="btn luxe-soft">شاهد المسار البصري</a>
             <a href={isAuthenticated ? "/dashboard" : "/auth"} className="btn luxe-ghost">لوحتي</a>
