@@ -3,7 +3,7 @@ import examples from "../../../data/interactive_examples.json";
 
 export const metadata = {
   title: "ابدأ بالتعلم | خوارزمية الإعراب",
-  description: "تعلّم الإعراب خطوة بخطوة من خلال أمثلة تفاعلية متنوعة.",
+  description: "تجربة تفاعلية لتعلم الإعراب خطوة بخطوة بالسحب والإفلات.",
 };
 
 export default function StartLearningPage() {

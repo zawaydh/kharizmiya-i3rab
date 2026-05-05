@@ -6,17 +6,32 @@ function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
+function highlightTarget(sentence, target) {
+  if (!sentence || !target || !sentence.includes(target)) return sentence;
+  const parts = sentence.split(target);
+  return (
+    <>
+      {parts[0]}
+      <mark>{target}</mark>
+      {parts.slice(1).join(target)}
+    </>
+  );
+}
+
 export default function InteractiveLearning({ examples = [] }) {
   const [exampleIndex, setExampleIndex] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
   const [board, setBoard] = useState([]);
   const [feedback, setFeedback] = useState(null);
   const [locked, setLocked] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   const example = examples[exampleIndex] || examples[0];
   const step = example?.steps?.[stepIndex];
   const choices = useMemo(() => shuffle(step?.choices || []), [exampleIndex, stepIndex]);
   const done = example && stepIndex >= example.steps.length;
+  const progress = example ? Math.round((Math.min(stepIndex, example.steps.length) / example.steps.length) * 100) : 0;
 
   if (!example) return <main className="interactive-shell">لا توجد أمثلة بعد.</main>;
 
@@ -25,6 +40,8 @@ export default function InteractiveLearning({ examples = [] }) {
     setBoard([]);
     setFeedback(null);
     setLocked(false);
+    setDragOver(false);
+    setStreak(0);
   }
 
   function nextExample() {
@@ -33,100 +50,109 @@ export default function InteractiveLearning({ examples = [] }) {
     setBoard([]);
     setFeedback(null);
     setLocked(false);
+    setDragOver(false);
+    setStreak(0);
   }
 
   function handleAnswer(value) {
-    if (locked || done) return;
+    if (locked || done || !step) return;
+    setDragOver(false);
     if (value === step.answer) {
       setLocked(true);
-      setFeedback({ type: "ok", text: "أحسنت! خطوة صحيحة." });
+      setStreak((s) => s + 1);
+      setFeedback({ type: "ok", text: step.reward || "أحسنت، خطوة صحيحة!" });
       setBoard((prev) => [...prev, step.boardText || value]);
       setTimeout(() => {
         setStepIndex((i) => i + 1);
         setFeedback(null);
         setLocked(false);
-      }, 850);
+      }, 900);
     } else {
-      setFeedback({ type: "bad", text: step.hint || "راجع السؤال وحاول مرة أخرى." });
+      setStreak(0);
+      setFeedback({ type: "bad", text: step.wrongHint || step.hint || "فكّر في السؤال ثم حاول مرة أخرى." });
     }
   }
 
   return (
     <main className="interactive-shell" dir="rtl">
-      <section className="interactive-card">
-        <div className="interactive-topline">
+      <section className="interactive-card addictive-learning-card">
+        <header className="interactive-topline clean-learning-topline">
           <span>{example.topic}</span>
           <button onClick={nextExample} className="soft-mini-btn">مثال جديد</button>
-        </div>
+        </header>
 
-        <h1>هيا نتعلم كيف نُعرب الكلمة المحددة</h1>
+        <section className="learning-focus-box">
+          <p className="interactive-sentence">{highlightTarget(example.sentence, example.target)}</p>
 
-        <p className="interactive-sentence">
-          {example.sentence.split(example.target)[0]}
-          <mark>{example.target}</mark>
-          {example.sentence.split(example.target).slice(1).join(example.target)}
-        </p>
+          {!done ? (
+            <div className="compact-step-zone">
+              <div className="step-meta-row">
+                <span className="step-count">الخطوة {stepIndex + 1} من {example.steps.length}</span>
+                <span className="streak-pill">إنجاز متتالٍ: {streak}</span>
+              </div>
+              <h1>{step.question}</h1>
+              <p className="step-hint">{step.hint}</p>
 
-        <div className="i3rab-board">
-          <h2>لوحة الإعراب</h2>
+              <div
+                className={`drop-zone ${dragOver ? "is-over" : ""}`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleAnswer(e.dataTransfer.getData("text/plain"));
+                }}
+                aria-label="منطقة الإجابة"
+              >
+                اسحب الإجابة هنا أو اضغط عليها
+              </div>
+
+              <div className="drag-choices compact-choices">
+                {choices.map((choice) => (
+                  <button
+                    key={choice}
+                    draggable
+                    onDragStart={(e) => e.dataTransfer.setData("text/plain", choice)}
+                    onClick={() => handleAnswer(choice)}
+                    className="drag-choice"
+                  >
+                    {choice}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <section className="result-card addictive-result-card">
+              <div className="success-badge">✓ أنجزت الإعراب</div>
+              <h2>{example.result}</h2>
+              <div className="result-actions">
+                <a className="btn primary" href={example.nextHref || example.continueHref || "/topics"}>{example.nextLabel || example.continueLabel || "أكمل التعلم"}</a>
+                <button className="btn secondary" onClick={nextExample}>مثال جديد</button>
+                <button className="btn ghost" onClick={resetExample}>إعادة</button>
+              </div>
+            </section>
+          )}
+        </section>
+
+        <section className="i3rab-board addictive-board">
+          <div className="board-title-row">
+            <h2>لوحة الإعراب</h2>
+            <span>{progress}%</span>
+          </div>
+          <div className="board-progress"><span style={{ width: `${progress}%` }} /></div>
           {board.length === 0 ? <p className="muted">ستُبنى اللوحة أمامك خطوة بخطوة.</p> : null}
           <div className="board-steps">
             {board.map((item, i) => <span key={i}>{i + 1}. {item}</span>)}
           </div>
-        </div>
+        </section>
 
-        {!done ? (
-          <section className="drag-step">
-            <div className="step-count">الخطوة {stepIndex + 1} من {example.steps.length}</div>
-            <h2>{step.question}</h2>
-            <p className="step-hint">{step.hint}</p>
-
-            <div className="drop-zone" aria-label="منطقة الإجابة">
-              اسحب الإجابة هنا أو اضغط عليها
-            </div>
-
-            <div className="drag-choices">
-              {choices.map((choice) => (
-                <button
-                  key={choice}
-                  draggable
-                  onDragStart={(e) => e.dataTransfer.setData("text/plain", choice)}
-                  onDragEnd={(e) => e.currentTarget.blur()}
-                  onClick={() => handleAnswer(choice)}
-                  onDragOver={(e) => e.preventDefault()}
-                  className="drag-choice"
-                >
-                  {choice}
-                </button>
-              ))}
-            </div>
-
-            <div
-              className="drop-catcher"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                handleAnswer(e.dataTransfer.getData("text/plain"));
-              }}
-            />
-
-            {feedback ? (
-              <div className={`feedback-pop ${feedback.type === "ok" ? "ok" : "bad"}`}>
-                {feedback.type === "ok" ? "✓" : "!"} {feedback.text}
-              </div>
-            ) : null}
-          </section>
-        ) : (
-          <section className="result-card">
-            <div className="success-badge">✓ أنجزت الإعراب</div>
-            <h2>{example.result}</h2>
-            <div className="result-actions">
-              <a className="btn primary" href={example.nextHref}>{example.nextLabel}</a>
-              <button className="btn secondary" onClick={nextExample}>مثال جديد</button>
-              <button className="btn ghost" onClick={resetExample}>إعادة</button>
-            </div>
-          </section>
-        )}
+        {feedback ? (
+          <div className={`feedback-pop ${feedback.type === "ok" ? "ok" : "bad"}`}>
+            <strong>{feedback.type === "ok" ? "✓" : "!"}</strong> {feedback.text}
+          </div>
+        ) : null}
       </section>
     </main>
   );
