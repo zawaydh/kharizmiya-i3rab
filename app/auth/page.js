@@ -6,6 +6,7 @@ import { hasSupabaseEnv, supabase } from "../../lib/supabaseClient";
 
 export default function AuthPage() {
   const router = useRouter();
+  const [nextUrl, setNextUrl] = useState("/topics?welcome=1");
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,6 +16,10 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedNext = params.get("next");
+    if (requestedNext && requestedNext.startsWith("/")) setNextUrl(requestedNext);
+
     let active = true;
     supabase.auth.getUser().then(({ data }) => {
       if (!active) return;
@@ -47,7 +52,7 @@ export default function AuthPage() {
         if (error) throw error;
 
         if (data?.session) {
-          router.push("/topics?welcome=1");
+          router.push(nextUrl);
           return;
         }
 
@@ -61,7 +66,7 @@ export default function AuthPage() {
         if (error) throw error;
 
         setUserEmail(data?.user?.email ?? null);
-        router.push("/topics?welcome=1");
+        router.push(nextUrl);
         return;
       }
     } catch (err) {

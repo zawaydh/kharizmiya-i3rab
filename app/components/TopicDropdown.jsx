@@ -40,10 +40,7 @@ const TOPIC_TREE = [
       {
         id: "built-nouns",
         label: "الأسماء المبنية",
-        topicCode: "attached-pronouns",
-        note: "القاعدة والضمائر، ثم تتوسع لاحقًا إلى الإشارة والموصول والاستفهام والشرط والظروف والأعداد المركبة.",
         children: [
-          { id: "built-rule", label: "القاعدة العامة", topicCode: "attached-pronouns" },
           { id: "pronouns", label: "الضمائر", topicCode: "attached-pronouns" },
           { id: "demonstratives", label: "أسماء الإشارة", disabled: true },
           { id: "relatives", label: "الأسماء الموصولة", disabled: true },
@@ -169,7 +166,7 @@ export default function TopicDropdown({
 
       {open ? (
         <div className="tree-dropdown-panel" dir="rtl">
-          <div className="tree-dropdown-title">اختر موضوعًا</div>
+          <div className="tree-dropdown-title">الموضوعات</div>
           <ul className="tree-menu-root">
             {TOPIC_TREE.map((item) => (
               <TreeItem key={item.id} item={item} go={go} />

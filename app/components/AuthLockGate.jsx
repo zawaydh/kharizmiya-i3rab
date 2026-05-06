@@ -4,7 +4,7 @@ import { useAuthUser } from "./useAuthUser";
 
 export default function AuthLockGate({
   title = "تحتاج إلى تسجيل الدخول",
-  text = "هذه الصفحة مرتبطة بالمسارات، وتفتح بعد تسجيل الدخول فقط.",
+  text = "سجّل الدخول أولًا.",
   children,
 }) {
   const { isAuthenticated, isLoading } = useAuthUser();
@@ -18,7 +18,7 @@ export default function AuthLockGate({
       <section className="card auth-lock-card card-glow">
         <div className="section-kicker">الوصول مقفل</div>
         <h1 className="h1">{title}</h1>
-        <p className="p">{text}</p>
+        <p className="p student-short-lock-text">{text}</p>
         <div className="auth-lock-actions">
           <a href="/auth" className="btn btn-primary">تسجيل الدخول</a>
           <a href="/" className="btn btn-soft">العودة للرئيسية</a>

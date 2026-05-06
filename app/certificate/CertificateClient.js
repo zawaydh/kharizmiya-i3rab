@@ -36,9 +36,9 @@ export default function CertificateClient() {
             : 0;
 
         const ok =
-          !!row?.learn_completed &&
-          !!row?.practice_completed &&
-          percent >= 80;
+          (!!row?.learn_completed || Number(row?.percent) >= 100) &&
+          (!!row?.practice_completed || Number(row?.practice_percent) >= 100) &&
+          (!!row?.quiz_passed || percent >= 80);
 
         setAllowed(ok);
 
@@ -48,7 +48,7 @@ export default function CertificateClient() {
         setData({
           studentName,
           topicName: topicMeta?.name_ar || topicId,
-          level: levelParam === 1 ? "المستوى الأول" : "المستوى المتقدم",
+          level: levelParam === 1 ? "المستوى الأول" : "المستوى الثاني",
           scorePercent: percent,
           date: new Date().toLocaleDateString("ar-JO"),
         });
@@ -77,7 +77,7 @@ export default function CertificateClient() {
           <div style={blockedIcon}>🔒</div>
           <h2 style={blockedTitle}>لم تحقق شروط الشهادة بعد</h2>
           <p style={blockedText}>
-            يلزمك إكمال التعلّم والتدرّب، ثم النجاح في الاختبار بنسبة 80% على الأقل.
+            أكمل المراحل السابقة ثم عُد إلى الشهادة.
           </p>
           <a href="/dashboard" style={backBtn} className="print-hide">
             العودة إلى لوحة التقدم

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { createInitialState } from "../../lib/exercise/state";
 import { chooseAnswer } from "../../lib/exercise/engine";
 import { getTopicProgress } from "../../lib/db";
@@ -140,7 +141,7 @@ function getStageMeta(mode: Mode) {
   if (mode === "learn") {
     return {
       badge: "مرحلة التعلّم",
-      subtitle: "افهم منطق المسار أولًا، وستظهر لك التلميحات والتصحيح الموجّه.",
+      subtitle: "",
       nextLabel: "انتقل إلى التدرّب →",
       nextHrefPrefix: "/train/",
     };
@@ -148,14 +149,14 @@ function getStageMeta(mode: Mode) {
   if (mode === "practice") {
     return {
       badge: "مرحلة التدرّب",
-      subtitle: "طبّق بنفسك، ويجب اختيار الإجابة الصحيحة قبل الانتقال إلى السؤال التالي.",
+      subtitle: "",
       nextLabel: "اختبر نفسي →",
       nextHrefPrefix: "/quiz/",
     };
   }
   return {
     badge: "مرحلة الاختبار",
-    subtitle: "اختر أفضل صياغة للإعراب النهائي، وسيظهر التصحيح بعد إنهاء جميع الأسئلة.",
+    subtitle: "",
     nextLabel: "",
     nextHrefPrefix: "",
   };
@@ -200,6 +201,12 @@ function firstLine(text?: string) {
   return String(text || "").split("\n")[0].trim();
 }
 
+function shortStudentText(text?: string, fallback = "جرّب مرة أخرى.") {
+  const clean = firstLine(text).replace(/^💡\s*/, "").trim();
+  if (!clean) return fallback;
+  return clean.length > 72 ? `${clean.slice(0, 69)}...` : clean;
+}
+
 function stableShuffle<T>(items: T[], seed: string) {
   const arr = [...items];
   let h = 2166136261;
@@ -218,25 +225,25 @@ function stableShuffle<T>(items: T[], seed: string) {
 }
 
 function builtNounSmartHint(target = "الكلمة الهدف", role = "في محلها الإعرابي") {
-  return `هل ${target} من الأسماء المبنية؟ جرّب أن تقارنه بالأمثلة: ضمير مثل (هو، إياه)، اسم إشارة مثل (هذا، هذه)، اسم موصول مثل (الذي، التي)، اسم استفهام مثل (من، ما)، اسم شرط مثل (من، مهما)، أو كم الخبرية. بعد تحديد النوع نبدأ الإعراب باسمه، مثل: اسم موصول مبني ${role}.`;
+  return `هل ${target} ضمير أو اسم إشارة أو اسم موصول؟ الاسم المبني يُعرب في محلّه.`;
 }
 
 function builtNounTypeHintByValue(value?: string) {
   switch (value) {
     case "damir":
-      return "الضمير اسم مبني يدل على متكلم أو مخاطب أو غائب، مثل: أنا، نحن، أنت، هو، هم، إياه.";
+      return "الضمير اسم مبني: أنا، أنت، هو، إياه.";
     case "ishara":
-      return "اسم الإشارة اسم مبني يدل على مشار إليه، مثل: هذا، هذه، هؤلاء، ذلك، تلك.";
+      return "اسم الإشارة مبني: هذا، هذه، هؤلاء.";
     case "mawsool":
-      return "الاسم الموصول اسم مبني يحتاج صلة بعده توضحه، مثل: الذي، التي، اللذان، الذين، من، ما.";
+      return "الاسم الموصول مبني ويحتاج صلة بعده.";
     case "istifham":
-      return "اسم الاستفهام اسم مبني يُسأل به عن شيء، مثل: من، ما، متى، أين، كيف.";
+      return "اسم الاستفهام مبني: من، ما، أين.";
     case "shart":
-      return "اسم الشرط اسم مبني يربط فعل الشرط بجوابه، مثل: من، ما، مهما، أينما.";
+      return "اسم الشرط مبني ويربط الشرط بجوابه.";
     case "kam":
-      return "كم الخبرية تدل على الكثرة ولا تطلب جوابًا، مثل: كم طالبٍ نجحَ!";
+      return "كم الخبرية تدل على الكثرة ولا تطلب جوابًا.";
     default:
-      return "حدّد نوع الاسم المبني من أمثلته قبل الإعراب.";
+      return "حدّد نوع الاسم المبني أولًا.";
   }
 }
 
@@ -319,6 +326,7 @@ export default function ExercisePlayer({
   onSaveProgress,
 }: Props) {
   const stageMeta = getStageMeta(mode);
+  const router = useRouter();
   const [covered, setCovered] = React.useState<Record<string, boolean>>(buildEmptyCovered(coverageKeysOrdered));
   const [exampleIndex, setExampleIndex] = React.useState(0);
   const [feedback, setFeedback] = React.useState<{ wrongId?: string; correctId?: string; hint?: string } | null>(null);
@@ -546,8 +554,8 @@ export default function ExercisePlayer({
       const isBuiltTypeNode = String(node?.id || "").includes("built_type") || String(node?.id || "").includes("mabniType");
       const expectedBuiltType = state.facts?.mabniType;
       const smartHint = isBuiltTypeNode
-        ? `${builtNounSmartHint(state.currentTarget, "في محل الإعراب المطلوب")}\n${builtNounTypeHintByValue(expectedBuiltType)}`
-        : picked?.hint ?? node?.hint;
+        ? builtNounTypeHintByValue(expectedBuiltType)
+        : shortStudentText(picked?.hint ?? node?.hint);
       if (mode === "practice") {
         setFeedback({ wrongId: answerId, hint: smartHint });
       } else {
@@ -624,7 +632,7 @@ export default function ExercisePlayer({
         <div className="exercise-hero-main">
           <span className="exercise-badge">{stageMeta.badge}</span>
           <h1 className="exercise-page-title">{title}</h1>
-          <p className="exercise-page-subtitle">{stageMeta.subtitle}</p>
+          {stageMeta.subtitle ? <p className="exercise-page-subtitle">{stageMeta.subtitle}</p> : null}
           {mode !== "quiz" && (
             <div className="exercise-meta-inline">
               <span className="pill pill-accent">المنجَز: {doneCount} / {totalCount}</span>
@@ -634,7 +642,6 @@ export default function ExercisePlayer({
         </div>
 
         <div className="exercise-hero-side">
-          {topicId ? <div className="exercise-topic-chip">{topicId}</div> : null}
           <div className="exercise-progress-panel">
             <div className="exercise-progress-head">
               <span>{mode === "quiz" ? "تقدّم الاختبار" : "نسبة الإنجاز"}</span>
@@ -655,36 +662,16 @@ export default function ExercisePlayer({
                 }}
               />
             </div>
-            <div className="exercise-progress-caption">
-              {mode === "quiz" ? "يظهر التصحيح التفصيلي بعد إنهاء جميع الأسئلة." : "أكمل الأمثلة المطلوبة لفتح المرحلة التالية."}
-            </div>
+
           </div>
         </div>
-      </section>
-
-      <section className="exercise-stage-grid">
-        <article className="card exercise-stage-card">
-          <span className="exercise-stage-number">1</span>
-          <strong>افهم المطلوب</strong>
-          <p>اقرأ الجملة وحدد الكلمة المستهدفة قبل بدء القرار النحوي.</p>
-        </article>
-        <article className="card exercise-stage-card">
-          <span className="exercise-stage-number">2</span>
-          <strong>{mode === "quiz" ? "اختر الإجابة" : "اتبع المسار"}</strong>
-          <p>{mode === "quiz" ? "اختر أفضل صياغة للإعراب النهائي." : "انتقل بين الأسئلة حتى تصل إلى الحكم الصحيح."}</p>
-        </article>
-        <article className="card exercise-stage-card">
-          <span className="exercise-stage-number">3</span>
-          <strong>{mode === "quiz" ? "راجع النتيجة" : "ثبّت الفهم"}</strong>
-          <p>{mode === "quiz" ? "بعد النهاية ستراجع أداءك سؤالًا سؤالًا." : "استخدم التلميحات والتغذية الراجعة لتصحيح التفكير."}</p>
-        </article>
       </section>
 
       {mode !== "quiz" && isDone && (
         <section className="exercise-complete-banner">
           <div>
             <strong>{mode === "learn" ? "اكتمل مسار التعلّم" : "اكتمل مسار التدرّب"}</strong>
-            <p>{mode === "learn" ? "يمكنك الآن الانتقال إلى التدرّب أو إعادة الأمثلة للتثبيت." : "أنت جاهز للانتقال إلى الاختبار أو إعادة التدريب."}</p>
+            <p>{mode === "learn" ? "انتقل الآن إلى التدرّب." : "انتقل الآن إلى الاختبار."}</p>
           </div>
           <button onClick={resetTraining} style={ghostBtn}>
             {mode === "learn" ? "إعادة التعلّم" : "إعادة التدرّب"}
@@ -706,8 +693,6 @@ export default function ExercisePlayer({
           </div>
 
           <div style={{ marginBottom: 12, opacity: 0.85 }}>معيار النجاح: {QUIZ_PASS_PERCENT}% أو أكثر</div>
-          <div style={{ marginBottom: 14, opacity: 0.85 }}>ستجد تحت كل سؤال: إجابتك، ثم الإجابة الصحيحة، ثم سبب الخطأ أو سبب الصحة.</div>
-
           {canDownloadCertificate ? (
             <a href={`/certificate?topicId=${topicId}&level=${level}`} style={{ ...primaryNavBtn, display: "inline-flex", textDecoration: "none", marginBottom: 16 }}>
               تحميل الشهادة
@@ -769,7 +754,7 @@ export default function ExercisePlayer({
                 {quizCursor + 1 >= quizOrder.length ? "تسليم الاختبار" : "التالي"}
               </button>
             </div>
-            <div className="quiz-form-helper">يمكنك تعديل اختيارك قبل الضغط على التالي. التصحيح يظهر بعد التسليم.</div>
+
           </section>
         </>
       ) : (
@@ -783,8 +768,6 @@ export default function ExercisePlayer({
             {node?.type === "question" ? (
               <>
                 <div className="exercise-question-title">{node.text}</div>
-                {mode === "learn" && node?.teaching_note && <div className="exercise-note-box">💡 {node.teaching_note}</div>}
-
                 {node.answers.map((a: any) => {
                   const answerClass = [
                     "exercise-answer-btn",
@@ -798,9 +781,9 @@ export default function ExercisePlayer({
                   );
                 })}
 
-                {mode === "learn" && <div className="exercise-inline-hint">💡 {(String(node?.id || "").includes("built_type") || String(node?.id || "").includes("mabniType")) ? builtNounSmartHint(state.currentTarget, "في محل الإعراب المطلوب") : node?.hint ?? ""}</div>}
-                {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {feedback?.hint ?? node?.hint}</div>}
-                {mode === "practice" && feedback?.wrongId && <div className="exercise-practice-warning">(تدرّب): يجب اختيار الإجابة الصحيحة حتى نكمل.</div>}
+                {mode === "learn" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {shortStudentText(feedback?.hint ?? node?.hint, "اقتربت؛ جرّب خيارًا آخر.")}</div>}
+                {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {shortStudentText(feedback?.hint ?? node?.hint, "حاول مرة أخرى.")}</div>}
+
                 <div className="exercise-question-nav">
                   <button type="button" onClick={() => setExampleIndex((i) => Math.max(0, i - 1))} style={ghostBtn}>السابق</button>
                   <button type="button" onClick={() => { setFeedback(null); setState(buildRunnerState(tree, mode, example)); }} style={ghostBtn}>إعادة</button>
@@ -809,11 +792,6 @@ export default function ExercisePlayer({
               </>
             ) : node?.type === "result" ? (
               <>
-                {mode === "learn" && node?.teaching_note && <div className="exercise-note-box">💡 {node.teaching_note}</div>}
-                <div className="exercise-result-reason-box">
-                  <strong>كيف وصلنا للإعراب؟</strong>
-                  <span>اتبعنا أسئلة المسار الخاصة بالكلمة الهدف، ثم ثبتنا النوع والعلامة أو محل الإعراب. النتيجة الكاملة:</span>
-                </div>
                 <div className="exercise-result-text" style={{ whiteSpace: "pre-line" }}>{node.text}</div>
 
                 {currentFollowUp ? (
@@ -837,12 +815,8 @@ export default function ExercisePlayer({
                       <div className="exercise-inline-hint" style={{ marginTop: 8 }}>
                         {chosenFollowUp?.correct ? "✅ " : "💡 "}{chosenFollowUp?.feedback || (chosenFollowUp?.correct ? "صحيح." : "راجع العلاقة النحوية في الجملة.")}
                       </div>
-                    ) : (
-                      <div className="exercise-inline-hint" style={{ marginTop: 8 }}>هذا السؤال لا يغيّر إعراب الكلمة الهدف؛ فقط يثبّت العلاقة النحوية في الجملة.</div>
-                    )}
-                    {mode === "practice" && followUpChoice && !followUpIsCorrect ? (
-                      <div className="exercise-practice-warning">في التدرّب يجب اختيار الإجابة الصحيحة في التدريب السريع قبل الانتقال.</div>
                     ) : null}
+
                   </div>
                 ) : null}
 
@@ -868,7 +842,7 @@ export default function ExercisePlayer({
                     setToast(mode === "learn" ? "أكمل التعلّم أولًا" : "أكمل التدرّب أولًا");
                     return;
                   }
-                  window.location.href = `${stageMeta.nextHrefPrefix}${topicId}`;
+                  router.push(`${stageMeta.nextHrefPrefix}${topicId}`);
                 }}
               >
                 {stageMeta.nextLabel}

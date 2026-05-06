@@ -7,13 +7,12 @@ export default function TopicsPage() {
   return (
     <AuthLockGate
       title="اختيار الموضوع يفتح بعد تسجيل الدخول"
-      text="بعد تسجيل الدخول اختَر الموضوع، ثم ابدأ بفرع التعلّم أو المسار البصري."
+      text="سجّل الدخول لاختيار الموضوع."
     >
       <main className="topics-branch-page">
-        <section className="card topics-branch-hero">
+        <section className="card topics-branch-hero student-compact-hero">
           <span className="section-kicker">خوارزمية الإعراب</span>
           <h1 className="h1">اختر الموضوع</h1>
-          <p className="p">كل موضوع له فرعان مستقلان حتى لا يحدث خلط: تعلّم متسلسل، ومسار بصري للشجرة الكاملة.</p>
         </section>
 
         <section className="topics-branch-grid">
@@ -23,11 +22,11 @@ export default function TopicsPage() {
               <article className="card topic-branch-card" key={topic.code}>
                 <div>
                   <h2>{topic.name_ar}</h2>
-                  <p>{topic.desc || topic.subtitle}</p>
+                  
                 </div>
                 <div className="topic-branch-actions">
-                  <a href={routes.learn} className="topic-branch-learn">1) تعلّم</a>
-                  <a href={routes.paths} className="topic-branch-path">2) المسار البصري</a>
+                  <a href={routes.learn} className="topic-branch-learn">تعلّم</a>
+                  <a href={routes.paths} className="topic-branch-path">المسار البصري</a>
                 </div>
               </article>
             );

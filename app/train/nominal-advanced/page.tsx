@@ -1,6 +1,7 @@
 "use client";
 
 import ExercisePlayer from "../../components/ExercisePlayer";
+import AuthLockGate from "../../components/AuthLockGate";
 import { saveProgress } from "../../../lib/db";
 import { getTopicByCode, getTopicRoutes } from "../../../lib/topics";
 
@@ -12,6 +13,7 @@ export default function TrainNominalAdvancedPage() {
   }
 
   return (
+    <AuthLockGate title="سجّل الدخول لتكمل التدرّب" text="التدرّب وحفظ الإنجاز مرتبطان بحساب الطالب.">
     <ExercisePlayer
       title={`${topic.name_ar} — تدرّب`}
       mode="practice"
@@ -23,5 +25,6 @@ export default function TrainNominalAdvancedPage() {
       level={topic.level ?? 2}
       onSaveProgress={saveProgress}
     />
+    </AuthLockGate>
   );
 }

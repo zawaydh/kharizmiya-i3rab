@@ -1,6 +1,7 @@
 "use client";
 
 import ExercisePlayer from "../../components/ExercisePlayer";
+import AuthLockGate from "../../components/AuthLockGate";
 import { saveProgress } from "../../../lib/db";
 import { getTopicByCode, getTopicRoutes } from "../../../lib/topics";
 
@@ -12,6 +13,7 @@ export default function QuizNominalAdvancedPage() {
   }
 
   return (
+    <AuthLockGate title="سجّل الدخول للاختبار" text="الاختبار والشهادة يحتاجان إلى حساب حتى تُحفظ النتيجة باسم الطالب.">
     <ExercisePlayer
       title={`اختبر نفسي — ${topic.name_ar}`}
       mode="quiz"
@@ -24,5 +26,6 @@ export default function QuizNominalAdvancedPage() {
       level={topic.level ?? 2}
       onSaveProgress={saveProgress}
     />
+    </AuthLockGate>
   );
 }

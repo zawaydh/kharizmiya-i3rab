@@ -1,6 +1,8 @@
 "use client";
 
 import ExercisePlayer from "../../components/ExercisePlayer";
+import AuthLockGate from "../../components/AuthLockGate";
+import StageAccessGate from "../../components/StageAccessGate";
 import { saveProgress } from "../../../lib/db";
 import { getTopicByCode, getTopicRoutes } from "../../../lib/topics";
 
@@ -12,6 +14,8 @@ export default function TrainTopicPage({ params }: { params: { topicCode: string
   }
 
   return (
+    <AuthLockGate title="سجّل الدخول لتكمل التدرّب" text="سجّل الدخول حتى يُحفظ تدريبك.">
+    <StageAccessGate topicCode={topic.code} level={topic.level ?? 2} require="practice">
     <ExercisePlayer
       title={`${topic.name_ar} — تدرّب`}
       mode="practice"
@@ -23,5 +27,7 @@ export default function TrainTopicPage({ params }: { params: { topicCode: string
       level={topic.level ?? 2}
       onSaveProgress={saveProgress}
     />
+    </StageAccessGate>
+    </AuthLockGate>
   );
 }
