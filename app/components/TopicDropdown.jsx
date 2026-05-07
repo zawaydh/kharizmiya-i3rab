@@ -160,7 +160,7 @@ export default function TopicDropdown({
   return (
     <div ref={rootRef} className={`topic-dropdown topic-tree-dropdown ${compact ? "compact" : ""} ${className}`}>
       <button type="button" className="topic-picker-btn cascade-trigger" onClick={toggle} aria-expanded={open}>
-        <span>{current?.shortLabel || current?.name_ar || buttonLabel}</span>
+        <span>{buttonLabel}</span>
         <span className="topic-picker-arrow">▾</span>
       </button>
 

@@ -207,6 +207,58 @@ function shortStudentText(text?: string, fallback = "جرّب مرة أخرى.")
   return clean.length > 72 ? `${clean.slice(0, 69)}...` : clean;
 }
 
+
+const SMART_GLOSSARY: Record<string, { title: string; body: string[] }> = {
+  "حروف العلة": { title: "حروف العلة", body: ["الألف، الواو، الياء.", "ننظر إليها عند آخر الكلمة لتحديد: تعذر، ثقل، أو حذف حرف العلة."] },
+  "الأسماء الخمسة": { title: "الأسماء الخمسة", body: ["أبو، أخو، حمو، فو، ذو.", "ترفع بالواو، وتنصب بالألف، وتجر بالياء إذا تحققت شروطها."] },
+  "الأفعال الخمسة": { title: "الأفعال الخمسة", body: ["كل مضارع اتصلت به: واو الجماعة، ياء المخاطبة، أو ألف الاثنين.", "ترفع بثبوت النون، وتنصب وتجزم بحذف النون."] },
+  "اسم منقوص": { title: "الاسم المنقوص", body: ["اسم معرب آخره ياء لازمة مكسور ما قبلها، مثل: القاضي، الساعي.", "تظهر الفتحة في النصب، وتقدر الضمة والكسرة في الرفع والجر."] },
+  "اسم مقصور": { title: "الاسم المقصور", body: ["اسم معرب آخره ألف لازمة، مثل: الفتى، العصا.", "تقدر عليه الحركات الثلاث للتعذر."] },
+  "واو الجماعة": { title: "واو الجماعة", body: ["ضمير متصل يدل على جماعة الذكور.", "يكون في محل رفع فاعل إذا اتصل بالفعل."] },
+  "ألف الاثنين": { title: "ألف الاثنين", body: ["ضمير متصل يدل على مثنى.", "يكون في محل رفع فاعل إذا اتصل بالفعل."] },
+  "ياء المخاطبة": { title: "ياء المخاطبة", body: ["ضمير متصل يدل على المخاطبة المؤنثة.", "مع المضارع والأمر تكون في محل رفع فاعل."] },
+  "نون النسوة": { title: "نون النسوة", body: ["ضمير متصل يدل على جماعة الإناث.", "إذا اتصلت بالفعل الماضي بُني على السكون."] },
+  "ضمير رفع متحرك": { title: "ضمير رفع متحرك", body: ["مثل: تُ، تَ، تِ، نا، تم، تما.", "إذا اتصل بالفعل الماضي بُني الفعل على السكون."] },
+  "ضمير متصل": { title: "الضمير المتصل", body: ["ضمير لا يستقل بنفسه ويتصل بكلمة قبله.", "قد يكون في محل رفع أو نصب أو جر بحسب موقعه."] },
+  "ضمير منفصل": { title: "الضمير المنفصل", body: ["ضمير يستقل في النطق والكتابة، مثل: أنا، أنت، هو.", "غالبًا يُعرب مبنيًا في محل رفع مبتدأ إذا بدأ به الكلام."] },
+  "شبه جملة": { title: "شبه الجملة", body: ["جار ومجرور أو ظرف.", "قد تأتي خبرًا إذا أتمت معنى المبتدأ."] },
+  "الجملة الاسمية": { title: "الجملة الاسمية", body: ["تبدأ غالبًا باسم وتتكون أساسًا من مبتدأ وخبر."] },
+  "الجملة الفعلية": { title: "الجملة الفعلية", body: ["تبدأ غالبًا بفعل، وتحتاج إلى فاعل، وقد تحتاج إلى مفعول به."] },
+  "أداة نصب": { title: "أدوات النصب", body: ["مثل: لن، أن، كي، حتى، لام التعليل.", "إذا سبقت المضارع جعلته منصوبًا."] },
+  "أداة جزم": { title: "أدوات الجزم", body: ["مثل: لم، لا الناهية، لام الأمر.", "إذا سبقت المضارع جعلته مجزومًا."] },
+  "مصدر مؤول": { title: "المصدر المؤول", body: ["تركيب مثل: أن + فعل مضارع.", "يؤوّل بمصدر صريح ويعامل معاملة الاسم."] },
+  "اسم إشارة": { title: "اسم الإشارة", body: ["مثل: هذا، هذه، هؤلاء.", "غالبًا مبني ويعرب في محل بحسب موقعه."] },
+  "اسم موصول": { title: "الاسم الموصول", body: ["مثل: الذي، التي، الذين.", "يحتاج صلة بعده ويعرب مبنيًا في محل بحسب موقعه."] },
+
+};
+
+function renderSmartText(text?: string, onTerm?: (term: string) => void) {
+  if (!text) return null;
+  const terms = Object.keys(SMART_GLOSSARY).sort((a, b) => b.length - a.length);
+  const pattern = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g");
+  const parts = String(text).split(pattern);
+  return parts.map((part, idx) => {
+    if (SMART_GLOSSARY[part]) {
+      return (
+        <button key={`${part}-${idx}`} type="button" className="smart-term" onClick={() => onTerm?.(part)}>
+          {part}
+        </button>
+      );
+    }
+    return <React.Fragment key={idx}>{part}</React.Fragment>;
+  });
+}
+
+function getNodeContext(node: any, state: any) {
+  if (node?.context) return node.context;
+  const id = String(node?.id || "");
+  if (id.includes("tense")) return "عرفنا أن الكلمة فعل.";
+  if (id.includes("has_tool") || id.includes("check_attached") || id.includes("ending") || id.includes("weak_type")) return "ننتقل خطوة خطوة قبل الوصول إلى الإعراب النهائي.";
+  if (id.includes("pronoun")) return "عرفنا نوع الفعل، ونفحص الآن أثر الضمير في علامة البناء.";
+  return "اتبع القرار التالي فقط.";
+}
+
+
 function stableShuffle<T>(items: T[], seed: string) {
   const arr = [...items];
   let h = 2166136261;
@@ -340,6 +392,7 @@ export default function ExercisePlayer({
   const [toast, setToast] = React.useState("");
   const [mounted, setMounted] = React.useState(false);
   const [followUpChoice, setFollowUpChoice] = React.useState<string | null>(null);
+  const [activeGlossary, setActiveGlossary] = React.useState<string | null>(null);
 
   const currentIdx = mode === "quiz" ? quizOrder[quizCursor] ?? 0 : exampleIndex;
   const example = examples[currentIdx];
@@ -362,6 +415,7 @@ export default function ExercisePlayer({
     setSelectedQuizOption(null);
     setQuizLocked(false);
     setFollowUpChoice(null);
+    setActiveGlossary(null);
   }, [tree, mode, example]);
 
   React.useEffect(() => {
@@ -767,7 +821,8 @@ export default function ExercisePlayer({
           <section className="exercise-panel" style={box}>
             {node?.type === "question" ? (
               <>
-                <div className="exercise-question-title">{node.text}</div>
+                <div className="exercise-node-context">{renderSmartText(getNodeContext(node, state), setActiveGlossary)}</div>
+                <div className="exercise-question-title">{renderSmartText(node.text, setActiveGlossary)}</div>
                 {node.answers.map((a: any) => {
                   const answerClass = [
                     "exercise-answer-btn",
@@ -781,8 +836,8 @@ export default function ExercisePlayer({
                   );
                 })}
 
-                {mode === "learn" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {shortStudentText(feedback?.hint ?? node?.hint, "اقتربت؛ جرّب خيارًا آخر.")}</div>}
-                {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {shortStudentText(feedback?.hint ?? node?.hint, "حاول مرة أخرى.")}</div>}
+                {mode === "learn" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? node?.hint, "اقتربت؛ جرّب خيارًا آخر."), setActiveGlossary)}</div>}
+                {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? node?.hint, "حاول مرة أخرى."), setActiveGlossary)}</div>}
 
                 <div className="exercise-question-nav">
                   <button type="button" onClick={() => setExampleIndex((i) => Math.max(0, i - 1))} style={ghostBtn}>السابق</button>
@@ -792,7 +847,7 @@ export default function ExercisePlayer({
               </>
             ) : node?.type === "result" ? (
               <>
-                <div className="exercise-result-text" style={{ whiteSpace: "pre-line" }}>{node.text}</div>
+                <div className="exercise-result-text" style={{ whiteSpace: "pre-line" }}>{renderSmartText(node.text, setActiveGlossary)}</div>
 
                 {currentFollowUp ? (
                   <div className="exercise-followup-box" style={{ marginTop: 14, padding: 12, borderRadius: 14, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)" }}>
@@ -851,6 +906,15 @@ export default function ExercisePlayer({
         </>
       )}
 
+      {activeGlossary && SMART_GLOSSARY[activeGlossary] ? (
+        <div className="smart-popover" role="dialog" aria-label={SMART_GLOSSARY[activeGlossary].title}>
+          <button type="button" className="smart-popover-close" onClick={() => setActiveGlossary(null)}>×</button>
+          <strong>{SMART_GLOSSARY[activeGlossary].title}</strong>
+          <ul>
+            {SMART_GLOSSARY[activeGlossary].body.map((line) => <li key={line}>{line}</li>)}
+          </ul>
+        </div>
+      ) : null}
       {toast ? <div style={toastStyle}>{toast}</div> : null}
     </div>
   );

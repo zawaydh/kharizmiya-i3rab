@@ -2,6 +2,26 @@
 
 import { useMemo, useState } from "react";
 
+
+const START_GLOSSARY = {
+  "الأفعال الخمسة": ["مضارع اتصلت به واو الجماعة أو ياء المخاطبة أو ألف الاثنين.", "ترفع بثبوت النون وتنصب وتجزم بحذف النون."],
+  "حروف العلة": ["الألف، الواو، الياء.", "تؤثر في ظهور الحركة أو حذف حرف العلة."],
+  "اسم منقوص": ["اسم آخره ياء لازمة مكسور ما قبلها مثل: القاضي."],
+  "واو الجماعة": ["ضمير متصل في محل رفع فاعل إذا اتصل بالفعل."],
+  "أداة نصب": ["مثل: لن، أن، كي. تجعل المضارع منصوبًا."],
+  "أداة جزم": ["مثل: لم، لا الناهية، لام الأمر. تجعل المضارع مجزومًا."]
+};
+
+function SmartText({ text, onTerm }) {
+  if (!text) return null;
+  const terms = Object.keys(START_GLOSSARY).sort((a, b) => b.length - a.length);
+  const pattern = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g");
+  return String(text).split(pattern).map((part, idx) => START_GLOSSARY[part]
+    ? <button key={`${part}-${idx}`} type="button" className="smart-term" onClick={() => onTerm(part)}>{part}</button>
+    : <span key={idx}>{part}</span>
+  );
+}
+
 function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
@@ -26,6 +46,7 @@ export default function InteractiveLearning({ examples = [] }) {
   const [locked, setLocked] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [activeTerm, setActiveTerm] = useState(null);
 
   const example = examples[exampleIndex] || examples[0];
   const step = example?.steps?.[stepIndex];
@@ -91,7 +112,7 @@ export default function InteractiveLearning({ examples = [] }) {
                 <span className="streak-pill">إنجاز متتالٍ: {streak}</span>
               </div>
               <h1>{step.question}</h1>
-              <p className="step-hint">{step.hint}</p>
+              <p className="step-hint"><SmartText text={step.hint} onTerm={setActiveTerm} /></p>
 
               <div
                 className={`drop-zone ${dragOver ? "is-over" : ""}`}
@@ -150,7 +171,15 @@ export default function InteractiveLearning({ examples = [] }) {
 
         {feedback ? (
           <div className={`feedback-pop ${feedback.type === "ok" ? "ok" : "bad"}`}>
-            <strong>{feedback.type === "ok" ? "✓" : "!"}</strong> {feedback.text}
+            <strong>{feedback.type === "ok" ? "✓" : "!"}</strong> <SmartText text={feedback.text} onTerm={setActiveTerm} />
+          </div>
+        ) : null}
+
+        {activeTerm ? (
+          <div className="smart-popover" role="dialog">
+            <button type="button" className="smart-popover-close" onClick={() => setActiveTerm(null)}>×</button>
+            <strong>{activeTerm}</strong>
+            <ul>{START_GLOSSARY[activeTerm].map((line) => <li key={line}>{line}</li>)}</ul>
           </div>
         ) : null}
       </section>

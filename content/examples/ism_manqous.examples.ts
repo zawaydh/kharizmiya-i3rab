@@ -8,7 +8,7 @@ export const ismManqousExamples: Example[] = [
   { id: "mn-05", sentence: "مررتُ بقاضٍ عادلٍ.", target: "قاضٍ", facts: { case: "jar", yStatus: "deleted" }, covers: ["manqous.jar.deleted"] }
 ];
 const resultByCover: Record<string, string> = {
-  "manqous.nasb": "اسم منقوص منصوب وعلامة نصبه الفتحة أو تنوين الفتح الظاهر على آخره",
+  "manqous.nasb": "اسم منقوص منصوب وعلامة نصبه الفتحة الظاهرة على آخره",
   "manqous.raf3.kept": "اسم منقوص مرفوع وعلامة رفعه الضمة المقدرة على الياء للثقل",
   "manqous.raf3.deleted": "اسم منقوص مرفوع وعلامة رفعه الضمة المقدرة على الياء المحذوفة",
   "manqous.jar.kept": "اسم منقوص مجرور وعلامة جره الكسرة المقدرة على الياء للثقل",

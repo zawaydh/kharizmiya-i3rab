@@ -18,17 +18,22 @@ export default function AuthPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const requestedNext = params.get("next");
-    if (requestedNext && requestedNext.startsWith("/")) setNextUrl(requestedNext);
+    const safeNext = requestedNext && requestedNext.startsWith("/") ? requestedNext : "/topics?welcome=1";
+    setNextUrl(safeNext);
 
     let active = true;
     supabase.auth.getUser().then(({ data }) => {
       if (!active) return;
-      setUserEmail(data?.user?.email ?? null);
+      const email = data?.user?.email ?? null;
+      setUserEmail(email);
+      if (email && safeNext && safeNext !== "/auth") {
+        router.replace(safeNext);
+      }
     });
     return () => {
       active = false;
     };
-  }, []);
+  }, [router]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -146,7 +151,7 @@ export default function AuthPage() {
               <span className="pill pill-accent">{userEmail}</span>
               <p className="p">يمكنك الذهاب مباشرة إلى اختيار الموضوع أو متابعة لوحة التقدم.</p>
               <div className="auth-actions-stack">
-                <a className="btn btn-primary" href="/topics">اختر موضوعًا</a>
+                <a className="btn btn-primary" href={nextUrl}>{nextUrl === "/topics?welcome=1" ? "اختر موضوعًا" : "متابعة الموضوع"}</a>
                 <a className="btn btn-soft" href="/dashboard">لوحة التقدم</a>
                 <button className="btn btn-danger" onClick={handleLogout} disabled={loading}>
                   {loading ? "جارٍ الخروج..." : "خروج"}

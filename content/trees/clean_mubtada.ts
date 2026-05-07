@@ -1,14 +1,14 @@
 export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
 
 export const cleanMubtadaTree: ExerciseTree = {
-  "startNodeId": "mubtada_type",
+  "startNodeId": "mubtada_start",
   "nodes": {
-    "mubtada_type": {
-      "id": "mubtada_type",
+    "mubtada_start": {
+      "id": "mubtada_start",
       "type": "question",
-      "text": "هل الكلمة المستهدفة اسم معرب أم اسم مبني أم مصدر مؤول؟",
-      "teaching_note": "نبدأ بتحديد طبيعة الاسم: المعرب تظهر عليه علامة الإعراب، والمبني نحدّد نوعه أولًا ثم نقول: مبني في محل...، أما المصدر المؤول فهو تركيب مثل (أن + فعل مضارع) يؤول بمصدر صريح ويعامل معاملة الاسم.",
-      "hint": "اسأل نفسك: هل الكلمة اسم معرب؟ أم اسم مبني مثل هذا/الذي/هو؟ أم تركيب يمكن تأويله بمصدر صريح مثل: أن تحفظ = حفظك؟",
+      "context": "عرفنا موقع الكلمة: مبتدأ.",
+      "text": "ما القرار التالي؟",
+      "hint": "نحدد هل هي اسم معرب أو اسم مبني أو مصدر مؤول.",
       "answers": [
         {
           "id": "a",
@@ -22,7 +22,7 @@ export const cleanMubtadaTree: ExerciseTree = {
         {
           "id": "b",
           "text": "اسم مبني",
-          "next": "mubtada_built_type",
+          "next": "mubtada_built",
           "eval": {
             "fact": "nounKind",
             "equals": "mabni"
@@ -39,17 +39,17 @@ export const cleanMubtadaTree: ExerciseTree = {
         }
       ]
     },
-    "mubtada_built_type": {
-      "id": "mubtada_built_type",
+    "mubtada_built": {
+      "id": "mubtada_built",
       "type": "question",
+      "context": "عرفنا أنها اسم مبني.",
       "text": "ما نوع الاسم المبني؟",
-      "teaching_note": "نحدد اسم المبني أولًا، ثم نبدأ الإعراب باسمه: ضمير منفصل/اسم إشارة/اسم موصول... مبني في محل رفع مبتدأ.",
-      "hint": "نحدد اسم المبني أولًا، ثم نبدأ الإعراب باسمه: ضمير منفصل/اسم إشارة/اسم موصول... مبني في محل رفع مبتدأ.",
+      "hint": "الاسم المبني يعرب في محلّه.",
       "answers": [
         {
           "id": "a",
           "text": "ضمير منفصل",
-          "next": "R_mubtada_pronoun",
+          "next": "R_mubtada_damir",
           "eval": {
             "fact": "mabniType",
             "equals": "damir"
@@ -58,7 +58,7 @@ export const cleanMubtadaTree: ExerciseTree = {
         {
           "id": "b",
           "text": "اسم إشارة",
-          "next": "R_mubtada_demonstrative",
+          "next": "R_mubtada_ishara",
           "eval": {
             "fact": "mabniType",
             "equals": "ishara"
@@ -67,7 +67,7 @@ export const cleanMubtadaTree: ExerciseTree = {
         {
           "id": "c",
           "text": "اسم موصول",
-          "next": "R_mubtada_relative",
+          "next": "R_mubtada_mawsool",
           "eval": {
             "fact": "mabniType",
             "equals": "mawsool"
@@ -76,7 +76,7 @@ export const cleanMubtadaTree: ExerciseTree = {
         {
           "id": "d",
           "text": "اسم استفهام",
-          "next": "R_mubtada_interrogative",
+          "next": "R_mubtada_istifham",
           "eval": {
             "fact": "mabniType",
             "equals": "istifham"
@@ -85,7 +85,7 @@ export const cleanMubtadaTree: ExerciseTree = {
         {
           "id": "e",
           "text": "اسم شرط",
-          "next": "R_mubtada_conditional",
+          "next": "R_mubtada_shart",
           "eval": {
             "fact": "mabniType",
             "equals": "shart"
@@ -105,14 +105,14 @@ export const cleanMubtadaTree: ExerciseTree = {
     "mubtada_number": {
       "id": "mubtada_number",
       "type": "question",
-      "text": "هل الاسم مفرد أم مثنى أم جمع؟",
-      "teaching_note": "العدد يحدد العلامة: المفرد غالبًا بالضمة/الفتحة، المثنى بالألف رفعًا والياء نصبًا، وجمع المذكر السالم بالواو رفعًا والياء نصبًا.",
-      "hint": "العدد يحدد العلامة: المفرد غالبًا بالضمة/الفتحة، المثنى بالألف رفعًا والياء نصبًا، وجمع المذكر السالم بالواو رفعًا والياء نصبًا.",
+      "context": "عرفنا أنه اسم معرب.",
+      "text": "ما الخطوة التالية؟",
+      "hint": "العدد والنوع يقودان إلى العلامة.",
       "answers": [
         {
           "id": "a",
           "text": "مفرد",
-          "next": "mubtada_singular_ending",
+          "next": "mubtada_ending",
           "eval": {
             "fact": "number",
             "equals": "singular"
@@ -148,7 +148,7 @@ export const cleanMubtadaTree: ExerciseTree = {
         {
           "id": "e",
           "text": "جمع تكسير",
-          "next": "mubtada_broken_ending",
+          "next": "mubtada_ending",
           "eval": {
             "fact": "number",
             "equals": "jt"
@@ -165,12 +165,12 @@ export const cleanMubtadaTree: ExerciseTree = {
         }
       ]
     },
-    "mubtada_singular_ending": {
-      "id": "mubtada_singular_ending",
+    "mubtada_ending": {
+      "id": "mubtada_ending",
       "type": "question",
-      "text": "ما حالة آخر الاسم؟",
-      "teaching_note": "ننظر إلى آخر الاسم: صحيح الآخر تظهر عليه العلامة، ومعتل الآخر تُقدّر عليه العلامة.",
-      "hint": "ننظر إلى آخر الاسم: صحيح الآخر تظهر عليه العلامة، ومعتل الآخر تُقدّر عليه العلامة.",
+      "context": "الاسم يعامل معاملة المفرد أو جمع التكسير.",
+      "text": "ما حالة آخره؟",
+      "hint": "الصحيح تظهر عليه العلامة، والمعتل تقدر عليه.",
       "answers": [
         {
           "id": "a",
@@ -191,124 +191,84 @@ export const cleanMubtadaTree: ExerciseTree = {
           }
         }
       ]
-    },
-    "mubtada_broken_ending": {
-      "id": "mubtada_broken_ending",
-      "type": "question",
-      "text": "ما حالة آخر جمع التكسير؟",
-      "teaching_note": "جمع التكسير يعامل غالبًا معاملة المفرد في العلامة: تظهر العلامة على الصحيح وتقدر على المعتل.",
-      "hint": "جمع التكسير يعامل غالبًا معاملة المفرد في العلامة: تظهر العلامة على الصحيح وتقدر على المعتل.",
-      "answers": [
-        {
-          "id": "a",
-          "text": "صحيح الآخر",
-          "next": "R_mubtada_visible",
-          "eval": {
-            "fact": "ending",
-            "equals": "sahih"
-          }
-        },
-        {
-          "id": "b",
-          "text": "معتل الآخر",
-          "next": "R_mubtada_estimated",
-          "eval": {
-            "fact": "ending",
-            "equals": "moatal"
-          }
-        }
-      ]
-    },
-    "R_mubtada_pronoun": {
-      "id": "R_mubtada_pronoun",
-      "type": "result",
-      "text": "ضمير منفصل مبني في محل رفع مبتدأ",
-      "coverage": "mubtada.damir",
-      "teaching_note": "ضمير منفصل مبني في محل رفع مبتدأ"
-    },
-    "R_mubtada_demonstrative": {
-      "id": "R_mubtada_demonstrative",
-      "type": "result",
-      "text": "اسم إشارة مبني في محل رفع مبتدأ",
-      "coverage": "mubtada.ishara",
-      "teaching_note": "اسم إشارة مبني في محل رفع مبتدأ"
-    },
-    "R_mubtada_relative": {
-      "id": "R_mubtada_relative",
-      "type": "result",
-      "text": "اسم موصول مبني في محل رفع مبتدأ",
-      "coverage": "mubtada.mawsool",
-      "teaching_note": "اسم موصول مبني في محل رفع مبتدأ"
-    },
-    "R_mubtada_interrogative": {
-      "id": "R_mubtada_interrogative",
-      "type": "result",
-      "text": "اسم استفهام مبني في محل رفع مبتدأ",
-      "coverage": "mubtada.istifham",
-      "teaching_note": "اسم استفهام مبني في محل رفع مبتدأ"
-    },
-    "R_mubtada_conditional": {
-      "id": "R_mubtada_conditional",
-      "type": "result",
-      "text": "اسم شرط مبني في محل رفع مبتدأ",
-      "coverage": "mubtada.shart",
-      "teaching_note": "اسم شرط مبني في محل رفع مبتدأ"
-    },
-    "R_mubtada_kam": {
-      "id": "R_mubtada_kam",
-      "type": "result",
-      "text": "كم الخبرية اسم مبني في محل رفع مبتدأ",
-      "coverage": "mubtada.kam",
-      "teaching_note": "كم الخبرية اسم مبني في محل رفع مبتدأ"
-    },
-    "R_mubtada_masdar": {
-      "id": "R_mubtada_masdar",
-      "type": "result",
-      "text": "مصدر مؤول في محل رفع مبتدأ",
-      "coverage": "mubtada.masdar",
-      "teaching_note": "المصدر المؤول تركيب مثل (أن + الفعل المضارع) يُقدَّر بمصدر صريح؛ مثل: أن تحفظ = حفظك. لذلك يعامل معاملة الاسم، وهنا وقع في محل رفع مبتدأ."
     },
     "R_mubtada_visible": {
       "id": "R_mubtada_visible",
       "type": "result",
-      "text": "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره",
       "coverage": "mubtada.visible",
-      "teaching_note": "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره"
+      "text": "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره."
     },
     "R_mubtada_estimated": {
       "id": "R_mubtada_estimated",
       "type": "result",
-      "text": "مبتدأ مرفوع وعلامة رفعه الضمة المقدرة على آخره",
       "coverage": "mubtada.estimated",
-      "teaching_note": "مبتدأ مرفوع وعلامة رفعه الضمة المقدرة على آخره"
+      "text": "مبتدأ مرفوع وعلامة رفعه الضمة المقدرة على آخره."
     },
     "R_mubtada_dual": {
       "id": "R_mubtada_dual",
       "type": "result",
-      "text": "مبتدأ مرفوع وعلامة رفعه الألف لأنه مثنى",
       "coverage": "mubtada.dual",
-      "teaching_note": "مبتدأ مرفوع وعلامة رفعه الألف لأنه مثنى"
+      "text": "مبتدأ مرفوع وعلامة رفعه الألف لأنه مثنى."
     },
     "R_mubtada_jms": {
       "id": "R_mubtada_jms",
       "type": "result",
-      "text": "مبتدأ مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم",
       "coverage": "mubtada.jms",
-      "teaching_note": "مبتدأ مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم"
+      "text": "مبتدأ مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم."
     },
     "R_mubtada_jfs": {
       "id": "R_mubtada_jfs",
       "type": "result",
-      "text": "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره لأنه جمع مؤنث سالم",
       "coverage": "mubtada.jfs",
-      "teaching_note": "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره لأنه جمع مؤنث سالم"
+      "text": "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره لأنه جمع مؤنث سالم."
     },
     "R_mubtada_five": {
       "id": "R_mubtada_five",
       "type": "result",
-      "text": "مبتدأ مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة",
       "coverage": "mubtada.five",
-      "teaching_note": "مبتدأ مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة"
+      "text": "مبتدأ مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة."
+    },
+    "R_mubtada_damir": {
+      "id": "R_mubtada_damir",
+      "type": "result",
+      "coverage": "mubtada.damir",
+      "text": "ضمير مبني في محل رفع مبتدأ."
+    },
+    "R_mubtada_ishara": {
+      "id": "R_mubtada_ishara",
+      "type": "result",
+      "coverage": "mubtada.ishara",
+      "text": "اسم إشارة مبني في محل رفع مبتدأ."
+    },
+    "R_mubtada_mawsool": {
+      "id": "R_mubtada_mawsool",
+      "type": "result",
+      "coverage": "mubtada.mawsool",
+      "text": "اسم موصول مبني في محل رفع مبتدأ."
+    },
+    "R_mubtada_istifham": {
+      "id": "R_mubtada_istifham",
+      "type": "result",
+      "coverage": "mubtada.istifham",
+      "text": "اسم استفهام مبني في محل رفع مبتدأ."
+    },
+    "R_mubtada_shart": {
+      "id": "R_mubtada_shart",
+      "type": "result",
+      "coverage": "mubtada.shart",
+      "text": "اسم شرط مبني في محل رفع مبتدأ."
+    },
+    "R_mubtada_kam": {
+      "id": "R_mubtada_kam",
+      "type": "result",
+      "coverage": "mubtada.kam",
+      "text": "كم الخبرية مبني في محل رفع مبتدأ."
+    },
+    "R_mubtada_masdar": {
+      "id": "R_mubtada_masdar",
+      "type": "result",
+      "coverage": "mubtada.masdar",
+      "text": "مصدر مؤول في محل رفع مبتدأ."
     }
   }
 };
