@@ -40,7 +40,7 @@ export const pastVerbQuizExamples = pastVerbExamples.slice(0, 5).map((ex) => {
     : [correct, ...commonOptions.slice(0, 3)];
   return {
     ...ex,
-    prompt: "ما الإعراب الصحيح للفعل الماضي المحدد؟",
+    prompt: "بعد تتبّع القرارات، ما الإعراب الصحيح للفعل الماضي المحدد؟",
     options,
     correctI3rab: correct,
     whyCorrect: "اتبعنا التسلسل: هل اتصل ضمير؟ ثم حددنا نوع الضمير، ثم اخترنا علامة البناء مع إعراب الضمير عند اتصاله بالفعل.",

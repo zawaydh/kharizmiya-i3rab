@@ -490,7 +490,7 @@ export const presentVerbTree: ExerciseTree = {
       "id": "R_present_jazm_sahih",
       "type": "result",
       "coverage": "present.jazm.sahih",
-      "text": "فعل مضارع مجزوم وعلامة جزمه السكون."
+      "text": "فعل مضارع مجزوم وعلامة جزمه السكون على آخره."
     },
     "R_present_jazm_weak": {
       "id": "R_present_jazm_weak",

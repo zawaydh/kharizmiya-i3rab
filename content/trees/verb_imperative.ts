@@ -154,7 +154,7 @@ export const imperativeVerbTree: ExerciseTree = {
       "id": "R_imperative_sukoon",
       "type": "result",
       "coverage": "imperative.sukoon",
-      "text": "فعل أمر مبني على السكون الظاهر على آخره."
+      "text": "فعل أمر مبني على السكون على آخره."
     }
   }
 };

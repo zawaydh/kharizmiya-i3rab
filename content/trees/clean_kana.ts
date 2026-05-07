@@ -262,7 +262,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "R_kana_ism_kam",
       "type": "result",
       "coverage": "kana_ism.kam",
-      "text": "كم الخبرية مبني في محل رفع اسم كان."
+      "text": "كم الخبرية مبنية في محل رفع اسم كان."
     },
     "R_kana_ism_masdar": {
       "id": "R_kana_ism_masdar",
@@ -529,7 +529,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "R_kana_khabar_single_kam",
       "type": "result",
       "coverage": "kana_khabar_single.kam",
-      "text": "كم الخبرية مبني في محل نصب خبر كان."
+      "text": "كم الخبرية مبنية في محل نصب خبر كان."
     },
     "R_kana_khabar_single_masdar": {
       "id": "R_kana_khabar_single_masdar",

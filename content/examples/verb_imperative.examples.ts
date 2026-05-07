@@ -31,7 +31,7 @@ export const imperativeVerbQuizExamples = imperativeVerbExamples.map((ex, i) => 
   if (!options.includes(correct)) options[0] = correct;
   return {
     ...ex,
-    prompt: "ما الإعراب الصحيح لفعل الأمر المحدد؟",
+    prompt: "بعد تتبّع القرارات، ما الإعراب الصحيح لفعل الأمر المحدد؟",
     options,
     correctI3rab: correct,
     whyCorrect: "اتبعنا التسلسل: هل اتصل بواو الجماعة/ياء المخاطبة/ألف الاثنين؟ فإن لم يتصل، نعيده إلى أصله لمعرفة هل هو معتل الآخر.",

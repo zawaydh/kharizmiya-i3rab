@@ -119,7 +119,7 @@ export const nominalMubtadaTree: ExerciseTree = {
       type: "result",
       teaching_note:
         "الآن اكتمل المسار: الكلمة اسم معرب مفرد صحيح الآخر، لذلك أُعربت مبتدأً مرفوعًا وعلامة رفعه الضمة الظاهرة.",
-      text: `مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة.`,
+      text: `مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره.`,
     },
 
     R_mubtada_moatal: {
@@ -127,7 +127,7 @@ export const nominalMubtadaTree: ExerciseTree = {
       type: "result",
       teaching_note:
         "الكلمة اسم معرب مفرد معتل الآخر، لذلك تكون الضمة مقدرة على آخره ولا تظهر نطقًا.",
-      text: `مبتدأ مرفوع وعلامة رفعه الضمة المقدرة.`,
+      text: `مبتدأ مرفوع وعلامة رفعه الضمة المقدرة على آخره.`,
     },
 
     R_mubtada_5: {
@@ -159,7 +159,7 @@ export const nominalMubtadaTree: ExerciseTree = {
       type: "result",
       teaching_note:
         "جمع المؤنث السالم يرفع بالضمة، لذلك كانت علامة الرفع الضمة الظاهرة.",
-      text: `مبتدأ مرفوع وعلامة رفعه الضمة.`,
+      text: `مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره.`,
     },
 
     R_mubtada_jt: {
@@ -167,7 +167,7 @@ export const nominalMubtadaTree: ExerciseTree = {
       type: "result",
       teaching_note:
         "جمع التكسير هنا مرفوع، وعلامة رفعه الضمة الظاهرة على آخره.",
-      text: `مبتدأ مرفوع وعلامة رفعه الضمة.`,
+      text: `مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره.`,
     },
 
     R_mubtada_damir: {
@@ -175,7 +175,7 @@ export const nominalMubtadaTree: ExerciseTree = {
       type: "result",
       teaching_note:
         "الضمير اسم مبني، لذلك لا تظهر عليه علامة إعراب، ويكون في محل رفع مبتدأ.",
-      text: `اسم ضمير مبني في محل رفع مبتدأ.`,
+      text: `ضمير منفصل مبني في محل رفع مبتدأ.`,
     },
 
     R_mubtada_ishara: {
@@ -215,7 +215,7 @@ export const nominalMubtadaTree: ExerciseTree = {
       type: "result",
       teaching_note:
         "كم الخبرية اسم مبني، وهي هنا في محل رفع مبتدأ لأنها لا تسأل بل تدل على الكثرة.",
-      text: `اسم كم الخبرية مبني في محل رفع مبتدأ.`,
+      text: `كم الخبرية مبنية في محل رفع مبتدأ.`,
     },
 
     R_source_mubtada: {

@@ -262,7 +262,7 @@ export const mafoolTree: ExerciseTree = {
       "id": "R_mafool_kam",
       "type": "result",
       "coverage": "mafool.kam",
-      "text": "كم الخبرية مبني في محل نصب مفعول به."
+      "text": "كم الخبرية مبنية في محل نصب مفعول به."
     },
     "R_mafool_masdar": {
       "id": "R_mafool_masdar",

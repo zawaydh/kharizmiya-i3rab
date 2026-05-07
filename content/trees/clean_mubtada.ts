@@ -262,7 +262,7 @@ export const cleanMubtadaTree: ExerciseTree = {
       "id": "R_mubtada_kam",
       "type": "result",
       "coverage": "mubtada.kam",
-      "text": "كم الخبرية مبني في محل رفع مبتدأ."
+      "text": "كم الخبرية مبنية في محل رفع مبتدأ."
     },
     "R_mubtada_masdar": {
       "id": "R_mubtada_masdar",

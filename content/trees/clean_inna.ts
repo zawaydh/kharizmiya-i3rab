@@ -262,7 +262,7 @@ export const cleanInnaTree: ExerciseTree = {
       "id": "R_inna_ism_kam",
       "type": "result",
       "coverage": "inna_ism.kam",
-      "text": "كم الخبرية مبني في محل نصب اسم إن."
+      "text": "كم الخبرية مبنية في محل نصب اسم إن."
     },
     "R_inna_ism_masdar": {
       "id": "R_inna_ism_masdar",
@@ -529,7 +529,7 @@ export const cleanInnaTree: ExerciseTree = {
       "id": "R_inna_khabar_single_kam",
       "type": "result",
       "coverage": "inna_khabar_single.kam",
-      "text": "كم الخبرية مبني في محل رفع خبر إن."
+      "text": "كم الخبرية مبنية في محل رفع خبر إن."
     },
     "R_inna_khabar_single_masdar": {
       "id": "R_inna_khabar_single_masdar",

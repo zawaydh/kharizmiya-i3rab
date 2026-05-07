@@ -262,7 +262,7 @@ export const cleanKhabarTree: ExerciseTree = {
       "id": "R_khabar_single_kam",
       "type": "result",
       "coverage": "khabar_single.kam",
-      "text": "كم الخبرية مبني في محل رفع خبر."
+      "text": "كم الخبرية مبنية في محل رفع خبر."
     },
     "R_khabar_single_masdar": {
       "id": "R_khabar_single_masdar",

@@ -262,7 +262,7 @@ export const faelTree: ExerciseTree = {
       "id": "R_fael_kam",
       "type": "result",
       "coverage": "fael.kam",
-      "text": "كم الخبرية مبني في محل رفع فاعل."
+      "text": "كم الخبرية مبنية في محل رفع فاعل."
     },
     "R_fael_masdar": {
       "id": "R_fael_masdar",

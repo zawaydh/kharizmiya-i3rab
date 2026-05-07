@@ -259,6 +259,76 @@ function getNodeContext(node: any, state: any) {
 }
 
 
+
+function makeDecisionHint(answerText?: string, nodeText?: string) {
+  const a = String(answerText || "");
+  const q = String(nodeText || "");
+  if (a.includes("العلامة") || a.includes("مباشرة")) return "لا نقفز للعلامة قبل تحديد الحالة والسبب.";
+  if (a.includes("الخبر")) return "الخبر يخص الجملة الاسمية، وليس هذه الخطوة.";
+  if (a.includes("الفاعل")) return "نحدد نوع الكلمة والزمن أو الموقع أولًا.";
+  if (a.includes("دائم")) return "لا توجد حالة دائمة؛ الأداة والاتصال يغيّران القرار.";
+  if (q.includes("اسم مبني") || a.includes("معرب")) return "اسأل: هل تتغير حركة آخر الكلمة أم هي ثابتة؟";
+  if (q.includes("آخر") || a.includes("معتل")) return "انظر إلى آخر الكلمة فقط، ولا تقفز للإعراب النهائي.";
+  return "ارجع خطوة: ماذا عرفنا؟ ثم اختر القرار التالي فقط.";
+}
+
+function normalizeThinkingNode(node: any, state: any) {
+  if (!node || node.type !== "question") return node;
+  const id = String(node.id || "");
+  let context = String(node.context || getNodeContext(node, state));
+  let text = String(node.text || "ما الخطوة التالية؟");
+  let hint = shortStudentText(node.hint, "اختر القرار التالي فقط.");
+
+  // تحويل أي صياغة مباشرة إلى صياغة عقدة تفكير.
+  if (/إعراب|الإعراب الصحيح/.test(text)) text = "ما القرار الذي يوصلنا للإعراب؟";
+  if (/هل هو:|هل هي:|إذا كان/.test(text)) text = text.replace(/^إذا كان\s*/,'').replace(/^الآن:\s*/,'ما التصنيف المناسب الآن؟ ');
+  if (/ما حالة آخر/.test(text)) context = "عرفنا التصنيف، والآن نفحص آخر الكلمة لاختيار العلامة.";
+  if (/ما نوع الاسم المبني/.test(text)) context = "عرفنا أنها كلمة مبنية، فنحدد نوعها قبل المحل.";
+  if (/ما نوع الجملة/.test(text)) context = "عرفنا أنها جملة، فنحدد صورتها قبل الحكم على محلها.";
+  if (/هل سبق بأداة/.test(text)) context = "قبل حالة المضارع نفحص ما قبله.";
+  if (/هل اتصل/.test(text)) context = "الاتصال يغير علامة البناء أو الإعراب، لذلك نفحصه الآن.";
+
+  const answers = (node.answers || []).map((a: any) => ({
+    ...a,
+    hint: a.hint || makeDecisionHint(a.text, text),
+  }));
+  return { ...node, context, text, hint, answers };
+}
+
+function thinkingTrailForResult(text?: string) {
+  const t = String(text || "");
+  if (!t) return [];
+  if (t.includes("فعل مضارع")) return ["عرفنا أنها فعل", "حددنا الزمن: مضارع", "فحصنا الأداة والاتصال", "وصلنا للحالة والعلامة"];
+  if (t.includes("فعل ماض")) return ["عرفنا أنها فعل", "حددنا الزمن: ماضٍ", "فحصنا الضمير المتصل", "حددنا علامة البناء"];
+  if (t.includes("فعل أمر")) return ["عرفنا أنه طلب", "حددنا أنه فعل أمر", "فحصنا الاتصال وآخر الفعل", "حددنا علامة البناء"];
+  if (t.includes("اسم إشارة") || t.includes("اسم موصول") || t.includes("ضمير") || t.includes("مبني")) return ["عرفنا موقع الكلمة", "ميزنا أنها اسم مبني", "حددنا نوع الاسم المبني", "أعربناه في محلّه"];
+  if (t.includes("مبتدأ") || t.includes("خبر") || t.includes("اسم كان") || t.includes("خبر كان") || t.includes("اسم إن") || t.includes("خبر إن")) return ["حددنا الموقع النحوي", "ميزنا نوع الاسم", "فحصنا العدد وآخر الكلمة", "اخترنا العلامة المناسبة"];
+  if (t.includes("فاعل")) return ["وجدنا الفعل", "سألنا: من قام بالفعل؟", "حددنا الفاعل", "اخترنا علامة الرفع"];
+  if (t.includes("مفعول")) return ["وجدنا الفعل والفاعل", "سألنا: على من وقع الفعل؟", "حددنا المفعول به", "اخترنا علامة النصب"];
+  return ["اتبعنا القرارات بالترتيب", "لم نقفز إلى النتيجة مباشرة"];
+}
+
+function explainDistractor(actual?: string | null, expected?: string | null) {
+  const a = String(actual || "");
+  const e = String(expected || "");
+  if (!a) return "لم يتم اختيار إجابة.";
+  if (a === e) return "صحيح؛ الاختيار يوافق مسار التفكير.";
+  if (/مرفوع|منصوب|مجزوم|مبني/.test(a) && /مرفوع|منصوب|مجزوم|مبني/.test(e)) {
+    if ((a.includes("مرفوع") && !e.includes("مرفوع")) || (a.includes("منصوب") && !e.includes("منصوب")) || (a.includes("مجزوم") && !e.includes("مجزوم"))) return "الخطأ في الحالة الإعرابية؛ ارجع للأداة أو الموقع قبل العلامة.";
+    if ((a.includes("مبني") && !e.includes("مبني")) || (!a.includes("مبني") && e.includes("مبني"))) return "الخطأ في التفريق بين المبني والمعرب.";
+  }
+  if (/مبتدأ|خبر|فاعل|مفعول/.test(a+e)) return "الخطأ في الموقع النحوي؛ اسأل: ما وظيفة الكلمة في الجملة؟";
+  if (/الأفعال الخمسة|ثبوت النون|حذف النون/.test(a+e)) return "الخطأ في فحص الاتصال: واو الجماعة/ياء المخاطبة/ألف الاثنين.";
+  if (/حرف العلة|مقدرة|ظاهرة|السكون|الفتحة|الضمة|الكسرة/.test(a+e)) return "الخطأ في العلامة؛ بعد تحديد الحالة افحص آخر الكلمة.";
+  return "الإجابة قريبة، لكن أحد قرارات المسار غير مطابق لهذا المثال.";
+}
+
+function enrichQuizPrompt(prompt?: string) {
+  const p = String(prompt || "اختر الإعراب النهائي بعد إكمال مسار التفكير.");
+  if (p.includes("الخطوة") || p.includes("القرار")) return p;
+  return p.replace("ما الإعراب الصحيح", "بعد تتبّع القرارات، ما الإعراب الصحيح");
+}
+
 function stableShuffle<T>(items: T[], seed: string) {
   const arr = [...items];
   let h = 2166136261;
@@ -476,6 +546,7 @@ export default function ExercisePlayer({
   }, [mounted, topicId, level, mode, examples, coverageKeysOrdered]);
 
   const node = tree?.nodes?.[state.currentNodeId];
+  const thinkingNode = normalizeThinkingNode(node, state);
   const totalCount = coverageKeysOrdered.length;
   const doneCount = coverageKeysOrdered.filter((k) => covered[k]).length;
   const coveredPercent = calcPercent(covered, coverageKeysOrdered);
@@ -642,7 +713,7 @@ export default function ExercisePlayer({
       actualLabel,
       isCorrect: actualLabel === expectedLabel,
       whyCorrect: quizExample?.whyCorrect,
-      actualOptionReason: actualLabel ? quizExample?.optionReasons?.[actualLabel] : undefined,
+      actualOptionReason: actualLabel ? (quizExample?.optionReasons?.[actualLabel] || explainDistractor(actualLabel, expectedLabel)) : undefined,
     };
 
     const nextAnswers = [...quizAnswers];
@@ -776,7 +847,7 @@ export default function ExercisePlayer({
             <div style={{ opacity: 0.6, marginBottom: 6 }}>السؤال {quizCursor + 1} من {quizOrder.length}</div>
             <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
             <div className="exercise-sentence">{renderSentence((example as QuizExampleLike)?.sentence, (example as QuizExampleLike)?.target)}</div>
-            <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>{(example as QuizExampleLike)?.prompt ?? "ما الإعراب الصحيح للكلمة المحددة؟"}</div>
+            <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>{enrichQuizPrompt((example as QuizExampleLike)?.prompt)}</div>
           </section>
 
           <section className="exercise-panel" style={box}>
@@ -821,9 +892,9 @@ export default function ExercisePlayer({
           <section className="exercise-panel" style={box}>
             {node?.type === "question" ? (
               <>
-                <div className="exercise-node-context">{renderSmartText(getNodeContext(node, state), setActiveGlossary)}</div>
-                <div className="exercise-question-title">{renderSmartText(node.text, setActiveGlossary)}</div>
-                {node.answers.map((a: any) => {
+                <div className="exercise-node-context">{renderSmartText(thinkingNode?.context, setActiveGlossary)}</div>
+                <div className="exercise-question-title">{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
+                {thinkingNode.answers.map((a: any) => {
                   const answerClass = [
                     "exercise-answer-btn",
                     mode === "learn" && feedback?.correctId === a.id ? "is-correct" : "",
@@ -836,8 +907,8 @@ export default function ExercisePlayer({
                   );
                 })}
 
-                {mode === "learn" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? node?.hint, "اقتربت؛ جرّب خيارًا آخر."), setActiveGlossary)}</div>}
-                {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? node?.hint, "حاول مرة أخرى."), setActiveGlossary)}</div>}
+                {mode === "learn" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? thinkingNode?.hint, "اقتربت؛ جرّب خيارًا آخر."), setActiveGlossary)}</div>}
+                {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? thinkingNode?.hint, "حاول مرة أخرى."), setActiveGlossary)}</div>}
 
                 <div className="exercise-question-nav">
                   <button type="button" onClick={() => setExampleIndex((i) => Math.max(0, i - 1))} style={ghostBtn}>السابق</button>
@@ -847,7 +918,12 @@ export default function ExercisePlayer({
               </>
             ) : node?.type === "result" ? (
               <>
-                <div className="exercise-result-text" style={{ whiteSpace: "pre-line" }}>{renderSmartText(node.text, setActiveGlossary)}</div>
+                <div className="exercise-result-trail" aria-label="مسار التفكير">
+                  {thinkingTrailForResult(node.text).map((step, i) => (
+                    <span key={`${step}-${i}`}>{step}</span>
+                  ))}
+                </div>
+                <div className="exercise-result-text" style={{ whiteSpace: "pre-line" }}>{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
 
                 {currentFollowUp ? (
                   <div className="exercise-followup-box" style={{ marginTop: 14, padding: 12, borderRadius: 14, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)" }}>
