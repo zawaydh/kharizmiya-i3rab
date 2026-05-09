@@ -26,16 +26,14 @@ function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-function highlightTarget(sentence, target) {
-  if (!sentence || !target || !sentence.includes(target)) return sentence;
-  const parts = sentence.split(target);
-  return (
-    <>
-      {parts[0]}
-      <mark>{target}</mark>
-      {parts.slice(1).join(target)}
-    </>
-  );
+function plainSentence(sentence) {
+  return sentence || "";
+}
+
+function getStepLead(stepIndex, step) {
+  if (step?.lead) return step.lead;
+  if (stepIndex === 0) return "أول خطوة: نميّز الكلمة.";
+  return "الآن نكمل بناء الإعراب.";
 }
 
 export default function InteractiveLearning({ examples = [] }) {
@@ -53,6 +51,7 @@ export default function InteractiveLearning({ examples = [] }) {
   const choices = useMemo(() => shuffle(step?.choices || []), [exampleIndex, stepIndex]);
   const done = example && stepIndex >= example.steps.length;
   const progress = example ? Math.round((Math.min(stepIndex, example.steps.length) / example.steps.length) * 100) : 0;
+  const currentBuild = board.length ? board[board.length - 1] : "";
 
   if (!example) return <main className="interactive-shell">لا توجد أمثلة بعد.</main>;
 
@@ -103,19 +102,19 @@ export default function InteractiveLearning({ examples = [] }) {
         </header>
 
         <section className="learning-focus-box">
-          <p className="interactive-sentence">{highlightTarget(example.sentence, example.target)}</p>
+          <div className="sentence-task-card">
+            <div className="task-label">في جملة:</div>
+            <p className="interactive-sentence plain-sentence">{plainSentence(example.sentence)}</p>
+            <div className="target-task-row">
+              <span>المطلوب إعراب</span>
+              <mark>{example.target}</mark>
+            </div>
+          </div>
 
           {!done ? (
             <div className="compact-step-zone">
-              <div className="step-meta-row">
-                <span className="step-count">الخطوة {stepIndex + 1} من {example.steps.length}</span>
-                <span className="streak-pill">إنجاز متتالٍ: {streak}</span>
-              </div>
-              <h1>{step.question}</h1>
-              <p className="step-hint"><SmartText text={step.hint} onTerm={setActiveTerm} /></p>
-
               <div
-                className={`drop-zone ${dragOver ? "is-over" : ""}`}
+                className={`drop-zone build-drop-zone ${dragOver ? "is-over" : ""}`}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setDragOver(true);
@@ -125,10 +124,19 @@ export default function InteractiveLearning({ examples = [] }) {
                   e.preventDefault();
                   handleAnswer(e.dataTransfer.getData("text/plain"));
                 }}
-                aria-label="منطقة الإجابة"
+                aria-label="منطقة بناء الإعراب"
               >
-                اسحب الإجابة هنا أو اضغط عليها
+                <span className="build-target">{example.target}:</span>
+                <span className={`build-value ${currentBuild ? "has-value" : ""}`}>
+                  {currentBuild || "اسحب القرار المناسب هنا"}
+                </span>
               </div>
+
+              <h1>
+                <span className="step-lead">{getStepLead(stepIndex, step)}</span>
+                {step.question}
+              </h1>
+              <p className="step-hint"><SmartText text={step.hint} onTerm={setActiveTerm} /></p>
 
               <div className="drag-choices compact-choices">
                 {choices.map((choice) => (
@@ -142,6 +150,11 @@ export default function InteractiveLearning({ examples = [] }) {
                     {choice}
                   </button>
                 ))}
+              </div>
+
+              <div className="step-meta-row meta-under-choices">
+                <span className="step-count">الخطوة {stepIndex + 1} من {example.steps.length}</span>
+                <span className="streak-pill">إنجاز متتالٍ: {streak}</span>
               </div>
             </div>
           ) : (
@@ -157,13 +170,13 @@ export default function InteractiveLearning({ examples = [] }) {
           )}
         </section>
 
-        <section className="i3rab-board addictive-board">
+        <section className="i3rab-board addictive-board compact-build-board">
           <div className="board-title-row">
-            <h2>لوحة الإعراب</h2>
+            <h2>مسار البناء</h2>
             <span>{progress}%</span>
           </div>
           <div className="board-progress"><span style={{ width: `${progress}%` }} /></div>
-          {board.length === 0 ? <p className="muted">ستُبنى اللوحة أمامك خطوة بخطوة.</p> : null}
+          {board.length === 0 ? <p className="muted">سيظهر كل قرار هنا بعد اختياره.</p> : null}
           <div className="board-steps">
             {board.map((item, i) => <span key={i}>{i + 1}. {item}</span>)}
           </div>

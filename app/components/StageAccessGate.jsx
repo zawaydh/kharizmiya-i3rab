@@ -5,9 +5,9 @@ import { getTopicProgress } from "../../lib/db";
 import { useAuthUser } from "./useAuthUser";
 
 const DEFAULT_TEXT = {
-  practice: "أكمل التعلّم أولًا، ثم افتح التدرّب.",
-  quiz: "أكمل التعلّم والتدرّب أولًا، ثم افتح الاختبار.",
-  certificate: "الشهادة تظهر بعد إكمال التعلّم والتدرّب والنجاح في الاختبار.",
+  practice: "أكمل المرحلة الأولى أولًا، ثم افتح الالمرحلة الثانية.",
+  quiz: "أكمل الالمرحلة الأولى والالمرحلة الثانية أولًا، ثم افتح المرحلة النهائية.",
+  certificate: "الشهادة تظهر بعد إكمال الالمرحلة الأولى والالمرحلة الثانية والنجاح في المرحلة النهائية.",
 };
 
 export default function StageAccessGate({ topicCode, level = 2, require = "learn", children }) {
@@ -67,8 +67,8 @@ export default function StageAccessGate({ topicCode, level = 2, require = "learn
       <span className="mini-kicker">خطوة ناقصة</span>
       <h1>{DEFAULT_TEXT[require] || "أكمل المرحلة السابقة أولًا."}</h1>
       <div className="student-flow-gate-actions">
-        {require === "practice" ? <a className="btn primary" href={nextLearn}>اذهب إلى التعلّم</a> : null}
-        {require === "quiz" || require === "certificate" ? <a className="btn primary" href={nextPractice}>اذهب إلى التدرّب</a> : null}
+        {require === "practice" ? <a className="btn primary" href={nextLearn}>اذهب إلى الالمرحلة الأولى</a> : null}
+        {require === "quiz" || require === "certificate" ? <a className="btn primary" href={nextPractice}>اذهب إلى الالمرحلة الثانية</a> : null}
         <a className="btn ghost" href="/dashboard">لوحتي</a>
       </div>
     </section>

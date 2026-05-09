@@ -13,9 +13,9 @@ export default function LearnNominalAdvancedPage() {
   }
 
   return (
-    <AuthLockGate title="سجّل الدخول لتكمل التعلّم" text="صفحة البداية مفتوحة للجميع، أما متابعة الموضوعات وحفظ التقدم فتحتاج إلى حساب.">
+    <AuthLockGate title="سجّل الدخول لتكمل الالمرحلة الأولى" text="صفحة البداية مفتوحة للجميع، أما متابعة الموضوعات وحفظ التقدم فتحتاج إلى حساب.">
     <ExercisePlayer
-      title={`${topic.name_ar} — تعلّم`}
+      title={`${topic.name_ar} — المرحلة الأولى`}
       mode="learn"
       tree={topic.tree}
       examples={topic.examples}

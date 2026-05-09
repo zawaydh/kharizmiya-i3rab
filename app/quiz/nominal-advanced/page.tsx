@@ -13,9 +13,9 @@ export default function QuizNominalAdvancedPage() {
   }
 
   return (
-    <AuthLockGate title="سجّل الدخول للاختبار" text="الاختبار والشهادة يحتاجان إلى حساب حتى تُحفظ النتيجة باسم الطالب.">
+    <AuthLockGate title="سجّل الدخول للاختبار" text="المرحلة النهائية والشهادة يحتاجان إلى حساب حتى تُحفظ النتيجة باسم الطالب.">
     <ExercisePlayer
-      title={`اختبر نفسي — ${topic.name_ar}`}
+      title={`المرحلة النهائية — ${topic.name_ar}`}
       mode="quiz"
       tree={topic.tree}
       examples={topic.quizExamples}

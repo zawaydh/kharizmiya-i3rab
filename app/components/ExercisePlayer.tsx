@@ -140,22 +140,22 @@ function renderSentence(sentence?: string, target?: string) {
 function getStageMeta(mode: Mode) {
   if (mode === "learn") {
     return {
-      badge: "مرحلة التعلّم",
+      badge: "المرحلة الأولى",
       subtitle: "",
-      nextLabel: "انتقل إلى التدرّب →",
+      nextLabel: "انتقل إلى المرحلة الثانية →",
       nextHrefPrefix: "/train/",
     };
   }
   if (mode === "practice") {
     return {
-      badge: "مرحلة التدرّب",
+      badge: "المرحلة الثانية",
       subtitle: "",
-      nextLabel: "اختبر نفسي →",
+      nextLabel: "انتقل إلى المرحلة النهائية →",
       nextHrefPrefix: "/quiz/",
     };
   }
   return {
-    badge: "مرحلة الاختبار",
+    badge: "المرحلة النهائية",
     subtitle: "",
     nextLabel: "",
     nextHrefPrefix: "",
@@ -586,7 +586,7 @@ export default function ExercisePlayer({
     const percent = calcPercent(nextCovered, coverageKeysOrdered);
     const coverage = coverageKeysOrdered.filter((k) => nextCovered[k]);
 
-    // مهم جدًا: لا نرسل percent = 0 في التدريب أو الاختبار؛ لأن ذلك يمسح نسبة التعلّم.
+    // مهم جدًا: لا نرسل percent = 0 في التدريب أو المرحلة النهائية؛ لأن ذلك يمسح نسبة الالمرحلة الأولى.
     // نرسل فقط الحقل الخاص بالمرحلة الحالية، وبذلك يبقى النظام القديم محفوظًا ويصبح coverage حقيقيًا.
     const payload: any = {
       topicId,
@@ -732,7 +732,7 @@ export default function ExercisePlayer({
           quiz_total: answeredRows.length,
         });
       } catch {
-        setToast("تعذر حفظ نتيجة الاختبار الآن");
+        setToast("تعذر حفظ نتيجة المرحلة النهائية الآن");
       }
       return;
     }
@@ -769,7 +769,7 @@ export default function ExercisePlayer({
         <div className="exercise-hero-side">
           <div className="exercise-progress-panel">
             <div className="exercise-progress-head">
-              <span>{mode === "quiz" ? "تقدّم الاختبار" : "نسبة الإنجاز"}</span>
+              <span>{mode === "quiz" ? "تقدّم المرحلة النهائية" : "نسبة الإنجاز"}</span>
               <strong>
                 {mode === "quiz"
                   ? `${Math.min(quizCursor + 1, quizOrder.length || quizCount)} / ${quizOrder.length || quizCount}`
@@ -795,11 +795,11 @@ export default function ExercisePlayer({
       {mode !== "quiz" && isDone && (
         <section className="exercise-complete-banner">
           <div>
-            <strong>{mode === "learn" ? "اكتمل مسار التعلّم" : "اكتمل مسار التدرّب"}</strong>
-            <p>{mode === "learn" ? "انتقل الآن إلى التدرّب." : "انتقل الآن إلى الاختبار."}</p>
+            <strong>{mode === "learn" ? "اكتملت المرحلة الأولى" : "اكتملت المرحلة الثانية"}</strong>
+            <p>{mode === "learn" ? "انتقل الآن إلى المرحلة الثانية." : "انتقل الآن إلى المرحلة النهائية."}</p>
           </div>
           <button onClick={resetTraining} style={ghostBtn}>
-            {mode === "learn" ? "إعادة التعلّم" : "إعادة التدرّب"}
+            {mode === "learn" ? "إعادة المرحلة الأولى" : "إعادة المرحلة الثانية"}
           </button>
         </section>
       )}
@@ -809,7 +809,7 @@ export default function ExercisePlayer({
           <div className="exercise-summary-head">
             <div>
               <div className="exercise-summary-kicker">النتيجة النهائية</div>
-              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>انتهى الاختبار</div>
+              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>انتهى المرحلة النهائية</div>
               <div style={{ opacity: 0.9 }}>نتيجتك: {quizScore} / {answeredQuizRows.length} ({quizPercent}%)</div>
             </div>
             <div className={`exercise-result-pill ${quizPercent >= QUIZ_PASS_PERCENT ? "is-pass" : "is-fail"}`}>
@@ -839,7 +839,7 @@ export default function ExercisePlayer({
             ))}
           </div>
 
-          <button onClick={restartQuiz} style={ghostBtn}>إعادة الاختبار</button>
+          <button onClick={restartQuiz} style={ghostBtn}>إعادة المرحلة النهائية</button>
         </section>
       ) : mode === "quiz" ? (
         <>
@@ -876,7 +876,7 @@ export default function ExercisePlayer({
               <button onClick={previousQuizQuestion} style={ghostBtn} disabled={quizCursor <= 0}>السابق</button>
               <button onClick={restartQuiz} style={ghostBtn}>إعادة</button>
               <button onClick={finalizeQuizExample} style={primaryNavBtn} disabled={!selectedQuizOption}>
-                {quizCursor + 1 >= quizOrder.length ? "تسليم الاختبار" : "التالي"}
+                {quizCursor + 1 >= quizOrder.length ? "تسليم المرحلة النهائية" : "التالي"}
               </button>
             </div>
 
@@ -970,7 +970,7 @@ export default function ExercisePlayer({
                 onClick={() => {
                   const ready = mode === "learn" ? learnReady || coveredPercent >= 100 : practiceReady || coveredPercent >= 100;
                   if (!ready) {
-                    setToast(mode === "learn" ? "أكمل التعلّم أولًا" : "أكمل التدرّب أولًا");
+                    setToast(mode === "learn" ? "أكمل المرحلة الأولى أولًا" : "أكمل المرحلة الثانية أولًا");
                     return;
                   }
                   router.push(`${stageMeta.nextHrefPrefix}${topicId}`);

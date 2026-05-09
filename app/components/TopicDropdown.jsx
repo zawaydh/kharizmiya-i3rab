@@ -62,7 +62,7 @@ function actionItemsForTopic(topicCode) {
   if (!topic || !topic.isReady) return [];
   const routes = getTopicRoutes(topic.code);
   return [
-    { label: "تعلّم", href: routes.learn },
+    { label: "المرحلة الأولى", href: routes.learn },
     { label: "المسار البصري", href: routes.paths },
   ];
 }

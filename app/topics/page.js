@@ -25,7 +25,7 @@ export default function TopicsPage() {
                   
                 </div>
                 <div className="topic-branch-actions">
-                  <a href={routes.learn} className="topic-branch-learn">تعلّم</a>
+                  <a href={routes.learn} className="topic-branch-learn">المرحلة الأولى</a>
                   <a href={routes.paths} className="topic-branch-path">المسار البصري</a>
                 </div>
               </article>

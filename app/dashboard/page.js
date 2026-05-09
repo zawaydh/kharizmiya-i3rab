@@ -64,7 +64,7 @@ export default function DashboardPage() {
           <div className="dashboard-hero-copy">
             <div className="section-kicker">لوحة التقدم</div>
             <h1 className="h1">{userName ? `مرحبًا يا ${userName}` : "تابع تقدّمك"}</h1>
-            <p className="p">هنا تظهر حالة <strong>التعلّم</strong> و<strong>التدرّب</strong> و<strong>الاختبار</strong> لكل موضوع بشكل واضح ومنظّم.</p>
+            <p className="p">هنا تظهر حالة <strong>الالمرحلة الأولى</strong> و<strong>الالمرحلة الثانية</strong> و<strong>المرحلة النهائية</strong> لكل موضوع بشكل واضح ومنظّم.</p>
           </div>
           <div className="dashboard-hero-actions">
             <a href="/topics" className="btn btn-primary">اذهب إلى الموضوعات</a>
@@ -74,11 +74,11 @@ export default function DashboardPage() {
 
         <section className="dashboard-summary-grid">
           <StatCard value={summary.totalTopics} label="موضوعات محفوظة" />
-          <StatCard value={summary.completedLearn} label="مكتمل تعلّم" />
-          <StatCard value={summary.completedPractice} label="مكتمل تدرّب" />
+          <StatCard value={summary.completedLearn} label="مكتمل المرحلة الأولى" />
+          <StatCard value={summary.completedPractice} label="مكتمل المرحلة الثانية" />
           <StatCard value={summary.passedQuiz} label="اختبارات ناجحة" />
-          <ProgressStatCard value={summary.avgLearnPercent} label="متوسط التعلّم" />
-          <ProgressStatCard value={summary.avgPracticePercent} label="متوسط التدرّب" />
+          <ProgressStatCard value={summary.avgLearnPercent} label="متوسط الالمرحلة الأولى" />
+          <ProgressStatCard value={summary.avgPracticePercent} label="متوسط الالمرحلة الثانية" />
         </section>
 
         <section className="card dashboard-list-card">
@@ -89,7 +89,7 @@ export default function DashboardPage() {
 
           {loading && <div className="dashboard-empty-state">جارٍ تحميل البيانات...</div>}
           {!loading && error && <div className="dashboard-message dashboard-message-error">{error}</div>}
-          {!loading && !error && rows.length === 0 && <div className="dashboard-empty-state">لا يوجد تقدم محفوظ بعد. ابدأ من صفحة التعلّم ثم ارجع إلى هنا.</div>}
+          {!loading && !error && rows.length === 0 && <div className="dashboard-empty-state">لا يوجد تقدم محفوظ بعد. ابدأ من صفحة الالمرحلة الأولى ثم ارجع إلى هنا.</div>}
 
           {!loading && !error && rows.length > 0 && (
             <div className="dashboard-topic-grid">
@@ -117,22 +117,22 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="dashboard-bars">
-                      <ProgressLine title={`التعلّم${requiredCount ? ` (${learnCoveredCount}/${requiredCount} فروع)` : ""}`} value={learnPercent} />
-                      <ProgressLine title={`التدرّب${requiredCount ? ` (${practiceCoveredCount}/${requiredCount} فروع)` : ""}`} value={practicePercent} />
-                      <ProgressLine title="الاختبار" value={quizPercent} />
+                      <ProgressLine title={`الالمرحلة الأولى${requiredCount ? ` (${learnCoveredCount}/${requiredCount} فروع)` : ""}`} value={learnPercent} />
+                      <ProgressLine title={`الالمرحلة الثانية${requiredCount ? ` (${practiceCoveredCount}/${requiredCount} فروع)` : ""}`} value={practicePercent} />
+                      <ProgressLine title="المرحلة النهائية" value={quizPercent} />
                     </div>
 
                     <div className="dashboard-chip-row">
-                      <StatusPill ok={!!row.learn_completed} text="تعلّم" />
-                      <StatusPill ok={!!row.practice_completed} text="تدرّب" />
+                      <StatusPill ok={!!row.learn_completed} text="المرحلة الأولى" />
+                      <StatusPill ok={!!row.practice_completed} text="المرحلة الثانية" />
                       <StatusPill ok={!!row.quiz_passed} text="اختبار" />
                     </div>
 
                     <div className="dashboard-action-row">
                       <a href={routes.paths} className="btn btn-primary">المسارات</a>
-                      <a href={routes.learn} className="btn btn-soft">تعلّم</a>
-                      <a href={routes.practice} className={`btn btn-soft ${!row.learn_completed ? "is-disabled-link" : ""}`}>تدرّب</a>
-                      <a href={routes.quiz} className={`btn btn-soft ${!row.practice_completed ? "is-disabled-link" : ""}`}>اختبر</a>
+                      <a href={routes.learn} className="btn btn-soft">المرحلة الأولى</a>
+                      <a href={routes.practice} className={`btn btn-soft ${!row.learn_completed ? "is-disabled-link" : ""}`}>المرحلة الثانية</a>
+                      <a href={routes.quiz} className={`btn btn-soft ${!row.practice_completed ? "is-disabled-link" : ""}`}>المرحلة النهائية</a>
                       <a href={certificateAllowed ? `/certificate?topicId=${topicCode}&level=${row.level}` : "#"} className={`btn btn-soft ${!certificateAllowed ? "is-disabled-link" : ""}`}>الشهادة</a>
                     </div>
                   </article>
