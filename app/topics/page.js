@@ -24,9 +24,8 @@ export default function TopicsPage() {
                   <h2>{topic.name_ar}</h2>
                   
                 </div>
-                <div className="topic-branch-actions">
-                  <a href={routes.learn} className="topic-branch-learn">المرحلة الأولى</a>
-                  <a href={routes.paths} className="topic-branch-path">المسار البصري</a>
+                <div className="topic-branch-actions single-topic-action">
+                  <a href={routes.learn} className="topic-branch-learn">ابدأ الموضوع</a>
                 </div>
               </article>
             );

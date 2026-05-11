@@ -229,6 +229,22 @@ const SMART_GLOSSARY: Record<string, { title: string; body: string[] }> = {
   "مصدر مؤول": { title: "المصدر المؤول", body: ["تركيب مثل: أن + فعل مضارع.", "يؤوّل بمصدر صريح ويعامل معاملة الاسم."] },
   "اسم إشارة": { title: "اسم الإشارة", body: ["مثل: هذا، هذه، هؤلاء.", "غالبًا مبني ويعرب في محل بحسب موقعه."] },
   "اسم موصول": { title: "الاسم الموصول", body: ["مثل: الذي، التي، الذين.", "يحتاج صلة بعده ويعرب مبنيًا في محل بحسب موقعه."] },
+  "الفعل الماضي": { title: "الفعل الماضي", body: ["يدل على حدث وقع وانتهى قبل زمن الكلام.", "يميزه قبول تاء الفاعل أو تاء التأنيث غالبًا، وهو مبني دائمًا."] },
+  "الفعل المضارع": { title: "الفعل المضارع", body: ["يدل على الحاضر أو المستقبل.", "يبدأ غالبًا بأحد أحرف: أ، ن، ي، ت، ويتأثر بأدوات النصب والجزم."] },
+  "فعل الأمر": { title: "فعل الأمر", body: ["يدل على طلب حدوث الفعل.", "يبنى على ما يجزم به مضارعه: السكون، حذف حرف العلة، أو حذف النون."] },
+  "المبتدأ": { title: "المبتدأ", body: ["اسم مرفوع نبدأ به غالبًا لنتحدث عنه.", "قد يكون معربًا أو مبنيًا في محل رفع."] },
+  "الخبر": { title: "الخبر", body: ["يتمّم معنى المبتدأ ويخبر عنه.", "قد يكون مفردًا أو جملة أو شبه جملة."] },
+  "الفاعل": { title: "الفاعل", body: ["اسم يدل على من قام بالفعل أو اتصف به.", "حكمه الرفع، وقد يكون ظاهرًا أو ضميرًا مستترًا أو متصلًا."] },
+  "المفعول به": { title: "المفعول به", body: ["اسم وقع عليه فعل الفاعل.", "حكمه النصب، وقد يكون اسمًا ظاهرًا أو ضميرًا."] },
+  "كان وأخواتها": { title: "كان وأخواتها", body: ["تدخل على الجملة الاسمية.", "ترفع الاسم ويسمى اسمها، وتنصب الخبر ويسمى خبرها."] },
+  "إن وأخواتها": { title: "إن وأخواتها", body: ["تدخل على الجملة الاسمية.", "تنصب الاسم ويسمى اسمها، وترفع الخبر ويسمى خبرها."] },
+  "الاسم المعرب": { title: "الاسم المعرب", body: ["يتغير ضبط آخره أو علامته بتغير موقعه في الجملة.", "مثل: طالبٌ، طالبًا، طالبٍ."] },
+  "الاسم المبني": { title: "الاسم المبني", body: ["لا يتغير آخره بتغير موقعه.", "يعرب في محل رفع أو نصب أو جر حسب موقعه."] },
+  "الأسماء المبنية": { title: "الأسماء المبنية", body: ["مثل الضمائر، أسماء الإشارة، الأسماء الموصولة، أسماء الاستفهام والشرط.", "لا نقول مرفوع بالضمة، بل نقول: مبني في محل رفع/نصب/جر."] },
+  "علامة أصلية": { title: "العلامة الأصلية", body: ["الضمة للرفع، الفتحة للنصب، الكسرة للجر، السكون للجزم."] },
+  "علامة فرعية": { title: "العلامة الفرعية", body: ["مثل الواو والألف والياء وثبوت النون وحذف النون وحذف حرف العلة.", "تظهر في أبواب مخصوصة مثل المثنى والجمع والأسماء الخمسة والأفعال الخمسة."] },
+  "أدوات النصب": { title: "أدوات النصب", body: ["مثل: أن، لن، كي، حتى، لام التعليل.", "إذا دخلت على الفعل المضارع جعلته منصوبًا."] },
+  "أدوات الجزم": { title: "أدوات الجزم", body: ["مثل: لم، لا الناهية، لام الأمر.", "إذا دخلت على الفعل المضارع جعلته مجزومًا."] },
 
 };
 
@@ -247,6 +263,92 @@ function renderSmartText(text?: string, onTerm?: (term: string) => void) {
     }
     return <React.Fragment key={idx}>{part}</React.Fragment>;
   });
+}
+
+
+function answerTextFor(tree: any, nodeId: string, answerId: string) {
+  const n = tree?.nodes?.[nodeId];
+  if (!n || n.type !== "question") return "";
+  return String(n.answers?.find((a: any) => a.id === answerId)?.text || "");
+}
+
+function normalizeBuildPiece(text: string, nodeId = "") {
+  const t = String(text || "");
+  const id = String(nodeId || "");
+  if (!t || /تحديد|فحص|القرار|الخطوة|مباشرة|دائمًا|نوع الخبر/.test(t)) return "";
+
+  if (id.includes("tense") || id.includes("past") || id.includes("present") || id.includes("imperative")) {
+    if (t.includes("مضارع")) return "فعل مضارع";
+    if (t.includes("ماض")) return "فعل ماضٍ";
+    if (t.includes("أمر")) return "فعل أمر";
+  }
+  if (id.includes("tool") || id.includes("has_tool")) {
+    if (t.includes("جزم")) return "مجزوم";
+    if (t.includes("نصب")) return "منصوب";
+    if (t.includes("لم يسبق")) return "مرفوع";
+  }
+  if (/raf3|nasb|jazm/.test(id)) {
+    if (/واو الجماعة|ياء المخاطبة|ألف الاثنين/.test(t)) return "من الأفعال الخمسة";
+    if (t === "لا") return "ليس من الأفعال الخمسة";
+  }
+  if (t.includes("حذف النون")) return "وعلامة إعرابه حذف النون";
+  if (t.includes("ثبوت النون")) return "وعلامة رفعه ثبوت النون";
+  if (t.includes("حذف حرف العلة")) return "وعلامته حذف حرف العلة";
+  if (t.includes("الضمة")) return "وعلامته الضمة";
+  if (t.includes("الفتحة")) return "وعلامته الفتحة";
+  if (t.includes("الكسرة")) return "وعلامته الكسرة";
+  if (t.includes("السكون")) return "مبني على السكون";
+  if (t.includes("مبتدأ")) return "مبتدأ";
+  if (t.includes("خبر")) return "خبر";
+  if (t.includes("فاعل")) return "فاعل";
+  if (t.includes("مفعول")) return "مفعول به";
+  if (t.includes("اسم كان")) return "اسم كان";
+  if (t.includes("خبر كان")) return "خبر كان";
+  if (t.includes("اسم إن")) return "اسم إن";
+  if (t.includes("خبر إن")) return "خبر إن";
+  if (t.includes("اسم إشارة")) return "اسم إشارة مبني";
+  if (t.includes("اسم موصول")) return "اسم موصول مبني";
+  if (t.includes("ضمير")) return "ضمير مبني";
+  if (t.includes("اسم")) return "اسم";
+  if (t.includes("فعل")) return "فعل";
+  return t.length <= 28 ? t : "";
+}
+
+function buildI3rabDraft(tree: any, state: any, target?: string) {
+  const pieces: string[] = [];
+  const add = (piece: string) => {
+    if (!piece) return;
+    const generic = ["فعل", "اسم"];
+    if (generic.includes(piece) && pieces.some((p) => p.startsWith(piece + " "))) return;
+    if (piece.startsWith("فعل ")) {
+      const i = pieces.findIndex((p) => p === "فعل" || p.startsWith("فعل "));
+      if (i >= 0) pieces[i] = piece; else pieces.push(piece);
+      return;
+    }
+    if (["مرفوع", "منصوب", "مجزوم"].includes(piece)) {
+      const i = pieces.findIndex((p) => ["مرفوع", "منصوب", "مجزوم"].includes(p));
+      if (i >= 0) pieces[i] = piece; else pieces.push(piece);
+      return;
+    }
+    if (!pieces.includes(piece)) pieces.push(piece);
+  };
+  Object.entries(state?.answers || {}).forEach(([nodeId, answerId]) => {
+    add(normalizeBuildPiece(answerTextFor(tree, nodeId, String(answerId)), nodeId));
+  });
+  const phrase = pieces.join(" ").replace(/\s+/g, " ").trim();
+  return phrase || "نبدأ ببناء الإعراب هنا";
+}
+
+function ProgressDots({ total, done, current }: { total: number; done: number; current?: number }) {
+  const safeTotal = Math.max(1, Math.min(total || 1, 18));
+  return (
+    <div className="progress-dots" aria-label="تقدم الأمثلة">
+      {Array.from({ length: safeTotal }).map((_, i) => {
+        const cls = i < done ? "is-done" : i === current ? "is-current" : "";
+        return <span key={i} className={cls} title={`خطوة ${i + 1}`} />;
+      })}
+    </div>
+  );
 }
 
 function getNodeContext(node: any, state: any) {
@@ -551,6 +653,7 @@ export default function ExercisePlayer({
   const doneCount = coverageKeysOrdered.filter((k) => covered[k]).length;
   const coveredPercent = calcPercent(covered, coverageKeysOrdered);
   const isDone = coveredPercent >= 100;
+  const nextStageReady = mode === "learn" ? learnReady || coveredPercent >= 100 : mode === "practice" ? practiceReady || coveredPercent >= 100 : false;
   const stepLabel = coverageKeysOrdered.find((k) => !covered[k]) || "مكتمل";
   const quizFinished = mode === "quiz" && quizOrder.length > 0 && quizCursor >= quizOrder.length;
   const answeredQuizRows = quizAnswers.filter(Boolean);
@@ -884,40 +987,53 @@ export default function ExercisePlayer({
         </>
       ) : (
         <>
-          <section className="exercise-panel exercise-sentence-panel" style={box}>
-            <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
-            <div className="exercise-sentence">{renderSentence(state.currentSentence, state.currentTarget)}</div>
-          </section>
+          <section className="exercise-panel exercise-core-card" style={box}>
+            <div className="core-task-line">
+              <span>في جملة:</span>
+              <strong>{renderSentence(state.currentSentence, state.currentTarget)}</strong>
+            </div>
+            <div className="core-target-line">
+              <span>المطلوب إعراب</span>
+              <mark>{state.currentTarget}</mark>
+            </div>
 
-          <section className="exercise-panel" style={box}>
+            <div className="i3rab-builder-line" aria-label="بناء الإعراب">
+              <span className="builder-target">{state.currentTarget}:</span>
+              <span className="builder-value">{node?.type === "result" ? renderSmartText(firstLine(node.text), setActiveGlossary) : renderSmartText(buildI3rabDraft(tree, state, state.currentTarget), setActiveGlossary)}</span>
+            </div>
+
             {node?.type === "question" ? (
-              <>
-                <div className="exercise-node-context">{renderSmartText(thinkingNode?.context, setActiveGlossary)}</div>
-                <div className="exercise-question-title">{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
-                {thinkingNode.answers.map((a: any) => {
-                  const answerClass = [
-                    "exercise-answer-btn",
-                    mode === "learn" && feedback?.correctId === a.id ? "is-correct" : "",
-                    feedback?.wrongId === a.id ? "is-wrong" : "",
-                  ].filter(Boolean).join(" ");
-                  return (
-                    <button key={a.id} onClick={() => handlePick(a.id)} className={answerClass} style={answerBtn}>
-                      {a.text}
-                    </button>
-                  );
-                })}
+              <div className="core-question-block">
+                <div className="exercise-node-context slim-context">{renderSmartText(thinkingNode?.context, setActiveGlossary)}</div>
+                <div className="exercise-question-title compact-question-title">{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
+                <div className="core-answer-grid">
+                  {thinkingNode.answers.map((a: any) => {
+                    const answerClass = [
+                      "exercise-answer-btn",
+                      "core-answer-btn",
+                      mode === "learn" && feedback?.correctId === a.id ? "is-correct" : "",
+                      feedback?.wrongId === a.id ? "is-wrong" : "",
+                    ].filter(Boolean).join(" ");
+                    return (
+                      <button key={a.id} onClick={() => handlePick(a.id)} className={answerClass} style={answerBtn}>
+                        {renderSmartText(a.text, setActiveGlossary)}
+                      </button>
+                    );
+                  })}
+                </div>
 
                 {mode === "learn" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? thinkingNode?.hint, "اقتربت؛ جرّب خيارًا آخر."), setActiveGlossary)}</div>}
                 {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? thinkingNode?.hint, "حاول مرة أخرى."), setActiveGlossary)}</div>}
 
-                <div className="exercise-question-nav">
+                <div className="exercise-question-nav core-nav-row">
                   <button type="button" onClick={() => setExampleIndex((i) => Math.max(0, i - 1))} style={ghostBtn}>السابق</button>
                   <button type="button" onClick={() => { setFeedback(null); setState(buildRunnerState(tree, mode, example)); }} style={ghostBtn}>إعادة</button>
                   <button type="button" onClick={() => setExampleIndex((i) => Math.min(examples.length - 1, i + 1))} style={ghostBtn}>التالي</button>
                 </div>
-              </>
+                <ProgressDots total={totalCount || examples.length} done={doneCount} current={Math.min(doneCount, Math.max(0, (totalCount || examples.length) - 1))} />
+              </div>
             ) : node?.type === "result" ? (
-              <>
+              <div className="core-result-block">
                 <div className="exercise-result-trail" aria-label="مسار التفكير">
                   {thinkingTrailForResult(node.text).map((step, i) => (
                     <span key={`${step}-${i}`}>{step}</span>
@@ -958,18 +1074,20 @@ export default function ExercisePlayer({
                 >
                   المثال التالي
                 </button>
-              </>
+                <ProgressDots total={totalCount || examples.length} done={Math.min(doneCount + 1, totalCount || examples.length)} current={doneCount} />
+              </div>
             ) : (
               <div>لا توجد عقدة للعرض</div>
             )}
           </section>
 
-          <div className="exercise-bottom-nav" style={navNextWrap}>
+          <div className="exercise-bottom-nav stage-locked-next" style={navNextWrap}>
             <button
-                style={primaryNavBtn}
+                style={{ ...primaryNavBtn, opacity: nextStageReady ? 1 : 0.48, cursor: nextStageReady ? "pointer" : "not-allowed" }}
+                className="stage-next-button"
+                disabled={!nextStageReady}
                 onClick={() => {
-                  const ready = mode === "learn" ? learnReady || coveredPercent >= 100 : practiceReady || coveredPercent >= 100;
-                  if (!ready) {
+                  if (!nextStageReady) {
                     setToast(mode === "learn" ? "أكمل المرحلة الأولى أولًا" : "أكمل المرحلة الثانية أولًا");
                     return;
                   }

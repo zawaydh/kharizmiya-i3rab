@@ -11,6 +11,7 @@ export const metadata = {
     shortcut: "/favicon.svg",
     apple: "/brand-icon.svg",
   },
+  manifest: "/site.webmanifest",
 };
 
 export const viewport = {
@@ -18,6 +19,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
+  themeColor: "#06101C",
 };
 
 export default function RootLayout({ children }) {

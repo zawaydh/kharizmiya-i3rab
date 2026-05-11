@@ -57,23 +57,21 @@ const TOPIC_TREE = [
   { id: "first", label: "مفتاح الكلمة الأولى", topicCode: "first-word-key" },
 ];
 
-function actionItemsForTopic(topicCode, mode = "learning") {
+function actionItemsForTopic(topicCode, mode = "learning", topicLabel = "الموضوع") {
   const topic = topicCode ? getTopicByCode(topicCode) : null;
   if (!topic || !topic.isReady) return [];
   const routes = getTopicRoutes(topic.code);
   if (mode === "paths") {
-    return [{ label: "افتح المسار البصري", href: routes.paths }];
+    return [{ label: "المسار البصري", href: routes.paths }];
   }
-  return [
-    { label: "المرحلة الأولى", href: routes.learn },
-    { label: "المرحلة الثانية", href: routes.practice },
-    { label: "المرحلة النهائية", href: routes.quiz },
-  ];
+  // أمام الطالب لا نعرض أسماء المراحل داخل القائمة؛ يدخل للموضوع فقط
+  // ثم تُفتح المرحلة الثانية/النهائية من داخل الصفحة بعد الإنجاز.
+  return [{ label: topicLabel, href: routes.learn }];
 }
 
 function TreeItem({ item, level = 0, go, mode = "learning" }) {
   const [open, setOpen] = useState(false);
-  const actions = actionItemsForTopic(item.topicCode, mode);
+  const actions = actionItemsForTopic(item.topicCode, mode, item.label);
   const hasChildren = Array.isArray(item.children) && item.children.length > 0;
   const hasActions = actions.length > 0;
   const disabled = item.disabled || (!hasActions && !hasChildren);
