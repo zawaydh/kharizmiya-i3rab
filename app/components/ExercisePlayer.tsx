@@ -336,7 +336,7 @@ function buildI3rabDraft(tree: any, state: any, target?: string) {
     add(normalizeBuildPiece(answerTextFor(tree, nodeId, String(answerId)), nodeId));
   });
   const phrase = pieces.join(" ").replace(/\s+/g, " ").trim();
-  return phrase || "نبدأ ببناء الإعراب هنا";
+  return phrase || "ابدأ بتحديد نوع الكلمة";
 }
 
 function ProgressDots({ total, done, current }: { total: number; done: number; current?: number }) {
@@ -365,6 +365,10 @@ function getNodeContext(node: any, state: any) {
 function makeDecisionHint(answerText?: string, nodeText?: string) {
   const a = String(answerText || "");
   const q = String(nodeText || "");
+  if (a.includes("اسم") && q.includes("نوع الكلمة")) return "تذكّر: الاسم يقبل الجر أو التنوين غالبًا.";
+  if (a.includes("فعل") && q.includes("نوع الكلمة")) return "تذكّر: الفعل يدل على حدث وزمن.";
+  if (a.includes("ماض")) return "الفعل الماضي يقبل تاء الفاعل أو تاء التأنيث غالبًا.";
+  if (a.includes("مضارع")) return "الفعل المضارع يبدأ غالبًا بأحد أحرف: أ، ن، ي، ت.";
   if (a.includes("العلامة") || a.includes("مباشرة")) return "لا نقفز للعلامة قبل تحديد الحالة والسبب.";
   if (a.includes("الخبر")) return "الخبر يخص الجملة الاسمية، وليس هذه الخطوة.";
   if (a.includes("الفاعل")) return "نحدد نوع الكلمة والزمن أو الموقع أولًا.";
@@ -387,7 +391,8 @@ function normalizeThinkingNode(node: any, state: any) {
   if (/ما حالة آخر/.test(text)) context = "عرفنا التصنيف، والآن نفحص آخر الكلمة لاختيار العلامة.";
   if (/ما نوع الاسم المبني/.test(text)) context = "عرفنا أنها كلمة مبنية، فنحدد نوعها قبل المحل.";
   if (/ما نوع الجملة/.test(text)) context = "عرفنا أنها جملة، فنحدد صورتها قبل الحكم على محلها.";
-  if (/هل سبق بأداة/.test(text)) context = "قبل حالة المضارع نفحص ما قبله.";
+  if (/هل سبق بأداة/.test(text)) context = "قبل تحديد الحالة نفحص ما قبل الفعل.";
+  if (/الأفعال الخمسة/.test(text)) text = "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟";
   if (/هل اتصل/.test(text)) context = "الاتصال يغير علامة البناء أو الإعراب، لذلك نفحصه الآن.";
 
   const answers = (node.answers || []).map((a: any) => ({
