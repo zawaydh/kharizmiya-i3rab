@@ -9,7 +9,7 @@ type TreeNode = {
   teaching_note?: string;
   hint?: string;
   thinking?: { q: string; a: string }[];
-  answers?: { id: string; text: string; next: string; eval?: { fact: string; equals: string }; hint?: string; why?: string }[];
+  answers?: { id: string; text: string; next: string; correct?: boolean; eval?: { fact: string; equals: any }; hint?: string; why?: string }[];
 };
 
 type ExerciseTree = {
@@ -85,7 +85,9 @@ function pathD(a: { x: number; y: number }, b: { x: number; y: number }) {
   return `M ${a.x} ${a.y} L ${a.x} ${midY} L ${b.x} ${midY} L ${b.x} ${b.y}`;
 }
 
-function answerIsCorrect(answer: { eval?: { fact: string; equals: string } }, example: Example | null) {
+function answerIsCorrect(answer: { correct?: boolean; eval?: { fact: string; equals: any } }, example: Example | null) {
+  if (answer.correct === true) return true;
+  if (answer.correct === false) return false;
   if (!example || !answer.eval) return false;
   return example.facts?.[answer.eval.fact] === answer.eval.equals;
 }
@@ -99,18 +101,27 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
   const rootId = tree.startNodeId;
   const childrenMap = new Map<string, string[]>();
   Object.values(nodes).forEach((n) => {
-    childrenMap.set(n.id, (n.answers || []).map((a) => a.next));
+    const safeChildren = Array.from(
+      new Set(
+        (n.answers || [])
+          .filter((a) => a?.next && a.next !== n.id && nodes[a.next])
+          .map((a) => a.next)
+      )
+    );
+    childrenMap.set(n.id, safeChildren);
   });
 
   const widths = new Map<string, number>();
-  function measure(id: string): number {
+  function measure(id: string, trail = new Set<string>()): number {
     if (widths.has(id)) return widths.get(id)!;
-    const kids = childrenMap.get(id) || [];
+    if (trail.has(id)) return 1;
+    trail.add(id);
+    const kids = (childrenMap.get(id) || []).filter((childId) => childId !== id && nodes[childId]);
     if (!kids.length) {
       widths.set(id, 1);
       return 1;
     }
-    const sum = kids.map(measure).reduce((a, b) => a + b, 0);
+    const sum = kids.map((childId) => measure(childId, new Set(trail))).reduce((a, b) => a + b, 0);
     widths.set(id, sum || 1);
     return sum || 1;
   }
@@ -195,6 +206,7 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
   const edges: { from: string; to: string; label?: string }[] = [{ from: startNode.id, to: rootId }];
   Object.values(nodes).forEach((node) => {
     (node.answers || []).forEach((answer) => {
+      if (!answer?.next || answer.next === node.id || !nodes[answer.next]) return;
       edges.push({ from: node.id, to: answer.next, label: answer.text });
     });
   });
@@ -692,8 +704,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
               </defs>
 
               {layout.edges.map((edge) => {
-                const from = layoutNodeMap.get(edge.from)!;
-                const to = layoutNodeMap.get(edge.to)!;
+                const from = layoutNodeMap.get(edge.from);
+                const to = layoutNodeMap.get(edge.to);
+                if (!from || !to) return null;
                 const active = visitedEdges.includes(`${edge.from}->${edge.to}`);
                 const start = centerBottom(from);
                 const end = centerTop(to);

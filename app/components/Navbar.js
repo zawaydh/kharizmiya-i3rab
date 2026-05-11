@@ -51,6 +51,7 @@ export default function Navbar() {
           <a href="/">الرئيسية</a>
           <a href={protectedHref("/dashboard")} aria-disabled={locked}>لوحتي</a>
           <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="الموضوعات" locked={locked} />
+          <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="مسارات" locked={locked} mode="paths" />
           <a href={accountHref} className="login-link nav-account-chip">{accountLabel}</a>
           {isAuthenticated ? <button type="button" className="nav-logout-btn" onClick={logout}>خروج</button> : null}
         </nav>
@@ -61,6 +62,7 @@ export default function Navbar() {
           <a href="/" onClick={() => setOpen(false)}>الرئيسية</a>
           <a href={protectedHref("/dashboard")} onClick={() => setOpen(false)} aria-disabled={locked}>لوحتي</a>
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={() => setOpen(false)} />
+          <TopicDropdown currentCode={currentTopicCode} buttonLabel="مسارات" className="mobile-topic-dropdown" locked={locked} mode="paths" onNavigate={() => setOpen(false)} />
           <a href={accountHref} onClick={() => setOpen(false)} className="login-link mobile-login nav-account-chip">{accountLabel}</a>
           {isAuthenticated ? <button type="button" className="nav-logout-btn mobile-logout" onClick={logout}>تسجيل الخروج</button> : null}
         </nav>

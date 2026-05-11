@@ -57,19 +57,23 @@ const TOPIC_TREE = [
   { id: "first", label: "مفتاح الكلمة الأولى", topicCode: "first-word-key" },
 ];
 
-function actionItemsForTopic(topicCode) {
+function actionItemsForTopic(topicCode, mode = "learning") {
   const topic = topicCode ? getTopicByCode(topicCode) : null;
   if (!topic || !topic.isReady) return [];
   const routes = getTopicRoutes(topic.code);
+  if (mode === "paths") {
+    return [{ label: "افتح المسار البصري", href: routes.paths }];
+  }
   return [
     { label: "المرحلة الأولى", href: routes.learn },
-    { label: "المسار البصري", href: routes.paths },
+    { label: "المرحلة الثانية", href: routes.practice },
+    { label: "المرحلة النهائية", href: routes.quiz },
   ];
 }
 
-function TreeItem({ item, level = 0, go }) {
+function TreeItem({ item, level = 0, go, mode = "learning" }) {
   const [open, setOpen] = useState(false);
-  const actions = actionItemsForTopic(item.topicCode);
+  const actions = actionItemsForTopic(item.topicCode, mode);
   const hasChildren = Array.isArray(item.children) && item.children.length > 0;
   const hasActions = actions.length > 0;
   const disabled = item.disabled || (!hasActions && !hasChildren);
@@ -106,7 +110,7 @@ function TreeItem({ item, level = 0, go }) {
       {open && hasChildren ? (
         <ul className="tree-menu-children">
           {item.children.map((child) => (
-            <TreeItem key={child.id} item={child} level={level + 1} go={go} />
+            <TreeItem key={child.id} item={child} level={level + 1} go={go} mode={mode} />
           ))}
         </ul>
       ) : null}
@@ -121,6 +125,7 @@ export default function TopicDropdown({
   className = "",
   locked = false,
   onNavigate,
+  mode = "learning",
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
@@ -166,10 +171,10 @@ export default function TopicDropdown({
 
       {open ? (
         <div className="tree-dropdown-panel" dir="rtl">
-          <div className="tree-dropdown-title">الموضوعات</div>
+          <div className="tree-dropdown-title">{mode === "paths" ? "المسارات البصرية" : "الموضوعات"}</div>
           <ul className="tree-menu-root">
             {TOPIC_TREE.map((item) => (
-              <TreeItem key={item.id} item={item} go={go} />
+              <TreeItem key={item.id} item={item} go={go} mode={mode} />
             ))}
           </ul>
         </div>
