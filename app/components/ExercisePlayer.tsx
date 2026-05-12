@@ -245,6 +245,14 @@ const SMART_GLOSSARY: Record<string, { title: string; body: string[] }> = {
   "علامة فرعية": { title: "العلامة الفرعية", body: ["مثل الواو والألف والياء وثبوت النون وحذف النون وحذف حرف العلة.", "تظهر في أبواب مخصوصة مثل المثنى والجمع والأسماء الخمسة والأفعال الخمسة."] },
   "أدوات النصب": { title: "أدوات النصب", body: ["مثل: أن، لن، كي، حتى، لام التعليل.", "إذا دخلت على الفعل المضارع جعلته منصوبًا."] },
   "أدوات الجزم": { title: "أدوات الجزم", body: ["مثل: لم، لا الناهية، لام الأمر.", "إذا دخلت على الفعل المضارع جعلته مجزومًا."] },
+  "العامل": { title: "العامل", body: ["العامل: كلمة أو تركيب يؤثر في إعراب ما بعده.", "مثل: لم تجزم الفعل، إنّ تنصب الاسم، وحرف الجر يجر الاسم."] },
+  "المعرب": { title: "المعرب", body: ["كلمة يتغير آخرها أو علامتها بحسب موقعها في الجملة.", "مثال: الطالبُ، الطالبَ، الطالبِ."] },
+  "المبني": { title: "المبني", body: ["كلمة يلزم آخرها صورة واحدة، ثم نعربها في محل رفع أو نصب أو جر.", "مثل: هذا، الذي، أنا، إياك."] },
+  "ضمير الفصل": { title: "ضمير الفصل", body: ["ضمير يأتي بين المبتدأ والخبر أو ما أصلهما ليفصل ويوضح المعنى.", "لا محل له من الإعراب في أغلب المقررات المدرسية."] },
+  "ضمائر الرفع المتصلة": { title: "ضمائر الرفع المتصلة", body: ["مثل: تاء الفاعل، نا الفاعلين، واو الجماعة، ألف الاثنين، نون النسوة.", "إذا اتصلت بالفعل فهي غالبًا في محل رفع فاعل."] },
+  "ضمائر الرفع المنفصلة": { title: "ضمائر الرفع المنفصلة", body: ["مثل: أنا، نحن، أنتَ، هو، هي.", "تأتي غالبًا مبتدأ أو في محل رفع بحسب موقعها."] },
+  "ضمائر النصب المتصلة": { title: "ضمائر النصب المتصلة", body: ["مثل: الهاء، الكاف، ياء المتكلم، نا.", "إذا وقع الفعل عليها فهي في محل نصب مفعول به."] },
+  "ضمائر النصب المنفصلة": { title: "ضمائر النصب المنفصلة", body: ["مثل: إياك، إياه، إيانا، إياهم.", "تعرب ضميرًا منفصلًا مبنيًا في محل نصب مفعول به عندما يقع عليها الفعل."] },
 
 };
 
@@ -357,7 +365,7 @@ function getNodeContext(node: any, state: any) {
   if (id.includes("tense")) return "عرفنا أن الكلمة فعل.";
   if (id.includes("has_tool") || id.includes("check_attached") || id.includes("ending") || id.includes("weak_type")) return "ننتقل خطوة خطوة قبل الوصول إلى الإعراب النهائي.";
   if (id.includes("pronoun")) return "عرفنا نوع الفعل، ونفحص الآن أثر الضمير في علامة البناء.";
-  return "اتبع القرار التالي فقط.";
+  return "لنأخذها خطوة واحدة فقط.";
 }
 
 
@@ -386,7 +394,7 @@ function normalizeThinkingNode(node: any, state: any) {
   let hint = shortStudentText(node.hint, "اختر القرار التالي فقط.");
 
   // تحويل أي صياغة مباشرة إلى صياغة عقدة تفكير.
-  if (/إعراب|الإعراب الصحيح/.test(text)) text = "ما القرار الذي يوصلنا للإعراب؟";
+  if (/إعراب|الإعراب الصحيح/.test(text)) text = "ما القرار المناسب الآن؟";
   if (/هل هو:|هل هي:|إذا كان/.test(text)) text = text.replace(/^إذا كان\s*/,'').replace(/^الآن:\s*/,'ما التصنيف المناسب الآن؟ ');
   if (/ما حالة آخر/.test(text)) context = "عرفنا التصنيف، والآن نفحص آخر الكلمة لاختيار العلامة.";
   if (/ما نوع الاسم المبني/.test(text)) context = "عرفنا أنها كلمة مبنية، فنحدد نوعها قبل المحل.";
@@ -405,9 +413,9 @@ function normalizeThinkingNode(node: any, state: any) {
 function thinkingTrailForResult(text?: string) {
   const t = String(text || "");
   if (!t) return [];
-  if (t.includes("فعل مضارع")) return ["عرفنا أنها فعل", "حددنا الزمن: مضارع", "فحصنا الأداة والاتصال", "وصلنا للحالة والعلامة"];
-  if (t.includes("فعل ماض")) return ["عرفنا أنها فعل", "حددنا الزمن: ماضٍ", "فحصنا الضمير المتصل", "حددنا علامة البناء"];
-  if (t.includes("فعل أمر")) return ["عرفنا أنه طلب", "حددنا أنه فعل أمر", "فحصنا الاتصال وآخر الفعل", "حددنا علامة البناء"];
+  if (t.includes("فعل مضارع")) return ["حددنا أنها فعل", "عرفنا الزمن: مضارع", "بحثنا عن العامل والضمير", "بنينا الحالة ثم العلامة"];
+  if (t.includes("فعل ماض")) return ["حددنا أنها فعل", "عرفنا الزمن: ماضٍ", "فحصنا الاتصال", "بنينا علامة البناء"];
+  if (t.includes("فعل أمر")) return ["لاحظنا أنه طلب", "حددناه فعل أمر", "فحصنا الضمير وآخر الفعل", "بنينا علامة البناء"];
   if (t.includes("اسم إشارة") || t.includes("اسم موصول") || t.includes("ضمير") || t.includes("مبني")) return ["عرفنا موقع الكلمة", "ميزنا أنها اسم مبني", "حددنا نوع الاسم المبني", "أعربناه في محلّه"];
   if (t.includes("مبتدأ") || t.includes("خبر") || t.includes("اسم كان") || t.includes("خبر كان") || t.includes("اسم إن") || t.includes("خبر إن")) return ["حددنا الموقع النحوي", "ميزنا نوع الاسم", "فحصنا العدد وآخر الكلمة", "اخترنا العلامة المناسبة"];
   if (t.includes("فاعل")) return ["وجدنا الفعل", "سألنا: من قام بالفعل؟", "حددنا الفاعل", "اخترنا علامة الرفع"];
@@ -993,18 +1001,15 @@ export default function ExercisePlayer({
       ) : (
         <>
           <section className="exercise-panel exercise-core-card" style={box}>
-            <div className="core-task-line">
-              <span>في جملة:</span>
-              <strong>{renderSentence(state.currentSentence, state.currentTarget)}</strong>
-            </div>
-            <div className="core-target-line">
-              <span>المطلوب إعراب</span>
-              <mark>{state.currentTarget}</mark>
-            </div>
-
-            <div className="i3rab-builder-line" aria-label="بناء الإعراب">
-              <span className="builder-target">{state.currentTarget}:</span>
-              <span className="builder-value">{node?.type === "result" ? renderSmartText(firstLine(node.text), setActiveGlossary) : renderSmartText(buildI3rabDraft(tree, state, state.currentTarget), setActiveGlossary)}</span>
+            <div className="core-prompt-card">
+              <div className="core-prompt-sentence">
+                <span>في جملة:</span>
+                <strong>{renderSentence(state.currentSentence, state.currentTarget)}</strong>
+              </div>
+              <div className="i3rab-builder-line" aria-label="بناء الإعراب">
+                <span className="builder-target">{state.currentTarget}:</span>
+                <span className="builder-value">{node?.type === "result" ? renderSmartText(firstLine(node.text), setActiveGlossary) : renderSmartText(buildI3rabDraft(tree, state, state.currentTarget), setActiveGlossary)}</span>
+              </div>
             </div>
 
             {node?.type === "question" ? (

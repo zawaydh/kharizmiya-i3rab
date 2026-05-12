@@ -129,9 +129,9 @@ export const presentVerbTree: ExerciseTree = {
     "raf3_attached": {
       "id": "raf3_attached",
       "type": "question",
-      "context": "عرفنا أن المضارع مرفوع.",
-      "text": "هل هو من الأفعال الخمسة؟",
-      "hint": "نفحص واو الجماعة أو ياء المخاطبة أو ألف الاثنين.",
+      "context": "عرفنا أن المضارع مرفوع. الآن نفحص الاتصال.",
+      "text": "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟",
+      "hint": "إذا اتصل بأحدها فالنتيجة أنه من الأفعال الخمسة.",
       "answers": [
         {
           "id": "a",
@@ -162,7 +162,7 @@ export const presentVerbTree: ExerciseTree = {
         },
         {
           "id": "d",
-          "text": "لا",
+          "text": "لم يتصل بهذه الضمائر",
           "next": "raf3_ending",
           "eval": {
             "fact": "attached",
@@ -228,9 +228,9 @@ export const presentVerbTree: ExerciseTree = {
     "nasb_attached": {
       "id": "nasb_attached",
       "type": "question",
-      "context": "عرفنا أن المضارع منصوب.",
-      "text": "هل هو من الأفعال الخمسة؟",
-      "hint": "في النصب تحذف النون من الأفعال الخمسة.",
+      "context": "عرفنا أن المضارع منصوب. الآن نفحص الاتصال.",
+      "text": "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟",
+      "hint": "إذا اتصل بأحدها فالنتيجة أنه من الأفعال الخمسة، وعلامة نصبه حذف النون.",
       "answers": [
         {
           "id": "a",
@@ -261,7 +261,7 @@ export const presentVerbTree: ExerciseTree = {
         },
         {
           "id": "d",
-          "text": "لا",
+          "text": "لم يتصل بهذه الضمائر",
           "next": "nasb_ending",
           "eval": {
             "fact": "attached",
@@ -327,9 +327,9 @@ export const presentVerbTree: ExerciseTree = {
     "jazm_attached": {
       "id": "jazm_attached",
       "type": "question",
-      "context": "عرفنا أن المضارع مجزوم.",
-      "text": "هل هو من الأفعال الخمسة؟",
-      "hint": "في الجزم تحذف النون من الأفعال الخمسة.",
+      "context": "عرفنا أن المضارع مجزوم. الآن نفحص الاتصال.",
+      "text": "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟",
+      "hint": "إذا اتصل بأحدها فالنتيجة أنه من الأفعال الخمسة، وعلامة جزمه حذف النون.",
       "answers": [
         {
           "id": "a",
@@ -360,7 +360,7 @@ export const presentVerbTree: ExerciseTree = {
         },
         {
           "id": "d",
-          "text": "لا",
+          "text": "لم يتصل بهذه الضمائر",
           "next": "jazm_ending",
           "eval": {
             "fact": "attached",

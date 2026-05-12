@@ -57,9 +57,36 @@ export const imperativeVerbTree: ExerciseTree = {
     "imp_attached": {
       "id": "imp_attached",
       "type": "question",
-      "context": "عرفنا أنه فعل أمر.",
-      "text": "هل اتصل بواو الجماعة أو ياء المخاطبة أو ألف الاثنين؟",
-      "hint": "إذا اتصل بأحدها يبنى على حذف النون.",
+      "context": "عرفنا أنه فعل أمر. نفحص الآن هل اتصل بضمير.",
+      "text": "هل اتصل فعل الأمر بضمير؟",
+      "hint": "الاتصال قد يغيّر علامة البناء.",
+      "answers": [
+        {
+          "id": "a",
+          "text": "نعم، اتصل بضمير",
+          "next": "imp_pronoun_type",
+          "eval": {
+            "fact": "hasPronoun",
+            "equals": true
+          }
+        },
+        {
+          "id": "b",
+          "text": "لم يتصل بضمير",
+          "next": "imp_ending",
+          "eval": {
+            "fact": "hasPronoun",
+            "equals": false
+          }
+        }
+      ]
+    },
+    "imp_pronoun_type": {
+      "id": "imp_pronoun_type",
+      "type": "question",
+      "context": "عرفنا أنه اتصل بضمير. نحدد الضمير ثم نبني العلامة.",
+      "text": "ما الضمير المتصل بالفعل؟",
+      "hint": "واو الجماعة أو ألف الاثنين أو ياء المخاطبة تجعل فعل الأمر مبنيًا على حذف النون، ونون النسوة تجعله مبنيًا على السكون.",
       "answers": [
         {
           "id": "a",
@@ -90,11 +117,11 @@ export const imperativeVerbTree: ExerciseTree = {
         },
         {
           "id": "d",
-          "text": "لا",
-          "next": "imp_ending",
+          "text": "نون النسوة",
+          "next": "R_imperative_sukoon_niswa",
           "eval": {
             "fact": "attached",
-            "equals": "none"
+            "equals": "niswa"
           }
         }
       ]
@@ -102,7 +129,7 @@ export const imperativeVerbTree: ExerciseTree = {
     "imp_ending": {
       "id": "imp_ending",
       "type": "question",
-      "context": "لم يتصل بضمير من الأفعال الخمسة.",
+      "context": "لم يتصل بضمير يغيّر العلامة، فنفحص آخر الفعل.",
       "text": "ما حالة آخر الفعل؟",
       "hint": "الصحيح يبنى على السكون، والمعتل على حذف حرف العلة.",
       "answers": [
@@ -143,6 +170,12 @@ export const imperativeVerbTree: ExerciseTree = {
       "type": "result",
       "coverage": "imperative.delete_noon.alif2",
       "text": "فعل أمر مبني على حذف النون لاتصاله بألف الاثنين، وألف الاثنين ضمير متصل مبني في محل رفع فاعل."
+    },
+    "R_imperative_sukoon_niswa": {
+      "id": "R_imperative_sukoon_niswa",
+      "type": "result",
+      "coverage": "imperative.sukoon.niswa",
+      "text": "فعل أمر مبني على السكون لاتصاله بنون النسوة، ونون النسوة ضمير متصل مبني في محل رفع فاعل."
     },
     "R_imperative_delete_letter": {
       "id": "R_imperative_delete_letter",

@@ -6,9 +6,9 @@ export const firstWordTree: ExerciseTree = {
     "fw_decision_1": {
       "id": "fw_decision_1",
       "type": "question",
-      "context": "نبدأ من الكلمة الأولى فقط.",
-      "text": "ما القرار الأول؟",
-      "hint": "نحدد نوع الكلمة قبل أي إعراب.",
+      "context": "نبدأ من الكلمة المحددة فقط؛ لا نقفز إلى الإعراب.",
+      "text": "ما نوع الكلمة المحددة؟",
+      "hint": "نحدد: اسم، فعل، أو حرف؛ ثم نبحث عن العامل إن وجد.",
       "answers": [
         {
           "id": "a",
@@ -42,9 +42,9 @@ export const firstWordTree: ExerciseTree = {
     "fw_verb_tense": {
       "id": "fw_verb_tense",
       "type": "question",
-      "context": "عرفنا أن الكلمة فعل.",
-      "text": "ما الخطوة التالية؟",
-      "hint": "بعد الفعل نحدد الزمن.",
+      "context": "عرفنا أنها فعل. الآن نحدد الزمن؛ لأن الزمن يفتح المسار المناسب.",
+      "text": "ما زمن الفعل؟",
+      "hint": "الماضي وقع وانتهى، المضارع للحاضر أو المستقبل، والأمر طلب.",
       "answers": [
         {
           "id": "a",
@@ -78,9 +78,9 @@ export const firstWordTree: ExerciseTree = {
     "fw_particle_after": {
       "id": "fw_particle_after",
       "type": "question",
-      "context": "عرفنا أن الكلمة حرف.",
-      "text": "ماذا نفحص بعد الحرف؟",
-      "hint": "الحرف يوجّه ما بعده.",
+      "context": "عرفنا أنها حرف. الحرف قد يكون عاملًا يؤثر فيما بعده.",
+      "text": "ماذا جاء بعد هذا الحرف؟",
+      "hint": "العامل: كلمة تؤثر في إعراب ما بعدها.",
       "answers": [
         {
           "id": "a",
@@ -106,37 +106,37 @@ export const firstWordTree: ExerciseTree = {
       "id": "R_first_noun",
       "type": "result",
       "coverage": "first.noun",
-      "text": "الكلمة الأولى اسم؛ ننتقل بعدها إلى مسار الاسم بحسب موقعه."
+      "text": "الكلمة المحددة اسم؛ نبحث بعدها عن موقعه وهل سبق بعامل يؤثر فيه."
     },
     "R_first_past": {
       "id": "R_first_past",
       "type": "result",
       "coverage": "first.verb.past",
-      "text": "الكلمة الأولى فعل ماضٍ؛ الخطوة التالية تحديد علامة البناء."
+      "text": "الكلمة المحددة فعل ماضٍ؛ ننتقل إلى مسار البناء بحسب الاتصال."
     },
     "R_first_present": {
       "id": "R_first_present",
       "type": "result",
       "coverage": "first.verb.present",
-      "text": "الكلمة الأولى فعل مضارع؛ الخطوة التالية فحص أداة نصب أو أداة جزم."
+      "text": "الكلمة المحددة فعل مضارع؛ نبحث عن العامل: أداة نصب أو أداة جزم أو لا عامل."
     },
     "R_first_imperative": {
       "id": "R_first_imperative",
       "type": "result",
       "coverage": "first.verb.imperative",
-      "text": "الكلمة الأولى فعل أمر؛ الخطوة التالية فحص الاتصال وآخر الفعل."
+      "text": "الكلمة المحددة فعل أمر؛ نفحص الضمير وآخر الفعل لبناء العلامة."
     },
     "R_first_particle_verb": {
       "id": "R_first_particle_verb",
       "type": "result",
       "coverage": "first.particle.verb",
-      "text": "حرف مبني لا محل له من الإعراب، وبعده فعل."
+      "text": "حرف مبني لا محل له من الإعراب، وبعده فعل؛ ننتقل لمسار الفعل."
     },
     "R_first_particle_noun": {
       "id": "R_first_particle_noun",
       "type": "result",
       "coverage": "first.particle.noun",
-      "text": "حرف مبني لا محل له من الإعراب، وبعده اسم."
+      "text": "حرف مبني لا محل له من الإعراب، وقد يعمل في الاسم بعده بحسب نوع الحرف."
     }
   }
 };
