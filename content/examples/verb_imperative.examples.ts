@@ -9,12 +9,12 @@ export const imperativeVerbCoverageKeysOrdered = [
 ];
 
 export const imperativeVerbExamples: Example[] = [
-  { id: "im-01", sentence: "اكتبوا الواجبَ.", target: "اكتبوا", facts: { attached: "waw" }, covers: ["imperative.delete_noon.waw"] },
-  { id: "im-02", sentence: "اكتبي الدرسَ.", target: "اكتبي", facts: { attached: "yaa" }, covers: ["imperative.delete_noon.yaa"] },
-  { id: "im-03", sentence: "اكتبا الجملةَ.", target: "اكتبا", facts: { attached: "alif2" }, covers: ["imperative.delete_noon.alif2"] },
-  { id: "im-04", sentence: "ارمِ الكرةَ.", target: "ارمِ", facts: { attached: "none", ending: "weak" }, covers: ["imperative.delete_letter"] },
-  { id: "im-05", sentence: "ادعُ ربَّك.", target: "ادعُ", facts: { attached: "none", ending: "weak" }, covers: ["imperative.delete_letter"] },
-  { id: "im-06", sentence: "اكتبْ بخطٍّ واضحٍ.", target: "اكتبْ", facts: { attached: "none", ending: "sahih" }, covers: ["imperative.sukoon"] }
+  { id: "im-01", sentence: "اكتبوا الواجبَ.", target: "اكتبوا", facts: { attached: "waw", attachedGroup: "yes" }, covers: ["imperative.delete_noon.waw"] },
+  { id: "im-02", sentence: "اكتبي الدرسَ.", target: "اكتبي", facts: { attached: "yaa", attachedGroup: "yes" }, covers: ["imperative.delete_noon.yaa"] },
+  { id: "im-03", sentence: "اكتبا الجملةَ.", target: "اكتبا", facts: { attached: "alif2", attachedGroup: "yes" }, covers: ["imperative.delete_noon.alif2"] },
+  { id: "im-04", sentence: "ارمِ الكرةَ.", target: "ارمِ", facts: { attached: "none", attachedGroup: "no", ending: "weak" }, covers: ["imperative.delete_letter"] },
+  { id: "im-05", sentence: "ادعُ ربَّك.", target: "ادعُ", facts: { attached: "none", attachedGroup: "no", ending: "weak" }, covers: ["imperative.delete_letter"] },
+  { id: "im-06", sentence: "اكتبْ بخطٍّ واضحٍ.", target: "اكتبْ", facts: { attached: "none", attachedGroup: "no", ending: "sahih" }, covers: ["imperative.sukoon"] }
 ];
 
 const resultByCover: Record<string, string> = {

@@ -298,6 +298,19 @@ function normalizeBuildPiece(text: string, nodeId = "") {
     if (/واو الجماعة|ياء المخاطبة|ألف الاثنين/.test(t)) return "من الأفعال الخمسة";
     if (t === "لا") return "ليس من الأفعال الخمسة";
   }
+  if (t.includes("قام بالفعل")) return "فاعل";
+  if (t.includes("وقع عليها الفعل") || t.includes("وقع عليه الفعل")) return "مفعول به";
+  if (t.includes("اسم معرب")) return "اسم معرب";
+  if (t.includes("اسم مبني")) return "اسم مبني";
+  if (t.includes("مصدر مؤول")) return "مصدر مؤول";
+  if (t.includes("سبق بعامل نصب")) return "منصوب";
+  if (t.includes("سبق بعامل جزم")) return "مجزوم";
+  if (t.includes("لم يسبق بعامل")) return "مرفوع";
+  if (t.includes("نعم، اتصل بأحدها")) return "اتصل بضمير";
+  if (t.includes("لم يتصل بأحدها")) return "لم يتصل بضمير";
+  if (t.includes("واو الجماعة")) return "اتصل بواو الجماعة";
+  if (t.includes("ياء المخاطبة")) return "اتصل بياء المخاطبة";
+  if (t.includes("ألف الاثنين")) return "اتصل بألف الاثنين";
   if (t.includes("حذف النون")) return t.includes("جزم") ? "وعلامة جزمه حذف النون" : (t.includes("نصب") ? "وعلامة نصبه حذف النون" : "وعلامته حذف النون");
   if (t.includes("ثبوت النون")) return "وعلامة رفعه ثبوت النون";
   if (t.includes("حذف حرف العلة")) return "وعلامته حذف حرف العلة";
@@ -873,12 +886,7 @@ export default function ExercisePlayer({
           <span className="exercise-badge">{stageMeta.badge}</span>
           <h1 className="exercise-page-title">{title}</h1>
           {stageMeta.subtitle ? <p className="exercise-page-subtitle">{stageMeta.subtitle}</p> : null}
-          {mode !== "quiz" && (
-            <div className="exercise-meta-inline">
-              <span className="pill pill-accent">المنجَز: {doneCount} / {totalCount}</span>
-              <span className="pill">الخطوة الحالية: {stepLabels?.[stepLabel] || stepLabel}</span>
-            </div>
-          )}
+          
         </div>
 
         <div className="exercise-hero-side">
@@ -1006,12 +1014,12 @@ export default function ExercisePlayer({
         <>
           <section className="exercise-panel exercise-core-card" style={box}>
             <div className="core-task-line core-task-clean">
-              <span>في الجملة:</span>
+              <span>لنبنِ الإعراب من الجملة:</span>
               <strong>{renderSentence(state.currentSentence, state.currentTarget)}</strong>
             </div>
 
             <div className="i3rab-builder-line clean-builder" aria-label="بناء الإعراب">
-              <span className="builder-target">نبني إعراب {state.currentTarget}:</span>
+              <span className="builder-target">{state.currentTarget}:</span>
               <span className="builder-value">{node?.type === "result" ? renderSmartText(firstLine(node.text), setActiveGlossary) : renderSmartText(buildI3rabDraft(tree, state, state.currentTarget), setActiveGlossary)}</span>
             </div>
 

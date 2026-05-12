@@ -1,11 +1,11 @@
 export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[] };
 export const attachedPronounsCoverageKeysOrdered = ["pronoun.raf3.attached", "pronoun.raf3.separate", "pronoun.nasb.attached", "pronoun.nasb.separate", "pronoun.jar"];
 export const attachedPronounsExamples: Example[] = [
-  { id: "pr-01", sentence: "كتبتُ الدرسَ.", target: "تُ", facts: { position: "raf3", form: "attached" }, covers: ["pronoun.raf3.attached"] },
-  { id: "pr-02", sentence: "أنا أقرأُ القصةَ.", target: "أنا", facts: { position: "raf3", form: "separate" }, covers: ["pronoun.raf3.separate"] },
-  { id: "pr-03", sentence: "أكرمَكَ المعلمُ.", target: "كَ", facts: { position: "nasb", form: "attached" }, covers: ["pronoun.nasb.attached"] },
-  { id: "pr-04", sentence: "إياكَ نعبدُ.", target: "إياكَ", facts: { position: "nasb", form: "separate" }, covers: ["pronoun.nasb.separate"] },
-  { id: "pr-05", sentence: "هذا كتابُهُ.", target: "هُ", facts: { position: "jar" }, covers: ["pronoun.jar"] }
+  { id: "pr-01", sentence: "كتبتُ الدرسَ.", target: "تُ", facts: { source: "verb", position: "raf3", form: "attached", role: "doer" }, covers: ["pronoun.raf3.attached"] },
+  { id: "pr-02", sentence: "أنا أقرأُ القصةَ.", target: "أنا", facts: { source: "separate", position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
+  { id: "pr-03", sentence: "أكرمَكَ المعلمُ.", target: "كَ", facts: { source: "verb", position: "nasb", form: "attached", role: "object" }, covers: ["pronoun.nasb.attached"] },
+  { id: "pr-04", sentence: "إياكَ نعبدُ.", target: "إياكَ", facts: { source: "separate", position: "nasb", form: "separate", role: "object" }, covers: ["pronoun.nasb.separate"] },
+  { id: "pr-05", sentence: "هذا كتابُهُ.", target: "هُ", facts: { source: "noun", position: "jar", form: "attached", role: "mudaf" }, covers: ["pronoun.jar"] }
 ];
 const resultByCover: Record<string, string> = {
   "pronoun.raf3.attached": "ضمير رفع متصل مبني في محل رفع",

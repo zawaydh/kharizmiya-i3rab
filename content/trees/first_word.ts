@@ -1,142 +1,18 @@
 export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
 
 export const firstWordTree: ExerciseTree = {
-  "startNodeId": "fw_decision_1",
-  "nodes": {
-    "fw_decision_1": {
-      "id": "fw_decision_1",
-      "type": "question",
-      "context": "نبدأ من الكلمة الأولى فقط.",
-      "text": "ما القرار الأول؟",
-      "hint": "نحدد نوع الكلمة قبل أي إعراب.",
-      "answers": [
-        {
-          "id": "a",
-          "text": "اسم",
-          "next": "R_first_noun",
-          "eval": {
-            "fact": "wordType",
-            "equals": "noun"
-          }
-        },
-        {
-          "id": "b",
-          "text": "فعل",
-          "next": "fw_verb_tense",
-          "eval": {
-            "fact": "wordType",
-            "equals": "verb"
-          }
-        },
-        {
-          "id": "c",
-          "text": "حرف",
-          "next": "fw_particle_after",
-          "eval": {
-            "fact": "wordType",
-            "equals": "particle"
-          }
-        }
-      ]
-    },
-    "fw_verb_tense": {
-      "id": "fw_verb_tense",
-      "type": "question",
-      "context": "عرفنا أن الكلمة فعل.",
-      "text": "ما الخطوة التالية؟",
-      "hint": "بعد الفعل نحدد الزمن.",
-      "answers": [
-        {
-          "id": "a",
-          "text": "ماضٍ",
-          "next": "R_first_past",
-          "eval": {
-            "fact": "verbType",
-            "equals": "past"
-          }
-        },
-        {
-          "id": "b",
-          "text": "مضارع",
-          "next": "R_first_present",
-          "eval": {
-            "fact": "verbType",
-            "equals": "present"
-          }
-        },
-        {
-          "id": "c",
-          "text": "أمر",
-          "next": "R_first_imperative",
-          "eval": {
-            "fact": "verbType",
-            "equals": "imperative"
-          }
-        }
-      ]
-    },
-    "fw_particle_after": {
-      "id": "fw_particle_after",
-      "type": "question",
-      "context": "عرفنا أن الكلمة حرف.",
-      "text": "ماذا نفحص بعد الحرف؟",
-      "hint": "الحرف يوجّه ما بعده.",
-      "answers": [
-        {
-          "id": "a",
-          "text": "جاء بعده فعل",
-          "next": "R_first_particle_verb",
-          "eval": {
-            "fact": "afterParticle",
-            "equals": "verb"
-          }
-        },
-        {
-          "id": "b",
-          "text": "جاء بعده اسم",
-          "next": "R_first_particle_noun",
-          "eval": {
-            "fact": "afterParticle",
-            "equals": "noun"
-          }
-        }
-      ]
-    },
-    "R_first_noun": {
-      "id": "R_first_noun",
-      "type": "result",
-      "coverage": "first.noun",
-      "text": "الكلمة الأولى اسم؛ ننتقل بعدها إلى مسار الاسم بحسب موقعه."
-    },
-    "R_first_past": {
-      "id": "R_first_past",
-      "type": "result",
-      "coverage": "first.verb.past",
-      "text": "الكلمة الأولى فعل ماضٍ؛ الخطوة التالية تحديد علامة البناء."
-    },
-    "R_first_present": {
-      "id": "R_first_present",
-      "type": "result",
-      "coverage": "first.verb.present",
-      "text": "الكلمة الأولى فعل مضارع؛ الخطوة التالية فحص أداة نصب أو أداة جزم."
-    },
-    "R_first_imperative": {
-      "id": "R_first_imperative",
-      "type": "result",
-      "coverage": "first.verb.imperative",
-      "text": "الكلمة الأولى فعل أمر؛ الخطوة التالية فحص الاتصال وآخر الفعل."
-    },
-    "R_first_particle_verb": {
-      "id": "R_first_particle_verb",
-      "type": "result",
-      "coverage": "first.particle.verb",
-      "text": "حرف مبني لا محل له من الإعراب، وبعده فعل."
-    },
-    "R_first_particle_noun": {
-      "id": "R_first_particle_noun",
-      "type": "result",
-      "coverage": "first.particle.noun",
-      "text": "حرف مبني لا محل له من الإعراب، وبعده اسم."
-    }
+  startNodeId: "fw_decision_1",
+  nodes: {
+    fw_decision_1: { id: "fw_decision_1", type: "question", context: "نبدأ من الكلمة المحددة فقط. لا نبحث عن الإعراب قبل أن نعرف نوعها.", text: "ما نوع الكلمة المحددة؟", hint: "الاسم يقبل الجر أو التنوين غالبًا، والفعل يدل على حدث وزمن، والحرف لا يظهر معناه إلا مع غيره.", answers: [ { id: "a", text: "اسم", next: "fw_noun_factor", eval: { fact: "wordType", equals: "noun" } }, { id: "b", text: "فعل", next: "fw_verb_tense", eval: { fact: "wordType", equals: "verb" } }, { id: "c", text: "حرف", next: "fw_particle_after", eval: { fact: "wordType", equals: "particle" } } ] },
+    fw_noun_factor: { id: "fw_noun_factor", type: "question", context: "عرفنا أنها اسم. قبل الحكم النهائي نسأل: هل سبقها عامل؟ (العامل: كلمة تؤثر في إعراب ما بعدها)", text: "هل سبق الاسم عامل ظاهر؟", hint: "مثل: حرف جر، إنّ، كان. إذا لم يسبقها عامل وكانت في أول الجملة فقد تكون مبتدأ.", answers: [ { id: "a", text: "لا، لم يسبقها عامل ظاهر", next: "R_first_noun", correct: true }, { id: "b", text: "نعم، سبقها عامل", next: "R_first_noun_factor", correct: false, hint: "في هذا المثال نتدرّب على بداية الاسم غالبًا بلا عامل ظاهر." } ] },
+    fw_verb_tense: { id: "fw_verb_tense", type: "question", context: "عرفنا أن الكلمة فعل.", text: "ما زمن الفعل؟", hint: "الزمن يحدد المسار: ماضٍ، مضارع، أو أمر.", answers: [ { id: "a", text: "ماضٍ", next: "R_first_past", eval: { fact: "verbType", equals: "past" } }, { id: "b", text: "مضارع", next: "R_first_present", eval: { fact: "verbType", equals: "present" } }, { id: "c", text: "أمر", next: "R_first_imperative", eval: { fact: "verbType", equals: "imperative" } } ] },
+    fw_particle_after: { id: "fw_particle_after", type: "question", context: "عرفنا أن الكلمة حرف. الحرف غالبًا يكون عاملًا أو رابطًا لما بعده.", text: "ماذا جاء بعد الحرف؟", hint: "إذا جاء بعده اسم فقد يكون حرف جر أو حرفًا ناسخًا، وإذا جاء بعده فعل فقد يؤثر في الفعل أو يربطه.", answers: [ { id: "a", text: "جاء بعده فعل", next: "R_first_particle_verb", eval: { fact: "afterParticle", equals: "verb" } }, { id: "b", text: "جاء بعده اسم", next: "R_first_particle_noun", eval: { fact: "afterParticle", equals: "noun" } } ] },
+    R_first_noun: { id: "R_first_noun", type: "result", coverage: "first.noun", text: "الكلمة الأولى اسم؛ ننتقل بعدها إلى مسار الاسم: هل هو معرب أم مبني؟ وهل سبقه عامل؟ وما موقعه؟" },
+    R_first_noun_factor: { id: "R_first_noun_factor", type: "result", coverage: "first.noun", text: "الكلمة اسم، لكن وجود العامل يجعلنا نبحث عن أثر العامل قبل الحكم على موقعها." },
+    R_first_past: { id: "R_first_past", type: "result", coverage: "first.verb.past", text: "الكلمة الأولى فعل ماضٍ؛ الخطوة التالية فحص الاتصال بضمير لتحديد علامة البناء." },
+    R_first_present: { id: "R_first_present", type: "result", coverage: "first.verb.present", text: "الكلمة الأولى فعل مضارع؛ الخطوة التالية فحص العامل السابق: أداة نصب أو أداة جزم أو لا أداة." },
+    R_first_imperative: { id: "R_first_imperative", type: "result", coverage: "first.verb.imperative", text: "الكلمة الأولى فعل أمر؛ الخطوة التالية فحص الاتصال وآخر الفعل لتحديد علامة البناء." },
+    R_first_particle_verb: { id: "R_first_particle_verb", type: "result", coverage: "first.particle.verb", text: "حرف مبني لا محل له من الإعراب، وبعده فعل؛ نبحث عن أثره في الفعل إن كان عاملًا." },
+    R_first_particle_noun: { id: "R_first_particle_noun", type: "result", coverage: "first.particle.noun", text: "حرف مبني لا محل له من الإعراب، وبعده اسم؛ نبحث هل هو حرف جر أو حرف ناسخ أو رابط." }
   }
 };
