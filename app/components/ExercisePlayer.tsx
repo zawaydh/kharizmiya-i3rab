@@ -922,7 +922,7 @@ export default function ExercisePlayer({
             <p>{mode === "learn" ? "الخطوة التالية واضحة الآن: انتقل إلى المرحلة الثانية." : "الخطوة التالية واضحة الآن: انتقل إلى المرحلة النهائية."}</p>
           </div>
           <div className="complete-actions">
-            <button onClick={() => router.push(`${stageMeta.nextHrefPrefix}${topicId}`)} style={primaryNavBtn}>
+            <button className="stage-next-button ready-strong" onClick={() => router.push(`${stageMeta.nextHrefPrefix}${topicId}`)} style={primaryNavBtn}>
               {stageMeta.nextLabel || "الانتقال"}
             </button>
             <button onClick={resetTraining} style={ghostBtn}>
@@ -969,7 +969,7 @@ export default function ExercisePlayer({
 
           <button onClick={restartQuiz} style={ghostBtn}>إعادة المرحلة النهائية</button>
         </section>
-      ) : mode === "quiz" ? (
+      ) : isDone && mode !== "quiz" ? null : mode === "quiz" ? (
         <>
           <section className="exercise-panel exercise-sentence-panel" style={box}>
             <div style={{ opacity: 0.6, marginBottom: 6 }}>السؤال {quizCursor + 1} من {quizOrder.length}</div>
@@ -1014,14 +1014,17 @@ export default function ExercisePlayer({
         <>
           <section className="exercise-panel exercise-core-card" style={box}>
             <div className="core-task-line core-task-clean">
-              <span>لنبنِ الإعراب من الجملة:</span>
-              <strong>{renderSentence(state.currentSentence, state.currentTarget)}</strong>
+              <span className="task-kicker">في الجملة:</span>
+              <strong className="task-sentence">{renderSentence(state.currentSentence, state.currentTarget)}</strong>
+              <span className="task-helper">نتدرّب على إعراب الكلمة التي تحتها خط خطوة خطوة.</span>
             </div>
 
-            <div className="i3rab-builder-line clean-builder" aria-label="بناء الإعراب">
-              <span className="builder-target">{state.currentTarget}:</span>
-              <span className="builder-value">{node?.type === "result" ? renderSmartText(firstLine(node.text), setActiveGlossary) : renderSmartText(buildI3rabDraft(tree, state, state.currentTarget), setActiveGlossary)}</span>
-            </div>
+            {buildI3rabDraft(tree, state, state.currentTarget) !== "ابدأ بتحديد نوع الكلمة" || node?.type === "result" ? (
+              <div className="i3rab-builder-line clean-builder" aria-label="بناء الإعراب">
+                <span className="builder-label">مسار التفكير:</span>
+                <span className="builder-value">{node?.type === "result" ? renderSmartText(firstLine(node.text), setActiveGlossary) : renderSmartText(buildI3rabDraft(tree, state, state.currentTarget), setActiveGlossary)}</span>
+              </div>
+            ) : null}
 
             {node?.type === "question" ? (
               <div className="core-question-block">

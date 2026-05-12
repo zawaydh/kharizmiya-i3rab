@@ -83,7 +83,13 @@ function TreeItem({ item, level = 0, go, mode = "learning" }) {
         className="tree-menu-label"
         disabled={disabled}
         onClick={() => {
-          if (hasChildren || hasActions) setOpen((v) => !v);
+          if (hasChildren) {
+            setOpen((v) => !v);
+            return;
+          }
+          if (hasActions) {
+            go(actions[0].href);
+          }
         }}
         title={item.note || undefined}
       >
@@ -93,7 +99,7 @@ function TreeItem({ item, level = 0, go, mode = "learning" }) {
 
       {open && item.note ? <div className="tree-menu-note">{item.note}</div> : null}
 
-      {open && hasActions ? (
+      {open && hasChildren && hasActions ? (
         <ul className="tree-menu-actions">
           {actions.map((a) => (
             <li key={a.href}>
