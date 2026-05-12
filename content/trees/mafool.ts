@@ -42,7 +42,7 @@ export const mafoolTree: ExerciseTree = {
     "mafool_built": {
       "id": "mafool_built",
       "type": "question",
-      "context": "عرفنا أنها اسم مبني؛ إذن سنعربه في محلّه لا بعلامة ظاهرة.",
+      "context": "عرفنا أنها اسم مبني.",
       "text": "ما نوع الاسم المبني؟",
       "hint": "الاسم المبني يعرب في محلّه.",
       "answers": [
@@ -105,7 +105,7 @@ export const mafoolTree: ExerciseTree = {
     "mafool_number": {
       "id": "mafool_number",
       "type": "question",
-      "context": "عرفنا أنه اسم معرب؛ الآن نحدد نوعه لاختيار العلامة.",
+      "context": "عرفنا أنه اسم معرب.",
       "text": "ما الخطوة التالية؟",
       "hint": "العدد والنوع يقودان إلى العلامة.",
       "answers": [

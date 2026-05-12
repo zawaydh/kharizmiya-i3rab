@@ -21,7 +21,7 @@ export default function Navbar() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuthUser();
   const locked = !isLoading && !isAuthenticated;
-  const accountLabel = !isLoading && isAuthenticated ? `حسابي: ${getDisplayName(user)}` : "الحساب";
+  const accountLabel = !isLoading && isAuthenticated ? "حسابي" : "دخول";
   const accountHref = !isLoading && isAuthenticated ? "/dashboard" : "/auth";
   const protectedHref = (href) => (locked ? "/auth" : href);
 
@@ -48,9 +48,10 @@ export default function Navbar() {
         </a>
 
         <nav className="desktop-links nav-final-links luxe-desktop-nav" aria-label="التنقل الرئيسي">
+          <a href="/">الرئيسية</a>
+          <a href={protectedHref("/dashboard")} aria-disabled={locked}>لوحتي</a>
           <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="الموضوعات" locked={locked} />
           <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="مسارات" locked={locked} mode="paths" />
-          <a href={protectedHref("/dashboard")} aria-disabled={locked}>لوحتي</a>
           <a href={accountHref} className="login-link nav-account-chip">{accountLabel}</a>
           {isAuthenticated ? <button type="button" className="nav-logout-btn" onClick={logout}>خروج</button> : null}
         </nav>
@@ -58,11 +59,12 @@ export default function Navbar() {
         <button type="button" className="menu-btn nav-final-menu-btn luxe-menu-btn" onClick={() => setOpen((v) => !v)} aria-label="فتح القائمة" aria-expanded={open}>☰</button>
 
         <nav className={`mobile-menu-clean nav-final-mobile-menu luxe-mobile-menu ${open ? "open" : ""}`}>
+          <a href="/" onClick={() => setOpen(false)}>الرئيسية</a>
+          <a href={protectedHref("/dashboard")} onClick={() => setOpen(false)} aria-disabled={locked}>لوحتي</a>
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={() => setOpen(false)} />
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="مسارات" className="mobile-topic-dropdown" locked={locked} mode="paths" onNavigate={() => setOpen(false)} />
-          <a href={protectedHref("/dashboard")} onClick={() => setOpen(false)} aria-disabled={locked}>لوحتي</a>
           <a href={accountHref} onClick={() => setOpen(false)} className="login-link mobile-login nav-account-chip">{accountLabel}</a>
-          {isAuthenticated ? <button type="button" className="nav-logout-btn mobile-logout" onClick={logout}>تسجيل الخروج</button> : null}
+          {isAuthenticated ? <button type="button" className="nav-logout-btn mobile-logout" onClick={logout}>خروج</button> : null}
         </nav>
       </div>
     </header>

@@ -129,9 +129,9 @@ export const presentVerbTree: ExerciseTree = {
     "raf3_attached": {
       "id": "raf3_attached",
       "type": "question",
-      "context": "عرفنا أن المضارع مرفوع. الآن نفحص الاتصال.",
-      "text": "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟",
-      "hint": "إذا اتصل بأحدها فالنتيجة أنه من الأفعال الخمسة.",
+      "context": "عرفنا أن المضارع مرفوع.",
+      "text": "هل اتصل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟",
+      "hint": "نفحص الضمير المتصل أولًا، ثم نستنتج هل هو من الأفعال الخمسة.",
       "answers": [
         {
           "id": "a",
@@ -162,7 +162,7 @@ export const presentVerbTree: ExerciseTree = {
         },
         {
           "id": "d",
-          "text": "لم يتصل بهذه الضمائر",
+          "text": "لا",
           "next": "raf3_ending",
           "eval": {
             "fact": "attached",
@@ -174,7 +174,7 @@ export const presentVerbTree: ExerciseTree = {
     "raf3_ending": {
       "id": "raf3_ending",
       "type": "question",
-      "context": "ليس من الأفعال الخمسة.",
+      "context": "لم يتصل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة.",
       "text": "ما حالة آخر الفعل؟",
       "hint": "حروف العلة: الألف والواو والياء.",
       "answers": [
@@ -228,9 +228,9 @@ export const presentVerbTree: ExerciseTree = {
     "nasb_attached": {
       "id": "nasb_attached",
       "type": "question",
-      "context": "عرفنا أن المضارع منصوب. الآن نفحص الاتصال.",
-      "text": "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟",
-      "hint": "إذا اتصل بأحدها فالنتيجة أنه من الأفعال الخمسة، وعلامة نصبه حذف النون.",
+      "context": "عرفنا أن المضارع منصوب.",
+      "text": "هل اتصل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟",
+      "hint": "إذا اتصل المضارع بهذه الضمائر فهو من الأفعال الخمسة، وعلامة نصبه حذف النون.",
       "answers": [
         {
           "id": "a",
@@ -261,7 +261,7 @@ export const presentVerbTree: ExerciseTree = {
         },
         {
           "id": "d",
-          "text": "لم يتصل بهذه الضمائر",
+          "text": "لا",
           "next": "nasb_ending",
           "eval": {
             "fact": "attached",
@@ -273,7 +273,7 @@ export const presentVerbTree: ExerciseTree = {
     "nasb_ending": {
       "id": "nasb_ending",
       "type": "question",
-      "context": "ليس من الأفعال الخمسة.",
+      "context": "لم يتصل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة.",
       "text": "ما حالة آخر الفعل المنصوب؟",
       "hint": "الصحيح تظهر عليه الفتحة.",
       "answers": [
@@ -327,9 +327,9 @@ export const presentVerbTree: ExerciseTree = {
     "jazm_attached": {
       "id": "jazm_attached",
       "type": "question",
-      "context": "عرفنا أن المضارع مجزوم. الآن نفحص الاتصال.",
-      "text": "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟",
-      "hint": "إذا اتصل بأحدها فالنتيجة أنه من الأفعال الخمسة، وعلامة جزمه حذف النون.",
+      "context": "عرفنا أن المضارع مجزوم.",
+      "text": "هل اتصل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟",
+      "hint": "إذا اتصل المضارع بهذه الضمائر فهو من الأفعال الخمسة، وعلامة جزمه حذف النون.",
       "answers": [
         {
           "id": "a",
@@ -360,7 +360,7 @@ export const presentVerbTree: ExerciseTree = {
         },
         {
           "id": "d",
-          "text": "لم يتصل بهذه الضمائر",
+          "text": "لا",
           "next": "jazm_ending",
           "eval": {
             "fact": "attached",
@@ -372,7 +372,7 @@ export const presentVerbTree: ExerciseTree = {
     "jazm_ending": {
       "id": "jazm_ending",
       "type": "question",
-      "context": "ليس من الأفعال الخمسة.",
+      "context": "لم يتصل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة.",
       "text": "ما حالة آخر الفعل المجزوم؟",
       "hint": "الصحيح يجزم بالسكون، والمعتل بحذف حرف العلة.",
       "answers": [
