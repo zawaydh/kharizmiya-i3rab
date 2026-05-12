@@ -263,13 +263,17 @@ function renderSmartText(text?: string, onTerm?: (term: string) => void) {
   return parts.map((part, idx) => {
     if (SMART_GLOSSARY[part]) {
       return (
-        <button key={`${part}-${idx}`} type="button" className="smart-term" onClick={() => onTerm?.(part)}>
+        <button key={`${part}-${idx}`} type="button" className="smart-term smart-term-soft" onClick={() => onTerm?.(part)} aria-label={`توضيح: ${part}`}>
           {part}
         </button>
       );
     }
     return <React.Fragment key={idx}>{part}</React.Fragment>;
   });
+}
+
+function plainText(text?: string) {
+  return String(text || "");
 }
 
 
@@ -374,9 +378,11 @@ function ProgressDots({ total, done, current }: { total: number; done: number; c
 function getNodeContext(node: any, state: any) {
   if (node?.context) return node.context;
   const id = String(node?.id || "");
-  if (id.includes("tense")) return "عرفنا أن الكلمة فعل.";
-  if (id.includes("has_tool") || id.includes("check_attached") || id.includes("ending") || id.includes("weak_type")) return "ننتقل خطوة خطوة قبل الوصول إلى الإعراب النهائي.";
-  if (id.includes("pronoun")) return "عرفنا نوع الفعل، ونفحص الآن أثر الضمير في علامة البناء.";
+  if (id.includes("tense")) return "لنحدد الزمن من معنى الكلمة قبل أي علامة.";
+  if (id.includes("has_tool")) return "ننظر الآن إلى ما قبل الكلمة: هل هناك عامل؟";
+  if (id.includes("check_attached")) return "ننظر إلى آخر الفعل: هل اتصل به ضمير؟";
+  if (id.includes("ending") || id.includes("weak_type")) return "ننظر إلى آخر الكلمة فقط لنحدد العلامة.";
+  if (id.includes("pronoun")) return "نوع الضمير يساعدنا على بناء النتيجة.";
   return "لنأخذها بهدوء: نختار قرارًا واحدًا فقط.";
 }
 
@@ -411,9 +417,9 @@ function normalizeThinkingNode(node: any, state: any) {
   if (/ما حالة آخر/.test(text)) context = "عرفنا التصنيف، والآن نفحص آخر الكلمة لاختيار العلامة.";
   if (/ما نوع الاسم المبني/.test(text)) context = "عرفنا أنها كلمة مبنية، فنحدد نوعها قبل المحل.";
   if (/ما نوع الجملة/.test(text)) context = "عرفنا أنها جملة، فنحدد صورتها قبل الحكم على محلها.";
-  if (/هل سبق بأداة/.test(text)) context = "قبل تحديد الحالة نفحص ما قبل الفعل.";
+  if (/هل سبق بأداة/.test(text)) context = "قبل تحديد الحالة ننظر إلى الكلمة السابقة للفعل.";
   if (/الأفعال الخمسة/.test(text)) text = "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟";
-  if (/هل اتصل/.test(text)) context = "الاتصال يغير علامة البناء أو الإعراب، لذلك نفحصه الآن.";
+  if (/هل اتصل/.test(text)) context = "ننظر إلى آخر الفعل: هل اتصل به ضمير؟";
 
   const answers = (node.answers || []).map((a: any) => ({
     ...a,
@@ -1014,9 +1020,9 @@ export default function ExercisePlayer({
         <>
           <section className="exercise-panel exercise-core-card" style={box}>
             <div className="core-task-line core-task-clean">
-              <span className="task-kicker">في الجملة:</span>
+              <span className="task-kicker">لننظر إلى الجملة:</span>
               <strong className="task-sentence">{renderSentence(state.currentSentence, state.currentTarget)}</strong>
-              <span className="task-helper">نتدرّب على إعراب الكلمة التي تحتها خط خطوة خطوة.</span>
+              <span className="task-helper">الكلمة التي تحتها خط هي محور التفكير. نصل إلى إعرابها خطوة خطوة.</span>
             </div>
 
             {buildI3rabDraft(tree, state, state.currentTarget) !== "ابدأ بتحديد نوع الكلمة" || node?.type === "result" ? (
@@ -1029,7 +1035,7 @@ export default function ExercisePlayer({
             {node?.type === "question" ? (
               <div className="core-question-block">
                 <div className="exercise-node-context slim-context">{renderSmartText(thinkingNode?.context, setActiveGlossary)}</div>
-                <div className="exercise-question-title compact-question-title">{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
+                <div className="exercise-question-title compact-question-title">{plainText(thinkingNode?.text)}</div>
                 <div className="core-answer-grid">
                   {thinkingNode.answers.map((a: any) => {
                     const answerClass = [
