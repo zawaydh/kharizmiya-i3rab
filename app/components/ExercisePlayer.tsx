@@ -162,6 +162,25 @@ function getStageMeta(mode: Mode) {
   };
 }
 
+
+function extractTopicName(title?: string) {
+  const raw = String(title || "").split("—")[0].trim();
+  return raw || "الموضوع";
+}
+
+function stageLearningTitle(stageBadge: string, title?: string) {
+  const topic = extractTopicName(title);
+  if (stageBadge === "المرحلة النهائية") return `${stageBadge} في اختبار إعراب ${topic}`;
+  if (stageBadge === "المرحلة الثانية") return `${stageBadge} في تدريب إعراب ${topic}`;
+  return `${stageBadge} في تعلم إعراب ${topic}`;
+}
+
+function i3rabTokensFromDraft(draft: string) {
+  const clean = String(draft || "").trim();
+  if (!clean || clean.includes("ابدأ")) return [];
+  return clean.split(/\s+/).filter(Boolean);
+}
+
 function resultIdToCoverage(resultId?: string) {
   switch (resultId) {
     case "R_mubtada_sahih":
@@ -871,12 +890,17 @@ export default function ExercisePlayer({
     setQuizLocked(false);
   }
 
+  const topicName = extractTopicName(title);
+  const stageTitle = stageLearningTitle(stageMeta.badge, title);
+  const i3rabDraft = buildI3rabDraft(tree, state, state.currentTarget);
+  const i3rabTokens = i3rabTokensFromDraft(i3rabDraft);
+
   return (
     <div className="exercise-page-shell">
       <section className="exercise-hero-card card card-glow">
         <div className="exercise-hero-main">
-          <span className="exercise-badge">{stageMeta.badge}</span>
-          <h1 className="exercise-page-title">{title}</h1>
+          <span className="exercise-badge stage-learning-badge">{stageTitle}</span>
+          <h1 className="exercise-page-title">{topicName}</h1>
           {stageMeta.subtitle ? <p className="exercise-page-subtitle">{stageMeta.subtitle}</p> : null}
           {mode !== "quiz" && (
             <div className="exercise-meta-inline">
@@ -1007,6 +1031,21 @@ export default function ExercisePlayer({
           <section className="exercise-panel exercise-core-card clean-thinking-card" style={box}>
             <div className="clean-sentence-line" aria-label="الجملة">
               {renderSentence(state.currentSentence, state.currentTarget)}
+            </div>
+
+            <div className="i3rab-builder-strip" aria-label="بناء الإعراب خطوة بخطوة">
+              <span className="builder-label">بناء الإعراب</span>
+              <span className="builder-target">{state.currentTarget || "الكلمة"}</span>
+              <span className="builder-colon">:</span>
+              {i3rabTokens.length ? (
+                <span className="builder-tokens">
+                  {i3rabTokens.map((token, idx) => (
+                    <span key={`${token}-${idx}`} className="builder-token">{token}</span>
+                  ))}
+                </span>
+              ) : (
+                <span className="builder-placeholder">ستُبنى العبارة هنا كلمةً كلمة</span>
+              )}
             </div>
 
             {node?.type === "question" ? (
