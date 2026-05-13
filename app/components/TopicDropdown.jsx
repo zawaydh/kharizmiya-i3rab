@@ -62,11 +62,11 @@ function actionItemsForTopic(topicCode, mode = "learning", topicLabel = "الم�
   if (!topic || !topic.isReady) return [];
   const routes = getTopicRoutes(topic.code);
   if (mode === "paths") {
-    return [{ label: "المسار البصري", href: routes.paths }];
+    return [{ label: "افتح المسار", href: routes.paths }];
   }
   // أمام الطالب لا نعرض أسماء المراحل داخل القائمة؛ يدخل للموضوع فقط
   // ثم تُفتح المرحلة الثانية/النهائية من داخل الصفحة بعد الإنجاز.
-  return [{ label: topicLabel, href: routes.learn }];
+  return [{ label: "ابدأ", href: routes.learn }];
 }
 
 function TreeItem({ item, level = 0, go, mode = "learning" }) {
@@ -83,13 +83,7 @@ function TreeItem({ item, level = 0, go, mode = "learning" }) {
         className="tree-menu-label"
         disabled={disabled}
         onClick={() => {
-          if (hasChildren) {
-            setOpen((v) => !v);
-            return;
-          }
-          if (hasActions) {
-            go(actions[0].href);
-          }
+          if (hasChildren || hasActions) setOpen((v) => !v);
         }}
         title={item.note || undefined}
       >
@@ -99,7 +93,7 @@ function TreeItem({ item, level = 0, go, mode = "learning" }) {
 
       {open && item.note ? <div className="tree-menu-note">{item.note}</div> : null}
 
-      {open && hasChildren && hasActions ? (
+      {open && hasActions ? (
         <ul className="tree-menu-actions">
           {actions.map((a) => (
             <li key={a.href}>

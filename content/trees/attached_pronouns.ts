@@ -1,15 +1,149 @@
 export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
 
 export const attachedPronounsTree: ExerciseTree = {
-  startNodeId: "pronoun_source",
-  nodes: {
-    pronoun_source: { id: "pronoun_source", type: "question", context: "الضمير لا نعربه من شكله فقط؛ ننظر إلى العامل أو الكلمة التي اتصل بها.", text: "أين جاء الضمير؟", hint: "اسأل: اتصل باسم؟ بفعل؟ بحرف؟ أم جاء منفصلًا؟", answers: [ { id: "a", text: "اتصل باسم", next: "R_pronoun_jar", eval: { fact: "source", equals: "noun" } }, { id: "b", text: "اتصل بفعل", next: "pronoun_verb_role", eval: { fact: "source", equals: "verb" } }, { id: "c", text: "جاء ضميرًا منفصلًا", next: "pronoun_separate_role", eval: { fact: "source", equals: "separate" } }, { id: "d", text: "اتصل بحرف جر", next: "R_pronoun_jar", eval: { fact: "source", equals: "prep" } }, { id: "e", text: "اتصل بحرف ناسخ", next: "R_pronoun_nasb_attached", eval: { fact: "source", equals: "nasikh" } } ] },
-    pronoun_verb_role: { id: "pronoun_verb_role", type: "question", context: "الضمير اتصل بفعل؛ الآن نحدد وظيفته: هل فعل الحدث أم وقع عليه الحدث؟", text: "ما علاقة الضمير بالفعل؟", hint: "إذا قام بالفعل فهو فاعل، وإذا وقع عليه الفعل فهو مفعول به.", answers: [ { id: "a", text: "قام بالفعل", next: "R_pronoun_raf3_attached", eval: { fact: "role", equals: "doer" } }, { id: "b", text: "وقع عليه الفعل", next: "R_pronoun_nasb_attached", eval: { fact: "role", equals: "object" } } ] },
-    pronoun_separate_role: { id: "pronoun_separate_role", type: "question", context: "الضمير المنفصل قد يكون في محل رفع أو نصب بحسب وظيفته.", text: "ما وظيفة الضمير المنفصل هنا؟", hint: "أنا/هو غالبًا رفع، وإياك/إياه ضمائر نصب منفصلة.", answers: [ { id: "a", text: "بدأت به الجملة أو ناب عن فاعل", next: "R_pronoun_raf3_separate", eval: { fact: "position", equals: "raf3" } }, { id: "b", text: "وقع عليه الفعل مثل: إياك", next: "R_pronoun_nasb_separate", eval: { fact: "position", equals: "nasb" } } ] },
-    R_pronoun_raf3_attached: { id: "R_pronoun_raf3_attached", type: "result", coverage: "pronoun.raf3.attached", text: "ضمير رفع متصل مبني في محل رفع فاعل." },
-    R_pronoun_raf3_separate: { id: "R_pronoun_raf3_separate", type: "result", coverage: "pronoun.raf3.separate", text: "ضمير رفع منفصل مبني في محل رفع." },
-    R_pronoun_nasb_attached: { id: "R_pronoun_nasb_attached", type: "result", coverage: "pronoun.nasb.attached", text: "ضمير نصب متصل مبني في محل نصب مفعول به." },
-    R_pronoun_nasb_separate: { id: "R_pronoun_nasb_separate", type: "result", coverage: "pronoun.nasb.separate", text: "ضمير نصب منفصل مبني في محل نصب مفعول به." },
-    R_pronoun_jar: { id: "R_pronoun_jar", type: "result", coverage: "pronoun.jar", text: "ضمير متصل مبني في محل جر." }
+  "startNodeId": "pronoun_step_1",
+  "nodes": {
+    "pronoun_step_1": {
+      "id": "pronoun_step_1",
+      "type": "question",
+      "context": "عرفنا أن الكلمة ضمير.",
+      "text": "ما القرار التالي؟",
+      "hint": "الضمير يأخذ محل الاسم الذي ناب عنه.",
+      "answers": [
+        {
+          "id": "a",
+          "text": "تحديد المحل الإعرابي",
+          "next": "pronoun_position",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "تحديد الحركة فقط",
+          "next": "pronoun_step_1",
+          "correct": false,
+          "hint": "الضمائر مبنية؛ المهم المحل."
+        }
+      ]
+    },
+    "pronoun_position": {
+      "id": "pronoun_position",
+      "type": "question",
+      "context": "نبحث عن موقع الضمير.",
+      "text": "هل حلّ محل اسم مرفوع أم منصوب أم مجرور؟",
+      "hint": "ضع اسمًا ظاهرًا مكان الضمير.",
+      "answers": [
+        {
+          "id": "a",
+          "text": "محل رفع",
+          "next": "pronoun_form_raf3",
+          "eval": {
+            "fact": "position",
+            "equals": "raf3"
+          }
+        },
+        {
+          "id": "b",
+          "text": "محل نصب",
+          "next": "pronoun_form_nasb",
+          "eval": {
+            "fact": "position",
+            "equals": "nasb"
+          }
+        },
+        {
+          "id": "c",
+          "text": "محل جر",
+          "next": "R_pronoun_jar",
+          "eval": {
+            "fact": "position",
+            "equals": "jar"
+          }
+        }
+      ]
+    },
+    "pronoun_form_raf3": {
+      "id": "pronoun_form_raf3",
+      "type": "question",
+      "context": "عرفنا أن محل الضمير رفع.",
+      "text": "ما شكل الضمير؟",
+      "hint": "ضمير متصل أو ضمير منفصل.",
+      "answers": [
+        {
+          "id": "a",
+          "text": "ضمير رفع متصل",
+          "next": "R_pronoun_raf3_attached",
+          "eval": {
+            "fact": "form",
+            "equals": "attached"
+          }
+        },
+        {
+          "id": "b",
+          "text": "ضمير رفع منفصل",
+          "next": "R_pronoun_raf3_separate",
+          "eval": {
+            "fact": "form",
+            "equals": "separate"
+          }
+        }
+      ]
+    },
+    "pronoun_form_nasb": {
+      "id": "pronoun_form_nasb",
+      "type": "question",
+      "context": "عرفنا أن محل الضمير نصب.",
+      "text": "ما شكل الضمير؟",
+      "hint": "إياك ضمير منفصل، والكاف/الهاء ضمائر متصلة.",
+      "answers": [
+        {
+          "id": "a",
+          "text": "ضمير نصب متصل",
+          "next": "R_pronoun_nasb_attached",
+          "eval": {
+            "fact": "form",
+            "equals": "attached"
+          }
+        },
+        {
+          "id": "b",
+          "text": "ضمير نصب منفصل",
+          "next": "R_pronoun_nasb_separate",
+          "eval": {
+            "fact": "form",
+            "equals": "separate"
+          }
+        }
+      ]
+    },
+    "R_pronoun_raf3_attached": {
+      "id": "R_pronoun_raf3_attached",
+      "type": "result",
+      "coverage": "pronoun.raf3.attached",
+      "text": "ضمير رفع متصل مبني في محل رفع."
+    },
+    "R_pronoun_raf3_separate": {
+      "id": "R_pronoun_raf3_separate",
+      "type": "result",
+      "coverage": "pronoun.raf3.separate",
+      "text": "ضمير رفع منفصل مبني في محل رفع."
+    },
+    "R_pronoun_nasb_attached": {
+      "id": "R_pronoun_nasb_attached",
+      "type": "result",
+      "coverage": "pronoun.nasb.attached",
+      "text": "ضمير نصب متصل مبني في محل نصب."
+    },
+    "R_pronoun_nasb_separate": {
+      "id": "R_pronoun_nasb_separate",
+      "type": "result",
+      "coverage": "pronoun.nasb.separate",
+      "text": "ضمير نصب منفصل مبني في محل نصب."
+    },
+    "R_pronoun_jar": {
+      "id": "R_pronoun_jar",
+      "type": "result",
+      "coverage": "pronoun.jar",
+      "text": "ضمير متصل مبني في محل جر."
+    }
   }
 };

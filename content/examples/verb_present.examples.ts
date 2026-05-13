@@ -9,23 +9,23 @@ export const presentVerbCoverageKeysOrdered = [
 ];
 
 export const presentVerbExamples: Example[] = [
-  { id: "pr-01", sentence: "يكتبُ الطالبُ الدرسَ.", target: "يكتبُ", facts: { tool: "none", attached: "none", attachedGroup: "no", ending: "sahih" }, covers: ["present.raf3.sahih"], followUp: { question: "الفاعل هو:", options: [ { label: "الطالبُ", correct: true, feedback: "صحيح؛ الطالب هو من قام بالفعل." }, { label: "الدرسَ", correct: false, feedback: "هذا مفعول به." }, { label: "يكتبُ", correct: false, feedback: "هذه الكلمة الهدف: فعل مضارع." } ] } },
-  { id: "pr-02", sentence: "يسعى الطالبُ للنجاحِ.", target: "يسعى", facts: { tool: "none", attached: "none", attachedGroup: "no", ending: "weak", weakLetter: "alif" }, covers: ["present.raf3.alif"] },
-  { id: "pr-03", sentence: "يدعو المؤمنُ ربَّه.", target: "يدعو", facts: { tool: "none", attached: "none", attachedGroup: "no", ending: "weak", weakLetter: "waw_ya" }, covers: ["present.raf3.waw_ya"] },
-  { id: "pr-04", sentence: "الطلابُ يكتبونَ الدرسَ.", target: "يكتبونَ", facts: { tool: "none", attached: "waw", attachedGroup: "yes" }, covers: ["present.raf3.waw"] },
-  { id: "pr-05", sentence: "أنتِ تكتبينَ الواجبَ.", target: "تكتبينَ", facts: { tool: "none", attached: "yaa", attachedGroup: "yes" }, covers: ["present.raf3.yaa"] },
-  { id: "pr-06", sentence: "الطالبتان تكتبانِ القصةَ.", target: "تكتبانِ", facts: { tool: "none", attached: "alif2", attachedGroup: "yes" }, covers: ["present.raf3.alif2"] },
-  { id: "pr-07", sentence: "لن يتركَ المؤمنُ الأملَ.", target: "يتركَ", facts: { tool: "nasb", attached: "none", attachedGroup: "no", ending: "sahih" }, covers: ["present.nasb.sahih"] },
-  { id: "pr-08", sentence: "لن يسعى الطالبُ عبثًا.", target: "يسعى", facts: { tool: "nasb", attached: "none", attachedGroup: "no", ending: "weak", weakLetter: "alif" }, covers: ["present.nasb.alif"] },
-  { id: "pr-09", sentence: "لن يدعوَ الصديقُ إلى الخطأ.", target: "يدعوَ", facts: { tool: "nasb", attached: "none", attachedGroup: "no", ending: "weak", weakLetter: "waw_ya" }, covers: ["present.nasb.waw_ya"] },
-  { id: "pr-10", sentence: "لن تكتبوا الدرسَ.", target: "تكتبوا", facts: { tool: "nasb", attached: "waw", attachedGroup: "yes" }, covers: ["present.nasb.waw"] },
-  { id: "pr-11", sentence: "لن تكتبي الدرسَ.", target: "تكتبي", facts: { tool: "nasb", attached: "yaa", attachedGroup: "yes" }, covers: ["present.nasb.yaa"] },
-  { id: "pr-12", sentence: "لن تكتبا الدرسَ.", target: "تكتبا", facts: { tool: "nasb", attached: "alif2", attachedGroup: "yes" }, covers: ["present.nasb.alif2"] },
-  { id: "pr-13", sentence: "لم يكتبْ الطالبُ الدرسَ.", target: "يكتبْ", facts: { tool: "jazm", attached: "none", attachedGroup: "no", ending: "sahih" }, covers: ["present.jazm.sahih"] },
-  { id: "pr-14", sentence: "لم يرمِ اللاعبُ الكرةَ.", target: "يرمِ", facts: { tool: "jazm", attached: "none", attachedGroup: "no", ending: "weak" }, covers: ["present.jazm.weak"] },
-  { id: "pr-15", sentence: "لم تكتبوا الدرسَ.", target: "تكتبوا", facts: { tool: "jazm", attached: "waw", attachedGroup: "yes" }, covers: ["present.jazm.waw"] },
-  { id: "pr-16", sentence: "لا تهملي واجبَكِ.", target: "تهملي", facts: { tool: "jazm", attached: "yaa", attachedGroup: "yes" }, covers: ["present.jazm.yaa"] },
-  { id: "pr-17", sentence: "لتكتبا الدرسَ.", target: "تكتبا", facts: { tool: "jazm", attached: "alif2", attachedGroup: "yes" }, covers: ["present.jazm.alif2"] }
+  { id: "pr-01", sentence: "يكتبُ الطالبُ الدرسَ.", target: "يكتبُ", facts: { tool: "none", attached: "none", ending: "sahih" }, covers: ["present.raf3.sahih"], followUp: { question: "الفاعل هو:", options: [ { label: "الطالبُ", correct: true, feedback: "صحيح؛ الطالب هو من قام بالفعل." }, { label: "الدرسَ", correct: false, feedback: "هذا مفعول به." }, { label: "يكتبُ", correct: false, feedback: "هذه الكلمة الهدف: فعل مضارع." } ] } },
+  { id: "pr-02", sentence: "يسعى الطالبُ للنجاحِ.", target: "يسعى", facts: { tool: "none", attached: "none", ending: "weak", weakLetter: "alif" }, covers: ["present.raf3.alif"] },
+  { id: "pr-03", sentence: "يدعو المؤمنُ ربَّه.", target: "يدعو", facts: { tool: "none", attached: "none", ending: "weak", weakLetter: "waw_ya" }, covers: ["present.raf3.waw_ya"] },
+  { id: "pr-04", sentence: "الطلابُ يكتبونَ الدرسَ.", target: "يكتبونَ", facts: { tool: "none", attached: "waw" }, covers: ["present.raf3.waw"] },
+  { id: "pr-05", sentence: "أنتِ تكتبينَ الواجبَ.", target: "تكتبينَ", facts: { tool: "none", attached: "yaa" }, covers: ["present.raf3.yaa"] },
+  { id: "pr-06", sentence: "الطالبتان تكتبانِ القصةَ.", target: "تكتبانِ", facts: { tool: "none", attached: "alif2" }, covers: ["present.raf3.alif2"] },
+  { id: "pr-07", sentence: "لن يتركَ المؤمنُ الأملَ.", target: "يتركَ", facts: { tool: "nasb", attached: "none", ending: "sahih" }, covers: ["present.nasb.sahih"] },
+  { id: "pr-08", sentence: "لن يسعى الطالبُ عبثًا.", target: "يسعى", facts: { tool: "nasb", attached: "none", ending: "weak", weakLetter: "alif" }, covers: ["present.nasb.alif"] },
+  { id: "pr-09", sentence: "لن يدعوَ الصديقُ إلى الخطأ.", target: "يدعوَ", facts: { tool: "nasb", attached: "none", ending: "weak", weakLetter: "waw_ya" }, covers: ["present.nasb.waw_ya"] },
+  { id: "pr-10", sentence: "لن تكتبوا الدرسَ.", target: "تكتبوا", facts: { tool: "nasb", attached: "waw" }, covers: ["present.nasb.waw"] },
+  { id: "pr-11", sentence: "لن تكتبي الدرسَ.", target: "تكتبي", facts: { tool: "nasb", attached: "yaa" }, covers: ["present.nasb.yaa"] },
+  { id: "pr-12", sentence: "لن تكتبا الدرسَ.", target: "تكتبا", facts: { tool: "nasb", attached: "alif2" }, covers: ["present.nasb.alif2"] },
+  { id: "pr-13", sentence: "لم يكتبْ الطالبُ الدرسَ.", target: "يكتبْ", facts: { tool: "jazm", attached: "none", ending: "sahih" }, covers: ["present.jazm.sahih"] },
+  { id: "pr-14", sentence: "لم يرمِ اللاعبُ الكرةَ.", target: "يرمِ", facts: { tool: "jazm", attached: "none", ending: "weak" }, covers: ["present.jazm.weak"] },
+  { id: "pr-15", sentence: "لم تكتبوا الدرسَ.", target: "تكتبوا", facts: { tool: "jazm", attached: "waw" }, covers: ["present.jazm.waw"] },
+  { id: "pr-16", sentence: "لا تهملي واجبَكِ.", target: "تهملي", facts: { tool: "jazm", attached: "yaa" }, covers: ["present.jazm.yaa"] },
+  { id: "pr-17", sentence: "لتكتبا الدرسَ.", target: "تكتبا", facts: { tool: "jazm", attached: "alif2" }, covers: ["present.jazm.alif2"] }
 ];
 
 const resultByCover: Record<string, string> = {

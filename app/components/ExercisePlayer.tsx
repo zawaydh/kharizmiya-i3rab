@@ -245,13 +245,6 @@ const SMART_GLOSSARY: Record<string, { title: string; body: string[] }> = {
   "علامة فرعية": { title: "العلامة الفرعية", body: ["مثل الواو والألف والياء وثبوت النون وحذف النون وحذف حرف العلة.", "تظهر في أبواب مخصوصة مثل المثنى والجمع والأسماء الخمسة والأفعال الخمسة."] },
   "أدوات النصب": { title: "أدوات النصب", body: ["مثل: أن، لن، كي، حتى، لام التعليل.", "إذا دخلت على الفعل المضارع جعلته منصوبًا."] },
   "أدوات الجزم": { title: "أدوات الجزم", body: ["مثل: لم، لا الناهية، لام الأمر.", "إذا دخلت على الفعل المضارع جعلته مجزومًا."] },
-  "العامل": { title: "العامل", body: ["كلمة أو معنى يؤثر في إعراب ما بعده.", "مثال: لم عامل جزم، وإنّ عامل نصب، وحرف الجر عامل جر."] },
-  "المعرب": { title: "المعرب", body: ["تتغير علامة آخره حسب موقعه في الجملة.", "مثال: الطالبُ، الطالبَ، الطالبِ."] },
-  "المبني": { title: "المبني", body: ["يلزم صورة واحدة ولا تتغير حركة آخره.", "نعربه في محل رفع أو نصب أو جر حسب موقعه."] },
-  "ضمير الفصل": { title: "ضمير الفصل", body: ["ضمير يفصل بين المبتدأ والخبر ولا يكون له محل إعرابي غالبًا.", "مثال: الطالب هو المجتهد."] },
-  "ضمير نصب منفصل": { title: "ضمير نصب منفصل", body: ["مثل: إياك، إياه، إيانا، إياهم.", "يقع غالبًا في محل نصب مفعول به إذا وقع عليه الفعل."] },
-  "ضمائر الرفع المتصلة": { title: "ضمائر الرفع المتصلة", body: ["مثل: تاء الفاعل، نا الفاعلين، واو الجماعة، ألف الاثنين، نون النسوة.", "تتصل بالفعل وتكون في محل رفع فاعل غالبًا."] },
-  "ضمائر النصب المتصلة": { title: "ضمائر النصب المتصلة", body: ["مثل: الهاء، الكاف، ياء المتكلم، نا المفعولين.", "إذا وقع عليها الفعل تكون في محل نصب مفعول به."] },
 
 };
 
@@ -263,17 +256,13 @@ function renderSmartText(text?: string, onTerm?: (term: string) => void) {
   return parts.map((part, idx) => {
     if (SMART_GLOSSARY[part]) {
       return (
-        <button key={`${part}-${idx}`} type="button" className="smart-term smart-term-soft" onClick={() => onTerm?.(part)} aria-label={`توضيح: ${part}`}>
+        <button key={`${part}-${idx}`} type="button" className="smart-term" onClick={() => onTerm?.(part)}>
           {part}
         </button>
       );
     }
     return <React.Fragment key={idx}>{part}</React.Fragment>;
   });
-}
-
-function plainText(text?: string) {
-  return String(text || "");
 }
 
 
@@ -302,20 +291,7 @@ function normalizeBuildPiece(text: string, nodeId = "") {
     if (/واو الجماعة|ياء المخاطبة|ألف الاثنين/.test(t)) return "من الأفعال الخمسة";
     if (t === "لا") return "ليس من الأفعال الخمسة";
   }
-  if (t.includes("قام بالفعل")) return "فاعل";
-  if (t.includes("وقع عليها الفعل") || t.includes("وقع عليه الفعل")) return "مفعول به";
-  if (t.includes("اسم معرب")) return "اسم معرب";
-  if (t.includes("اسم مبني")) return "اسم مبني";
-  if (t.includes("مصدر مؤول")) return "مصدر مؤول";
-  if (t.includes("سبق بعامل نصب")) return "منصوب";
-  if (t.includes("سبق بعامل جزم")) return "مجزوم";
-  if (t.includes("لم يسبق بعامل")) return "مرفوع";
-  if (t.includes("نعم، اتصل بأحدها")) return "اتصل بضمير";
-  if (t.includes("لم يتصل بأحدها")) return "لم يتصل بضمير";
-  if (t.includes("واو الجماعة")) return "اتصل بواو الجماعة";
-  if (t.includes("ياء المخاطبة")) return "اتصل بياء المخاطبة";
-  if (t.includes("ألف الاثنين")) return "اتصل بألف الاثنين";
-  if (t.includes("حذف النون")) return t.includes("جزم") ? "وعلامة جزمه حذف النون" : (t.includes("نصب") ? "وعلامة نصبه حذف النون" : "وعلامته حذف النون");
+  if (t.includes("حذف النون")) return "وعلامة إعرابه حذف النون";
   if (t.includes("ثبوت النون")) return "وعلامة رفعه ثبوت النون";
   if (t.includes("حذف حرف العلة")) return "وعلامته حذف حرف العلة";
   if (t.includes("الضمة")) return "وعلامته الضمة";
@@ -378,12 +354,10 @@ function ProgressDots({ total, done, current }: { total: number; done: number; c
 function getNodeContext(node: any, state: any) {
   if (node?.context) return node.context;
   const id = String(node?.id || "");
-  if (id.includes("tense")) return "لنحدد الزمن من معنى الكلمة قبل أي علامة.";
-  if (id.includes("has_tool")) return "ننظر الآن إلى ما قبل الكلمة: هل هناك عامل؟";
-  if (id.includes("check_attached")) return "ننظر إلى آخر الفعل: هل اتصل به ضمير؟";
-  if (id.includes("ending") || id.includes("weak_type")) return "ننظر إلى آخر الكلمة فقط لنحدد العلامة.";
-  if (id.includes("pronoun")) return "نوع الضمير يساعدنا على بناء النتيجة.";
-  return "فكّر في خطوة واحدة فقط، ثم اختر.";
+  if (id.includes("tense")) return "عرفنا أن الكلمة فعل.";
+  if (id.includes("has_tool") || id.includes("check_attached") || id.includes("ending") || id.includes("weak_type")) return "ننتقل خطوة خطوة قبل الوصول إلى الإعراب النهائي.";
+  if (id.includes("pronoun")) return "عرفنا نوع الفعل، ونفحص الآن أثر الضمير في علامة البناء.";
+  return "اتبع القرار التالي فقط.";
 }
 
 
@@ -408,7 +382,7 @@ function normalizeThinkingNode(node: any, state: any) {
   if (!node || node.type !== "question") return node;
   const id = String(node.id || "");
   let context = String(node.context || getNodeContext(node, state));
-  let text = String(node.text || "ما القرار التالي؟");
+  let text = String(node.text || "ما الخطوة التالية؟");
   let hint = shortStudentText(node.hint, "اختر القرار التالي فقط.");
 
   // تحويل أي صياغة مباشرة إلى صياغة عقدة تفكير.
@@ -417,9 +391,9 @@ function normalizeThinkingNode(node: any, state: any) {
   if (/ما حالة آخر/.test(text)) context = "عرفنا التصنيف، والآن نفحص آخر الكلمة لاختيار العلامة.";
   if (/ما نوع الاسم المبني/.test(text)) context = "عرفنا أنها كلمة مبنية، فنحدد نوعها قبل المحل.";
   if (/ما نوع الجملة/.test(text)) context = "عرفنا أنها جملة، فنحدد صورتها قبل الحكم على محلها.";
-  if (/هل سبق بأداة/.test(text)) context = "قبل تحديد الحالة ننظر إلى الكلمة السابقة للفعل.";
+  if (/هل سبق بأداة/.test(text)) context = "قبل تحديد الحالة نفحص ما قبل الفعل.";
   if (/الأفعال الخمسة/.test(text)) text = "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟";
-  if (/هل اتصل/.test(text)) context = "ننظر إلى آخر الفعل: هل نرى ضميرًا متصلًا به؟";
+  if (/هل اتصل/.test(text)) context = "الاتصال يغير علامة البناء أو الإعراب، لذلك نفحصه الآن.";
 
   const answers = (node.answers || []).map((a: any) => ({
     ...a,
@@ -596,6 +570,7 @@ export default function ExercisePlayer({
   const [mounted, setMounted] = React.useState(false);
   const [followUpChoice, setFollowUpChoice] = React.useState<string | null>(null);
   const [activeGlossary, setActiveGlossary] = React.useState<string | null>(null);
+  const [dialogBubble, setDialogBubble] = React.useState<{ tone: "success" | "hint" | "celebrate"; text: string } | null>(null);
 
   const currentIdx = mode === "quiz" ? quizOrder[quizCursor] ?? 0 : exampleIndex;
   const example = examples[currentIdx];
@@ -612,6 +587,12 @@ export default function ExercisePlayer({
   }, [toast]);
 
   React.useEffect(() => {
+    if (!dialogBubble) return undefined;
+    const timer = setTimeout(() => setDialogBubble(null), dialogBubble.tone === "celebrate" ? 3200 : 2200);
+    return () => clearTimeout(timer);
+  }, [dialogBubble]);
+
+  React.useEffect(() => {
     if (!example) return;
     setState(buildRunnerState(tree, mode, example));
     setFeedback(null);
@@ -619,6 +600,7 @@ export default function ExercisePlayer({
     setQuizLocked(false);
     setFollowUpChoice(null);
     setActiveGlossary(null);
+    setDialogBubble(null);
   }, [tree, mode, example]);
 
   React.useEffect(() => {
@@ -815,6 +797,7 @@ export default function ExercisePlayer({
       const smartHint = isBuiltTypeNode
         ? builtNounTypeHintByValue(expectedBuiltType)
         : shortStudentText(picked?.hint ?? node?.hint);
+      setDialogBubble({ tone: "hint", text: smartHint || "جرّب مرة أخرى بهدوء." });
       if (mode === "practice") {
         setFeedback({ wrongId: answerId, hint: smartHint });
       } else {
@@ -824,6 +807,9 @@ export default function ExercisePlayer({
     }
 
     const res = chooseAnswer({ state, tree, answerId } as any);
+    const piece = normalizeBuildPiece(picked?.text || "", node?.id || "");
+    const msg = picked?.feedback || (piece ? `أحسنت ✨ أضفنا: ${piece}` : "أحسنت ✨ نكمل خطوة التفكير التالية.");
+    setDialogBubble({ tone: "success", text: shortStudentText(msg, "أحسنت ✨") });
     setState(res.nextState);
     setFeedback(null);
   }
@@ -892,7 +878,12 @@ export default function ExercisePlayer({
           <span className="exercise-badge">{stageMeta.badge}</span>
           <h1 className="exercise-page-title">{title}</h1>
           {stageMeta.subtitle ? <p className="exercise-page-subtitle">{stageMeta.subtitle}</p> : null}
-          
+          {mode !== "quiz" && (
+            <div className="exercise-meta-inline">
+              <span className="pill pill-accent">المنجَز: {doneCount} / {totalCount}</span>
+              <span className="pill">الخطوة الحالية: {stepLabels?.[stepLabel] || stepLabel}</span>
+            </div>
+          )}
         </div>
 
         <div className="exercise-hero-side">
@@ -922,19 +913,14 @@ export default function ExercisePlayer({
       </section>
 
       {mode !== "quiz" && isDone && (
-        <section className="exercise-complete-banner clean-complete-banner">
+        <section className="exercise-complete-banner">
           <div>
-            <strong>{mode === "learn" ? "أحسنت، اكتملت المرحلة الأولى" : "أحسنت، اكتملت المرحلة الثانية"}</strong>
-            <p>{mode === "learn" ? "الخطوة التالية واضحة الآن: انتقل إلى المرحلة الثانية." : "الخطوة التالية واضحة الآن: انتقل إلى المرحلة النهائية."}</p>
+            <strong>{mode === "learn" ? "اكتملت المرحلة الأولى" : "اكتملت المرحلة الثانية"}</strong>
+            <p>{mode === "learn" ? "انتقل الآن إلى المرحلة الثانية." : "انتقل الآن إلى المرحلة النهائية."}</p>
           </div>
-          <div className="complete-actions">
-            <button className="stage-next-button ready-strong" onClick={() => router.push(`${stageMeta.nextHrefPrefix}${topicId}`)} style={primaryNavBtn}>
-              {stageMeta.nextLabel || "الانتقال"}
-            </button>
-            <button onClick={resetTraining} style={ghostBtn}>
-              {mode === "learn" ? "إعادة المرحلة الأولى" : "إعادة المرحلة الثانية"}
-            </button>
-          </div>
+          <button onClick={resetTraining} style={ghostBtn}>
+            {mode === "learn" ? "إعادة المرحلة الأولى" : "إعادة المرحلة الثانية"}
+          </button>
         </section>
       )}
 
@@ -975,7 +961,7 @@ export default function ExercisePlayer({
 
           <button onClick={restartQuiz} style={ghostBtn}>إعادة المرحلة النهائية</button>
         </section>
-      ) : isDone && mode !== "quiz" ? null : mode === "quiz" ? (
+      ) : mode === "quiz" ? (
         <>
           <section className="exercise-panel exercise-sentence-panel" style={box}>
             <div style={{ opacity: 0.6, marginBottom: 6 }}>السؤال {quizCursor + 1} من {quizOrder.length}</div>
@@ -1018,56 +1004,52 @@ export default function ExercisePlayer({
         </>
       ) : (
         <>
-          <section className="exercise-panel exercise-core-card" style={box}>
-            <div className="core-task-line core-task-clean">
-              <span className="task-kicker">الجملة:</span>
-              <strong className="task-sentence">{renderSentence(state.currentSentence, state.currentTarget)}</strong>
+          <section className="exercise-panel exercise-core-card clean-thinking-card" style={box}>
+            <div className="clean-sentence-line" aria-label="الجملة">
+              {renderSentence(state.currentSentence, state.currentTarget)}
             </div>
 
-            {buildI3rabDraft(tree, state, state.currentTarget) !== "ابدأ بتحديد نوع الكلمة" || node?.type === "result" ? (
-              <div className="i3rab-builder-line clean-builder" aria-label="بناء الإعراب">
-                <span className="builder-label">ما بنيناه حتى الآن:</span>
-                <span className="builder-value">{node?.type === "result" ? renderSmartText(firstLine(node.text), setActiveGlossary) : renderSmartText(buildI3rabDraft(tree, state, state.currentTarget), setActiveGlossary)}</span>
-              </div>
-            ) : null}
-
             {node?.type === "question" ? (
-              <div className="core-question-block">
-                <div className="exercise-node-context slim-context">{renderSmartText(thinkingNode?.context, setActiveGlossary)}</div>
-                <div className="exercise-question-title compact-question-title">{plainText(thinkingNode?.text)}</div>
-                <div className="core-answer-grid">
+              <div className="clean-question-block">
+                <div className="clean-question-kicker">ما المطلوب الآن؟</div>
+                <div className="exercise-question-title clean-question-title">{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
+
+                <div className="clean-answer-grid">
                   {thinkingNode.answers.map((a: any) => {
                     const answerClass = [
                       "exercise-answer-btn",
-                      "core-answer-btn",
+                      "clean-answer-btn",
                       mode === "learn" && feedback?.correctId === a.id ? "is-correct" : "",
                       feedback?.wrongId === a.id ? "is-wrong" : "",
                     ].filter(Boolean).join(" ");
                     return (
                       <button key={a.id} onClick={() => handlePick(a.id)} className={answerClass} style={answerBtn}>
-                        {a.text}
+                        {renderSmartText(a.text, setActiveGlossary)}
                       </button>
                     );
                   })}
                 </div>
 
-                {mode === "learn" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? thinkingNode?.hint, "اقتربت؛ جرّب خيارًا آخر."), setActiveGlossary)}</div>}
-                {mode === "practice" && feedback?.wrongId && <div className="exercise-inline-hint">💡 {renderSmartText(shortStudentText(feedback?.hint ?? thinkingNode?.hint, "حاول مرة أخرى."), setActiveGlossary)}</div>}
+                {dialogBubble ? (
+                  <div className={`thinking-bubble ${dialogBubble.tone}`}>
+                    {dialogBubble.text}
+                  </div>
+                ) : null}
 
-                <div className="exercise-question-nav core-nav-row">
-                  <button type="button" onClick={() => setExampleIndex((i) => Math.max(0, i - 1))} style={ghostBtn}>السابق</button>
-                  <button type="button" onClick={() => { setFeedback(null); setState(buildRunnerState(tree, mode, example)); }} style={ghostBtn}>إعادة</button>
-                  <button type="button" onClick={() => setExampleIndex((i) => Math.min(examples.length - 1, i + 1))} style={ghostBtn}>التالي</button>
+                <div className="clean-question-nav">
+                  <button type="button" onClick={() => { setFeedback(null); setDialogBubble(null); setState(buildRunnerState(tree, mode, example)); }} style={ghostBtn}>إعادة المثال</button>
                 </div>
                 <ProgressDots total={totalCount || examples.length} done={doneCount} current={Math.min(doneCount, Math.max(0, (totalCount || examples.length) - 1))} />
               </div>
             ) : node?.type === "result" ? (
-              <div className="core-result-block">
-                <div className="exercise-result-text" style={{ whiteSpace: "pre-line" }}>{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
+              <div className="clean-result-block">
+                <div className="thinking-bubble celebrate">🎉 أحسنت، وصلنا إلى الإعراب النهائي.</div>
+                <div className="clean-final-label">الإعراب النهائي</div>
+                <div className="exercise-result-text clean-result-text" style={{ whiteSpace: "pre-line" }}>{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
 
                 {currentFollowUp ? (
-                  <div className="exercise-followup-box" style={{ marginTop: 14, padding: 12, borderRadius: 14, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)" }}>
-                    <div style={{ fontWeight: 900, marginBottom: 8 }}>تدريب تثبيت سريع: {currentFollowUp.question}</div>
+                  <div className="exercise-followup-box clean-followup-box">
+                    <div className="clean-followup-title">تثبيت سريع: {currentFollowUp.question}</div>
                     {currentFollowUp.options.map((op) => {
                       const picked = followUpChoice === op.label;
                       const cls = picked ? (op.correct ? "is-correct" : "is-wrong") : "";
@@ -1075,28 +1057,28 @@ export default function ExercisePlayer({
                         <button
                           key={op.label}
                           onClick={() => pickFollowUp(op.label)}
-                          className={`exercise-answer-btn ${cls}`}
-                          style={{ ...answerBtn, background: picked ? (op.correct ? "rgba(34,197,94,.18)" : "rgba(239,68,68,.18)") : "rgba(255,255,255,.05)" }}
+                          className={`exercise-answer-btn clean-answer-btn ${cls}`}
+                          style={answerBtn}
                         >
                           {op.label}
                         </button>
                       );
                     })}
                     {followUpChoice ? (
-                      <div className="exercise-inline-hint" style={{ marginTop: 8 }}>
-                        {chosenFollowUp?.correct ? "✅ " : "💡 "}{chosenFollowUp?.feedback || (chosenFollowUp?.correct ? "صحيح." : "راجع العلاقة النحوية في الجملة.")}
+                      <div className={`thinking-bubble ${chosenFollowUp?.correct ? "success" : "hint"}`}>
+                        {chosenFollowUp?.correct ? "أحسنت ✨" : "فكر من جديد: "}{chosenFollowUp?.feedback || (chosenFollowUp?.correct ? "صحيح." : "راجع العلاقة النحوية في الجملة.")}
                       </div>
                     ) : null}
-
                   </div>
                 ) : null}
 
                 <button
                   onClick={goNextExample}
-                  style={{ ...ghostBtn, opacity: canMoveAfterResult ? 1 : 0.55, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
+                  className="next-example-glow"
+                  style={{ ...primaryNavBtn, opacity: canMoveAfterResult ? 1 : 0.55, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
                   disabled={!canMoveAfterResult}
                 >
-                  المثال التالي
+                  انتقل للمثال التالي ←
                 </button>
                 <ProgressDots total={totalCount || examples.length} done={Math.min(doneCount + 1, totalCount || examples.length)} current={doneCount} />
               </div>
@@ -1105,7 +1087,7 @@ export default function ExercisePlayer({
             )}
           </section>
 
-          <div className="exercise-bottom-nav stage-locked-next" style={{...navNextWrap, display: isDone ? "none" : "flex"}}>
+          {isDone ? <div className="exercise-bottom-nav stage-locked-next" style={navNextWrap}>
             <button
                 style={{ ...primaryNavBtn, opacity: nextStageReady ? 1 : 0.48, cursor: nextStageReady ? "pointer" : "not-allowed" }}
                 className="stage-next-button"
@@ -1120,7 +1102,7 @@ export default function ExercisePlayer({
               >
                 {stageMeta.nextLabel}
               </button>
-          </div>
+          </div> : null}
         </>
       )}
 

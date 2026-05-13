@@ -6,13 +6,13 @@ export const pastVerbTree: ExerciseTree = {
     "past_step_1": {
       "id": "past_step_1",
       "type": "question",
-      "context": "لنبدأ من الكلمة التي تحتها خط: هل تدل على حدث؟",
-      "text": "ما أول قرار نحتاجه؟",
-      "hint": "نبدأ بإثبات أنها فعل، ثم نحدد زمنه.",
+      "context": "عرفنا أن الكلمة فعل.",
+      "text": "ما الخطوة التالية؟",
+      "hint": "بعد الفعل نحدد الزمن.",
       "answers": [
         {
           "id": "a",
-          "text": "نعم، نحدد زمن الفعل",
+          "text": "تحديد زمن الفعل",
           "next": "past_tense",
           "correct": true
         },
@@ -35,7 +35,7 @@ export const pastVerbTree: ExerciseTree = {
     "past_tense": {
       "id": "past_tense",
       "type": "question",
-      "context": "بعد أن لاحظنا أنها تدل على حدث، نبحث عن الزمن.",
+      "context": "انتقلنا إلى الزمن.",
       "text": "ما زمن الفعل؟",
       "hint": "الماضي يدل على حدث وقع وانتهى.",
       "answers": [
@@ -64,7 +64,7 @@ export const pastVerbTree: ExerciseTree = {
     "past_has_pronoun": {
       "id": "past_has_pronoun",
       "type": "question",
-      "context": "عرفنا أن الحدث وقع وانتهى؛ الآن نفحص آخر الفعل.",
+      "context": "عرفنا أنه فعل ماضٍ.",
       "text": "هل اتصل بضمير؟",
       "hint": "اتصال الضمير يغيّر علامة البناء.",
       "answers": [
@@ -91,7 +91,7 @@ export const pastVerbTree: ExerciseTree = {
     "past_pronoun_type": {
       "id": "past_pronoun_type",
       "type": "question",
-      "context": "الاتصال بالضمير يغيّر علامة البناء، لذلك نحدد نوع الضمير.",
+      "context": "عرفنا أن الفعل الماضي اتصل بضمير.",
       "text": "ما نوع الضمير المتصل؟",
       "hint": "نوع الضمير يقودنا لعلامة البناء.",
       "answers": [

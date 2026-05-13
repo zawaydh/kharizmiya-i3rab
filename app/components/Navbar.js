@@ -21,7 +21,7 @@ export default function Navbar() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuthUser();
   const locked = !isLoading && !isAuthenticated;
-  const accountLabel = !isLoading && isAuthenticated ? "حسابي" : "دخول";
+  const accountLabel = "حسابي";
   const accountHref = !isLoading && isAuthenticated ? "/dashboard" : "/auth";
   const protectedHref = (href) => (locked ? "/auth" : href);
 
@@ -64,7 +64,7 @@ export default function Navbar() {
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={() => setOpen(false)} />
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="مسارات" className="mobile-topic-dropdown" locked={locked} mode="paths" onNavigate={() => setOpen(false)} />
           <a href={accountHref} onClick={() => setOpen(false)} className="login-link mobile-login nav-account-chip">{accountLabel}</a>
-          {isAuthenticated ? <button type="button" className="nav-logout-btn mobile-logout" onClick={logout}>خروج</button> : null}
+          {isAuthenticated ? <button type="button" className="nav-logout-btn mobile-logout" onClick={logout}>تسجيل الخروج</button> : null}
         </nav>
       </div>
     </header>

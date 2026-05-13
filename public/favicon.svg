@@ -1,15 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="خوارزمية الإعراب">
-  <rect width="512" height="512" rx="112" fill="#06101C"/>
   <defs>
-    <linearGradient id="teal" x1="105" y1="74" x2="396" y2="426" gradientUnits="userSpaceOnUse">
+    <linearGradient id="teal" x1="120" y1="80" x2="390" y2="420" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#35E6D3"/>
       <stop offset="1" stop-color="#2F9E9E"/>
     </linearGradient>
-    <linearGradient id="gold" x1="205" y1="190" x2="315" y2="320" gradientUnits="userSpaceOnUse">
+    <linearGradient id="gold" x1="210" y1="200" x2="310" y2="315" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#FFE27A"/>
       <stop offset="1" stop-color="#E0B84C"/>
     </linearGradient>
   </defs>
-  <path d="M356 101 A176 176 0 1 0 383 376" fill="none" stroke="url(#teal)" stroke-width="43" stroke-linecap="butt"/>
-  <path d="M214 214h84v84h-84z" fill="url(#gold)" transform="rotate(45 256 256)"/>
+  <path d="M354 102 A176 176 0 1 0 382 376" fill="none" stroke="url(#teal)" stroke-width="42" stroke-linecap="butt"/>
+  <path d="M215 215h82v82h-82z" fill="url(#gold)" transform="rotate(45 256 256)"/>
 </svg>
