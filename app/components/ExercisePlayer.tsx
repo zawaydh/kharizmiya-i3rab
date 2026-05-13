@@ -380,6 +380,41 @@ function getNodeContext(node: any, state: any) {
 }
 
 
+function currentStepIntro(node: any, tokens: string[] = []) {
+  const id = String(node?.id || "");
+  if (!tokens.length) {
+    if (id.includes("tense") || id.includes("present_step") || id.includes("past_step") || id.includes("imperative_step")) return "أول خطوة: نحدد زمن الفعل";
+    if (id.includes("wordType") || id === "start") return "أول خطوة: نحدد نوع الكلمة";
+    if (id.includes("khabar") || id.includes("mubtada") || id.includes("nounKind")) return "أول خطوة: نحدد نوع الاسم الذي بدأنا به";
+    return "أول خطوة";
+  }
+  if (id.includes("tense")) return "الآن نحدد زمن الفعل";
+  if (id.includes("has_tool") || id.includes("tool")) return "الآن نفحص العامل الذي سبق الفعل";
+  if (id.includes("attached")) return "الآن نحدد هل اتصل الفعل بضمير";
+  if (id.includes("ending") || id.includes("weak")) return "الآن ننظر إلى آخر الكلمة";
+  if (id.includes("number")) return "الآن نحدد العدد والنوع";
+  if (id.includes("built") || id.includes("mabni")) return "الآن نحدد نوع الاسم المبني";
+  if (id.includes("khabar_single_start") || id.includes("nounKind")) return "الآن نحدد نوع الاسم";
+  return "الآن نكمل خطوة التفكير";
+}
+
+function cleanQuestionText(node: any) {
+  const id = String(node?.id || "");
+  const text = String(node?.text || "ما القرار المناسب؟");
+  if (id === "present_step_1") return "ما أول قرار نحتاجه؟";
+  if (id === "present_tense") return "ما زمن الفعل؟";
+  if (id === "present_tool") return "هل نفحص ما قبل الفعل؟";
+  if (id === "present_has_tool") return "هل سبق الفعل عامل نصب أو جزم؟";
+  if (id.includes("attached")) return "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟";
+  if (id.includes("ending")) return "ما حالة آخر الفعل؟";
+  if (id.includes("weak")) return "ما حرف العلة في آخره؟";
+  if (id === "wordType") return "هل الكلمة اسم أم فعل أم حرف؟";
+  if (id === "nounKind" || id === "khabar_single_start") return "هل الاسم معرب أم مبني أم مصدر مؤول؟";
+  if (id === "khabar_single_number" || id === "i3rabNumber") return "هل الاسم مفرد أم مثنى أم جمع؟";
+  if (text === "ما الخطوة التالية؟" || text === "ما القرار التالي؟") return "ما القرار المناسب الآن؟";
+  return text;
+}
+
 
 function makeDecisionHint(answerText?: string, nodeText?: string) {
   const a = String(answerText || "");
@@ -388,6 +423,7 @@ function makeDecisionHint(answerText?: string, nodeText?: string) {
   if (a.includes("فعل") && q.includes("نوع الكلمة")) return "تذكّر: الفعل يدل على حدث وزمن.";
   if (a.includes("ماض")) return "الفعل الماضي يقبل تاء الفاعل أو تاء التأنيث غالبًا.";
   if (a.includes("مضارع")) return "الفعل المضارع يبدأ غالبًا بأحد أحرف: أ، ن، ي، ت.";
+  if (a.includes("واو الجماعة") && q.includes("اتصل")) return "انتبه: قد تكون الواو أصلية من الفعل وليست ضميرًا. واو الجماعة تظهر غالبًا مع ألف التفريق في مثل: لم يكتبوا.";
   if (a.includes("العلامة") || a.includes("مباشرة")) return "لا نقفز للعلامة قبل تحديد الحالة والسبب.";
   if (a.includes("الخبر")) return "الخبر يخص الجملة الاسمية، وليس هذه الخطوة.";
   if (a.includes("الفاعل")) return "نحدد نوع الكلمة والزمن أو الموقع أولًا.";
@@ -413,6 +449,9 @@ function normalizeThinkingNode(node: any, state: any) {
   if (/هل سبق بأداة/.test(text)) context = "قبل تحديد الحالة نفحص ما قبل الفعل.";
   if (/الأفعال الخمسة/.test(text)) text = "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟";
   if (/هل اتصل/.test(text)) context = "الاتصال يغير علامة البناء أو الإعراب، لذلك نفحصه الآن.";
+
+  text = cleanQuestionText({ ...node, text });
+  context = currentStepIntro({ ...node, text }, []);
 
   const answers = (node.answers || []).map((a: any) => ({
     ...a,
@@ -900,7 +939,6 @@ export default function ExercisePlayer({
       <section className="exercise-hero-card card card-glow">
         <div className="exercise-hero-main">
           <span className="exercise-badge stage-learning-badge">{stageTitle}</span>
-          <h1 className="exercise-page-title">{topicName}</h1>
           {stageMeta.subtitle ? <p className="exercise-page-subtitle">{stageMeta.subtitle}</p> : null}
           {mode !== "quiz" && (
             <div className="exercise-meta-inline">
@@ -1028,12 +1066,13 @@ export default function ExercisePlayer({
         </>
       ) : (
         <>
+          <div className="thinking-layout start-style-layout">
           <section className="exercise-panel exercise-core-card clean-thinking-card" style={box}>
             <div className="clean-sentence-line" aria-label="الجملة">
               {renderSentence(state.currentSentence, state.currentTarget)}
             </div>
 
-            <div className="i3rab-builder-strip" aria-label="بناء الإعراب خطوة بخطوة">
+            {node?.type !== "result" ? <div className="i3rab-builder-strip" aria-label="بناء الإعراب خطوة بخطوة">
               <span className="builder-label">بناء الإعراب</span>
               <span className="builder-target">{state.currentTarget || "الكلمة"}</span>
               <span className="builder-colon">:</span>
@@ -1046,12 +1085,12 @@ export default function ExercisePlayer({
               ) : (
                 <span className="builder-placeholder">ستُبنى العبارة هنا كلمةً كلمة</span>
               )}
-            </div>
+            </div> : null}
 
             {node?.type === "question" ? (
               <div className="clean-question-block">
-                <div className="clean-question-kicker">ما المطلوب الآن؟</div>
-                <div className="exercise-question-title clean-question-title">{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
+                <div className="clean-question-kicker">{currentStepIntro(thinkingNode, i3rabTokens)}</div>
+                <div className="exercise-question-title clean-question-title">{renderSmartText(cleanQuestionText(thinkingNode), setActiveGlossary)}</div>
 
                 <div className="clean-answer-grid">
                   {thinkingNode.answers.map((a: any) => {
@@ -1070,9 +1109,9 @@ export default function ExercisePlayer({
                 </div>
 
                 {dialogBubble ? (
-                  <div className={`thinking-bubble ${dialogBubble.tone}`}>
+                  <button type="button" className={`thinking-bubble ${dialogBubble.tone}`} onClick={() => setDialogBubble(null)} aria-label="إغلاق فقاعة التوجيه">
                     {dialogBubble.text}
-                  </div>
+                  </button>
                 ) : null}
 
                 <div className="clean-question-nav">
@@ -1082,9 +1121,24 @@ export default function ExercisePlayer({
               </div>
             ) : node?.type === "result" ? (
               <div className="clean-result-block">
-                <div className="thinking-bubble celebrate">🎉 أحسنت، وصلنا إلى الإعراب النهائي.</div>
+                <button type="button" className="thinking-bubble celebrate" onClick={() => setDialogBubble(null)} aria-label="إغلاق فقاعة التعزيز">🎉 أحسنت، وصلنا إلى الإعراب النهائي.</button>
                 <div className="clean-final-label">الإعراب النهائي</div>
                 <div className="exercise-result-text clean-result-text" style={{ whiteSpace: "pre-line" }}>{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
+
+                <div className="i3rab-builder-strip final-builder-strip" aria-label="لوحة النتيجة المجمعة">
+                  <span className="builder-label">النتيجة المجمعة</span>
+                  <span className="builder-target">{state.currentTarget || "الكلمة"}</span>
+                  <span className="builder-colon">:</span>
+                  {i3rabTokens.length ? (
+                    <span className="builder-tokens">
+                      {i3rabTokens.map((token, idx) => (
+                        <span key={`${token}-${idx}`} className="builder-token">{token}</span>
+                      ))}
+                    </span>
+                  ) : (
+                    <span className="builder-placeholder">اكتملت خطوات التفكير</span>
+                  )}
+                </div>
 
                 {currentFollowUp ? (
                   <div className="exercise-followup-box clean-followup-box">
@@ -1125,6 +1179,20 @@ export default function ExercisePlayer({
               <div>لا توجد عقدة للعرض</div>
             )}
           </section>
+
+          <aside className="thinking-side-panel" aria-label="مساعدة التفكير">
+            <div className="side-panel-title">لماذا نبدأ هكذا؟</div>
+            <p>نبدأ بسؤال واحد واضح؛ لأن كل قرار يبني جزءًا من الإعراب النهائي.</p>
+            <div className="side-steps-title">خطوات التفكير</div>
+            <ol className="side-step-list">
+              <li className={!i3rabTokens.length ? "is-current" : "is-done"}>تحديد نوع الكلمة</li>
+              <li className={i3rabTokens.length >= 1 ? "is-current" : ""}>تحديد الموقع أو الزمن</li>
+              <li className={i3rabTokens.length >= 2 ? "is-current" : ""}>تحديد الحكم الإعرابي</li>
+              <li className={node?.type === "result" ? "is-current" : ""}>تحديد العلامة</li>
+            </ol>
+            <div className="side-mini-hint">تذكّر: لا ننتقل للمثال التالي إلا بعد ظهور الإعراب النهائي.</div>
+          </aside>
+          </div>
 
           {isDone ? <div className="exercise-bottom-nav stage-locked-next" style={navNextWrap}>
             <button
