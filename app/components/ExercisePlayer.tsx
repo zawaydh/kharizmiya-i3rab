@@ -1108,6 +1108,19 @@ export default function ExercisePlayer({
                   })}
                 </div>
 
+                <div className="clean-question-nav" style={{ marginTop: 10 }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const smartHint = shortStudentText(thinkingNode?.hint ?? node?.hint, "انظر إلى العلامة أو الاتصال أولًا.");
+                      setDialogBubble({ tone: "hint", text: smartHint || "اقرأ السؤال وحدد العلامة الأقوى أولًا." });
+                    }}
+                    style={ghostBtn}
+                  >
+                    أحتاج تلميح
+                  </button>
+                </div>
+
                 {dialogBubble ? (
                   <button type="button" className={`thinking-bubble ${dialogBubble.tone}`} onClick={() => setDialogBubble(null)} aria-label="إغلاق فقاعة التوجيه">
                     {dialogBubble.text}
