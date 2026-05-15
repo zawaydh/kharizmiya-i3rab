@@ -58,10 +58,8 @@ export const presentVerbTree: ExerciseTree = {
       text: "هل هو من الأفعال الخمسة؟ (وهي الأفعال المضارعة التي اتصلت بياء المخاطبة أو ألف الاثنين أو واو الجماعة)",
       hint: "إذا كان من الأفعال الخمسة فيرفع بثبوت النون.",
       answers: [
-        { id: "a", text: "نعم، اتصل بواو الجماعة", next: "R_present_raf3_waw", eval: { fact: "attached", equals: "waw" } },
-        { id: "b", text: "نعم، اتصل بياء المخاطبة", next: "R_present_raf3_yaa", eval: { fact: "attached", equals: "yaa" } },
-        { id: "c", text: "نعم، اتصل بألف الاثنين", next: "R_present_raf3_alif2", eval: { fact: "attached", equals: "alif2" } },
-        { id: "d", text: "لا، ليس من الأفعال الخمسة", next: "raf3_ending", eval: { fact: "attached", equals: "none" } }
+        { id: "a", text: "نعم", next: "R_present_raf3_five", eval: { fact: "attached", anyOf: ["waw", "yaa", "alif2"] } },
+        { id: "b", text: "لا", next: "raf3_ending", eval: { fact: "attached", equals: "none" } }
       ]
     },
 
@@ -96,10 +94,8 @@ export const presentVerbTree: ExerciseTree = {
       text: "هل هو من الأفعال الخمسة؟ (وهي الأفعال المضارعة التي اتصلت بياء المخاطبة أو ألف الاثنين أو واو الجماعة)",
       hint: "إذا كان من الأفعال الخمسة فينصب بحذف النون.",
       answers: [
-        { id: "a", text: "نعم، اتصل بواو الجماعة", next: "R_present_nasb_waw", eval: { fact: "attached", equals: "waw" } },
-        { id: "b", text: "نعم، اتصل بياء المخاطبة", next: "R_present_nasb_yaa", eval: { fact: "attached", equals: "yaa" } },
-        { id: "c", text: "نعم، اتصل بألف الاثنين", next: "R_present_nasb_alif2", eval: { fact: "attached", equals: "alif2" } },
-        { id: "d", text: "لا، ليس من الأفعال الخمسة", next: "nasb_ending", eval: { fact: "attached", equals: "none" } }
+        { id: "a", text: "نعم", next: "R_present_nasb_five", eval: { fact: "attached", anyOf: ["waw", "yaa", "alif2"] } },
+        { id: "b", text: "لا", next: "nasb_ending", eval: { fact: "attached", equals: "none" } }
       ]
     },
 
@@ -134,10 +130,8 @@ export const presentVerbTree: ExerciseTree = {
       text: "هل هو من الأفعال الخمسة؟ (وهي الأفعال المضارعة التي اتصلت بياء المخاطبة أو ألف الاثنين أو واو الجماعة)",
       hint: "إذا كان من الأفعال الخمسة فيجزم بحذف النون.",
       answers: [
-        { id: "a", text: "نعم، اتصل بواو الجماعة", next: "R_present_jazm_waw", eval: { fact: "attached", equals: "waw" } },
-        { id: "b", text: "نعم، اتصل بياء المخاطبة", next: "R_present_jazm_yaa", eval: { fact: "attached", equals: "yaa" } },
-        { id: "c", text: "نعم، اتصل بألف الاثنين", next: "R_present_jazm_alif2", eval: { fact: "attached", equals: "alif2" } },
-        { id: "d", text: "لا، ليس من الأفعال الخمسة", next: "jazm_ending", eval: { fact: "attached", equals: "none" } }
+        { id: "a", text: "نعم", next: "R_present_jazm_five", eval: { fact: "attached", anyOf: ["waw", "yaa", "alif2"] } },
+        { id: "b", text: "لا", next: "jazm_ending", eval: { fact: "attached", equals: "none" } }
       ]
     },
 
@@ -166,23 +160,11 @@ export const presentVerbTree: ExerciseTree = {
       text: "فعل مضارع مبني على الفتح لاتصاله بنون التوكيد."
     },
 
-    R_present_raf3_waw: {
-      id: "R_present_raf3_waw",
+    R_present_raf3_five: {
+      id: "R_present_raf3_five",
       type: "result",
-      coverage: "present.raf3.waw",
-      text: "فعل مضارع مرفوع وعلامة رفعه ثبوت النون لأنه من الأفعال الخمسة، وواو الجماعة ضمير متصل مبني في محل رفع فاعل."
-    },
-    R_present_raf3_yaa: {
-      id: "R_present_raf3_yaa",
-      type: "result",
-      coverage: "present.raf3.yaa",
-      text: "فعل مضارع مرفوع وعلامة رفعه ثبوت النون لأنه من الأفعال الخمسة، وياء المخاطبة ضمير متصل مبني في محل رفع فاعل."
-    },
-    R_present_raf3_alif2: {
-      id: "R_present_raf3_alif2",
-      type: "result",
-      coverage: "present.raf3.alif2",
-      text: "فعل مضارع مرفوع وعلامة رفعه ثبوت النون لأنه من الأفعال الخمسة، وألف الاثنين ضمير متصل مبني في محل رفع فاعل."
+      coverage: "present.raf3.five",
+      text: "فعل مضارع مرفوع وعلامة رفعه ثبوت النون لأنه من الأفعال الخمسة."
     },
     R_present_raf3_sahih: {
       id: "R_present_raf3_sahih",
@@ -203,23 +185,11 @@ export const presentVerbTree: ExerciseTree = {
       text: "فعل مضارع مرفوع وعلامة رفعه الضمة المقدرة على آخره منع من ظهورها الثقل."
     },
 
-    R_present_nasb_waw: {
-      id: "R_present_nasb_waw",
+    R_present_nasb_five: {
+      id: "R_present_nasb_five",
       type: "result",
-      coverage: "present.nasb.waw",
-      text: "فعل مضارع منصوب وعلامة نصبه حذف النون من آخره لأنه من الأفعال الخمسة، وواو الجماعة ضمير متصل مبني في محل رفع فاعل."
-    },
-    R_present_nasb_yaa: {
-      id: "R_present_nasb_yaa",
-      type: "result",
-      coverage: "present.nasb.yaa",
-      text: "فعل مضارع منصوب وعلامة نصبه حذف النون من آخره لأنه من الأفعال الخمسة، وياء المخاطبة ضمير متصل مبني في محل رفع فاعل."
-    },
-    R_present_nasb_alif2: {
-      id: "R_present_nasb_alif2",
-      type: "result",
-      coverage: "present.nasb.alif2",
-      text: "فعل مضارع منصوب وعلامة نصبه حذف النون من آخره لأنه من الأفعال الخمسة، وألف الاثنين ضمير متصل مبني في محل رفع فاعل."
+      coverage: "present.nasb.five",
+      text: "فعل مضارع منصوب وعلامة نصبه حذف النون لأنه من الأفعال الخمسة."
     },
     R_present_nasb_sahih: {
       id: "R_present_nasb_sahih",
@@ -240,23 +210,11 @@ export const presentVerbTree: ExerciseTree = {
       text: "فعل مضارع منصوب وعلامة نصبه الفتحة الظاهرة على آخره."
     },
 
-    R_present_jazm_waw: {
-      id: "R_present_jazm_waw",
+    R_present_jazm_five: {
+      id: "R_present_jazm_five",
       type: "result",
-      coverage: "present.jazm.waw",
-      text: "فعل مضارع مجزوم وعلامة جزمه حذف النون من آخره لأنه من الأفعال الخمسة، وواو الجماعة ضمير متصل مبني في محل رفع فاعل."
-    },
-    R_present_jazm_yaa: {
-      id: "R_present_jazm_yaa",
-      type: "result",
-      coverage: "present.jazm.yaa",
-      text: "فعل مضارع مجزوم وعلامة جزمه حذف النون من آخره لأنه من الأفعال الخمسة، وياء المخاطبة ضمير متصل مبني في محل رفع فاعل."
-    },
-    R_present_jazm_alif2: {
-      id: "R_present_jazm_alif2",
-      type: "result",
-      coverage: "present.jazm.alif2",
-      text: "فعل مضارع مجزوم وعلامة جزمه حذف النون من آخره لأنه من الأفعال الخمسة، وألف الاثنين ضمير متصل مبني في محل رفع فاعل."
+      coverage: "present.jazm.five",
+      text: "فعل مضارع مجزوم وعلامة جزمه حذف النون لأنه من الأفعال الخمسة."
     },
     R_present_jazm_sahih: {
       id: "R_present_jazm_sahih",

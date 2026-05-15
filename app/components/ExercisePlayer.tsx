@@ -447,16 +447,22 @@ function normalizeThinkingNode(node: any, state: any) {
   if (/ما نوع الاسم المبني/.test(text)) context = "عرفنا أنها كلمة مبنية، فنحدد نوعها قبل المحل.";
   if (/ما نوع الجملة/.test(text)) context = "عرفنا أنها جملة، فنحدد صورتها قبل الحكم على محلها.";
   if (/هل سبق بأداة/.test(text)) context = "قبل تحديد الحالة نفحص ما قبل الفعل.";
-  if (/الأفعال الخمسة/.test(text)) text = "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟";
+  // في عقدة الأفعال الخمسة نحافظ على المصطلح المدرسي، والشرح يظهر في السطر المساعد لا في الخيارات.
   if (/هل اتصل/.test(text)) context = "الاتصال يغير علامة البناء أو الإعراب، لذلك نفحصه الآن.";
 
   text = cleanQuestionText({ ...node, text });
   context = currentStepIntro({ ...node, text }, []);
 
-  const answers = (node.answers || []).map((a: any) => ({
-    ...a,
-    hint: a.hint || makeDecisionHint(a.text, text),
-  }));
+  const answers = (node.answers || []).map((a: any) => {
+    const isFive = isFiveVerbDecision(node);
+    const yesLike = a.eval?.anyOf || a.eval?.equals === true || String(a.text || "").trim().startsWith("نعم");
+    const noLike = a.eval?.equals === false || a.eval?.equals === "none" || String(a.text || "").trim() === "لا" || String(a.text || "").trim().startsWith("لا");
+    return {
+      ...a,
+      text: isFive ? (yesLike && !noLike ? "نعم" : "لا") : a.text,
+      hint: a.hint || makeDecisionHint(a.text, text),
+    };
+  });
   return { ...node, context, text, hint, answers };
 }
 
@@ -469,15 +475,12 @@ function isFiveVerbDecision(node: any) {
 
 function dialogueQuestionText(node: any, target?: string) {
   if (isFiveVerbDecision(node)) {
-    return `هل الفعل (${target || "الكلمة المحددة"}) من الأفعال الخمسة؟`;
+    return `هل الفعل (${target || "الكلمة المحددة"}) من الأفعال الخمسة (وهي أفعال مضارعة اتصلت بألف الاثنين أو ياء المخاطبة أو واو الجماعة)؟`;
   }
   return cleanQuestionText(node);
 }
 
 function dialogueQuestionNote(node: any) {
-  if (isFiveVerbDecision(node)) {
-    return "هي أفعال مضارعة اتصلت بألف الاثنين أو ياء المخاطبة أو واو الجماعة.";
-  }
   return "";
 }
 
@@ -511,11 +514,51 @@ function teacherSuccessText(node: any, picked: any, state: any, piece?: string) 
     return state?.facts?.tool === "nasb" ? "صحيح؛ الأداة ناصبة، إذن نبحث عن علامة النصب." : "صحيح؛ الأداة جازمة، إذن نبحث عن علامة الجزم.";
   }
   if (isFiveVerbDecision(node)) {
-    return state?.facts?.attached === "none" ? "صحيح؛ ليس من الأفعال الخمسة، لذلك لا نستعمل حذف النون أو ثبوتها هنا." : "صحيح؛ اتصل الفعل بضمير من ضمائر الأفعال الخمسة، فتتغير العلامة إلى ثبوت النون أو حذفها.";
+    return state?.facts?.attached === "none" ? "صحيح؛ ليس من الأفعال الخمسة، لذلك لا نستعمل حذف النون أو ثبوتها هنا." : "صحيح؛ هو من الأفعال الخمسة، لذلك تكون علامته ثبوت النون أو حذفها بحسب الحالة.";
   }
   if (id.includes("ending")) return state?.facts?.ending === "weak" ? "صحيح؛ الفعل معتل الآخر، لذلك ننتبه للعلامة المقدّرة أو حذف حرف العلة." : "صحيح؛ الفعل صحيح الآخر، فغالبًا تظهر العلامة بوضوح.";
   if (id.includes("weak")) return "صحيح؛ نوع حرف العلة هو الذي يحدد التعذر أو الثقل أو ظهور الفتحة.";
   return piece ? `صحيح؛ هذه الخطوة أضافت إلى التفكير: ${piece}` : "صحيح؛ نكمل خطوة التفكير التالية.";
+}
+
+function thinkingStepsFor(tree: any) {
+  if (tree?.startNodeId === "present_nun_niswa") {
+    return ["أستبعد البناء", "أستخرج العامل", "أحدد الحالة", "أحدد العلامة", "أصل إلى النتيجة"];
+  }
+  return ["أفهم الكلمة", "أحدد الموقع", "أستخرج الحكم", "أحدد العلامة", "أصل إلى النتيجة"];
+}
+
+function activeThinkingStep(node: any, tree: any) {
+  const id = String(node?.id || "");
+  if (node?.type === "result") return 4;
+  if (tree?.startNodeId === "present_nun_niswa") {
+    if (id.includes("nun_niswa") || id.includes("nun_tawkid")) return 0;
+    if (id.includes("has_tool") || id.includes("tool_type")) return 1;
+    if (id.includes("raf3") || id.includes("nasb") || id.includes("jazm")) {
+      if (id.includes("ending") || id.includes("weak") || id.includes("five")) return 3;
+      return 2;
+    }
+    return 0;
+  }
+  return 0;
+}
+
+function ThinkingProcessStrip({ tree, node }: { tree: any; node: any }) {
+  const steps = thinkingStepsFor(tree);
+  const active = activeThinkingStep(node, tree);
+  return (
+    <div className="thinking-process-strip" aria-label="سلسلة التفكير">
+      <span className="thinking-process-title">سلسلة التفكير</span>
+      <div className="thinking-process-items">
+        {steps.map((label, idx) => (
+          <span key={label} className={`thinking-process-step ${idx < active ? "is-done" : ""} ${idx === active ? "is-active" : ""}`}>
+            <span className="thinking-process-num">{idx + 1}</span>
+            <span>{label}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function thinkingTrailForResult(text?: string) {
@@ -892,7 +935,12 @@ export default function ExercisePlayer({
 
   function isAnswerCorrect(answer: any) {
     if (!answer) return false;
-    if (answer.eval) return state.facts?.[answer.eval.fact] === answer.eval.equals;
+    if (answer.eval) {
+      const factValue = state.facts?.[answer.eval.fact];
+      if (Array.isArray(answer.eval.anyOf)) return answer.eval.anyOf.includes(factValue);
+      if (Object.prototype.hasOwnProperty.call(answer.eval, "notEquals")) return factValue !== answer.eval.notEquals;
+      return factValue === answer.eval.equals;
+    }
     return Boolean(answer.correct);
   }
 
@@ -1122,20 +1170,7 @@ export default function ExercisePlayer({
         <>
           <div className="thinking-layout start-style-layout">
           <section className="exercise-panel exercise-core-card clean-thinking-card" style={box}>
-            {node?.type !== "result" ? <div className="i3rab-builder-strip" aria-label="بناء الإعراب خطوة بخطوة">
-              <span className="builder-label">بناء الإعراب</span>
-              <span className="builder-target">{state.currentTarget || "الكلمة"}</span>
-              <span className="builder-colon">:</span>
-              {i3rabTokens.length ? (
-                <span className="builder-tokens">
-                  {i3rabTokens.map((token, idx) => (
-                    <span key={`${token}-${idx}`} className="builder-token">{token}</span>
-                  ))}
-                </span>
-              ) : (
-                <span className="builder-placeholder">ستُبنى العبارة هنا كلمةً كلمة</span>
-              )}
-            </div> : null}
+            {node?.type !== "result" ? <ThinkingProcessStrip tree={tree} node={thinkingNode} /> : null}
 
             {node?.type === "question" ? (
               <div className="clean-question-block">
@@ -1178,7 +1213,9 @@ export default function ExercisePlayer({
 
                 {dialogBubble ? (
                   <button type="button" className={`thinking-bubble ${dialogBubble.tone}`} onClick={() => setDialogBubble(null)} aria-label="إغلاق فقاعة التوجيه">
-                    {dialogBubble.text}
+                    <span className="thinking-bubble-title">{dialogBubble.tone === "hint" ? "تلميح خفيف" : "تعزيز"}</span>
+                    <span className="thinking-bubble-text">{dialogBubble.text}</span>
+                    <span className="thinking-bubble-close">فهمت</span>
                   </button>
                 ) : null}
 
@@ -1189,7 +1226,11 @@ export default function ExercisePlayer({
               </div>
             ) : node?.type === "result" ? (
               <div className="clean-result-block">
-                <button type="button" className="thinking-bubble celebrate" onClick={() => setDialogBubble(null)} aria-label="إغلاق فقاعة التعزيز">اكتمل المسار؛ الآن نعرض الإعراب النهائي بناءً على خطواتك.</button>
+                <button type="button" className="thinking-bubble celebrate" onClick={() => setDialogBubble(null)} aria-label="إغلاق فقاعة التعزيز">
+                  <span className="thinking-bubble-title">اكتمل المسار</span>
+                  <span className="thinking-bubble-text">الآن نعرض الإعراب النهائي بناءً على خطواتك.</span>
+                  <span className="thinking-bubble-close">تمام</span>
+                </button>
                 <div className="clean-final-label">الإعراب النهائي</div>
                 <div className="exercise-result-text clean-result-text" style={{ whiteSpace: "pre-line" }}>{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
 

@@ -11,7 +11,7 @@ export type AnswerOption = {
   text: string;
   next: string; // id للعقدة التالية
   correct?: boolean; // مهم لـ learn/practice/quiz
-  eval?: { fact: string; equals: any };
+  eval?: { fact: string; equals?: any; anyOf?: any[]; notEquals?: any };
   hint?: string;
   actions?: Action[];
 };
@@ -96,9 +96,13 @@ export function chooseAnswer(params: {
   };
 
   const answers = { ...state.answers, [node.id]: picked.id };
-  const isCorrect =
-  picked.eval
-    ? state.facts?.[picked.eval.fact] === picked.eval.equals
+  const factValue = picked.eval ? state.facts?.[picked.eval.fact] : undefined;
+  const isCorrect = picked.eval
+    ? Array.isArray(picked.eval.anyOf)
+      ? picked.eval.anyOf.includes(factValue)
+      : Object.prototype.hasOwnProperty.call(picked.eval, "notEquals")
+        ? factValue !== picked.eval.notEquals
+        : factValue === picked.eval.equals
     : picked.correct === true;
 
   // تحديث correctNodeIds (مفيد لـ quiz summary)
