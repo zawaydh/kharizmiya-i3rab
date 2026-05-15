@@ -18,7 +18,7 @@ export default function LearnTopicPage({ params }: { params: { topicCode: string
       title={`${topic.name_ar} — المرحلة الأولى`}
       mode="learn"
       tree={topic.tree}
-      examples={topic.examples}
+      examples={topic.learnExamples || topic.examples}
       coverageKeysOrdered={topic.coverageKeysOrdered}
       nav={getTopicRoutes(topic.code)}
       topicId={topic.code}

@@ -20,7 +20,7 @@ export default function TrainTopicPage({ params }: { params: { topicCode: string
       title={`${topic.name_ar} — المرحلة الثانية`}
       mode="practice"
       tree={topic.tree}
-      examples={topic.examples}
+      examples={topic.practiceExamples || topic.examples}
       coverageKeysOrdered={topic.coverageKeysOrdered}
       nav={getTopicRoutes(topic.code)}
       topicId={topic.code}
