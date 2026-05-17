@@ -7,7 +7,7 @@ export const cleanMubtadaTree: ExerciseTree = {
       "id": "mubtada_start",
       "type": "question",
       "context": "عرفنا موقع الكلمة: مبتدأ.",
-      "text": "ما القرار التالي؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "نحدد هل هي اسم معرب أو اسم مبني أو مصدر مؤول.",
       "answers": [
         {
@@ -106,7 +106,7 @@ export const cleanMubtadaTree: ExerciseTree = {
       "id": "mubtada_number",
       "type": "question",
       "context": "عرفنا أنه اسم معرب.",
-      "text": "ما الخطوة التالية؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "العدد والنوع يقودان إلى العلامة.",
       "answers": [
         {

@@ -7,7 +7,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_ism_start",
       "type": "question",
       "context": "عرفنا موقع الكلمة: اسم كان.",
-      "text": "ما القرار التالي؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "نحدد هل هي اسم معرب أو اسم مبني أو مصدر مؤول.",
       "answers": [
         {
@@ -106,7 +106,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_ism_number",
       "type": "question",
       "context": "عرفنا أنه اسم معرب.",
-      "text": "ما الخطوة التالية؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "العدد والنوع يقودان إلى العلامة.",
       "answers": [
         {
@@ -274,7 +274,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_khabar_single_start",
       "type": "question",
       "context": "عرفنا موقع الكلمة: خبر كان.",
-      "text": "ما القرار التالي؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "نحدد هل هي اسم معرب أو اسم مبني أو مصدر مؤول.",
       "answers": [
         {
@@ -373,7 +373,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_khabar_single_number",
       "type": "question",
       "context": "عرفنا أنه اسم معرب.",
-      "text": "ما الخطوة التالية؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "العدد والنوع يقودان إلى العلامة.",
       "answers": [
         {

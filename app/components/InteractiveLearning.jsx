@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { START_END_COPY } from "../../content/dialogueCopy";
 
 
 const START_GLOSSARY = {
@@ -158,13 +159,27 @@ export default function InteractiveLearning({ examples = [] }) {
               </div>
             </div>
           ) : (
-            <section className="result-card addictive-result-card">
-              <div className="success-badge">✓ أنجزت الإعراب</div>
+            <section className="result-card addictive-result-card start-finish-card">
+              <div className="success-badge">✓ {START_END_COPY.title}</div>
               <h2>{example.result}</h2>
+              <p className="start-finish-body">{START_END_COPY.body}</p>
+
+              <div className="start-next-topics" aria-label="اقتراحات المتابعة">
+                <h3>{START_END_COPY.nextTopicsTitle}</h3>
+                <div className="start-topic-grid">
+                  {START_END_COPY.nextTopics.map((item) => (
+                    <a key={item.href} className="start-topic-card" href={item.href}>
+                      <strong>{item.label}</strong>
+                      <span>{item.desc}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
               <div className="result-actions">
-                <a className="btn primary" href={example.nextHref || example.continueHref || "/topics"}>{example.nextLabel || example.continueLabel || "أكمل التعلم"}</a>
-                <button className="btn secondary" onClick={nextExample}>مثال جديد</button>
-                <button className="btn ghost" onClick={resetExample}>إعادة</button>
+                <a className="btn primary" href={example.nextHref || example.continueHref || START_END_COPY.primaryHref}>{example.nextLabel || example.continueLabel || START_END_COPY.primaryLabel}</a>
+                <a className="btn secondary" href={START_END_COPY.secondaryHref}>{START_END_COPY.secondaryLabel}</a>
+                <button className="btn ghost" onClick={resetExample}>{START_END_COPY.retryLabel}</button>
               </div>
             </section>
           )}

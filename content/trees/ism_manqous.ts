@@ -7,7 +7,7 @@ export const ismManqousTree: ExerciseTree = {
       "id": "manqous_step_1",
       "type": "question",
       "context": "عرفنا أن الكلمة اسم.",
-      "text": "ما القرار التالي؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "نحدد هل هو اسم منقوص قبل العلامة.",
       "answers": [
         {

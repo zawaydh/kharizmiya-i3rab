@@ -7,7 +7,7 @@ export const cleanKhabarTree: ExerciseTree = {
       "id": "khabar_single_start",
       "type": "question",
       "context": "عرفنا موقع الكلمة: خبر.",
-      "text": "ما القرار التالي؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "نحدد هل هي اسم معرب أو اسم مبني أو مصدر مؤول.",
       "answers": [
         {
@@ -106,7 +106,7 @@ export const cleanKhabarTree: ExerciseTree = {
       "id": "khabar_single_number",
       "type": "question",
       "context": "عرفنا أنه اسم معرب.",
-      "text": "ما الخطوة التالية؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "العدد والنوع يقودان إلى العلامة.",
       "answers": [
         {
@@ -274,7 +274,7 @@ export const cleanKhabarTree: ExerciseTree = {
       "id": "khabar_kind",
       "type": "question",
       "context": "عرفنا أننا نبحث عن الخبر.",
-      "text": "ما الخطوة التالية؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "نحدد صورة الخبر أولًا.",
       "answers": [
         {

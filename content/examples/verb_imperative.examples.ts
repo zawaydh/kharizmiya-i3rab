@@ -21,9 +21,9 @@ export const imperativeVerbExamples: Example[] = [
 
 const resultByCover: Record<string, string> = {
   "imperative.fath_tawkid": "فعل أمر مبني على الفتح لاتصاله بنون التوكيد",
-  "imperative.delete_noon.waw": "فعل أمر مبني على حذف النون لاتصاله بواو الجماعة، وواو الجماعة ضمير متصل مبني في محل رفع فاعل",
-  "imperative.delete_noon.yaa": "فعل أمر مبني على حذف النون لاتصاله بياء المخاطبة، وياء المخاطبة ضمير متصل مبني في محل رفع فاعل",
-  "imperative.delete_noon.alif2": "فعل أمر مبني على حذف النون لاتصاله بألف الاثنين، وألف الاثنين ضمير متصل مبني في محل رفع فاعل",
+  "imperative.delete_noon.waw": "فعل أمر مبني على حذف النون",
+  "imperative.delete_noon.yaa": "فعل أمر مبني على حذف النون",
+  "imperative.delete_noon.alif2": "فعل أمر مبني على حذف النون",
   "imperative.delete_letter": "فعل أمر مبني على حذف حرف العلة من آخره",
   "imperative.sukoon": "فعل أمر مبني على السكون"
 };
@@ -35,15 +35,15 @@ export const imperativeVerbQuizExamples = imperativeVerbExamples.map((ex, i) => 
   if (!options.includes(correct)) options[0] = correct;
   return {
     ...ex,
-    prompt: "بعد تتبّع القرارات، ما الإعراب الصحيح لفعل الأمر المحدد؟",
+    prompt: "بعد التحقق خطوة خطوة، ما الإعراب الصحيح لفعل الأمر المحدد؟",
     options,
     correctI3rab: correct,
-    whyCorrect: "اتبعنا التسلسل: نون التوكيد أولًا، ثم الأفعال الخمسة، ثم صحيح الآخر أو معتل الآخر.",
+    whyCorrect: "اتبعنا التسلسل: نون التوكيد أولًا، ثم الاتصال المؤثر، ثم صحيح الآخر أو معتل الآخر.",
     optionReasons: Object.fromEntries(options.map((o) => [
       o,
       o === correct
         ? "صحيح؛ هذه الصياغة توافق نون التوكيد أو الضمير المتصل أو حالة آخر الفعل."
-        : "خطأ؛ راجع: نون التوكيد، ثم الأفعال الخمسة، ثم صحيح/معتل الآخر."
+        : "خطأ؛ راجع: نون التوكيد، ثم الاتصال المؤثر، ثم صحيح/معتل الآخر."
     ]))
   };
 });

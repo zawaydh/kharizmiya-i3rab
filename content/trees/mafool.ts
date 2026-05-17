@@ -7,7 +7,7 @@ export const mafoolTree: ExerciseTree = {
       "id": "mafool_start",
       "type": "question",
       "context": "عرفنا موقع الكلمة: مفعول به.",
-      "text": "ما القرار التالي؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "نحدد هل هي اسم معرب أو اسم مبني أو مصدر مؤول.",
       "answers": [
         {
@@ -106,7 +106,7 @@ export const mafoolTree: ExerciseTree = {
       "id": "mafool_number",
       "type": "question",
       "context": "عرفنا أنه اسم معرب.",
-      "text": "ما الخطوة التالية؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "العدد والنوع يقودان إلى العلامة.",
       "answers": [
         {

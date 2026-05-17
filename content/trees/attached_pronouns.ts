@@ -7,7 +7,7 @@ export const attachedPronounsTree: ExerciseTree = {
       "id": "pronoun_step_1",
       "type": "question",
       "context": "عرفنا أن الكلمة ضمير.",
-      "text": "ما القرار التالي؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "الضمير يأخذ محل الاسم الذي ناب عنه.",
       "answers": [
         {

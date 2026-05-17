@@ -30,7 +30,7 @@ export function isChoiceCorrect(choice: AlgorithmicChoice | undefined, facts: Re
 
 export function normalizeDecisionNode(node: AlgorithmicNode, facts: Record<string, any> = {}): AlgorithmicNode {
   if (!node || node.type !== "question") return node;
-  const context = node.known || node.context || "ماذا عرفنا؟ ثم ما القرار التالي؟";
+  const context = node.known || node.context || "ماذا عرفنا؟ ثم ماذا نتحقق الآن؟";
   const answers = (node.answers || []).map((choice) => ({
     ...choice,
     hint: choice.hint || choice.misconception || "ارجع إلى القرار السابق قبل اختيار العلامة.",

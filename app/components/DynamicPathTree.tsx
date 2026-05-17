@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PATHS_COPY } from "../../content/dialogueCopy";
 
 type TreeNode = {
   id: string;
@@ -66,6 +67,22 @@ function splitText(text?: string, max = 28) {
   });
   if (current) lines.push(current);
   return lines.slice(0, 6);
+}
+
+
+function displayNodeQuestion(node: TreeNode | null | undefined) {
+  const raw = String(node?.text || "").trim();
+  const hint = String(node?.hint || "").trim();
+  const context = String((node as any)?.context || "").trim();
+  if (!raw) return "تابع السؤال المناسب لهذا المثال.";
+  if (raw === "ماذا نتحقق الآن؟" || raw === "ماذا نتحقق الآن؟") {
+    if (hint.includes("العدد") || hint.includes("النوع")) return "ما صورة الكلمة من حيث العدد أو النوع؟";
+    if (hint.includes("علامة")) return "ما العلامة المناسبة هنا؟";
+    if (hint.includes("اسم معرب") || hint.includes("اسم مبني")) return "ما نوع الكلمة الآن؟";
+    if (context) return context.replace(/^عرفنا\s*/, "حدّدنا ").replace(/[.،]+$/, "") + "؛ ماذا نختار الآن؟";
+    return "ماذا نلاحظ الآن؟";
+  }
+  return raw;
 }
 
 function diamondPoints(x: number, y: number, w: number, h: number) {
@@ -148,7 +165,7 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
       y,
       w,
       h,
-      textLines: splitText(node.text, isQuestion ? 18 : 24),
+      textLines: splitText(displayNodeQuestion(node), isQuestion ? 20 : 24),
       node,
     });
 
@@ -172,8 +189,8 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
     w: BOX_W,
     h: BOX_H,
     textLines: example
-      ? [splitText(example.sentence, 22).join(" "), `الكلمة الهدف: ${example.target}`]
-      : ["هنا يبدأ مسار هذا الموضوع", "خطوة خطوة معًا"],
+      ? [PATHS_COPY.startNodeLine1, `الكلمة الهدف: ${example.target}`]
+      : [PATHS_COPY.startNodeLine1, PATHS_COPY.startNodeLine2],
     node: null,
   };
 
@@ -222,7 +239,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [visitedNodes, setVisitedNodes] = useState<string[]>([]);
   const [visitedEdges, setVisitedEdges] = useState<string[]>([]);
-  const [message, setMessage] = useState("اضغط هيا نبدأ، ثم اتبع السؤال داخل المسار.");
+  const [message, setMessage] = useState(PATHS_COPY.emptyGuidance);
   const [showHint, setShowHint] = useState(false);
   const [zoom, setZoom] = useState(1);
   // التوجيه المختصر يظهر في لوحة ثابتة فوق الشجرة، والشرح التفصيلي في أسفل الصفحة.
@@ -351,11 +368,11 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     if (id.includes("number") || text.includes("مفرد") || text.includes("مثنى") || text.includes("جمع")) {
       return [
         { q: "لماذا أحدد العدد أو نوع الجمع؟", a: "لأن علامة الإعراب تختلف: المفرد غالبًا بالضمة/الفتحة/الكسرة، والمثنى بالألف/الياء، وجمع المذكر السالم بالواو/الياء." },
-        { q: "ما الخطوة التالية؟", a: "بعد معرفة النوع نحدد العلامة المناسبة للموقع الإعرابي." },
+        { q: "ماذا نلاحظ بعد معرفة النوع؟", a: "بعد معرفة النوع نحدد العلامة المناسبة للموقع الإعرابي." },
       ];
     }
     return [
-      { q: "ما المطلوب في هذه العقدة؟", a: cleanLearningText(node?.text || "حدد الاختيار الذي يثبته المثال.", 180) },
+      { q: "ما السؤال الذي نفكر فيه هنا؟", a: cleanLearningText(node?.text || "اختر ما يثبته المثال.", 180) },
       { q: "كيف أختار؟", a: `أربط السؤال بالكلمة الهدف (${target})، ثم أبحث عن الدليل في الجملة.` },
       { q: "ماذا بعد الاختيار الصحيح؟", a: "ننتقل إلى العقدة التالية حتى نصل إلى الإعراب الكامل." },
     ];
@@ -375,7 +392,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setVisitedEdges([]);
     setActiveNodeId(null);
     setShowHint(false);
-    setMessage("اضغط هيا نبدأ، ثم اتبع السؤال داخل المسار.");
+    setMessage(PATHS_COPY.emptyGuidance);
     setActiveGuidance(null);
     setCurrentExampleIndex(-1);
     setFinalNodeId(null);
@@ -460,8 +477,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setHighlightedAnswerKey(null);
     setHighlightedAnswerKind(null);
     setFinalNodeId(null);
-    setMessage("ابدأ من السؤال الأول داخل الشجرة.");
-    setActiveGuidance("اقرأ المثال والكلمة الهدف، ثم اختر الإجابة التي تثبتها الجملة.");
+    setMessage("ابدأ بالسؤال الظاهر داخل المسار.");
+    setActiveGuidance("اقرأ المثال والكلمة الهدف، ثم أجب عن السؤال الظاهر فقط.");
     setPathSteps([]);
   }
 
@@ -644,10 +661,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
         <div className="paths-react-workbar">
           <div className="paths-react-workbar-left">
             <button type="button" className="btn btn-soft paths-react-start-btn" onClick={() => startExampleAt(0)}>
-              هيا نبدأ بصريًا
+              {PATHS_COPY.visualButton}
             </button>
             <button type="button" className="btn btn-primary btn-workbar-glow" onClick={startNextExercise}>
-              تدريب جديد
+              {PATHS_COPY.startButton}
             </button>
             <button
               type="button"
@@ -665,25 +682,24 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
               }}
               disabled={!activeNodeId}
             >
-              {showHint ? "إخفاء التلميح" : "تلميح"}
+              {showHint ? PATHS_COPY.hideHintButton : PATHS_COPY.hintButton}
             </button>
           </div>
 
           <div className="paths-react-zoom-tools">
             <button type="button" className="btn btn-soft btn-zoom" onClick={() => setZoom((z) => Math.max(1, +(z - 0.08).toFixed(2)))}>
-              −
+              {PATHS_COPY.zoomOut}
             </button>
-            <span className="paths-react-zoom-readout">تكبير {Math.round(zoom * 100)}٪</span>
+            
             <button type="button" className="btn btn-soft btn-zoom" onClick={() => setZoom((z) => Math.min(2, +(z + 0.08).toFixed(2)))}>
-              +
+              {PATHS_COPY.zoomIn}
             </button>
           </div>
         </div>
 
-        <div className="paths-react-tree-title">شجرة المسار النحوي</div>
+        
         <div className="paths-step-hint-panel" aria-live="polite">
-          <span className="paths-step-hint-label">تلميح الخطوة</span>
-          <span>{activeGuidance || (activeNodeId ? stepHintForNode(tree.nodes[activeNodeId]) : "اضغط هيا نبدأ، ثم اتبع السؤال داخل المسار.")}</span>
+          <span>{activeGuidance || (activeNodeId ? stepHintForNode(tree.nodes[activeNodeId]) : PATHS_COPY.emptyGuidance)}</span>
         </div>
         <div ref={canvasScrollRef} className="paths-react-canvas-scroll">
           <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
@@ -809,7 +825,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
             </svg>
           </div>
         </div>
-        <div className="paths-thinking-dock">
+        <div className="paths-thinking-dock paths-thinking-dock-hidden">
           <details open>
             <summary>كيف أفكر في هذه الخطوة؟</summary>
             <div className="paths-thinking-list">

@@ -7,7 +7,7 @@ export const firstWordTree: ExerciseTree = {
       "id": "fw_decision_1",
       "type": "question",
       "context": "نبدأ من الكلمة الأولى فقط.",
-      "text": "ما القرار الأول؟",
+      "text": "من أين نبدأ؟",
       "hint": "نحدد نوع الكلمة قبل أي إعراب.",
       "answers": [
         {
@@ -43,7 +43,7 @@ export const firstWordTree: ExerciseTree = {
       "id": "fw_verb_tense",
       "type": "question",
       "context": "عرفنا أن الكلمة فعل.",
-      "text": "ما الخطوة التالية؟",
+      "text": "ماذا نتحقق الآن؟",
       "hint": "بعد الفعل نحدد الزمن.",
       "answers": [
         {
