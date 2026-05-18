@@ -90,7 +90,7 @@ export default function InteractiveLearning({ examples = [] }) {
       }, 900);
     } else {
       setStreak(0);
-      setFeedback({ type: "bad", text: step.wrongHint || step.hint || "فكّر في السؤال ثم حاول مرة أخرى." });
+      setFeedback({ type: "bad", text: step.wrongHint || step.hint || "فكّر في السؤال ثم انقر على الإجابة الصحيحة." });
     }
   }
 

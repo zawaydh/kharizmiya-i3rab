@@ -70,6 +70,27 @@ function splitText(text?: string, max = 28) {
 }
 
 
+
+function shortPathAnswerLabel(text?: string) {
+  const raw = String(text || "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("نعم")) return "نعم";
+  if (raw.startsWith("لا")) return "لا";
+  if (raw.includes("أداة نصب") || raw.includes("ناصبة")) return "ناصب";
+  if (raw.includes("أداة جزم") || raw.includes("جازمة")) return "جازم";
+  if (raw.includes("صحيح الآخر")) return "صحيح";
+  if (raw.includes("معتل الآخر")) return "معتل";
+  if (raw.includes("واو الجماعة")) return "واو";
+  if (raw.includes("ألف الاثنين")) return "ألف";
+  if (raw.includes("ياء المخاطبة")) return "ياء";
+  if (raw.includes("نون النسوة")) return "نون النسوة";
+  if (raw.includes("نون التوكيد")) return "نون التوكيد";
+  if (raw.includes("مفرد")) return "مفرد";
+  if (raw.includes("مثنى")) return "مثنى";
+  if (raw.includes("جمع")) return raw.replace(/^.*?(جمع)/, "$1").slice(0, 18);
+  return raw.length > 12 ? raw.slice(0, 11) + "…" : raw;
+}
+
 function displayNodeQuestion(node: TreeNode | null | undefined) {
   const raw = String(node?.text || "").trim();
   const hint = String(node?.hint || "").trim();
@@ -801,7 +822,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     {isQuestion && active && n.node?.answers ? (
                       <g>
                         {n.node.answers.map((answer, idx) => {
-                          const btnW = Math.max(48, Math.min(82, n.w / Math.max(2, n.node!.answers!.length) - 8));
+                          const btnW = Math.max(38, Math.min(66, n.w / Math.max(2, n.node!.answers!.length) - 8));
                           const totalW = n.node!.answers!.length * btnW + (n.node!.answers!.length - 1) * 5;
                           const startX = n.x + (n.w - totalW) / 2;
                           const bx = startX + idx * (btnW + 5);
@@ -812,7 +833,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                             <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + 10 })}>
                               <rect x={bx} y={by} width={btnW} height={20} rx={10} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" strokeWidth={0.9} />
                               <text x={bx + btnW / 2} y={by + 10} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
-                                {answer.text}
+                                {shortPathAnswerLabel(answer.text)}
                               </text>
                             </g>
                           );

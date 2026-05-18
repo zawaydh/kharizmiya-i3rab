@@ -120,21 +120,17 @@ function buildRunnerState(tree: any, mode: Mode, example: any) {
 
 function renderSentence(sentence?: string, target?: string) {
   if (!sentence) return null;
-  if (!target || !sentence.includes(target)) return sentence;
+  if (!target) return sentence;
+  const idx = sentence.indexOf(target);
+  if (idx < 0) return sentence;
 
-  const parts = sentence.split(target);
-  const out: React.ReactNode[] = [];
-  for (let i = 0; i < parts.length; i += 1) {
-    if (parts[i]) out.push(parts[i]);
-    if (i !== parts.length - 1) {
-      out.push(
-        <span key={`target-${i}`} className="exercise-target-word">
-          {target}
-        </span>
-      );
-    }
-  }
-  return out;
+  return (
+    <>
+      {sentence.slice(0, idx)}
+      <span className="exercise-target-word">{target}</span>
+      {sentence.slice(idx + target.length)}
+    </>
+  );
 }
 
 function getStageMeta(mode: Mode) {
@@ -400,7 +396,7 @@ function cleanQuestionText(node: any) {
   if (id === "present_tool") return "هل نفحص ما قبل الفعل؟";
   if (id === "present_has_tool") return "هل سبق الفعل عامل نصب أو جزم؟";
   if (id.includes("attached")) return "هل اتصل الفعل بواو الجماعة أو ألف الاثنين أو ياء المخاطبة؟";
-  if (id.includes("ending")) return "ما حالة آخر الفعل؟";
+  if (id.includes("ending")) return "ما حالة آخر الكلمة؟";
   if (id.includes("weak")) return "ما حرف العلة في آخره؟";
   if (id === "wordType") return "هل الكلمة اسم أم فعل أم حرف؟";
   if (id === "nounKind" || id === "khabar_single_start") return "هل الاسم معرب أم مبني أم مصدر مؤول؟";
@@ -561,6 +557,51 @@ function sentenceForDialogue(state: any) {
 
 function targetForDialogue(state: any) {
   return String(state?.currentTarget || "الكلمة المحددة").trim();
+}
+
+
+function bridgeKickerText(tree: any, node: any, state: any, title?: string, completedPieces: string[] = []) {
+  const target = targetForDialogue(state);
+  const start = String(tree?.startNodeId || "");
+  const nodeId = String(node?.id || "");
+  const last = completedPieces[completedPieces.length - 1];
+
+  if (!last) {
+    if (start.includes("present")) {
+      return `يا بني، لكي نعرب الفعل المضارع تكون أول خطوة أن نعرف: هل (${target}) مبني أم معرب؟`;
+    }
+    if (start.includes("past")) {
+      return `يا بني، لكي نعرب الفعل الماضي نبدأ بسؤال بسيط: ما الذي اتصل بالفعل (${target})؟`;
+    }
+    if (start.includes("imp")) {
+      return `يا بني، لكي نعرب فعل الأمر نبدأ بفحص ما اتصل بالفعل (${target}).`;
+    }
+    if (String(title || "").includes("الجملة الاسمية") || start.includes("nominal") || start.includes("mubtada") || start.includes("khabar")) {
+      return `يا بني، لكي نعرب (${target}) نبدأ بما نلاحظه في الجملة نفسها.`;
+    }
+    return `يا بني، نبدأ إعراب (${target}) بخطوة صغيرة واحدة.`;
+  }
+
+  if (node?.type === "result") return `اكتمل المسار؛ لنرتب الإعراب الذي بنيناه خطوة خطوة.`;
+
+  let next = "نكمل خطوة إعراب جديدة";
+  if (start.includes("present")) {
+    if (nodeId.includes("nun_tawkid")) next = "نكمل فحص البناء";
+    else if (nodeId.includes("has_tool")) next = "نكمل فنبحث عن العامل";
+    else if (nodeId.includes("tool_type")) next = "نكمل فنحدد نوع العامل";
+    else if (isFiveVerbDecision(node)) next = "نكمل فنفحص الأفعال الخمسة";
+    else if (nodeId.includes("ending") || nodeId.includes("weak")) next = "نكمل فنحدد العلامة";
+  } else if (start.includes("past")) {
+    if (nodeId.includes("waw")) next = "نكمل فنفحص نوع الضمير";
+    else if (nodeId.includes("sukoon")) next = "نكمل فنحدد أثر الاتصال";
+    else next = "نكمل تحديد علامة البناء";
+  } else if (start.includes("imp")) {
+    if (nodeId.includes("five")) next = "نكمل فنفحص الاتصال";
+    else if (nodeId.includes("ending")) next = "نكمل فننظر إلى آخر الفعل";
+    else next = "نكمل تحديد علامة البناء";
+  }
+
+  return `عرفنا أنه ${last}. لن نسأل عن هذه الخطوة مرة أخرى؛ ${next} في (${target}).`;
 }
 
 function topicKindForDialogue(tree: any, title?: string) {
@@ -1139,12 +1180,10 @@ export default function ExercisePlayer({
   const visibleResultPieces = buildVisibleResultDraft(tree, state, thinkingNode, droppedChoice);
   const completedStepCards = buildVisibleResultDraft(tree, state, thinkingNode, null);
   const latestStepResult = droppedChoice?.tone === "bad"
-    ? "حاول مرة أخرى"
+    ? "انقر على الإجابة الصحيحة"
     : (droppedChoice?.text || visibleResultPieces[visibleResultPieces.length - 1] || "");
   const answeredStepCount = Object.keys(state?.answers || {}).length;
-  const stepKickerText = answeredStepCount > 0
-    ? `نكمل إعراب (${state.currentTarget || "الكلمة"}) في المثال نفسه`
-    : `نبدأ الرحلة مع (${state.currentTarget || "الكلمة"}) خطوة خطوة`;
+  const stepKickerText = bridgeKickerText(tree, thinkingNode, state, title, completedStepCards);
   const currentFollowUp = (example as QuizExampleLike | undefined)?.followUp;
   const chosenFollowUp = currentFollowUp?.options?.find((o) => o.label === followUpChoice);
   const followUpIsCorrect = Boolean(chosenFollowUp?.correct);
@@ -1273,7 +1312,7 @@ export default function ExercisePlayer({
       const smartHint = isBuiltTypeNode
         ? builtNounTypeHintByValue(expectedBuiltType)
         : studentHintText(thinkingNode, picked, state);
-      setDialogBubble({ tone: "hint", text: smartHint || "فكّر في السؤال الحالي فقط، ثم اختر مرة أخرى." });
+      setDialogBubble({ tone: "hint", text: smartHint || "فكّر في السؤال الحالي فقط، ثم انقر على الإجابة الصحيحة." });
       setDroppedChoice((prev) => prev ? { ...prev, tone: "bad" } : null);
       bringWorkAreaIntoView("center");
       if (mode === "practice") {
@@ -1296,7 +1335,7 @@ export default function ExercisePlayer({
     bringWorkAreaIntoView("center");
     window.setTimeout(() => {
       setCardPhase("leaving");
-    }, 460);
+    }, 280);
     window.setTimeout(() => {
       setState(res.nextState);
       setDroppedChoice(null);
@@ -1306,7 +1345,7 @@ export default function ExercisePlayer({
       setCardPhase("idle");
       setMicroCelebrate((n) => Math.max(0, n - 1));
       setMicroCelebrateAnswerId(null);
-    }, 1720);
+    }, 1760);
     setFeedback(null);
   }
 
@@ -1508,12 +1547,22 @@ export default function ExercisePlayer({
           <section ref={workAreaRef as any} className="exercise-panel exercise-core-card clean-thinking-card sequential-stage-shell" style={box}>
             {node?.type === "question" && completedStepCards.length > 0 ? (
               <div className="sequential-step-trail" aria-label="نتائج الخطوات السابقة">
-                {completedStepCards.map((piece, idx) => (
-                  <React.Fragment key={`${piece}-${idx}`}>
-                    <div className="sequential-mini-card">{piece}</div>
-                    {idx < completedStepCards.length - 1 ? <div className="sequential-arrow">↓</div> : null}
-                  </React.Fragment>
-                ))}
+                {completedStepCards.map((piece, idx) => {
+                  const offsetFromLatest = completedStepCards.length - 1 - idx;
+                  const miniClass = [
+                    "sequential-mini-card",
+                    offsetFromLatest === 0 ? "is-latest" : "",
+                    offsetFromLatest === 1 ? "is-prev-one" : "",
+                    offsetFromLatest === 2 ? "is-prev-two" : "",
+                    offsetFromLatest > 2 ? "is-older" : "",
+                  ].filter(Boolean).join(" ");
+                  return (
+                    <React.Fragment key={`${piece}-${idx}`}>
+                      <div className={miniClass}>{piece}</div>
+                      {idx < completedStepCards.length - 1 ? <div className="sequential-arrow">↓</div> : null}
+                    </React.Fragment>
+                  );
+                })}
               </div>
             ) : null}
 
@@ -1569,7 +1618,7 @@ export default function ExercisePlayer({
                         {microCelebrateAnswerId === a.id && microCelebrate > 0 ? (
                           <>
                             <span className="micro-success-inline" aria-hidden="true">✓</span>
-                            <span className="micro-success-burst" aria-hidden="true">أحسنت!</span>
+                            <span className="micro-success-burst" aria-hidden="true">رائع!</span>
                           </>
                         ) : null}
                         {mode === "learn" ? <span className="answer-drag-mini">{answerDragLabel(mode)}</span> : null}
@@ -1590,7 +1639,7 @@ export default function ExercisePlayer({
                     type="button"
                     onClick={() => {
                       const smartHint = studentHintText(thinkingNode, null, state);
-                      setDialogBubble({ tone: "hint", text: smartHint || "فكّر في السؤال الحالي فقط، ثم اختر مرة أخرى." });
+                      setDialogBubble({ tone: "hint", text: smartHint || "فكّر في السؤال الحالي فقط، ثم انقر على الإجابة الصحيحة." });
                       bringWorkAreaIntoView("center");
                     }}
                     style={ghostBtn}
@@ -1622,24 +1671,10 @@ export default function ExercisePlayer({
                 <div className="clean-final-label">الإعراب النهائي</div>
                 <div className="exercise-result-text clean-result-text" style={{ whiteSpace: "pre-line" }}>{renderSmartText(thinkingNode?.text, setActiveGlossary)}</div>
 
-                <div className="i3rab-builder-strip final-builder-strip" aria-label="لوحة النتيجة المجمعة">
-                  <span className="builder-label">النتيجة المجمعة</span>
-                  <span className="builder-target">{state.currentTarget || "الكلمة"}</span>
-                  <span className="builder-colon">:</span>
-                  {i3rabTokens.length ? (
-                    <span className="builder-tokens">
-                      {i3rabTokens.map((token, idx) => (
-                        <span key={`${token}-${idx}`} className="builder-token">{token}</span>
-                      ))}
-                    </span>
-                  ) : (
-                    <span className="builder-placeholder">اكتملت خطوات التفكير</span>
-                  )}
-                </div>
 
                 {currentFollowUp ? (
                   <div className="exercise-followup-box clean-followup-box">
-                    <div className="clean-followup-title">تثبيت سريع: {currentFollowUp.question}</div>
+                    <div className="clean-followup-title">تثبيت سريع بعد الإعراب: {currentFollowUp.question}</div>
                     {currentFollowUp.options.map((op) => {
                       const picked = followUpChoice === op.label;
                       const cls = picked ? (op.correct ? "is-correct" : "is-wrong") : "";
