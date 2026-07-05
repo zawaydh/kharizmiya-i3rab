@@ -35,12 +35,26 @@ function getNameFromUser(user) {
 }
 
 async function waitForSession() {
-  for (let i = 0; i < 6; i += 1) {
+  for (let i = 0; i < 8; i += 1) {
     const { data } = await supabase.auth.getSession();
     if (data?.session?.user) return data.session;
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   return null;
+}
+
+async function getExistingSession() {
+  const { data } = await supabase.auth.getSession();
+  return data?.session?.user ? data.session : null;
+}
+
+function getHashTokens() {
+  if (typeof window === "undefined" || !window.location.hash) return null;
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const accessToken = hashParams.get("access_token");
+  const refreshToken = hashParams.get("refresh_token");
+  if (!accessToken || !refreshToken) return null;
+  return { access_token: accessToken, refresh_token: refreshToken };
 }
 
 async function trySyncStudentRow(user, fullName) {
@@ -99,27 +113,37 @@ export default function AuthCallbackPage() {
         const authError = params.get("error_description") || params.get("error");
         if (authError) throw new Error(authError);
 
+        // أحيانًا يفتح المتصفح صفحة callback بعد أن تكون الجلسة اكتملت بالفعل.
+        // لذلك نتحقق من الجلسة أولًا حتى لا تظهر رسالة خطأ كاذبة.
+        let session = await getExistingSession();
+
         const code = params.get("code");
-        if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          if (exchangeError) throw exchangeError;
-        } else if (window.location.hash) {
-          const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-          const accessToken = hashParams.get("access_token");
-          const refreshToken = hashParams.get("refresh_token");
-          if (accessToken && refreshToken) {
-            const { error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-            if (sessionError) throw sessionError;
+        const hashTokens = getHashTokens();
+
+        if (!session && hashTokens) {
+          const { error: sessionError } = await supabase.auth.setSession(hashTokens);
+          if (sessionError) {
+            const recoveredSession = await getExistingSession();
+            if (recoveredSession) session = recoveredSession;
+            else throw sessionError;
           }
         }
 
-        const session = await waitForSession();
+        if (!session && code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            const recoveredSession = await getExistingSession();
+            if (recoveredSession) session = recoveredSession;
+            else throw exchangeError;
+          }
+        }
+
+        if (!session) {
+          session = await waitForSession();
+        }
         const user = session?.user;
         if (!user) {
-          throw new Error("لم تكتمل جلسة الدخول. افتحي آخر رسالة تحقق فقط أو أرسلي رابطًا جديدًا.");
+          throw new Error("لم تكتمل جلسة الدخول. استخدمي آخر رسالة فقط، أو عودي لصفحة الدخول وأرسلي رابطًا جديدًا.");
         }
 
         const pendingName = localStorage.getItem(PENDING_NAME_KEY)?.trim?.() || "";
