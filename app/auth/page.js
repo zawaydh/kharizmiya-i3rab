@@ -81,7 +81,7 @@ export default function AuthPage() {
 
   const redirectTo = useMemo(() => {
     if (typeof window === "undefined") return undefined;
-    return `${window.location.origin}/auth?next=${encodeURIComponent(nextUrl)}`;
+    return `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`;
   }, [nextUrl]);
 
   useEffect(() => {
@@ -191,7 +191,7 @@ export default function AuthPage() {
 
       setEmail(cleanEmail);
       setLinkSent(true);
-      setMsg("تم إرسال رابط التحقق. افتحي بريدك واضغطي الرابط، ثم سيعود بك إلى الموقع تلقائيًا.");
+      setMsg("تم إرسال رابط الدخول. افتحي آخر رسالة في بريدك واضغطي الرابط، ثم سيعود بك إلى الموقع تلقائيًا.");
     } catch (err) {
       const m = err?.message || String(err);
       setMsg("تعذر إرسال رابط التحقق: " + m);
@@ -288,12 +288,12 @@ export default function AuthPage() {
               </div>
 
               <button className="btn btn-primary auth-submit-btn" type="submit" disabled={loading}>
-                {loading ? "جارٍ إرسال الرابط..." : linkSent ? "إرسال الرابط مرة أخرى" : "إرسال رابط التحقق"}
+                {loading ? "جارٍ إرسال الرابط..." : linkSent ? "إرسال رابط الدخول مرة أخرى" : "إرسال رابط الدخول إلى بريدي"}
               </button>
 
               {linkSent ? (
                 <div className="auth-note-box auth-note-success">
-                  افحصي البريد الوارد، وإذا لم يظهر الرابط افحصي الرسائل غير المرغوب فيها. لا تغلقي هذه الصفحة قبل فتح الرابط من البريد.
+                  افحصي البريد الوارد، وإذا لم يظهر الرابط افحصي الرسائل غير المرغوب فيها. استخدمي آخر رسالة فقط، ولا تستخدمي رسائل قديمة.
                 </div>
               ) : null}
             </form>
