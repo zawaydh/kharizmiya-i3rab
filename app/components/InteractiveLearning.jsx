@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { START_END_COPY } from "../../content/dialogueCopy";
 
-
 const START_GLOSSARY = {
-  "الأفعال الخمسة": ["مضارع اتصلت به واو الجماعة أو ياء المخاطبة أو ألف الاثنين.", "ترفع بثبوت النون وتنصب وتجزم بحذف النون."],
-  "حروف العلة": ["الألف، الواو، الياء.", "تؤثر في ظهور الحركة أو حذف حرف العلة."],
-  "اسم منقوص": ["اسم آخره ياء لازمة مكسور ما قبلها مثل: القاضي."],
-  "واو الجماعة": ["ضمير متصل في محل رفع فاعل إذا اتصل بالفعل."],
-  "أداة نصب": ["مثل: لن، أن، كي. تجعل المضارع منصوبًا."],
-  "أداة جزم": ["مثل: لم، لا الناهية، لام الأمر. تجعل المضارع مجزومًا."]
+  "الأفعال الخمسة": ["كل فعل مضارع اتصلت به واو الجماعة أو ياء المخاطبة أو ألف الاثنين.", "ترفع بثبوت النون، وتنصب وتجزم بحذف النون."],
+  "حروف العلة": ["الألف، الواو، الياء.", "ننتبه لها في آخر الفعل أو الاسم؛ لأنها قد تجعل الحركة مقدّرة أو تجعل حرف العلة يُحذف."],
+  "اسم منقوص": ["اسم آخره ياء لازمة مكسور ما قبلها، مثل: القاضي، الساعي."],
+  "واو الجماعة": ["ضمير متصل يدل على جماعة الذكور.", "إذا اتصل بالفعل يكون غالبًا في محل رفع فاعل."],
+  "أداة نصب": ["مثل: لن، أن، كي.", "إذا جاءت قبل المضارع جعلته منصوبًا."],
+  "أداة جزم": ["مثل: لم، لا الناهية، لام الأمر.", "إذا جاءت قبل المضارع جعلته مجزومًا."],
+  "معتل الآخر": ["فعل آخره حرف علة: ألف أو واو أو ياء.", "مثل: يرمي، يدعو، يسعى."],
+  "مبني": ["لا نبحث له عن رفع أو نصب أو جزم بالطريقة المعتادة.", "نثبت علامة بنائه حسب حالته."],
+  "معرب": ["يدخل في مسار الإعراب: رفع، نصب، جزم، أو جرّ بحسب نوع الكلمة والعامل."]
 };
 
 function SmartText({ text, onTerm }) {
@@ -18,23 +20,97 @@ function SmartText({ text, onTerm }) {
   const terms = Object.keys(START_GLOSSARY).sort((a, b) => b.length - a.length);
   const pattern = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g");
   return String(text).split(pattern).map((part, idx) => START_GLOSSARY[part]
-    ? <button key={`${part}-${idx}`} type="button" className="smart-term" onClick={() => onTerm(part)}>{part}</button>
+    ? (
+      <span key={`${part}-${idx}`} className="term-with-info">
+        <span className="term-label-text">{part}</span>
+        <button type="button" className="term-info-btn" onClick={() => onTerm(part)} aria-label={`معلومات عن ${part}`}>i</button>
+      </span>
+    )
     : <span key={idx}>{part}</span>
   );
 }
 
 function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
+  // Deterministic order prevents Next hydration mismatch between server and client.
+  return [...arr];
 }
 
-function plainSentence(sentence) {
-  return sentence || "";
+function plainSentence(sentence, target) {
+  if (!sentence || !target) return sentence || "";
+  const idx = sentence.indexOf(target);
+  if (idx < 0) return sentence;
+  return (
+    <>
+      {sentence.slice(0, idx)}
+      <span className="start-target-word">{target}</span>
+      {sentence.slice(idx + target.length)}
+    </>
+  );
 }
 
 function getStepLead(stepIndex, step) {
   if (step?.lead) return step.lead;
   if (stepIndex === 0) return "أول خطوة: نميّز الكلمة.";
-  return "الآن نكمل بناء الإعراب.";
+  return "نكمل إعراب الكلمة نفسها.";
+}
+
+function refinedQuestion(example, step, stepIndex) {
+  const target = example?.target || "الكلمة";
+  const q = String(step?.question || "").trim();
+
+  if (stepIndex === 0 && q.includes("اسم") && q.includes("فعل") && q.includes("حرف")) {
+    return `في جملة «${example.sentence}» نركّز على (${target}): هل هي اسم أم فعل أم حرف؟`;
+  }
+
+  if (q.includes("زمن الفعل")) {
+    return `عرفنا أن (${target}) فعل. الآن نسأل: هل يدل على الماضي أم المضارع أم الأمر؟`;
+  }
+
+  if (q.includes("أداة تؤثر")) {
+    return `بما أن (${target}) فعل مضارع معرب، ننظر قبله: هل سبقته أداة نصب أم أداة جزم؟`;
+  }
+
+  if (q.includes("الأفعال الخمسة") || q.includes("سبب علامة الجزم")) {
+    return `هل الفعل (${target}) من الأفعال الخمسة؟ وهي أفعال مضارعة اتصلت بألف الاثنين أو ياء المخاطبة أو واو الجماعة.`;
+  }
+
+  return q;
+}
+
+function refinedHint(example, step, stepIndex) {
+  const q = String(step?.question || "");
+  if (stepIndex === 0 && q.includes("اسم") && q.includes("فعل") && q.includes("حرف")) {
+    return "إذا دلّت الكلمة على حدث وزمن فهي فعل. وإذا دلّت على معنى بلا زمن غالبًا فهي اسم.";
+  }
+  return step?.hint || "فكّر في السؤال الحالي فقط.";
+}
+
+function wrongFeedbackFor(choice, step, example, stepIndex) {
+  const target = example?.target || "الكلمة";
+  const answer = step?.answer;
+  const q = String(step?.question || "");
+
+  if (step?.wrongReasons?.[choice]) return `${step.wrongReasons[choice]} انقر على الإجابة الصحيحة.`;
+
+  if (stepIndex === 0 && q.includes("اسم") && q.includes("فعل") && q.includes("حرف")) {
+    if (choice === "اسم") return `ليست اسمًا هنا؛ (${target}) تدل على حدث وزمن. انقر على الإجابة الصحيحة.`;
+    if (choice === "حرف") return `ليست حرفًا؛ (${target}) كلمة لها معنى وزمن. انقر على الإجابة الصحيحة.`;
+    return `فكّر: هل (${target}) تدل على حدث وزمن؟ انقر على الإجابة الصحيحة.`;
+  }
+
+  if (q.includes("زمن الفعل")) {
+    return `قارن المعنى: متى وقع الفعل؟ ثم انقر على الإجابة الصحيحة.`;
+  }
+
+  if (q.includes("أداة تؤثر")) {
+    return `انظر إلى الكلمة التي قبل (${target}) مباشرة: هل هي أداة نصب أم أداة جزم؟ انقر على الإجابة الصحيحة.`;
+  }
+
+  if (q.includes("الأفعال الخمسة") || q.includes("سبب علامة الجزم")) {
+    return `اسأل: هل الفعل من الأفعال الخمسة؟ وهي أفعال مضارعة اتصلت بألف الاثنين أو واو الجماعة أو ياء المخاطبة. انقر على الإجابة الصحيحة.`;
+  }
+
+  return `هذه الإجابة لا تناسب هذه الخطوة. انقر على الإجابة الصحيحة: ${answer}.`;
 }
 
 export default function InteractiveLearning({ examples = [] }) {
@@ -46,13 +122,23 @@ export default function InteractiveLearning({ examples = [] }) {
   const [dragOver, setDragOver] = useState(false);
   const [streak, setStreak] = useState(0);
   const [activeTerm, setActiveTerm] = useState(null);
+  const feedbackRef = useRef(null);
 
   const example = examples[exampleIndex] || examples[0];
   const step = example?.steps?.[stepIndex];
   const choices = useMemo(() => shuffle(step?.choices || []), [exampleIndex, stepIndex]);
   const done = example && stepIndex >= example.steps.length;
   const progress = example ? Math.round((Math.min(stepIndex, example.steps.length) / example.steps.length) * 100) : 0;
+  const visualProgress = example ? Math.round((Math.min(stepIndex + 1, example.steps.length) / example.steps.length) * 100) : 0;
   const currentBuild = board.length ? board[board.length - 1] : "";
+
+  useEffect(() => {
+    if (feedback?.type === "bad") {
+      window.setTimeout(() => {
+        feedbackRef.current?.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      }, 80);
+    }
+  }, [feedback]);
 
   if (!example) return <main className="interactive-shell">لا توجد أمثلة بعد.</main>;
 
@@ -63,6 +149,7 @@ export default function InteractiveLearning({ examples = [] }) {
     setLocked(false);
     setDragOver(false);
     setStreak(0);
+    setActiveTerm(null);
   }
 
   function nextExample() {
@@ -73,6 +160,7 @@ export default function InteractiveLearning({ examples = [] }) {
     setLocked(false);
     setDragOver(false);
     setStreak(0);
+    setActiveTerm(null);
   }
 
   function handleAnswer(value) {
@@ -81,31 +169,39 @@ export default function InteractiveLearning({ examples = [] }) {
     if (value === step.answer) {
       setLocked(true);
       setStreak((s) => s + 1);
-      setFeedback({ type: "ok", text: step.reward || "أحسنت، خطوة صحيحة!" });
+      setFeedback({ type: "ok", text: step.reward || "رائع! أنجزت خطوة جديدة في بناء الإعراب. ننتقل بهدوء للخطوة التالية." });
       setBoard((prev) => [...prev, step.boardText || value]);
       setTimeout(() => {
         setStepIndex((i) => i + 1);
         setFeedback(null);
         setLocked(false);
-      }, 900);
+      }, 1100);
     } else {
       setStreak(0);
-      setFeedback({ type: "bad", text: step.wrongHint || step.hint || "فكّر في السؤال ثم انقر على الإجابة الصحيحة." });
+      setFeedback({ type: "bad", text: wrongFeedbackFor(value, step, example, stepIndex) });
     }
   }
 
   return (
-    <main className="interactive-shell" dir="rtl">
+    <main className="interactive-shell start-learning-refined" dir="rtl">
       <section className="interactive-card addictive-learning-card">
         <header className="interactive-topline clean-learning-topline">
           <span>{example.topic}</span>
           <button onClick={nextExample} className="soft-mini-btn">مثال جديد</button>
         </header>
 
+
         <section className="learning-focus-box">
-          <div className="sentence-task-card">
+          <div className="start-sticky-progress" aria-label="تقدم صفحة البداية">
+            <div className="start-sticky-progress-top">
+              <strong>{done ? "اكتمل المثال" : `الخطوة ${Math.min(stepIndex + 1, example.steps.length)} من ${example.steps.length}`}</strong>
+              <span>{done ? "100%" : `${visualProgress}%`}</span>
+            </div>
+            <div className="start-sticky-progress-bar"><i style={{ width: `${done ? 100 : Math.max(7, visualProgress)}%` }} /></div>
+          </div>
+          <div className="sentence-task-card refined-sentence-task-card">
             <div className="task-label">في جملة:</div>
-            <p className="interactive-sentence plain-sentence">{plainSentence(example.sentence)}</p>
+            <p className="interactive-sentence plain-sentence">{plainSentence(example.sentence, example.target)}</p>
             <div className="target-task-row">
               <span>المطلوب إعراب</span>
               <mark>{example.target}</mark>
@@ -113,9 +209,36 @@ export default function InteractiveLearning({ examples = [] }) {
           </div>
 
           {!done ? (
-            <div className="compact-step-zone">
+            <div className="compact-step-zone refined-step-zone">
+              <div className="start-progress-row" aria-label="تقدّم المثال">
+                <span>الخطوة {stepIndex + 1} من {example.steps.length}</span>
+                <div className="start-progress-track"><i style={{ width: `${Math.max(8, visualProgress)}%` }} /></div>
+                <span>{visualProgress}%</span>
+              </div>
+
+              <h1>
+                <span className="step-lead">{getStepLead(stepIndex, step)}</span>
+                <SmartText text={refinedQuestion(example, step, stepIndex)} onTerm={setActiveTerm} />
+              </h1>
+              <p className="step-hint"><SmartText text={refinedHint(example, step, stepIndex)} onTerm={setActiveTerm} /></p>
+
+              <div className="drag-choices compact-choices">
+                {choices.map((choice) => (
+                  <button
+                    key={choice}
+                    draggable
+                    disabled={locked}
+                    onDragStart={(e) => e.dataTransfer.setData("text/plain", choice)}
+                    onClick={() => handleAnswer(choice)}
+                    className="drag-choice"
+                  >
+                    {choice}
+                  </button>
+                ))}
+              </div>
+
               <div
-                className={`drop-zone build-drop-zone ${dragOver ? "is-over" : ""}`}
+                className={`drop-zone build-drop-zone refined-build-drop-zone ${dragOver ? "is-over" : ""}`}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setDragOver(true);
@@ -127,46 +250,29 @@ export default function InteractiveLearning({ examples = [] }) {
                 }}
                 aria-label="منطقة بناء الإعراب"
               >
-                <span className="build-target">{example.target}:</span>
-                <span className={`build-value ${currentBuild ? "has-value" : ""}`}>
-                  {currentBuild || "اسحب القرار المناسب هنا"}
-                </span>
+                <span className="build-value has-value">{currentBuild || "اسحب هنا أو انقر على الإجابة"}</span>
               </div>
 
-              <h1>
-                <span className="step-lead">{getStepLead(stepIndex, step)}</span>
-                {step.question}
-              </h1>
-              <p className="step-hint"><SmartText text={step.hint} onTerm={setActiveTerm} /></p>
-
-              <div className="drag-choices compact-choices">
-                {choices.map((choice) => (
-                  <button
-                    key={choice}
-                    draggable
-                    onDragStart={(e) => e.dataTransfer.setData("text/plain", choice)}
-                    onClick={() => handleAnswer(choice)}
-                    className="drag-choice"
-                  >
-                    {choice}
-                  </button>
-                ))}
-              </div>
+              {feedback ? (
+                <div ref={feedbackRef} className={`feedback-pop inline-feedback ${feedback.type === "ok" ? "ok" : "bad"}`}>
+                  <strong>{feedback.type === "ok" ? "✓" : "!"}</strong> <SmartText text={feedback.text} onTerm={setActiveTerm} />
+                </div>
+              ) : null}
 
               <div className="step-meta-row meta-under-choices">
-                <span className="step-count">الخطوة {stepIndex + 1} من {example.steps.length}</span>
                 <span className="streak-pill">إنجاز متتالٍ: {streak}</span>
               </div>
             </div>
           ) : (
             <section className="result-card addictive-result-card start-finish-card">
+              <div className="start-celebration-mark" aria-hidden="true">✓</div>
               <div className="success-badge">✓ {START_END_COPY.title}</div>
               <h2>{example.result}</h2>
               <p className="start-finish-body">{START_END_COPY.body}</p>
 
               <div className="start-next-topics" aria-label="اقتراحات المتابعة">
                 <h3>{START_END_COPY.nextTopicsTitle}</h3>
-                <div className="start-topic-grid">
+                <div className="start-topic-grid start-stage-grid-horizontal">
                   {START_END_COPY.nextTopics.map((item) => (
                     <a key={item.href} className="start-topic-card" href={item.href}>
                       <strong>{item.label}</strong>
@@ -177,9 +283,9 @@ export default function InteractiveLearning({ examples = [] }) {
               </div>
 
               <div className="result-actions">
-                <a className="btn primary" href={example.nextHref || example.continueHref || START_END_COPY.primaryHref}>{example.nextLabel || example.continueLabel || START_END_COPY.primaryLabel}</a>
+                <a className="btn btn-primary" href={example.nextHref || example.continueHref || START_END_COPY.primaryHref}>{example.nextLabel || example.continueLabel || START_END_COPY.primaryLabel}</a>
                 <a className="btn secondary" href={START_END_COPY.secondaryHref}>{START_END_COPY.secondaryLabel}</a>
-                <button className="btn ghost" onClick={resetExample}>{START_END_COPY.retryLabel}</button>
+                <button className="btn btn-soft" onClick={resetExample}>{START_END_COPY.retryLabel}</button>
               </div>
             </section>
           )}
@@ -197,14 +303,8 @@ export default function InteractiveLearning({ examples = [] }) {
           </div>
         </section>
 
-        {feedback ? (
-          <div className={`feedback-pop ${feedback.type === "ok" ? "ok" : "bad"}`}>
-            <strong>{feedback.type === "ok" ? "✓" : "!"}</strong> <SmartText text={feedback.text} onTerm={setActiveTerm} />
-          </div>
-        ) : null}
-
         {activeTerm ? (
-          <div className="smart-popover" role="dialog">
+          <div className="smart-popover start-smart-popover" role="dialog">
             <button type="button" className="smart-popover-close" onClick={() => setActiveTerm(null)}>×</button>
             <strong>{activeTerm}</strong>
             <ul>{START_GLOSSARY[activeTerm].map((line) => <li key={line}>{line}</li>)}</ul>

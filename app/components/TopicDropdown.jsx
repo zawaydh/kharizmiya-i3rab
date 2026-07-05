@@ -34,6 +34,17 @@ const TOPIC_TREE = [
     ],
   },
   {
+    id: "tawabi",
+    label: "التوابع",
+    children: [
+      { id: "naat", label: "النعت", topicCode: "tawabi-naat" },
+      { id: "atf", label: "العطف", topicCode: "tawabi-atf" },
+      { id: "tawkid", label: "التوكيد", topicCode: "tawabi-tawkid" },
+      { id: "badal", label: "البدل", topicCode: "tawabi-badal" },
+      { id: "mixed-tawabi", label: "تدريب مختلط على التوابع", topicCode: "tawabi" },
+    ],
+  },
+  {
     id: "nouns",
     label: "الأسماء",
     children: [

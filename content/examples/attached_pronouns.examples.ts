@@ -8,10 +8,10 @@ export const attachedPronounsExamples: Example[] = [
   { id: "pr-05", sentence: "هذا كتابُهُ.", target: "هُ", facts: { position: "jar" }, covers: ["pronoun.jar"] }
 ];
 const resultByCover: Record<string, string> = {
-  "pronoun.raf3.attached": "ضمير رفع متصل مبني في محل رفع",
-  "pronoun.raf3.separate": "ضمير رفع منفصل مبني في محل رفع",
-  "pronoun.nasb.attached": "ضمير نصب متصل مبني في محل نصب",
-  "pronoun.nasb.separate": "ضمير نصب منفصل مبني في محل نصب",
+  "pronoun.raf3.attached": "ضمير متصل مبني في محل رفع",
+  "pronoun.raf3.separate": "ضمير منفصل مبني في محل رفع",
+  "pronoun.nasb.attached": "ضمير متصل مبني في محل نصب",
+  "pronoun.nasb.separate": "ضمير منفصل مبني في محل نصب",
   "pronoun.jar": "ضمير متصل مبني في محل جر"
 };
 const all = Object.values(resultByCover);

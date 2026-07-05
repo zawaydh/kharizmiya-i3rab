@@ -13,7 +13,7 @@ export default function LearnTopicPage({ params }: { params: { topicCode: string
   }
 
   return (
-    <AuthLockGate title="سجّل الدخول لتكمل الالمرحلة الأولى" text="سجّل الدخول حتى يُحفظ تقدمك.">
+    <AuthLockGate title="سجّل الدخول لتكمل المرحلة الأولى" text="سجّل الدخول حتى يُحفظ تقدمك.">
     <ExercisePlayer
       title={`${topic.name_ar} — المرحلة الأولى`}
       mode="learn"

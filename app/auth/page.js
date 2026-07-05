@@ -1,86 +1,200 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { hasSupabaseEnv, supabase } from "../../lib/supabaseClient";
 
+const DEFAULT_NEXT_URL = "/topics?welcome=1";
+const PENDING_NAME_KEY = "khwarizmia_pending_full_name";
+const PENDING_NEXT_KEY = "khwarizmia_pending_next_url";
+
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function isSafeInternalUrl(value) {
+  return Boolean(value && value.startsWith("/") && !value.startsWith("//"));
+}
+
+function getSafeNextFromSearch() {
+  if (typeof window === "undefined") return DEFAULT_NEXT_URL;
+  const params = new URLSearchParams(window.location.search);
+  const requestedNext = params.get("next");
+  return isSafeInternalUrl(requestedNext) ? requestedNext : DEFAULT_NEXT_URL;
+}
+
+function getVerifiedAt(user) {
+  return user?.email_confirmed_at || user?.confirmed_at || null;
+}
+
+function getNameFromUser(user) {
+  return user?.user_metadata?.full_name?.trim?.() || "";
+}
+
+async function trySyncStudentRow(user, fullName) {
+  if (!user?.id || !user?.email) return;
+
+  const verifiedAt = getVerifiedAt(user) || new Date().toISOString();
+  const payload = {
+    auth_user_id: user.id,
+    full_name: fullName || getNameFromUser(user) || null,
+    email: normalizeEmail(user.email),
+    email_verified: true,
+    email_verified_at: verifiedAt,
+    updated_at: new Date().toISOString(),
+  };
+
+  // هذا الربط اختياري: إذا كان جدول students أو الأعمدة الجديدة غير موجودة لن نمنع الدخول.
+  try {
+    const claimOldRow = await supabase
+      .from("students")
+      .update(payload)
+      .eq("email", payload.email)
+      .is("auth_user_id", null)
+      .select("id")
+      .maybeSingle();
+
+    if (!claimOldRow.error && claimOldRow.data) return;
+
+    const { error } = await supabase
+      .from("students")
+      .upsert(payload, { onConflict: "auth_user_id" });
+
+    if (error) {
+      console.warn("students sync skipped:", error.message);
+    }
+  } catch (error) {
+    console.warn("students sync skipped:", error?.message || error);
+  }
+}
+
 export default function AuthPage() {
   const router = useRouter();
-  const [nextUrl, setNextUrl] = useState("/topics?welcome=1");
-  const [mode, setMode] = useState("login");
+  const [nextUrl, setNextUrl] = useState(DEFAULT_NEXT_URL);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [msg, setMsg] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [linkSent, setLinkSent] = useState(false);
+
+  const redirectTo = useMemo(() => {
+    if (typeof window === "undefined") return undefined;
+    return `${window.location.origin}/auth?next=${encodeURIComponent(nextUrl)}`;
+  }, [nextUrl]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const requestedNext = params.get("next");
-    const safeNext = requestedNext && requestedNext.startsWith("/") ? requestedNext : "/topics?welcome=1";
+    const safeNext = getSafeNextFromSearch();
     setNextUrl(safeNext);
 
     let active = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (!active) return;
-      const email = data?.user?.email ?? null;
-      setUserEmail(email);
-      if (email && safeNext && safeNext !== "/auth") {
-        router.replace(safeNext);
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [router]);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setMsg(null);
-    setLoading(true);
+    async function finalizeSession() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!active) return;
 
-    try {
-      if (!hasSupabaseEnv) {
-        throw new Error("SUPABASE_ENV_MISSING");
-      }
-
-      if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: fullName || null },
-          },
-        });
-
-        if (error) throw error;
-
-        if (data?.session) {
-          router.push(nextUrl);
+        const user = data?.user ?? null;
+        if (!user) {
+          setCheckingSession(false);
           return;
         }
 
-        setMsg("تم إنشاء الحساب. إذا كان تأكيد البريد مفعّلًا فافحص بريدك ثم سجّل الدخول.");
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const verifiedAt = getVerifiedAt(user);
+        const pendingName = typeof window !== "undefined" ? localStorage.getItem(PENDING_NAME_KEY) : "";
+        const pendingNext = typeof window !== "undefined" ? localStorage.getItem(PENDING_NEXT_KEY) : "";
+        const targetNext = isSafeInternalUrl(pendingNext) ? pendingNext : safeNext;
+        const currentName = getNameFromUser(user);
+        const finalName = pendingName?.trim?.() || currentName;
 
-        if (error) throw error;
+        if (pendingName && pendingName.trim() && pendingName.trim() !== currentName) {
+          await supabase.auth.updateUser({
+            data: { full_name: pendingName.trim() },
+          });
+        }
 
-        setUserEmail(data?.user?.email ?? null);
-        router.push(nextUrl);
-        return;
+        if (verifiedAt || user.email) {
+          await trySyncStudentRow(user, finalName);
+        }
+
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(PENDING_NAME_KEY);
+          localStorage.removeItem(PENDING_NEXT_KEY);
+        }
+
+        setUserEmail(user.email ?? null);
+        setCheckingSession(false);
+
+        if (targetNext && targetNext !== "/auth") {
+          router.replace(targetNext);
+        }
+      } catch (error) {
+        console.error("session finalize failed", error);
+        if (active) setCheckingSession(false);
       }
+    }
+
+    finalizeSession();
+
+    const listener = supabase.auth?.onAuthStateChange?.((_event, session) => {
+      const user = session?.user;
+      if (!active || !user) return;
+      setUserEmail(user.email ?? null);
+    });
+
+    return () => {
+      active = false;
+      listener?.data?.subscription?.unsubscribe?.();
+      listener?.unsubscribe?.();
+    };
+  }, [router]);
+
+  async function handleSendMagicLink(e) {
+    e.preventDefault();
+    setMsg(null);
+
+    const cleanEmail = normalizeEmail(email);
+    const cleanName = fullName.trim();
+
+    if (!hasSupabaseEnv) {
+      setMsg("إعدادات Supabase غير موجودة: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY");
+      return;
+    }
+
+    if (!cleanName) {
+      setMsg("اكتبي الاسم الكامل كما سيظهر في الشهادة.");
+      return;
+    }
+
+    if (!cleanEmail || !cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      setMsg("اكتبي بريدًا إلكترونيًا صحيح الشكل.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      localStorage.setItem(PENDING_NAME_KEY, cleanName);
+      localStorage.setItem(PENDING_NEXT_KEY, nextUrl);
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: redirectTo,
+          data: { full_name: cleanName },
+        },
+      });
+
+      if (error) throw error;
+
+      setEmail(cleanEmail);
+      setLinkSent(true);
+      setMsg("تم إرسال رابط التحقق. افتحي بريدك واضغطي الرابط، ثم سيعود بك إلى الموقع تلقائيًا.");
     } catch (err) {
       const m = err?.message || String(err);
-      setMsg(
-        m === "SUPABASE_ENV_MISSING"
-          ? "المتغيرات غير مضبوطة: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY"
-          : "خطأ: " + m
-      );
+      setMsg("تعذر إرسال رابط التحقق: " + m);
     } finally {
       setLoading(false);
     }
@@ -103,55 +217,44 @@ export default function AuthPage() {
     <div className="auth-modern-page">
       <section className="card auth-modern-hero card-glow">
         <div className="auth-modern-copy">
-          <div className="section-kicker">دخول سريع وآمن</div>
-          <h1 className="h1">ابدأ رحلتك التعليمية</h1>
+          <div className="section-kicker">تحقق بالبريد فقط</div>
+          <h1 className="h1">ادخلي ببريد حقيقي</h1>
           <p className="p">
-            بعد تسجيل الدخول ستنتقل مباشرة إلى صفحة <strong>اختر موضوعًا</strong> لتبدأ المسار
-            المناسب، ثم تحفظ تقدمك خطوة بخطوة.
+            لا نحتاج كلمة مرور. اكتبي اسمك وبريدك، ثم افتحي الرابط الذي يصلك على البريد. بهذه
+            الطريقة لا يُقبَل البريد إلا إذا كان حقيقيًا وتملكين الوصول إليه.
           </p>
 
           <div className="auth-benefits-grid">
             <div className="auth-benefit-card">
-              <strong>حفظ التقدم</strong>
-              <span>يرتبط إنجازك بحسابك لتعود من حيث توقفت.</span>
+              <strong>بريد موثّق</strong>
+              <span>الدخول يتم فقط بعد فتح الرابط المرسل إلى البريد.</span>
             </div>
             <div className="auth-benefit-card">
-              <strong>لوحة متابعة</strong>
-              <span>تشاهد نسبة التعلّم والتدرّب والاختبار لكل موضوع.</span>
+              <strong>حفظ التقدم</strong>
+              <span>يرتبط إنجازك بحساب Supabase الحقيقي.</span>
             </div>
             <div className="auth-benefit-card">
               <strong>شهادة إنجاز</strong>
-              <span>تظهر عند استكمال المتطلبات والنجاح في الاختبار.</span>
+              <span>يُستخدم الاسم المدخل في لوحة التقدم والشهادة.</span>
             </div>
           </div>
         </div>
 
         <div className="card auth-modern-card">
-          <div className="auth-tabs-modern">
-            <button
-              type="button"
-              className={`auth-tab ${mode === "login" ? "is-active" : ""}`}
-              onClick={() => setMode("login")}
-            >
-              دخول
-            </button>
-            <button
-              type="button"
-              className={`auth-tab ${mode === "signup" ? "is-active" : ""}`}
-              onClick={() => setMode("signup")}
-            >
-              إنشاء حساب
-            </button>
-          </div>
-
-          {userEmail ? (
+          {checkingSession ? (
+            <div className="auth-logged-box">
+              <div className="auth-logged-icon">…</div>
+              <h2>جارٍ التحقق من الحساب</h2>
+              <p className="p">انتظري لحظة.</p>
+            </div>
+          ) : userEmail ? (
             <div className="auth-logged-box">
               <div className="auth-logged-icon">✓</div>
-              <h2>أنت مسجل الآن</h2>
+              <h2>تم تسجيل الدخول</h2>
               <span className="pill pill-accent">{userEmail}</span>
-              <p className="p">يمكنك الذهاب مباشرة إلى اختيار الموضوع أو متابعة لوحة التقدم.</p>
+              <p className="p">هذا البريد تم فتح رابط التحقق منه.</p>
               <div className="auth-actions-stack">
-                <a className="btn btn-primary" href={nextUrl}>{nextUrl === "/topics?welcome=1" ? "اختر موضوعًا" : "متابعة الموضوع"}</a>
+                <a className="btn btn-primary" href={nextUrl}>{nextUrl === DEFAULT_NEXT_URL ? "اختر موضوعًا" : "متابعة الموضوع"}</a>
                 <a className="btn btn-soft" href="/dashboard">لوحة التقدم</a>
                 <button className="btn btn-danger" onClick={handleLogout} disabled={loading}>
                   {loading ? "جارٍ الخروج..." : "خروج"}
@@ -159,19 +262,17 @@ export default function AuthPage() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="auth-form-modern">
-              {mode === "signup" && (
-                <div className="auth-field">
-                  <label>الاسم</label>
-                  <input
-                    className="input"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="اكتب اسمك الذي سيظهر في الشهادة"
-                  />
-                </div>
-              )}
+            <form onSubmit={handleSendMagicLink} className="auth-form-modern">
+              <div className="auth-field">
+                <label>الاسم الكامل</label>
+                <input
+                  className="input"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="اكتبي الاسم الذي سيظهر في الشهادة"
+                />
+              </div>
 
               <div className="auth-field">
                 <label>البريد الإلكتروني</label>
@@ -182,24 +283,19 @@ export default function AuthPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="example@email.com"
-                />
-              </div>
-
-              <div className="auth-field">
-                <label>كلمة المرور</label>
-                <input
-                  className="input"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="أدخل كلمة المرور"
+                  dir="ltr"
                 />
               </div>
 
               <button className="btn btn-primary auth-submit-btn" type="submit" disabled={loading}>
-                {loading ? "جارٍ التنفيذ..." : mode === "signup" ? "إنشاء الحساب" : "تسجيل الدخول"}
+                {loading ? "جارٍ إرسال الرابط..." : linkSent ? "إرسال الرابط مرة أخرى" : "إرسال رابط التحقق"}
               </button>
+
+              {linkSent ? (
+                <div className="auth-note-box auth-note-success">
+                  افحصي البريد الوارد، وإذا لم يظهر الرابط افحصي الرسائل غير المرغوب فيها. لا تغلقي هذه الصفحة قبل فتح الرابط من البريد.
+                </div>
+              ) : null}
             </form>
           )}
 

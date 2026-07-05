@@ -10,6 +10,7 @@ export type AnswerOption = {
   id: string; // مثل "a", "b"
   text: string;
   next: string; // id للعقدة التالية
+  nextByFact?: { fact: string; map: Record<string, string>; default?: string };
   correct?: boolean; // مهم لـ learn/practice/quiz
   eval?: { fact: string; equals?: any; anyOf?: any[]; notEquals?: any };
   hint?: string;
@@ -143,8 +144,11 @@ export function chooseAnswer(params: {
     nextState = applyActions(nextState, picked.actions);
   }
 
-  // فحص requires للعقدة التالية
-  const nextNode = tree.nodes[picked.next];
+  // فحص requires للعقدة التالية، مع دعم توجيه بسيط حسب معلومة المثال عند الحاجة
+  const dynamicNext = picked.nextByFact
+    ? picked.nextByFact.map?.[String(state.facts?.[picked.nextByFact.fact])] || picked.nextByFact.default || picked.next
+    : picked.next;
+  const nextNode = tree.nodes[dynamicNext];
   if (!nextNode) return { nextState, blocked: true };
 
   const ok = requirementsMet(nextNode.requires, nextState.flags);

@@ -10,7 +10,7 @@ type TreeNode = {
   teaching_note?: string;
   hint?: string;
   thinking?: { q: string; a: string }[];
-  answers?: { id: string; text: string; next: string; correct?: boolean; eval?: { fact: string; equals: any }; hint?: string; why?: string }[];
+  answers?: { id: string; text: string; next: string; correct?: boolean; eval?: { fact: string; equals?: any; anyOf?: any[]; notEquals?: any }; hint?: string; why?: string }[];
 };
 
 type ExerciseTree = {
@@ -123,11 +123,14 @@ function pathD(a: { x: number; y: number }, b: { x: number; y: number }) {
   return `M ${a.x} ${a.y} L ${a.x} ${midY} L ${b.x} ${midY} L ${b.x} ${b.y}`;
 }
 
-function answerIsCorrect(answer: { correct?: boolean; eval?: { fact: string; equals: any } }, example: Example | null) {
+function answerIsCorrect(answer: { correct?: boolean; eval?: { fact: string; equals?: any; anyOf?: any[]; notEquals?: any } }, example: Example | null) {
   if (answer.correct === true) return true;
   if (answer.correct === false) return false;
   if (!example || !answer.eval) return false;
-  return example.facts?.[answer.eval.fact] === answer.eval.equals;
+  const factValue = example.facts?.[answer.eval.fact];
+  if (Array.isArray(answer.eval.anyOf)) return answer.eval.anyOf.includes(factValue);
+  if (Object.prototype.hasOwnProperty.call(answer.eval, "notEquals")) return factValue !== answer.eval.notEquals;
+  return factValue === answer.eval.equals;
 }
 
 function sourceMasdarHint(target = "المصدر المؤول") {
@@ -393,7 +396,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       ];
     }
     return [
-      { q: "ما السؤال الذي نفكر فيه هنا؟", a: cleanLearningText(node?.text || "اختر ما يثبته المثال.", 180) },
+      { q: "ما الذي نثبته في هذه الخطوة؟", a: cleanLearningText(node?.text || "اختر ما يثبته المثال.", 180) },
       { q: "كيف أختار؟", a: `أربط السؤال بالكلمة الهدف (${target})، ثم أبحث عن الدليل في الجملة.` },
       { q: "ماذا بعد الاختيار الصحيح؟", a: "ننتقل إلى العقدة التالية حتى نصل إلى الإعراب الكامل." },
     ];
@@ -518,14 +521,210 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   }
 
 
-  function targetedHintForWrongAnswer(node: TreeNode, answer: { text: string; eval?: { fact: string; equals: string }; hint?: string; why?: string }, currentExample: Example | null) {
+  function targetedHintForWrongAnswer(node: TreeNode, answer: { text: string; eval?: { fact: string; equals?: any; anyOf?: any[]; notEquals?: any }; hint?: string; why?: string }, currentExample: Example | null) {
     const target = currentExample?.target || "الكلمة الهدف";
     const teacherPrefix = "";
     const facts = currentExample?.facts || {};
     const picked = answer.text;
+    function faelSpecificHint(): string | null {
+      const nodeId = String(node.id || "");
+      if (!nodeId.startsWith("fael_")) return null;
+      const roleKind = facts.roleKind;
+      const shape = facts.shape;
+      const mabniType = facts.mabniType;
+      const actionQuestion = facts.actionQuestion || "من الذي فعل؟";
+      const pronounMeaning = facts.pronounMeaning;
+      const connectedType = facts.connectedType;
+      const nominalSubject = facts.nominalSubject;
+      const verbalKhabar = facts.verbalKhabar;
+
+      if (nodeId === "fael_context") {
+        if (facts.contextType === "nominal_connected") {
+          return `بدأت الجملة باسم (${nominalSubject})، فهي جملة اسمية. لكن خبرها جاء جملة فعلية: (${verbalKhabar}). ندرس داخلها الفاعل المرتبط بالفعل.`;
+        }
+        if (facts.contextType === "nominal_with_verb") {
+          return `بدأت الجملة باسم (${nominalSubject})، فهي جملة اسمية. لكن داخل خبرها فعل يحتاج إلى فاعل، وسنبحث عن فاعل هذا الفعل في الخطوة التالية.`;
+        }
+        if (facts.contextType === "verbal_hidden") {
+          return `الجملة بدأت بفعل هو (${target})؛ فهي جملة فعلية. والفعل يحتاج إلى فاعل، فإذا لم يظهر بعده اسم قام به نبحث عن ضمير مستتر.`;
+        }
+        return `انظر إلى بداية الجملة والفعل فيها. إذا بدأت بفعل فهي جملة فعلية، وإذا بدأت باسم فهي جملة اسمية. اختر السياق الظاهر فقط.`;
+      }
+
+      if (nodeId === "fael_role_verbal") {
+        if (roleKind === "connected") {
+          return `${target} ضمير متصل بالفعل. نسأل: ${actionQuestion} الجواب يدل عليه هذا الضمير، ومعناه: ${pronounMeaning || "من قام بالفعل"}. لذلك ليس فعلًا ولا مفعولًا به.`;
+        }
+        if (roleKind === "masdar") {
+          const taqdir = String(target).includes("ما") ? "فعلك" : "نجاحك";
+          return `داخل (${target}) يوجد فعل، لكننا نعرب التركيب كله لا الفعل وحده. فهو يؤول بمصدر في معنى اسم: (${taqdir}). اسأل: ما الذي أعجبني أو سرّني؟`;
+        }
+        if (roleKind === "visible") {
+          return `اسأل عن الفعل في الجملة: ${actionQuestion} الكلمة (${target}) هي التي قامت بالفعل، أما المفعول به فهو ما وقع عليه الفعل.`;
+        }
+        if (roleKind === "mabni") {
+          return `الكلمة (${target}) اسم مبني دلّ على من قام بالفعل. اسأل: ${actionQuestion} فتصل إلى أنه فاعل في محل رفع.`;
+        }
+      }
+
+      if (nodeId === "fael_hukm") {
+        if (facts.fiveNoun) {
+          return `عرفنا أن (${target}) فاعل، والفاعل يكون مرفوعًا أو في محل رفع. لا نحكم بالنصب لمجرد وجود فتحة على الكاف؛ الكاف ضمير مضاف إليه، وعلامة رفع (${target}) هي الواو.`;
+        }
+        return `بعد أن عرفنا أن (${target}) فاعل، فحكم الفاعل الرفع دائمًا: يرفع بعلامة إذا كان معربًا، أو يكون في محل رفع إذا كان مبنيًا أو مصدرًا مؤولًا.`;
+      }
+
+      if (nodeId === "fael_form") {
+        if (roleKind === "visible") {
+          return `(${target}) كلمة مستقلة ظاهرة في الجملة وليست ضميرًا متصلًا ولا اسمًا مبنيًا ولا مصدرًا مؤولًا. لذلك نختار اسمًا ظاهرًا معربًا ثم نحدد صورته وعلامة رفعه.`;
+        }
+        if (roleKind === "connected") {
+          return `(${target}) ضمير متصل بالفعل، والضمائر المتصلة من الأسماء المبنية. لا تظهر عليها علامة رفع؛ لذلك ستكون في محل رفع فاعل.`;
+        }
+        if (roleKind === "mabni") {
+          const label = mabniType === "ishara" ? "اسم إشارة" : mabniType === "mawsool" ? "اسم موصول" : "اسم مبني";
+          return `(${target}) ${label} من الأسماء المبنية، فلا نبحث عن ضمة على آخره. نحدد نوعه أولًا، ثم نقول: في محل رفع فاعل.`;
+        }
+        if (roleKind === "masdar") {
+          return `(${target}) ليس اسمًا مبنيًا؛ بل تركيب يؤول بمصدر في معنى اسم. لذلك نقول: مصدر مؤول في محل رفع فاعل.`;
+        }
+        return `الاسم الظاهر المعرب نكمل معه إلى علامة الرفع. أما الاسم المبني والضمير المتصل فنقول: في محل رفع فاعل. وأما المصدر المؤول فنقول: مصدر مؤول في محل رفع فاعل.`;
+      }
+
+      if (nodeId === "fael_mu3rab_shape") {
+        const pickedSingular = picked.includes("مفرد");
+        if (shape === "singular") return `(${target}) اسم ظاهر يدل على واحد وليس مثنى ولا جمعًا، وليس من الأسماء الخمسة. لذلك صورته مفرد، وعلامة رفعه الضمة.`;
+        if (shape === "dual") return pickedSingular
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على اثنين، وانتهت بألف ونون في هذا المثال، لذلك صورتها مثنى، والمثنى يرفع بالألف.`
+          : `(${target}) يدل على اثنين، وانتهى بألف ونون في هذا المثال، لذلك صورته مثنى، وعلامة رفعه الألف.`;
+        if (shape === "jms") return pickedSingular
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة ذكور عاقلة، وانتهت بواو ونون في هذا المثال، لذلك صورتها جمع مذكر سالم، وجمع المذكر السالم يرفع بالواو.`
+          : `(${target}) جمع مذكر سالم؛ يدل على جماعة ذكور عاقلة، وانتهى بواو ونون في هذا المثال، لذلك علامة رفعه الواو.`;
+        if (shape === "jfs") return pickedSingular
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة إناث، وانتهت بألف وتاء زائدتين، لذلك صورتها جمع مؤنث سالم، وعلامة رفعه الضمة.`
+          : `(${target}) جمع مؤنث سالم؛ يدل على جماعة إناث وينتهي بألف وتاء زائدتين، وعلامة رفعه الضمة.`;
+        if (shape === "jt") return pickedSingular
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة، وتغيّرت صورة المفرد عند الجمع مثل: طفل ← أطفال، لذلك صورتها جمع تكسير، وجمع التكسير يرفع بالضمة.`
+          : `(${target}) جمع تكسير؛ تغيّرت صورة مفرده عند الجمع مثل طفل ← أطفال، وعلامة رفعه الضمة.`;
+        if (shape === "five") return pickedSingular
+          ? `صحيح أن (${target}) يدل على واحد، لكنه ليس مفردًا عاديًا في الإعراب؛ لأنه من الأسماء الخمسة، وقد جاء مفردًا مضافًا إلى غير ياء المتكلم، لذلك يرفع بالواو.`
+          : `(${target}) من الأسماء الخمسة: أصله (أب)، وهو مفرد ومضاف إلى غير ياء المتكلم؛ لذلك يعرب بالحروف وعلامة رفعه الواو.`;
+      }
+
+      if (nodeId === "fael_raf3_mark") {
+        if (shape === "five") return `الضمة للمفرد العادي مثل الطالبُ. أما (${target}) فمن الأسماء الخمسة، وقد تحققت شروط إعرابه بالحروف: مفرد، مضاف، ومضاف إلى غير ياء المتكلم؛ لذلك علامة رفعه الواو.`;
+        if (shape === "dual") return `(${target}) مثنى، والمثنى يرفع بالألف لا بالضمة ولا بالواو.`;
+        if (shape === "jms") return `(${target}) جمع مذكر سالم، وجمع المذكر السالم يرفع بالواو.`;
+        if (shape === "jfs") return `(${target}) جمع مؤنث سالم، وجمع المؤنث السالم يرفع بالضمة الظاهرة.`;
+        if (shape === "jt") return `(${target}) جمع تكسير، وجمع التكسير يرفع بالضمة مثل المفرد العادي.`;
+        if (shape === "singular") return `(${target}) مفرد عادي مرفوع، وعلامة رفع المفرد هنا الضمة الظاهرة.`;
+      }
+
+      if (nodeId === "fael_mabni_type") {
+        if (roleKind === "connected" && connectedType === "na") return `(${target}) ضمير متصل بالفعل، يدل على من قام بالفعل. نسأل: ${actionQuestion} الجواب: نحن. في (حفظْنا) سكن آخر الفعل الماضي لاتصاله بضمير رفع، وهذا يساعدنا على تمييز نا الفاعلين من نا المفعولين.`;
+        if (roleKind === "connected") return `(${target}) ضمير متصل بالفعل، يدل على من قام بالفعل. نسأل: ${actionQuestion} الجواب معناه: ${pronounMeaning || "الفاعل"}. لذلك نختار ضميرًا متصلًا.`;
+        if (mabniType === "ishara") return `(${target}) اسم إشارة؛ تشير به إلى من قام بالفعل، وأسماء الإشارة مبنية فتكون في محل رفع فاعل.`;
+        if (mabniType === "mawsool") return `(${target}) اسم موصول، وبعده صلة توضحه. إذا دل على من قام بالفعل فهو اسم موصول مبني في محل رفع فاعل.`;
+      }
+
+      return null;
+    }
+
+
+    function mafoolSpecificHint(): string | null {
+      const nodeId = String(node.id || "");
+      if (!nodeId.startsWith("mafool_")) return null;
+      const roleKind = facts.roleKind;
+      const shape = facts.shape;
+      const mabniType = facts.mabniType;
+      const connectedType = facts.connectedType;
+      const objectQuestion = facts.objectQuestion || "على من أو على ماذا وقع الفعل؟";
+      const actor = facts.actor || "الفاعل";
+      const taweel = facts.taweel;
+      const pickedSingular = picked.includes("مفرد");
+
+      if (nodeId === "mafool_context") {
+        return `انظر إلى الفعل في الجملة. إذا بدأت الجملة بفعل مثل كتبَ أو رأيتُ أو شكرَتْ فهي جملة فعلية، وفيها نبحث عن الفاعل ثم عمّا وقع عليه الفعل.`;
+      }
+
+      if (nodeId === "mafool_role") {
+        if (roleKind === "connected") {
+          const naNote = connectedType === "na" ? " ولاحظ في شكرَنا أن حركة الفعل قبل نا بقيت فتحة؛ لأن نا هنا مفعول به لا فاعل." : "";
+          return `(${target}) ضمير متصل وقع عليه الفعل. نسأل: ${objectQuestion} الجواب هو الضمير المحدد، أما من قام بالفعل فهو ${actor}.${naNote}`;
+        }
+        if (roleKind === "masdar") {
+          const estimate = taweel || (String(target).includes("ما") ? "فعلَك" : "نجاحَك");
+          return `داخل (${target}) قد يوجد فعل، لكننا نعرب التركيب كله لا الفعل وحده. التركيب يؤول بمصدر في معنى اسم: (${estimate}). اسأل: ${objectQuestion}`;
+        }
+        if (roleKind === "visible") return `اسأل: ${objectQuestion} الجواب هو (${target})؛ لأنه الشيء أو الشخص الذي وقع عليه فعل الفاعل (${actor}).`;
+        if (roleKind === "mabni") return `(${target}) اسم مبني وقع عليه الفعل. نسأل: ${objectQuestion} لذلك يكون في محل نصب مفعول به.`;
+      }
+
+      if (nodeId === "mafool_hukm") {
+        return `بعد أن عرفنا أن (${target}) مفعول به، فحكم المفعول به النصب أو في محل نصب. لا نرفعه لأنه ليس من قام بالفعل، ولا نجره لأنه ليس مسبوقًا بحرف جر هنا.`;
+      }
+
+      if (nodeId === "mafool_form") {
+        if (roleKind === "visible") return `(${target}) كلمة مستقلة ظاهرة في الجملة، وليست اسمًا مبنيًا ولا ضميرًا متصلًا ولا مصدرًا مؤولًا؛ لذلك نختار اسمًا ظاهرًا معربًا ثم نحدد صورته وعلامة نصبه.`;
+        if (roleKind === "connected") {
+          if (connectedType === "na") return `(${target}) ضمير متصل، والضمائر المتصلة من الأسماء المبنية. هنا وقع على الضمير فعل الشكر، وفي شكرَنا بقي الفعل مبنيًا على الفتح قبل نا لأنها نا المفعولين؛ لذلك نقول: في محل نصب مفعول به.`;
+          return `(${target}) ضمير متصل، والضمائر المتصلة من الأسماء المبنية. لا تظهر عليها علامة نصب، بل تكون في محل نصب مفعول به.`;
+        }
+        if (roleKind === "mabni") {
+          const label = mabniType === "ishara" ? "اسم إشارة" : mabniType === "mawsool" ? "اسم موصول" : "اسم مبني";
+          return `(${target}) ${label} من الأسماء المبنية؛ لا نبحث عن فتحة على آخره، بل نحدد نوعه ثم نقول: في محل نصب مفعول به.`;
+        }
+        if (roleKind === "masdar") return `(${target}) ليس اسمًا مبنيًا؛ بل تركيب يؤول بمصدر في معنى اسم. لذلك نقول: مصدر مؤول في محل نصب مفعول به.`;
+        return `الاسم الظاهر المعرب نكمل معه إلى علامة النصب. أما الاسم المبني والضمير المتصل فنقول: في محل نصب مفعول به. وأما المصدر المؤول فنقول: مصدر مؤول في محل نصب مفعول به.`;
+      }
+
+      if (nodeId === "mafool_mu3rab_shape") {
+        if (shape === "singular") return `(${target}) اسم ظاهر يدل على شيء واحد، وليس مثنى ولا جمعًا ولا من الأسماء الخمسة؛ لذلك صورته مفرد، والمفرد ينصب بالفتحة.`;
+        if (shape === "dual") return pickedSingular
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على اثنين، وانتهت بياء ونون لأنها منصوبة، لذلك صورتها مثنى، والمثنى ينصب بالياء.`
+          : `(${target}) يدل على اثنين، وانتهى بياء ونون لأنه منصوب، لذلك صورته مثنى، والمثنى ينصب بالياء.`;
+        if (shape === "jms") return pickedSingular
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة ذكور عاقلة، وانتهت بياء ونون لأنها منصوبة، لذلك صورتها جمع مذكر سالم، وجمع المذكر السالم ينصب بالياء.`
+          : `(${target}) جمع مذكر سالم؛ يدل على جماعة ذكور عاقلة، وانتهى بياء ونون لأنه منصوب، لذلك علامة نصبه الياء.`;
+        if (shape === "jfs") return pickedSingular
+          ? `(${target}) ليست مفردًا؛ لأنها جمع مؤنث سالم؛ تدل على جماعة إناث، وانتهت بألف وتاء زائدتين، وجمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة.`
+          : `(${target}) جمع مؤنث سالم؛ جمع مؤنث مختوم بألف وتاء زائدتين، وينصب بالكسرة نيابة عن الفتحة.`;
+        if (shape === "jt") return pickedSingular
+          ? `(${target}) ليست مفردًا؛ لأنها جمع تكسير، تغيّرت فيه صورة المفرد عند الجمع، وجمع التكسير ينصب بالفتحة.`
+          : `(${target}) جمع تكسير؛ تغيّرت صورة مفرده عند الجمع، وينصب بالفتحة غالبًا.`;
+        if (shape === "five") return pickedSingular
+          ? `صحيح أن (${target}) يدل على واحد، لكنه ليس مفردًا عاديًا في الإعراب؛ لأنه من الأسماء الخمسة، وقد جاء مفردًا مضافًا إلى غير ياء المتكلم، لذلك ينصب بالألف.`
+          : `(${target}) من الأسماء الخمسة، وقد تحققت شروط إعرابها بالحروف: مفردة، مضافة، ومضافة إلى غير ياء المتكلم؛ لذلك علامة نصبها الألف.`;
+      }
+
+      if (nodeId === "mafool_nasb_mark") {
+        if (shape === "singular") return `(${target}) مفرد منصوب، وعلامة نصب المفرد هنا الفتحة الظاهرة.`;
+        if (shape === "dual") return `(${target}) مثنى، والمثنى ينصب بالياء لا بالفتحة.`;
+        if (shape === "jms") return `(${target}) جمع مذكر سالم، وجمع المذكر السالم ينصب بالياء.`;
+        if (shape === "jfs") return `(${target}) جمع مؤنث سالم، وجمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة.`;
+        if (shape === "jt") return `(${target}) جمع تكسير، وجمع التكسير ينصب بالفتحة مثل المفرد العادي.`;
+        if (shape === "five") return `(${target}) من الأسماء الخمسة المستوفية للشروط: مفردة، مضافة، ومضافة إلى غير ياء المتكلم؛ لذلك علامة نصبه الألف.`;
+      }
+
+      if (nodeId === "mafool_mabni_type") {
+        if (roleKind === "connected" && connectedType === "na") return `(${target}) ضمير متصل وقع عليه الفعل. في شكرَنا بقي الفعل مبنيًا على الفتح قبل نا؛ لأن نا هنا ضمير نصب مفعول به لا ضمير رفع فاعل. لذلك نختار ضميرًا متصلًا.`;
+        if (roleKind === "connected") return `(${target}) ضمير متصل وقع عليه الفعل؛ لذلك هو من الأسماء المبنية في محل نصب مفعول به.`;
+        if (mabniType === "ishara") return `(${target}) اسم إشارة من الأسماء المبنية. إذا وقع عليه الفعل قلنا: اسم إشارة مبني في محل نصب مفعول به.`;
+        if (mabniType === "mawsool") return `(${target}) اسم موصول من الأسماء المبنية، وبعده صلة توضحه. إذا وقع عليه الفعل قلنا: اسم موصول مبني في محل نصب مفعول به.`;
+      }
+
+      return null;
+    }
+
+    const faelHint = faelSpecificHint();
+    if (faelHint) return teacherSequenceText(node, faelHint);
+
+    const mafoolHint = mafoolSpecificHint();
+    if (mafoolHint) return teacherSequenceText(node, mafoolHint);
+
     if (answer.hint) return teacherSequenceText(node, answer.hint);
 
-    if (node.id === "m0_wordType" || node.id === "first_word_type") {
+    if (node.id === "m0_wordType" || node.id === "first_word_type" || node.id === "mubtada_word_type") {
       if ((picked === "حرف" || picked === "فعل") && facts.nounKind === "masdar") {
         return teacherSequenceText(node, teacherPrefix + `انتبه: ${target} ليست حرفًا منفردًا هنا؛ هذا مصدر مؤول. يمكن أن تضع بدل (أن تحفظ) كلمة (حفظ)، فيستقيم المعنى؛ لذلك فالمصدر المؤول مجتمعًا يُعامل معاملة الاسم، ويكون في محل رفع مبتدأ.`);
       }
@@ -541,7 +740,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       return teacherSequenceText(node, teacherPrefix + sourceMasdarHint(target) + " اختر (مصدر مؤول) لأننا لا نعرب (أن) وحدها هنا، بل التركيب المؤول كله.");
     }
 
-    if (node.id === "m1_nounKind") {
+    if (node.id === "m1_nounKind" || node.id === "mubtada_start") {
       if (facts.nounKind === "masdar") {
         return teacherSequenceText(node, teacherPrefix + `هذا مصدر مؤول: يمكن أن تستبدل تركيب (أن + الفعل) بمصدر صريح مثل: حفظ، فيستقيم المعنى. لذلك لا نتعامل مع (أن) وحدها كحرف في هذا الموضع، بل مع المصدر المؤول كله كاسم في محل رفع مبتدأ.`);
       }
@@ -553,11 +752,16 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       }
     }
 
-    if (node.id === "m2_mabniType" || node.id === "mubtada_built_type") {
+    if (node.id === "m2_mabniType" || node.id === "mubtada_built_type" || node.id === "mubtada_built") {
       return teacherSequenceText(node, teacherPrefix + `راجع نوع الاسم المبني نفسه: هل هو ضمير، اسم إشارة، اسم موصول، اسم استفهام، اسم شرط، أو كم الخبرية؟ اختر النوع المطابق للكلمة: ${target}.`);
     }
 
-    if (node.id === "m2_number") {
+    if (node.id === "m2_number" || node.id === "mubtada_number") {
+      if (picked.includes("مثنى")) return teacherSequenceText(node, teacherPrefix + `المثنى يدل على اثنين، وغالبًا ينتهي بـ(ان) رفعًا أو (ين) نصبًا وجرًا. انظر إلى ${target}: هل يدل على اثنين؟`);
+      if (picked.includes("جمع مذكر")) return teacherSequenceText(node, teacherPrefix + `جمع المذكر السالم يدل على جماعة ذكور عاقلة وينتهي غالبًا بـ(ون/ين). هل ${target} كذلك؟`);
+      if (picked.includes("جمع مؤنث")) return teacherSequenceText(node, teacherPrefix + `جمع المؤنث السالم ينتهي غالبًا بـ(ات). هل ${target} ينتهي بـ(ات) ويدل على جماعة مؤنثة؟`);
+      if (picked.includes("جمع تكسير")) return teacherSequenceText(node, teacherPrefix + `جمع التكسير يدل على أكثر من اثنين مع تغيّر صورة المفرد مثل كتاب/كتب. هل ${target} جمع بهذا المعنى؟`);
+      if (picked.includes("الأسماء الخمسة")) return teacherSequenceText(node, teacherPrefix + `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو بمعنى صاحب. ولا تعرب بالحروف إلا إذا كانت مفردة، مضافة، غير مضافة إلى ياء المتكلم. هل ${target} واحد منها؟`);
       return teacherSequenceText(node, teacherPrefix + `راجع صورة ${target}: هل تدل على واحد، اثنين، أم جماعة؟ العدد يحدد علامة الرفع في مسار المبتدأ.`);
     }
 
@@ -644,7 +848,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const targetWord = example?.target ? `كلمة: ${example.target}` : "الكلمة المطلوبة";
       const finalText = `هكذا وصلنا لإعراب ${targetWord}: ${nextNode.text}. السبب: ${finalReason}`;
       setMessage(finalText);
-      setActiveGuidance("اكتمل المسار. راجع كيف وصلنا إلى الإعراب النهائي في الأسئلة أسفل الصفحة.");
+      setActiveGuidance("اكتمل الإعراب النهائي. راجع النتيجة النهائية أسفل الصفحة.");
       setTimeout(() => {
         focusNode(nextId, 1.06);
         showBubbleBesideNode(nextId, finalText, 1.06);
@@ -860,7 +1064,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
           </details>
           {finalNodeId ? (
             <details>
-              <summary>كيف وصلنا إلى الإعراب النهائي؟</summary>
+              <summary>خطوات بناء الإعراب</summary>
               <div className="paths-thinking-list">
                 {pathSteps.map((step, idx) => (
                   <div className="paths-thinking-item" key={`${step}-${idx}`}>

@@ -1,67 +1,154 @@
 export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
 
+const wordKindHint = `الفعل يدل على حدث وزمن، مثل: كتب، يكتب، اكتب. الاسم يقبل علامات مثل: أل، التنوين، الجر. والحرف لا يظهر معناه كاملًا إلا مع غيره.`;
+
+const commandMeaningHint = `فعل الأمر يدل على طلب حصول الحدث من المخاطب، مثل: اكتبْ، ادعُ، اكتبي. لا يدل على حدث وقع وانتهى، ولا على حدث يقع الآن من غير طلب.`;
+
+const weakByPresentHint = `نسند فعل الأمر إلى المضارع مع الضمير (هو) لنتأكد من الحرف الأخير في أصل الفعل: ادعُ ← هو يدعو، ارمِ ← هو يرمي، اسعَ ← هو يسعى. فإذا كان الحرف الأخير في الأصل ألفًا أو واوًا أو ياءً ثم حُذف في الأمر، فالأمر مبني على حذف حرف العلة.`;
+
 export const imperativeVerbTree: ExerciseTree = {
-  startNodeId: "imp_nun_tawkid",
+  startNodeId: "imperative_word_kind",
   nodes: {
-    imp_nun_tawkid: {
-      id: "imp_nun_tawkid",
+    imperative_word_kind: {
+      id: "imperative_word_kind",
       type: "question",
-      context: "نبدأ بحالة تغيّر البناء مباشرة: نون التوكيد.",
-      text: "هل اتصل فعل الأمر بنون التوكيد؟",
-      hint: "نون التوكيد تكون مشددة أو ساكنة مثل: اكتبنَّ. إذا اتصلت بفعل الأمر فهو مبني على الفتح.",
+      text: "ما نوع الكلمة المحددة؟",
+      hint: wordKindHint,
       answers: [
-        { id: "a", text: "نعم، اتصل بنون التوكيد", next: "R_imperative_fath_tawkid", eval: { fact: "nunTawkid", equals: true } },
-        { id: "b", text: "لا", next: "imp_five", eval: { fact: "nunTawkid", equals: false } }
-      ]
+        { id: "a", text: "فعل: حدث مقترن بزمن", next: "imperative_meaning", eval: { fact: "wordKind", equals: "verb" } },
+        { id: "b", text: "اسم", next: "imperative_word_kind", correct: false, hint: "الاسم لا يدل على طلب أو زمن بنفسه. انظر إلى الكلمة المحددة: هل تطلب فعلًا من مخاطب؟" },
+        { id: "c", text: "حرف", next: "imperative_word_kind", correct: false, hint: "الحرف لا يظهر معناه كاملًا إلا مع غيره، أما الكلمة المحددة فتدل على عمل مطلوب." },
+        { id: "d", text: "أحتاج تلميح", next: "imperative_word_kind", correct: false, hint: wordKindHint },
+      ],
     },
 
-    imp_five: {
-      id: "imp_five",
+    imperative_meaning: {
+      id: "imperative_meaning",
       type: "question",
-      context: "لم يتصل بنون التوكيد، فنفحص اتصالًا يؤثر في علامة بناء الأمر.",
-      text: "هل اتصل فعل الأمر بألف الاثنين أو ياء المخاطبة أو واو الجماعة؟",
-      hint: "مثل: اكتبا، اكتبي، اكتبوا. إذا اتصل فعل الأمر بأحدها يبنى على حذف النون.",
+      context: "عرفنا أنها فعل، والآن نحدد دلالته قبل علامة البناء.",
+      text: "ما دلالة هذا الفعل؟",
+      hint: commandMeaningHint,
       answers: [
-        { id: "a", text: "نعم", next: "R_imperative_delete_noon", eval: { fact: "attached", anyOf: ["waw", "yaa", "alif2"] } },
-        { id: "b", text: "لا", next: "imp_ending", eval: { fact: "attached", equals: "none" } }
-      ]
+        { id: "a", text: "حدث وقع وانتهى", next: "imperative_meaning", correct: false, hint: "هذا معنى الفعل الماضي مثل: كتبَ. أما الكلمة المحددة فهي طلب موجّه للمخاطب." },
+        { id: "b", text: "حدث يقع الآن أو يستقبل", next: "imperative_meaning", correct: false, hint: "هذا معنى المضارع مثل: يكتبُ. أما الكلمة المحددة فهي طلب حصول الفعل." },
+        { id: "c", text: "طلب حصول الحدث", next: "imperative_connection", eval: { fact: "commandMeaning", equals: "command" } },
+        { id: "d", text: "أحتاج تلميح", next: "imperative_meaning", correct: false, hint: commandMeaningHint },
+      ],
     },
 
-    imp_ending: {
-      id: "imp_ending",
+    imperative_connection: {
+      id: "imperative_connection",
       type: "question",
-      context: "ليس من الأفعال الخمسة، فنفحص آخر الفعل.",
+      context: "عرفنا أنه فعل أمر. وفعل الأمر مبني دائمًا، فنحدد علامة بنائه مما اتصل به أو من آخره.",
+      text: "هل اتصل بآخر فعل الأمر شيء؟",
+      hint: "للمساعدة: نسند الفعل إلى المضارع مع الضمير (هو) لنعرف أصل آخره، ثم ننظر هل بقي آخر الفعل وحده أم اتصل به ضمير أو نون. مثال: اكتبنَ ← هو يكتب؛ نرى أن الأصل ينتهي بالباء، وبعده نون النسوة.",
+      answers: [
+        { id: "a", text: "نعم، اتصل بآخره شيء", next: "imperative_attached_kind", eval: { fact: "attached", notEquals: "none" } },
+        { id: "b", text: "لا، لم يتصل به شيء", next: "imperative_ending", eval: { fact: "attached", equals: "none" } },
+        { id: "c", text: "أحتاج تلميح", next: "imperative_connection", correct: false, hint: "أسند الفعل إلى المضارع مع الضمير (هو) لتعرف أصل آخره، ثم انظر إلى الزائد بعد الأصل: اكتبْ ← هو يكتب فلا متصل، اكتبنَ ← هو يكتب وبعده نون النسوة، اكتبنَّ ← هو يكتب وبعده نون التوكيد، اكتبوا/اكتبا/اكتبي اتصلت بضمائر مخاطبة." },
+      ],
+    },
+
+    imperative_attached_kind: {
+      id: "imperative_attached_kind",
+      type: "question",
+      context: "عرفنا أن فعل الأمر اتصل بآخره شيء، فلنحدد ما اتصل به لنعرف علامة البناء.",
+      text: "ما نوع المتصل بفعل الأمر؟",
+      hint: "ميّز بين نون النسوة التي تدل على جماعة الإناث، ونون التوكيد التي تقوّي معنى الفعل، وبين ضمائر المخاطبة: ألف الاثنين/واو الجماعة/ياء المخاطبة؛ فهذه الثلاثة نتيجتها واحدة: البناء على حذف النون.",
+      answers: [
+        { id: "a", text: "نون النسوة", next: "R_imperative_sukoon_niswa", eval: { fact: "attached", equals: "niswa" }, hint: "نون النسوة تدل على جماعة الإناث، مثل: اكتبْنَ، وهي ضمير في محل رفع فاعل." },
+        { id: "b", text: "نون التوكيد", next: "R_imperative_fath_tawkid", eval: { fact: "attached", equals: "tawkid" }, hint: "نون التوكيد تؤكد الفعل وتقوّي معناه، مثل: اكتبنَّ، ولا تدل على مؤنث." },
+        { id: "c", text: "ألف الاثنين / واو الجماعة / ياء المخاطبة", next: "R_imperative_delete_noon_attached", eval: { fact: "attached", anyOf: ["alif2", "waw", "yaa"] }, hint: "هذه ضمائر مخاطبة تتصل بفعل الأمر، وعلامة البناء معها واحدة: حذف النون." },
+        { id: "f", text: "أحتاج تلميح", next: "imperative_attached_kind", correct: false, hint: "أسند الفعل إلى المضارع مع الضمير (هو): اكتبنَ ← هو يكتب. ما الزائد بعد أصل الفعل؟ نون النسوة؟ نون التوكيد؟ أم ألف الاثنين/واو الجماعة/ياء المخاطبة؟" },
+      ],
+    },
+
+    imperative_ending: {
+      id: "imperative_ending",
+      type: "question",
+      context: "عرفنا أنه لم يتصل بآخر فعل الأمر شيء، فننظر إلى آخره لنحدد علامة البناء.",
       text: "هل فعل الأمر صحيح الآخر أم معتل الآخر؟",
-      hint: "الصحيح الآخر يبنى على السكون، أما معتل الآخر فيبنى على حذف حرف العلة: اسعَ، ادعُ، ارمِ.",
+      hint: "الصحيح الآخر مثل: اكتبْ، يبنى على السكون. والمعتل الآخر مثل: ادعُ، ارمِ، اسعَ، يبنى على حذف حرف العلة.",
       answers: [
-        { id: "a", text: "صحيح الآخر", next: "R_imperative_sukoon", eval: { fact: "ending", equals: "sahih" } },
-        { id: "b", text: "معتل الآخر", next: "R_imperative_delete_letter", eval: { fact: "ending", equals: "weak" } }
-      ]
+        { id: "a", text: "صحيح الآخر", next: "R_imperative_sukoon_sahih", eval: { fact: "ending", equals: "sahih" } },
+        { id: "b", text: "معتل الآخر", next: "imperative_weak_letter", eval: { fact: "ending", equals: "weak" } },
+        { id: "c", text: "أحتاج تلميح", next: "imperative_ending", correct: false, hint: `${weakByPresentHint}\nأما إذا لم يكن آخر أصله حرف علة، مثل: اكتبْ، فهو صحيح الآخر.` },
+      ],
     },
 
+    imperative_weak_letter: {
+      id: "imperative_weak_letter",
+      type: "question",
+      context: "عرفنا أنه فعل أمر معتل الآخر، فنردّه إلى مضارعه لنعرف حرف العلة المحذوف.",
+      text: "ما حرف العلة المحذوف من آخره؟",
+      hint: weakByPresentHint,
+      answers: [
+        { id: "a", text: "الألف", next: "R_imperative_delete_letter_alif", eval: { fact: "weakLetter", equals: "alif" } },
+        { id: "b", text: "الواو", next: "R_imperative_delete_letter_waw", eval: { fact: "weakLetter", equals: "waw" } },
+        { id: "c", text: "الياء", next: "R_imperative_delete_letter_ya", eval: { fact: "weakLetter", equals: "ya" } },
+        { id: "d", text: "أحتاج تلميح", next: "imperative_weak_letter", correct: false, hint: weakByPresentHint },
+      ],
+    },
+
+    R_imperative_sukoon_sahih: {
+      id: "R_imperative_sukoon_sahih",
+      type: "result",
+      coverage: "imperative.sukoon.sahih",
+      text: "فعل أمر مبني على السكون.\nالفاعل: ضمير مستتر وجوبًا تقديره أنت."
+    },
+    R_imperative_sukoon_niswa: {
+      id: "R_imperative_sukoon_niswa",
+      type: "result",
+      coverage: "imperative.sukoon.niswa",
+      text: "فعل أمر مبني على السكون لاتصاله بنون النسوة.\nنون النسوة: ضمير متصل مبني في محل رفع فاعل."
+    },
+    R_imperative_delete_letter_alif: {
+      id: "R_imperative_delete_letter_alif",
+      type: "result",
+      coverage: "imperative.delete_letter.alif",
+      text: "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الألف.\nالفاعل: ضمير مستتر وجوبًا تقديره أنت."
+    },
+    R_imperative_delete_letter_waw: {
+      id: "R_imperative_delete_letter_waw",
+      type: "result",
+      coverage: "imperative.delete_letter.waw",
+      text: "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الواو.\nالفاعل: ضمير مستتر وجوبًا تقديره أنت."
+    },
+    R_imperative_delete_letter_ya: {
+      id: "R_imperative_delete_letter_ya",
+      type: "result",
+      coverage: "imperative.delete_letter.ya",
+      text: "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الياء.\nالفاعل: ضمير مستتر وجوبًا تقديره أنت."
+    },
+    R_imperative_delete_noon_attached: {
+      id: "R_imperative_delete_noon_attached",
+      type: "result",
+      coverage: "imperative.delete_noon.attached",
+      text: "فعل أمر مبني على حذف النون لاتصاله بألف الاثنين أو واو الجماعة أو ياء المخاطبة.\nالضمير المتصل: مبني في محل رفع فاعل."
+    },
+    R_imperative_delete_noon_alif2: {
+      id: "R_imperative_delete_noon_alif2",
+      type: "result",
+      coverage: "imperative.delete_noon.alif2",
+      text: "فعل أمر مبني على حذف النون؛ لاتصاله بألف الاثنين.\nألف الاثنين: ضمير متصل مبني في محل رفع فاعل."
+    },
+    R_imperative_delete_noon_waw: {
+      id: "R_imperative_delete_noon_waw",
+      type: "result",
+      coverage: "imperative.delete_noon.waw",
+      text: "فعل أمر مبني على حذف النون؛ لاتصاله بواو الجماعة.\nواو الجماعة: ضمير متصل مبني في محل رفع فاعل.\nالألف: ألف فارقة لا محل لها من الإعراب."
+    },
+    R_imperative_delete_noon_yaa: {
+      id: "R_imperative_delete_noon_yaa",
+      type: "result",
+      coverage: "imperative.delete_noon.yaa",
+      text: "فعل أمر مبني على حذف النون؛ لاتصاله بياء المخاطبة.\nياء المخاطبة: ضمير متصل مبني في محل رفع فاعل."
+    },
     R_imperative_fath_tawkid: {
       id: "R_imperative_fath_tawkid",
       type: "result",
       coverage: "imperative.fath_tawkid",
-      text: "فعل أمر مبني على الفتح لاتصاله بنون التوكيد."
-    },
-    R_imperative_delete_noon: {
-      id: "R_imperative_delete_noon",
-      type: "result",
-      coverage: "imperative.delete_noon",
-      text: "فعل أمر مبني على حذف النون."
-    },
-    R_imperative_delete_letter: {
-      id: "R_imperative_delete_letter",
-      type: "result",
-      coverage: "imperative.delete_letter",
-      text: "فعل أمر مبني على حذف حرف العلة من آخره."
-    },
-    R_imperative_sukoon: {
-      id: "R_imperative_sukoon",
-      type: "result",
-      coverage: "imperative.sukoon",
-      text: "فعل أمر مبني على السكون على آخره."
+      text: "فعل أمر مبني على الفتح لاتصاله بنون التوكيد.\nنون التوكيد: حرف توكيد لا محل له من الإعراب."
     }
   }
 };

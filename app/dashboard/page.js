@@ -64,7 +64,7 @@ export default function DashboardPage() {
           <div className="dashboard-hero-copy">
             <div className="section-kicker">لوحة التقدم</div>
             <h1 className="h1">{userName ? `مرحبًا يا ${userName}` : "تابع تقدّمك"}</h1>
-            <p className="p">هنا تظهر حالة <strong>الالمرحلة الأولى</strong> و<strong>الالمرحلة الثانية</strong> و<strong>المرحلة النهائية</strong> لكل موضوع بشكل واضح ومنظّم.</p>
+            <p className="p">هنا تظهر حالة <strong>المرحلة الأولى</strong> و<strong>المرحلة الثانية</strong> و<strong>المرحلة النهائية</strong> لكل موضوع بشكل واضح ومنظّم.</p>
           </div>
           <div className="dashboard-hero-actions">
             <a href="/topics" className="btn btn-primary">اذهب إلى الموضوعات</a>
@@ -77,8 +77,8 @@ export default function DashboardPage() {
           <StatCard value={summary.completedLearn} label="مكتمل المرحلة الأولى" />
           <StatCard value={summary.completedPractice} label="مكتمل المرحلة الثانية" />
           <StatCard value={summary.passedQuiz} label="اختبارات ناجحة" />
-          <ProgressStatCard value={summary.avgLearnPercent} label="متوسط الالمرحلة الأولى" />
-          <ProgressStatCard value={summary.avgPracticePercent} label="متوسط الالمرحلة الثانية" />
+          <ProgressStatCard value={summary.avgLearnPercent} label="متوسط المرحلة الأولى" />
+          <ProgressStatCard value={summary.avgPracticePercent} label="متوسط المرحلة الثانية" />
         </section>
 
         <section className="card dashboard-list-card">
@@ -89,7 +89,7 @@ export default function DashboardPage() {
 
           {loading && <div className="dashboard-empty-state">جارٍ تحميل البيانات...</div>}
           {!loading && error && <div className="dashboard-message dashboard-message-error">{error}</div>}
-          {!loading && !error && rows.length === 0 && <div className="dashboard-empty-state">لا يوجد تقدم محفوظ بعد. ابدأ من صفحة الالمرحلة الأولى ثم ارجع إلى هنا.</div>}
+          {!loading && !error && rows.length === 0 && <div className="dashboard-empty-state">لا يوجد تقدم محفوظ بعد. ابدأ من صفحة المرحلة الأولى ثم ارجع إلى هنا.</div>}
 
           {!loading && !error && rows.length > 0 && (
             <div className="dashboard-topic-grid">
@@ -117,8 +117,8 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="dashboard-bars">
-                      <ProgressLine title={`الالمرحلة الأولى${requiredCount ? ` (${learnCoveredCount}/${requiredCount} فروع)` : ""}`} value={learnPercent} />
-                      <ProgressLine title={`الالمرحلة الثانية${requiredCount ? ` (${practiceCoveredCount}/${requiredCount} فروع)` : ""}`} value={practicePercent} />
+                      <ProgressLine title={`المرحلة الأولى${requiredCount ? ` (${learnCoveredCount}/${requiredCount} فروع)` : ""}`} value={learnPercent} />
+                      <ProgressLine title={`المرحلة الثانية${requiredCount ? ` (${practiceCoveredCount}/${requiredCount} فروع)` : ""}`} value={practicePercent} />
                       <ProgressLine title="المرحلة النهائية" value={quizPercent} />
                     </div>
 

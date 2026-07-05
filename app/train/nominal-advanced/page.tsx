@@ -13,7 +13,7 @@ export default function TrainNominalAdvancedPage() {
   }
 
   return (
-    <AuthLockGate title="سجّل الدخول لتكمل الالمرحلة الثانية" text="الالمرحلة الثانية وحفظ الإنجاز مرتبطان بحساب الطالب.">
+    <AuthLockGate title="سجّل الدخول لتكمل المرحلة الثانية" text="المرحلة الثانية وحفظ الإنجاز مرتبطان بحساب الطالب.">
     <ExercisePlayer
       title={`${topic.name_ar} — المرحلة الثانية`}
       mode="practice"
