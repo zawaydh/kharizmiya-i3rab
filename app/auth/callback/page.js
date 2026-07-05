@@ -143,7 +143,7 @@ export default function AuthCallbackPage() {
         }
         const user = session?.user;
         if (!user) {
-          throw new Error("لم تكتمل جلسة الدخول. استخدمي آخر رسالة فقط، أو عودي لصفحة الدخول وأرسلي رابطًا جديدًا.");
+          throw new Error("لم تكتمل جلسة الدخول. استخدم آخر رسالة فقط، أو عد إلى صفحة الدخول وأرسل رابطًا جديدًا.");
         }
 
         const pendingName = localStorage.getItem(PENDING_NAME_KEY)?.trim?.() || "";
@@ -194,7 +194,7 @@ export default function AuthCallbackPage() {
               <h2>الرابط لم يكتمل</h2>
               <p className="p">{error}</p>
               <div className="auth-actions-stack">
-                <a className="btn btn-primary" href="/auth">إرسال رابط جديد</a>
+                <a className="btn btn-primary" href="/auth">العودة إلى صفحة الحساب</a>
                 <a className="btn btn-soft" href="/">العودة للرئيسية</a>
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function AuthCallbackPage() {
             <div className="auth-logged-box">
               <div className="auth-logged-icon">…</div>
               <h2>جارٍ الدخول</h2>
-              <p className="p">انتظري لحظة، لا تغلقي الصفحة.</p>
+              <p className="p">انتظر لحظة، لا تغلق الصفحة.</p>
             </div>
           )}
         </div>
