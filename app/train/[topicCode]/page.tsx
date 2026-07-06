@@ -14,10 +14,10 @@ export default function TrainTopicPage({ params }: { params: { topicCode: string
   }
 
   return (
-    <AuthLockGate title="سجّل الدخول لتكمل المرحلة الثانية" text="سجّل الدخول حتى يُحفظ تدريبك.">
+    <AuthLockGate title="سجّل الدخول لتكمل تحدي المهارة" text="سجّل الدخول حتى تُحفظ نقاط التحدي واستعدادك للاختبار.">
     <StageAccessGate topicCode={topic.code} level={topic.level ?? 2} require="practice">
     <ExercisePlayer
-      title={`${topic.name_ar} — المرحلة الثانية`}
+      title={`${topic.name_ar} — تحدي المهارة`}
       mode="practice"
       tree={topic.tree}
       examples={topic.examples}

@@ -52,6 +52,15 @@ type QuizExampleLike = {
   facts?: Record<string, any>;
 };
 
+type StepReviewState = {
+  answerText: string;
+  resultText: string;
+  reason: string;
+  summary: string;
+  nextState: any;
+  isFinal: boolean;
+};
+
 type Props = {
   title: string;
   mode: Mode;
@@ -164,23 +173,23 @@ function renderSentence(sentence?: string, target?: string) {
 function getStageMeta(mode: Mode) {
   if (mode === "learn") {
     return {
-      badge: "المرحلة الأولى",
-      subtitle: "",
-      nextLabel: "انتقل إلى المرحلة الثانية →",
+      badge: "تعلّم خطوة بخطوة",
+      subtitle: "رحلة مقسّمة إلى مهارات قصيرة؛ اقرأ نتيجة كل خطوة وسببها قبل الانتقال.",
+      nextLabel: "انتقل إلى تحدي المهارة →",
       nextHrefPrefix: "/train/",
     };
   }
   if (mode === "practice") {
     return {
-      badge: "المرحلة الثانية",
-      subtitle: "",
-      nextLabel: "انتقل إلى المرحلة النهائية →",
+      badge: "تحدي المهارة",
+      subtitle: "تدرّب بطريقة أخف وأكثر متعة، واجمع التعزيز قبل الاختبار.",
+      nextLabel: "اختبر نفسي وأحصل على شهادة →",
       nextHrefPrefix: "/quiz/",
     };
   }
   return {
-    badge: "المرحلة النهائية",
-    subtitle: "",
+    badge: "اختبر نفسي",
+    subtitle: "اختبار نهائي بلا تلميحات؛ النجاح يفتح شهادة الإنجاز.",
     nextLabel: "",
     nextHrefPrefix: "",
   };
@@ -194,9 +203,9 @@ function extractTopicName(title?: string) {
 
 function stageLearningTitle(stageBadge: string, title?: string) {
   const topic = extractTopicName(title);
-  if (stageBadge === "المرحلة النهائية") return `${stageBadge} في اختبار إعراب ${topic}`;
-  if (stageBadge === "المرحلة الثانية") return `${stageBadge} في تدريب إعراب ${topic}`;
-  return `${stageBadge} في تعلم إعراب ${topic}`;
+  if (stageBadge === "اختبر نفسي") return `اختبر نفسي في ${topic}`;
+  if (stageBadge === "تحدي المهارة") return `تحدي المهارة في ${topic}`;
+  return `تعلّم ${topic} خطوة بخطوة`;
 }
 
 function i3rabTokensFromDraft(draft: string) {
@@ -3648,11 +3657,19 @@ export default function ExercisePlayer({
   const [pendingStageComplete, setPendingStageComplete] = React.useState(false);
   const [dropOver, setDropOver] = React.useState(false);
   const [droppedChoice, setDroppedChoice] = React.useState<{ text: string; tone: "idle" | "ok" | "bad" } | null>(null);
+  const [stepReview, setStepReview] = React.useState<StepReviewState | null>(null);
   const workAreaRef = React.useRef<HTMLElement | null>(null);
   const activeCardRef = React.useRef<HTMLDivElement | null>(null);
   const feedbackAreaRef = React.useRef<HTMLDivElement | null>(null);
+  const correctAdvanceTimerRef = React.useRef<number | null>(null);
   const recentExampleIdsRef = React.useRef<string[]>([]);
   const usedExampleIdsRef = React.useRef<string[]>([]);
+
+  React.useEffect(() => {
+    return () => {
+      if (correctAdvanceTimerRef.current) window.clearTimeout(correctAdvanceTimerRef.current);
+    };
+  }, []);
 
   function bringWorkAreaIntoView(mode: "soft" | "center" = "soft", delay = 80) {
     window.setTimeout(() => {
@@ -3703,6 +3720,7 @@ export default function ExercisePlayer({
     setSuccessNudge(null);
     setDropOver(false);
     setDroppedChoice(null);
+    setStepReview(null);
     bringWorkAreaIntoView("soft");
   }, [tree, mode, example]);
 
@@ -3942,6 +3960,7 @@ export default function ExercisePlayer({
     setFeedback(null);
     setDropOver(false);
     setDroppedChoice(null);
+    setStepReview(null);
     setCardPhase("idle");
     setSuccessNudge(null);
     setFinalCtaReady(false);
@@ -3979,6 +3998,7 @@ export default function ExercisePlayer({
       const chosen = unseen.find((item) => !uncoveredKeys.length || item.keys.some((key) => uncoveredKeys.includes(key))) || unseen[0];
       if (chosen) {
         setExampleIndex(chosen.idx);
+        setStepReview(null);
         setState(buildRunnerState(tree, mode, examples[chosen.idx]));
         return;
       }
@@ -3996,6 +4016,7 @@ export default function ExercisePlayer({
     setFeedback(null);
     setDropOver(false);
     setDroppedChoice(null);
+    setStepReview(null);
     setCardPhase("idle");
     setSuccessNudge(null);
     setFinalCtaReady(false);
@@ -4047,7 +4068,18 @@ export default function ExercisePlayer({
   }
 
   function microPraiseText(node: any, answer: any, state: any) {
-    const phrases = [
+    const phrases = mode === "practice" ? [
+      "نجمة جديدة ✓ اختيار موفق.",
+      "أحسنت، اقتربت من الكأس.",
+      "رائع، ثبّت مهارة جديدة.",
+      "ممتاز، التحدي يسير بقوة.",
+      "إجابة دقيقة، نربح خطوة في التحدي.",
+      "جميل، فهمك صار أوضح.",
+      "أداء قوي، أكمل الجولة.",
+      "أحسنت، هذه نقطة إتقان.",
+      "اختيار ذكي، نكمل التحدي.",
+      "ممتاز جدًا، نجمة في المسار."
+    ] : [
       "أحسنت، خطوة ثابتة.",
       "ممتاز، واصل بنفس التركيز.",
       "اختيار موفق، نكمل.",
@@ -4065,8 +4097,71 @@ export default function ExercisePlayer({
     return phrases[hash % phrases.length];
   }
 
+  function challengeGuidanceText() {
+    if (mode !== "practice") return "";
+    if (dialogBubble?.tone === "hint") return "اقرأ التوجيه، ثم عد للسؤال واختر الإجابة الصحيحة.";
+    if (cardPhase !== "idle" && droppedChoice?.tone === "ok") return "أحسنت؛ تقدّمك محفوظ، وننتقل للجولة التالية.";
+    if (node?.type === "result") return "اقرأ الإعراب النهائي؛ فهو سبب الفوز بهذه الجولة.";
+    return `ركّز في (${state?.currentTarget || "الكلمة"})، واختر الإجابة التي تُكمل بناء الإعراب.`;
+  }
+
+  function challengeStars(done: number, total: number) {
+    const safeTotal = Math.max(1, total || 1);
+    const earned = Math.min(5, Math.max(0, Math.ceil((done / safeTotal) * 5)));
+    return Array.from({ length: 5 }, (_, i) => i < earned);
+  }
+
+  function learningSummaryForStep(node: any, state: any, resultText: string, answerText: string) {
+    const id = String(node?.id || "");
+    const target = String(state?.currentTarget || "الكلمة المحددة");
+    const result = String(resultText || "");
+    const answer = String(answerText || "");
+
+    if (isFiveVerbDecision(node)) {
+      return answer.startsWith("نعم") || state?.facts?.attached !== "none"
+        ? `إذا كان (${target}) من الأفعال الخمسة فعلامته تختلف: في الرفع ثبوت النون، وفي النصب والجزم حذف النون.`
+        : `إذا لم يكن (${target}) من الأفعال الخمسة نرجع إلى علامة الفعل العادي بحسب حالته وآخره.`;
+    }
+    if (id.includes("_shape")) return `صورة الفعل تقودنا إلى العلامة: الفعل العادي له علامات، والأفعال الخمسة لها علامات خاصة.`;
+    if (id.includes("has_tool") || id.includes("tool")) return `الأداة قبل الفعل هي التي تحدد الحالة: رفع، نصب، أو جزم.`;
+    if (id.includes("weak")) return `حرف العلة في آخر الفعل قد يجعل العلامة مقدّرة أو محذوفة.`;
+    if (id.includes("ending")) return `لا نختار العلامة من الشكل وحده؛ ننظر إلى آخر الكلمة وصورتها.`;
+    if (result.includes("ثبوت النون")) return `الأفعال الخمسة تُرفع بثبوت النون، لا بالضمة.`;
+    if (result.includes("حذف النون")) return `الأفعال الخمسة تُنصب وتُجزم بحذف النون.`;
+    if (result.includes("الضمة")) return `الفعل المضارع الصحيح الآخر إذا كان مرفوعًا فعلامته الضمة الظاهرة.`;
+    if (result.includes("الفتحة")) return `الفعل المضارع الصحيح الآخر إذا دخلت عليه أداة نصب فعلامته الفتحة الظاهرة.`;
+    if (result.includes("السكون")) return `الفعل المضارع الصحيح الآخر إذا جُزم فعلامته السكون.`;
+    if (result.includes("مبتدأ") || result.includes("خبر") || result.includes("فاعل") || result.includes("مفعول") || result.includes("تابع")) return `ابدأ بالوظيفة النحوية، ثم انتقل إلى العلامة المناسبة.`;
+    return `ثبّت هذه النتيجة قبل الانتقال؛ فهي خطوة في بناء الإعراب النهائي.`;
+  }
+
+  function continueLabelForStepReview(isFinal: boolean) {
+    if (isFinal) return "فهمت السبب، اعرض النتيجة النهائية";
+    if (mode === "practice") return "رائع، أكمل التحدي";
+    return "فهمت السبب، أكمل";
+  }
+
+  function continueAfterStepReview() {
+    if (!stepReview) return;
+    const nextNode = tree?.nodes?.[stepReview.nextState?.currentNodeId];
+    if (nextNode?.type === "result") playSoftStepSound("final");
+    setState(stepReview.nextState);
+    setStepReview(null);
+    setDroppedChoice(null);
+    setDialogBubble(null);
+    setMicroCelebrateAnswerId(null);
+    setMicroCelebrate(0);
+    setCardPhase("entering");
+    bringWorkAreaIntoView(nextNode?.type === "result" ? "center" : "soft", 80);
+    window.setTimeout(() => {
+      setCardPhase("idle");
+      setMicroCelebrate(0);
+      setMicroCelebrateAnswerId(null);
+    }, 360);
+  }
+
   function handlePick(answerId: string) {
-    if (!node || node.type !== "question" || mode === "quiz" || cardPhase !== "idle") return;
+    if (!node || node.type !== "question" || mode === "quiz" || cardPhase !== "idle" || stepReview) return;
 
     const activeNode = thinkingNode || node;
     const activeTree = { ...tree, nodes: { ...(tree?.nodes || {}), [String(state.currentNodeId)]: activeNode } };
@@ -4091,7 +4186,7 @@ export default function ExercisePlayer({
       const smartHint = isBuiltTypeNode
         ? builtNounTypeHintByValue(expectedBuiltType)
         : studentHintText(thinkingNode, picked, state);
-      setDialogBubble({ tone: "hint", text: `${smartHint || "فكّر في السؤال الحالي فقط."}
+      setDialogBubble({ tone: "hint", text: `${isPracticeMode ? "محاولة جيدة؛ هذه فرصة لتقوية المهارة.\n" : ""}${smartHint || "فكّر في السؤال الحالي فقط."}
 
 عد للسؤال وانقر على الإجابة الصحيحة لنكمل الإعراب.` });
       setDroppedChoice(null);
@@ -4105,38 +4200,36 @@ export default function ExercisePlayer({
 
     const res = chooseAnswer({ state, tree: activeTree, answerId } as any);
     const piece = normalizeBuildPiece(picked?.text || "", node?.id || "");
-    // لا نعرض فقاعة نجاح كبيرة هنا؛ الحركة النصية داخل البطاقة هي التي توضّح الانتقال.
-    // التلميحات تبقى فقط عند الخطأ أو عند طلب الطالب للمساعدة.
     const msg = teacherSuccessText(thinkingNode, picked, state, piece);
+    const effectLabel = answerEffectLabel(thinkingNode, picked, state);
+    const resultText = effectLabel || piece || String(picked?.text || "صحيح");
+    const nextNode = tree?.nodes?.[res.nextState?.currentNodeId];
+
     setSuccessNudge(microPraiseText(thinkingNode, picked, state));
     setDialogBubble(null);
-    const effectLabel = answerEffectLabel(thinkingNode, picked, state);
-    setDroppedChoice((prev) => prev ? { text: prev.text || effectLabel, tone: "ok" } : { text: effectLabel || String(picked?.text || "صحيح"), tone: "ok" });
-    playSoftStepSound("step");
+    setDroppedChoice((prev) => prev ? { text: prev.text || resultText, tone: "ok" } : { text: resultText, tone: "ok" });
+    playSoftStepSound(nextNode?.type === "result" ? "final" : "step");
     setMicroCelebrateAnswerId(null);
     setMicroCelebrate(0);
     setCardPhase("success");
-    // انتقال واضح للكلام فقط: نثبت البطاقة، نعرض نتيجة قصيرة، ثم يخرج السؤال ويدخل التالي.
-    window.setTimeout(() => {
-      setCardPhase("leaving");
-    }, 420);
-    window.setTimeout(() => {
-      const nextNode = tree?.nodes?.[res.nextState?.currentNodeId];
-      if (nextNode?.type === "result") playSoftStepSound("final");
+    setStepReview(null);
+    setFeedback(null);
+
+    if (correctAdvanceTimerRef.current) window.clearTimeout(correctAdvanceTimerRef.current);
+    correctAdvanceTimerRef.current = window.setTimeout(() => {
       setState(res.nextState);
       setDroppedChoice(null);
       setDialogBubble(null);
       setMicroCelebrateAnswerId(null);
       setMicroCelebrate(0);
       setCardPhase("entering");
-      bringWorkAreaIntoView(nextNode?.type === "result" ? "center" : "soft", 80);
-    }, 1050);
-    window.setTimeout(() => {
-      setCardPhase("idle");
-      setMicroCelebrate(0);
-      setMicroCelebrateAnswerId(null);
-    }, 1580);
-    setFeedback(null);
+      bringWorkAreaIntoView(nextNode?.type === "result" ? "center" : "soft", 60);
+      window.setTimeout(() => {
+        setCardPhase("idle");
+        setMicroCelebrate(0);
+        setMicroCelebrateAnswerId(null);
+      }, 260);
+    }, nextNode?.type === "result" ? 520 : 420);
   }
 
   async function finalizeQuizExample() {
@@ -4203,9 +4296,12 @@ export default function ExercisePlayer({
   const exampleProgressCurrent = mode === "quiz" ? Math.min(quizCursor, Math.max(0, exampleProgressTotal - 1)) : Math.min(exampleProgressDone, Math.max(0, exampleProgressTotal - 1));
   const i3rabDraft = buildI3rabDraft(tree, state, state.currentTarget);
   const i3rabTokens = i3rabTokensFromDraft(i3rabDraft);
+  const isPracticeMode = mode === "practice";
+  const practiceStars = challengeStars(doneCount, totalCount);
+  const practiceGuide = challengeGuidanceText();
 
   return (
-    <div className="exercise-page-shell">
+    <div className={`exercise-page-shell ${isPracticeMode ? "practice-game-shell" : ""}`}>
       {clickCheck ? <span key={clickCheck.id} className="click-success-pop" style={{ left: clickCheck.x, top: clickCheck.y }} aria-hidden="true">✓</span> : null}
       <section className="exercise-hero-card card card-glow">
         <div className="exercise-hero-main">
@@ -4245,6 +4341,28 @@ export default function ExercisePlayer({
         </div>
       </section>
 
+      {isPracticeMode ? (
+        <section className="practice-challenge-hud" aria-label="لوحة تحدي المهارة">
+          <div className="practice-cup-card">
+            <span className="practice-cup-icon" aria-hidden="true">🏆</span>
+            <div>
+              <strong>كأس الإتقان</strong>
+              <p>{coveredPercent >= 100 ? "اكتمل التحدي؛ أنت جاهز لاختبار نفسك." : "اجمع النجوم حتى تصل إلى اختبار النفس والشهادة."}</p>
+            </div>
+          </div>
+          <div className="practice-stars-card" aria-label="نجوم التحدي">
+            <span>نجوم التحدي</span>
+            <div className="practice-stars-row" aria-hidden="true">
+              {practiceStars.map((filled, idx) => <i key={idx} className={filled ? "is-filled" : ""}>★</i>)}
+            </div>
+          </div>
+          <div className="practice-guide-card">
+            <strong>توجيهك الآن</strong>
+            <p>{practiceGuide}</p>
+          </div>
+        </section>
+      ) : null}
+
       <div className="kana-example-progress-wrap global-example-progress-wrap" aria-label="تقدم الأمثلة العام">
         <span className="kana-example-progress-label">{mode === "quiz" ? `${Math.min(quizCursor + 1, exampleProgressTotal)} / ${exampleProgressTotal}` : `${exampleProgressDone} / ${exampleProgressTotal} مهارة`}</span>
         <ProgressDots total={exampleProgressTotal} done={exampleProgressDone} current={exampleProgressCurrent} />
@@ -4253,11 +4371,11 @@ export default function ExercisePlayer({
       {mode !== "quiz" && isDone && node?.type === "result" && (
         <section className="exercise-complete-banner final-only-complete-banner">
           <div>
-            <strong>{mode === "learn" ? "اكتملت المرحلة الأولى" : "اكتملت المرحلة الثانية"}</strong>
-            <p>{mode === "learn" ? "انتقل الآن إلى المرحلة الثانية." : "انتقل الآن إلى المرحلة النهائية."}</p>
+            <strong>{mode === "learn" ? "اكتملت رحلة التعلّم" : "اكتمل تحدي المهارة"}</strong>
+            <p>{mode === "learn" ? "انتقل الآن إلى تحدي المهارة لتثبيت فهمك بطريقة ممتعة." : "أصبحت جاهزًا لاختبار نفسك والحصول على شهادة الإنجاز."}</p>
           </div>
           <button onClick={resetTraining} style={ghostBtn}>
-            {mode === "learn" ? "إعادة المرحلة الأولى" : "إعادة المرحلة الثانية"}
+            {mode === "learn" ? "إعادة التعلّم" : "إعادة التحدي"}
           </button>
         </section>
       )}
@@ -4364,7 +4482,7 @@ export default function ExercisePlayer({
             {node?.type === "question" ? (
               <div
                 ref={activeCardRef}
-                className={`clean-question-block algorithm-step-card algorithm-active-card sequential-active-card ${dropOver ? "is-drop-over" : ""} phase-${cardPhase}`}
+                className={`clean-question-block algorithm-step-card algorithm-active-card sequential-active-card ${isPracticeMode ? "practice-challenge-card" : ""} ${dropOver ? "is-drop-over" : ""} phase-${cardPhase}`}
                 onDragOver={(e) => { if (mode === "learn") { e.preventDefault(); setDropOver(true); } }}
                 onDragLeave={() => setDropOver(false)}
                 onDrop={(e) => {
@@ -4403,14 +4521,22 @@ export default function ExercisePlayer({
                     </div>
                   ) : (
                     <>
+                      {isPracticeMode ? (
+                        <div className="practice-mission-strip" aria-label="مهمة التحدي">
+                          <span>🎯 مهمة التحدي</span>
+                          <strong>اختر ما يناسب ({state.currentTarget})</strong>
+                          <small>كل اختيار صحيح يضيف نجمة، وكل خطأ يعطيك توجيهًا يساعدك.</small>
+                        </div>
+                      ) : null}
                       <div className="exercise-question-title clean-question-title">{renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}</div>
                       {dialogueQuestionNote(thinkingNode) ? <div className="dialogue-question-note">{dialogueQuestionNote(thinkingNode)}</div> : null}
 
-                      <div className="clean-answer-grid stage-one-draggable-grid">
-                        {thinkingNode.answers.map((a: any) => {
+                      <div className={`clean-answer-grid stage-one-draggable-grid ${isPracticeMode ? "practice-answer-grid" : ""}`}>
+                        {thinkingNode.answers.map((a: any, idx: number) => {
                           const answerClass = [
                             "exercise-answer-btn",
                             "clean-answer-btn",
+                            isPracticeMode ? "challenge-answer-btn" : "",
                             mode === "learn" && feedback?.correctId === a.id ? "is-correct" : "",
                             feedback?.wrongId === a.id ? "is-wrong" : "",
                           ].filter(Boolean).join(" ");
@@ -4436,6 +4562,7 @@ export default function ExercisePlayer({
                               className={answerClass}
                               style={answerBtn}
                             >
+                              {isPracticeMode ? <span className="challenge-option-icon" aria-hidden="true">{idx + 1}</span> : null}
                               {mode === "learn" ? <span className="answer-drag-mini">{answerDragLabel(mode)}</span> : null}
                               <span className="answer-main-text">{String(tree?.startNodeId || "").includes("past") ? String(a.text || "") : renderSmartText(a.text, setActiveGlossary)}</span>
                             </button>
@@ -4470,14 +4597,57 @@ export default function ExercisePlayer({
                     </div>
                   ) : null}
 
-                  {cardPhase !== "idle" && droppedChoice?.tone !== "bad" ? (
-                    <div className="next-step-focus-cue" aria-live="polite">
-                      <span>تظهر الخطوة التالية الآن…</span>
+                  {stepReview ? (
+                    <div
+                      ref={feedbackAreaRef}
+                      className={`step-review-card ${mode === "practice" ? "is-challenge" : "is-learn"}`}
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div className="step-review-head">
+                        <span className="step-review-badge">{mode === "practice" ? "تعزيز التحدي" : "نتيجة الخطوة"}</span>
+                        <strong>✓ إجابتك صحيحة</strong>
+                      </div>
+                      <div className="step-review-section">
+                        <span>النتيجة</span>
+                        <p>{renderSmartText(stepReview.resultText, setActiveGlossary)}</p>
+                      </div>
+                      <div className="step-review-section">
+                        <span>السبب</span>
+                        <p>{renderSmartText(stepReview.reason, setActiveGlossary)}</p>
+                      </div>
+                      <div className="step-review-rule">
+                        <span>الخلاصة</span>
+                        <p>{renderSmartText(stepReview.summary, setActiveGlossary)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="step-review-continue"
+                        onClick={continueAfterStepReview}
+                      >
+                        {continueLabelForStepReview(stepReview.isFinal)}
+                      </button>
                     </div>
+                  ) : null}
+
+                  {cardPhase !== "idle" && droppedChoice?.tone !== "bad" && !stepReview ? (
+                    isPracticeMode ? (
+                      <div className="practice-reward-burst" aria-live="polite">
+                        <span className="practice-reward-star">★</span>
+                        <div>
+                          <strong>{successNudge || "نجمة جديدة ✓"}</strong>
+                          <p>{latestStepResult ? `أضفنا للمسار: ${latestStepResult}` : "نكمل التحدي."}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="next-step-focus-cue quick-success-cue" aria-live="polite">
+                        <span>أحسنت ✓ ننتقل للخطوة التالية.</span>
+                      </div>
+                    )
                   ) : null}
                 </div>
 
-                {dialogBubble?.tone !== "hint" ? (
+                {dialogBubble?.tone !== "hint" && !stepReview ? (
                   <div className="clean-question-nav" style={{ marginTop: 10 }}>
                     <button
                       type="button"
@@ -4495,7 +4665,7 @@ export default function ExercisePlayer({
                 ) : null}
 
                 <div className="clean-question-nav">
-                  <button type="button" onClick={() => { setFeedback(null); setDialogBubble(null); setState(buildRunnerState(tree, mode, example)); }} style={ghostBtn}>إعادة المثال</button>
+                  <button type="button" onClick={() => { setFeedback(null); setDialogBubble(null); setStepReview(null); setCardPhase("idle"); setState(buildRunnerState(tree, mode, example)); }} style={ghostBtn}>إعادة المثال</button>
                 </div>
                 {/* تم حذف النقاط السفلية لأن شريط التقدم العلوي يكفي ويقلل التشتت. */}
               </div>
@@ -4503,8 +4673,8 @@ export default function ExercisePlayer({
               <>
               {pendingStageComplete ? (
                 <div className="stage-focus-next-panel stage-complete-only" aria-live="polite">
-                  <strong>{mode === "learn" ? "انتهت المرحلة الأولى" : "انتهت المرحلة الثانية"}</strong>
-                  <span>{mode === "learn" ? "أنهيت أمثلة هذا المستوى، والزر التالي ينقلك مباشرة إلى التدريب." : "أنهيت التدريب، والزر التالي ينقلك مباشرة إلى الاختبار."}</span>
+                  <strong>{mode === "learn" ? "انتهت رحلة التعلّم" : "انتهى تحدي المهارة"}</strong>
+                  <span>{mode === "learn" ? "أنهيت مهارات هذا المستوى، والزر التالي ينقلك إلى تحدي المهارة." : "أنهيت التحدي، والزر التالي ينقلك إلى اختبار النفس والشهادة."}</span>
                   <button
                     onClick={completeCurrentAndGoNextStage}
                     className="next-example-glow stage-focus-next-btn"
@@ -4516,8 +4686,8 @@ export default function ExercisePlayer({
                 </div>
               ) : (
               <div ref={activeCardRef} className="clean-result-block algorithm-step-card algorithm-final-card pro-final-focus">
-                <div className="final-achievement-mark" aria-hidden="true">✓</div>
-                <div className="clean-final-label">أحسنت! هذه ثمرة المسار</div>
+                <div className="final-achievement-mark" aria-hidden="true">{isPracticeMode ? "🏆" : "✓"}</div>
+                <div className="clean-final-label">{isPracticeMode ? "فزت بجولة من تحدي المهارة" : "أحسنت! هذه ثمرة المسار"}</div>
                 {isPresentBuiltResult(tree, thinkingNode) ? (
                   <div className="built-closure-note" role="note">{presentBuiltClosureNote(thinkingNode)}</div>
                 ) : null}
@@ -4569,10 +4739,10 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
                     style={{ ...primaryNavBtn, opacity: canMoveAfterResult ? 1 : 0.55, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
                     disabled={!canMoveAfterResult}
                   >
-{finalCtaReady ? (resultWouldCompleteStage ? "تم" : "المثال التالي ←") : "اقرأ الإعراب النهائي أولًا"}
+{finalCtaReady ? (resultWouldCompleteStage ? "فهمت، انتقل للمرحلة التالية" : (mode === "practice" ? "أكمل التحدي" : "فهمت الإعراب، انتقل للتالي")) : "اقرأ الإعراب النهائي أولًا"}
                   </button>
                 ) : null}
-                {/* لا نعرض نقاطًا سفلية في شاشة النتيجة؛ التركيز على الإعراب النهائي وزر المثال التالي. */}
+                {/* لا نعرض نقاطًا سفلية في شاشة النتيجة؛ التركيز على الإعراب النهائي وزر فهمت. */}
               </>
             ) : (
               <div>لا توجد عقدة للعرض</div>
@@ -4588,7 +4758,7 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
                 disabled={!nextStageReady}
                 onClick={() => {
                   if (!nextStageReady) {
-                    setToast(mode === "learn" ? "أكمل المرحلة الأولى أولًا" : "أكمل المرحلة الثانية أولًا");
+                    setToast(mode === "learn" ? "أكمل رحلة التعلّم أولًا" : "أكمل تحدي المهارة أولًا");
                     return;
                   }
                   router.push(`${stageMeta.nextHrefPrefix}${topicId}`);
