@@ -1459,8 +1459,8 @@ function practiceQuestionShape(node: any, state: any): "match" | "drag" | "sort"
 function practiceShapeTitle(shape: "match" | "drag" | "sort" | "cards") {
   if (shape === "match") return "زاوج البطاقة بالإجابة المناسبة";
   if (shape === "drag") return "اسحب الإجابة إلى منطقة الحل";
-  if (shape === "sort") return "ضع الاختيار في صندوق القرار";
-  return "اختر بطاقة الفوز";
+  if (shape === "sort") return "رتّب قرارك";
+  return "اختر القرار المناسب";
 }
 
 function practiceShapeIcon(shape: "match" | "drag" | "sort" | "cards") {
@@ -1468,6 +1468,44 @@ function practiceShapeIcon(shape: "match" | "drag" | "sort" | "cards") {
   if (shape === "drag") return "↧";
   if (shape === "sort") return "🧩";
   return "🎴";
+}
+
+
+function practiceQuickDecisionText(node: any, state: any) {
+  const target = String(state?.currentTarget || "الكلمة");
+  const id = String(node?.id || "");
+  const text = cleanQuestionText(node);
+  if (id.includes("word") || id === "start") return `ما نوع (${target})؟`;
+  if (id.includes("tense")) return `ما زمن (${target})؟`;
+  if (id.includes("tool")) return `ما أثر ما قبل (${target})؟`;
+  if (isFiveVerbDecision(node)) return `هل (${target}) من الأفعال الخمسة؟`;
+  if (id.includes("ending")) return `ما حالة آخر (${target})؟`;
+  if (id.includes("weak")) return `ما حرف العلة في آخر (${target})؟`;
+  if (id.includes("khabar")) return `ما علاقة (${target}) بما قبلها؟`;
+  if (id.includes("mubtada")) return `ما موقع (${target}) في الجملة؟`;
+  if (id.includes("fael")) return `ما علاقة (${target}) بالفعل؟`;
+  if (id.includes("mafool")) return `هل وقع الفعل على (${target})؟`;
+  if (id.includes("kana")) return `ما موقع (${target}) بعد الناسخ؟`;
+  if (id.includes("inna")) return `ما موقع (${target}) بعد الحرف الناسخ؟`;
+  return text.replace(/اختر الإجابة الصحيحة مما يلي[:：]?/g, "").trim() || `اختر القرار المناسب لـ (${target})`;
+}
+
+function practiceStepLead(node: any, state: any, trail: string[] = []) {
+  if (!trail.length) return "ابدأ من الكلمة المضيئة، ثم اختر القرار الأقرب للمعنى.";
+  const last = trail[trail.length - 1];
+  return `بنيتَ: ${last} ← أكمل القرار التالي.`;
+}
+
+function practiceWrongMicroHint(answer: any, node: any, state: any) {
+  const specific = String(answer?.hint || answer?.feedback || "").trim();
+  if (specific) return shortStudentText(specific, "راجع العلاقة في الجملة ثم اختر من جديد.");
+  const target = String(state?.currentTarget || "الكلمة");
+  const question = String(node?.text || "");
+  if (question.includes("فاعل") || String(node?.id || "").includes("fael")) return `اسأل: من الذي قام بالفعل؟ هل هي (${target})؟`;
+  if (question.includes("مفعول") || String(node?.id || "").includes("mafool")) return `اسأل: على من وقع الفعل؟ هل وقع على (${target})؟`;
+  if (question.includes("خبر")) return `اسأل: هل (${target}) أتمت المعنى عن الاسم قبلها؟`;
+  if (question.includes("آخر") || String(node?.id || "").includes("ending")) return `انظر إلى آخر (${target}) فقط.`;
+  return "فكّر في علاقة الكلمة داخل الجملة، لا في الحفظ فقط.";
 }
 
 function answerEffectLabel(node: any, answer: any, state: any) {
@@ -4545,147 +4583,55 @@ export default function ExercisePlayer({
                     </div>
                   ) : (
                     <>
-                      {isPracticeMode ? (
-                        <div className="practice-mission-strip" aria-label="مهمة التحدي">
-                          <span>🎯 مهمة التحدي</span>
-                          <strong>اختر ما يناسب ({state.currentTarget})</strong>
-                          <small>كل اختيار صحيح يضيف نجمة، وكل خطأ يعطيك توجيهًا يساعدك.</small>
-                        </div>
-                      ) : null}
                       <div className="exercise-question-title clean-question-title">{renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}</div>
                       {dialogueQuestionNote(thinkingNode) ? <div className="dialogue-question-note">{dialogueQuestionNote(thinkingNode)}</div> : null}
 
                       {isPracticeMode ? (
-                        <div className={`practice-shape-board shape-${currentPracticeShape}`}>
-                          <div className="practice-shape-head">
-                            <span className="practice-shape-icon" aria-hidden="true">{practiceShapeIcon(currentPracticeShape as any)}</span>
-                            <strong>{practiceShapeTitle(currentPracticeShape as any)}</strong>
+                        <div className="practice-build-board" aria-label="مسار البناء السريع">
+                          <div className="practice-build-map" aria-label="ما بنيته حتى الآن">
+                            <div className="practice-build-node is-target">
+                              <small>ابدأ من هنا</small>
+                              <strong>{state.currentTarget}</strong>
+                            </div>
+                            {stageTrailItems.slice(-5).map((item, idx) => (
+                              <React.Fragment key={`${item}-${idx}`}>
+                                <span className="practice-build-arrow" aria-hidden="true">↓</span>
+                                <div className="practice-build-node is-done">
+                                  <small>وصلت إلى</small>
+                                  <strong>{item}</strong>
+                                </div>
+                              </React.Fragment>
+                            ))}
+                            <span className="practice-build-arrow" aria-hidden="true">↓</span>
+                            <div className="practice-build-node is-current">
+                              <small>فكّر الآن</small>
+                              <strong>{practiceQuickDecisionText(thinkingNode, state)}</strong>
+                            </div>
                           </div>
 
-                          {currentPracticeShape === "match" ? (
-                            <div className="practice-match-layout">
-                              <div className="practice-match-source">
-                                <span>الكلمة</span>
-                                <strong>{state.currentTarget}</strong>
-                              </div>
-                              <div className="practice-match-options">
-                                {thinkingNode.answers.map((a: any, idx: number) => {
-                                  const answerClass = ["practice-match-row", feedback?.wrongId === a.id ? "is-wrong" : ""].filter(Boolean).join(" ");
-                                  return (
-                                    <button
-                                      key={a.id}
-                                      type="button"
-                                      disabled={cardPhase !== "idle"}
-                                      className={answerClass}
-                                      onClick={(e) => {
-                                        if (isAnswerCorrect(a)) {
-                                          const id = Date.now();
-                                          setClickCheck({ x: e.clientX, y: e.clientY, id });
-                                          window.setTimeout(() => setClickCheck((current) => current?.id === id ? null : current), 760);
-                                        }
-                                        handlePick(a.id);
-                                      }}
-                                    >
-                                      <span className="practice-match-line" aria-hidden="true" />
-                                      <span className="challenge-option-icon" aria-hidden="true">{idx + 1}</span>
-                                      <span>{renderSmartText(a.text, setActiveGlossary)}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ) : currentPracticeShape === "drag" ? (
-                            <div className="practice-drag-layout">
-                              <div
-                                className="practice-drop-zone"
-                                onDragOver={(e) => e.preventDefault()}
-                                onDrop={(e) => {
-                                  e.preventDefault();
-                                  const answerId = e.dataTransfer.getData("text/answer-id");
-                                  if (answerId) handlePick(answerId);
+                          <div className="practice-fast-options">
+                            {thinkingNode.answers.map((a: any, idx: number) => (
+                              <button
+                                key={a.id}
+                                type="button"
+                                disabled={cardPhase !== "idle"}
+                                onClick={(e) => {
+                                  if (isAnswerCorrect(a)) {
+                                    const id = Date.now();
+                                    setClickCheck({ x: e.clientX, y: e.clientY, id });
+                                    window.setTimeout(() => setClickCheck((current) => current?.id === id ? null : current), 760);
+                                  } else {
+                                    setDialogBubble({ tone: "hint", text: practiceWrongMicroHint(a, thinkingNode, state) });
+                                  }
+                                  handlePick(a.id);
                                 }}
+                                className={`practice-fast-option ${feedback?.wrongId === a.id ? "is-wrong" : ""}`}
                               >
-                                <span>منطقة الحل</span>
-                                <strong>أفلت هنا الإجابة المناسبة لـ ({state.currentTarget})</strong>
-                              </div>
-                              <div className="practice-drag-options">
-                                {thinkingNode.answers.map((a: any, idx: number) => (
-                                  <button
-                                    key={a.id}
-                                    type="button"
-                                    disabled={cardPhase !== "idle"}
-                                    draggable={cardPhase === "idle"}
-                                    onDragStart={(e) => {
-                                      e.dataTransfer.setData("text/answer-id", a.id);
-                                      e.dataTransfer.setData("text/plain", String(a.text || ""));
-                                    }}
-                                    onClick={(e) => {
-                                      if (isAnswerCorrect(a)) {
-                                        const id = Date.now();
-                                        setClickCheck({ x: e.clientX, y: e.clientY, id });
-                                        window.setTimeout(() => setClickCheck((current) => current?.id === id ? null : current), 760);
-                                      }
-                                      handlePick(a.id);
-                                    }}
-                                    className={`practice-drag-chip ${feedback?.wrongId === a.id ? "is-wrong" : ""}`}
-                                  >
-                                    <span aria-hidden="true">↧</span>
-                                    <span>{renderSmartText(a.text, setActiveGlossary)}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          ) : currentPracticeShape === "sort" ? (
-                            <div className="practice-sort-layout">
-                              <div className="practice-sort-bin">
-                                <span>صندوق القرار</span>
-                                <strong>أي بطاقة تُكمل المسار؟</strong>
-                              </div>
-                              <div className="practice-sort-options">
-                                {thinkingNode.answers.map((a: any, idx: number) => (
-                                  <button
-                                    key={a.id}
-                                    type="button"
-                                    disabled={cardPhase !== "idle"}
-                                    onClick={(e) => {
-                                      if (isAnswerCorrect(a)) {
-                                        const id = Date.now();
-                                        setClickCheck({ x: e.clientX, y: e.clientY, id });
-                                        window.setTimeout(() => setClickCheck((current) => current?.id === id ? null : current), 760);
-                                      }
-                                      handlePick(a.id);
-                                    }}
-                                    className={`practice-sort-card ${feedback?.wrongId === a.id ? "is-wrong" : ""}`}
-                                  >
-                                    <small>بطاقة {idx + 1}</small>
-                                    <strong>{renderSmartText(a.text, setActiveGlossary)}</strong>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="practice-card-options">
-                              {thinkingNode.answers.map((a: any, idx: number) => (
-                                <button
-                                  key={a.id}
-                                  type="button"
-                                  disabled={cardPhase !== "idle"}
-                                  onClick={(e) => {
-                                    if (isAnswerCorrect(a)) {
-                                      const id = Date.now();
-                                      setClickCheck({ x: e.clientX, y: e.clientY, id });
-                                      window.setTimeout(() => setClickCheck((current) => current?.id === id ? null : current), 760);
-                                    }
-                                    handlePick(a.id);
-                                  }}
-                                  className={`practice-choice-card ${feedback?.wrongId === a.id ? "is-wrong" : ""}`}
-                                >
-                                  <span className="challenge-option-icon" aria-hidden="true">{idx + 1}</span>
-                                  <strong>{renderSmartText(a.text, setActiveGlossary)}</strong>
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                                <span className="practice-fast-number" aria-hidden="true">{idx + 1}</span>
+                                <strong>{renderSmartText(a.text, setActiveGlossary)}</strong>
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       ) : (
                         <div className={`clean-answer-grid stage-one-draggable-grid`}>
