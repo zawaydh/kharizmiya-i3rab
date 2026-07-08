@@ -3719,6 +3719,8 @@ export default function ExercisePlayer({
   const [dropOver, setDropOver] = React.useState(false);
   const [droppedChoice, setDroppedChoice] = React.useState<{ text: string; tone: "idle" | "ok" | "bad" } | null>(null);
   const [stepReview, setStepReview] = React.useState<StepReviewState | null>(null);
+  const [practiceCorrectionMode, setPracticeCorrectionMode] = React.useState(false);
+  const [practiceRetryReady, setPracticeRetryReady] = React.useState(false);
   const workAreaRef = React.useRef<HTMLElement | null>(null);
   const activeCardRef = React.useRef<HTMLDivElement | null>(null);
   const feedbackAreaRef = React.useRef<HTMLDivElement | null>(null);
@@ -4022,6 +4024,8 @@ export default function ExercisePlayer({
     setDropOver(false);
     setDroppedChoice(null);
     setStepReview(null);
+    setPracticeCorrectionMode(false);
+    setPracticeRetryReady(false);
     setCardPhase("idle");
     setSuccessNudge(null);
     setFinalCtaReady(false);
@@ -4278,6 +4282,18 @@ export default function ExercisePlayer({
 
     if (correctAdvanceTimerRef.current) window.clearTimeout(correctAdvanceTimerRef.current);
     correctAdvanceTimerRef.current = window.setTimeout(() => {
+      if (mode === "practice" && practiceCorrectionMode && nextNode?.type === "result") {
+        setState(buildRunnerState(tree, mode, example));
+        setPracticeCorrectionMode(false);
+        setPracticeRetryReady(true);
+        setDialogBubble(null);
+        setDroppedChoice(null);
+        setFeedback(null);
+        setCardPhase("idle");
+        setSuccessNudge("الآن طبّق التصحيح بنفسك وأعطِ النتيجة النهائية.");
+        bringWorkAreaIntoView("center", 60);
+        return;
+      }
       setState(res.nextState);
       setDroppedChoice(null);
       setDialogBubble(null);
@@ -4358,9 +4374,29 @@ export default function ExercisePlayer({
   const i3rabDraft = buildI3rabDraft(tree, state, state.currentTarget);
   const i3rabTokens = i3rabTokensFromDraft(i3rabDraft);
   const isPracticeMode = mode === "practice";
-  const practiceStars = challengeStars(doneCount, totalCount);
-  const practiceGuide = challengeGuidanceText();
-  const currentPracticeShape = isPracticeMode ? practiceQuestionShape(thinkingNode, state) : "cards";
+  const practiceExpectedCoverage = isPracticeMode ? (getExampleCoverageKeys(example)[0] || "") : "";
+  const practiceExpectedLabel = isPracticeMode ? (findResultLabelByCoverage(tree, practiceExpectedCoverage) || practiceExpectedCoverage) : "";
+  const practiceDirectOptions = React.useMemo(() => {
+    if (!isPracticeMode || !practiceExpectedLabel) return [];
+    const labels = (Object.values(tree?.nodes || {}) as any[])
+      .filter((n: any) => n?.type === "result")
+      .map((n: any) => firstLine(n?.text))
+      .filter((x: string) => x && x !== practiceExpectedLabel);
+    const unique = Array.from(new Set(labels)) as string[];
+    let hash = String(example?.id || state?.currentTarget || "").split("").reduce((a, c) => ((a * 31 + c.charCodeAt(0)) >>> 0), 7);
+    const distractors: string[] = [];
+    while (unique.length && distractors.length < 2) {
+      const idx = hash % unique.length;
+      distractors.push(unique.splice(idx, 1)[0]);
+      hash = (hash * 1664525 + 1013904223) >>> 0;
+    }
+    const options = [practiceExpectedLabel, ...distractors];
+    return options.sort((a, b) => {
+      const ha = (a + String(example?.id || "")).split("").reduce((n, c) => n + c.charCodeAt(0), 0) % 17;
+      const hb = (b + String(example?.id || "")).split("").reduce((n, c) => n + c.charCodeAt(0), 0) % 17;
+      return ha - hb;
+    });
+  }, [isPracticeMode, practiceExpectedLabel, tree, example?.id, state?.currentTarget]);
 
   return (
     <div className={`exercise-page-shell ${isPracticeMode ? "practice-game-shell" : ""}`}>
@@ -4403,27 +4439,7 @@ export default function ExercisePlayer({
         </div>
       </section>
 
-      {isPracticeMode ? (
-        <section className="practice-challenge-hud" aria-label="لوحة تحدي المهارة">
-          <div className="practice-cup-card">
-            <span className="practice-cup-icon" aria-hidden="true">🏆</span>
-            <div>
-              <strong>كأس الإتقان</strong>
-              <p>{coveredPercent >= 100 ? "اكتمل التحدي؛ أنت جاهز لاختبار نفسك." : "اجمع النجوم حتى تصل إلى اختبار النفس والشهادة."}</p>
-            </div>
-          </div>
-          <div className="practice-stars-card" aria-label="نجوم التحدي">
-            <span>نجوم التحدي</span>
-            <div className="practice-stars-row" aria-hidden="true">
-              {practiceStars.map((filled, idx) => <i key={idx} className={filled ? "is-filled" : ""}>★</i>)}
-            </div>
-          </div>
-          <div className="practice-guide-card">
-            <strong>توجيهك الآن</strong>
-            <p>{practiceGuide}</p>
-          </div>
-        </section>
-      ) : null}
+
 
       <div className="kana-example-progress-wrap global-example-progress-wrap" aria-label="تقدم الأمثلة العام">
         <span className="kana-example-progress-label">{mode === "quiz" ? `${Math.min(quizCursor + 1, exampleProgressTotal)} / ${exampleProgressTotal}` : `${exampleProgressDone} / ${exampleProgressTotal} مهارة`}</span>
@@ -4586,49 +4602,57 @@ export default function ExercisePlayer({
                       <div className="exercise-question-title clean-question-title">{renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}</div>
                       {dialogueQuestionNote(thinkingNode) ? <div className="dialogue-question-note">{dialogueQuestionNote(thinkingNode)}</div> : null}
 
-                      {isPracticeMode ? (
-                        <div className="practice-build-board" aria-label="مسار البناء السريع">
-                          <div className="practice-build-map" aria-label="ما بنيته حتى الآن">
-                            <div className="practice-build-node is-target">
-                              <small>ابدأ من هنا</small>
-                              <strong>{state.currentTarget}</strong>
-                            </div>
-                            {stageTrailItems.slice(-5).map((item, idx) => (
-                              <React.Fragment key={`${item}-${idx}`}>
-                                <span className="practice-build-arrow" aria-hidden="true">↓</span>
-                                <div className="practice-build-node is-done">
-                                  <small>وصلت إلى</small>
-                                  <strong>{item}</strong>
-                                </div>
-                              </React.Fragment>
+                      {isPracticeMode && !practiceCorrectionMode ? (
+                        <div className="practice-direct-board" aria-label="تحدي الإعراب السريع">
+                          <div className="practice-direct-kicker">طبّق ما تعلّمته</div>
+                          <div className="practice-direct-prompt">ما الإعراب الصحيح لـ <strong>«{state.currentTarget}»</strong>؟</div>
+                          <div className="practice-direct-note">فكّر سريعًا، ثم اختر النتيجة النهائية.</div>
+                          {practiceRetryReady ? <div className="practice-retry-message">عدت إلى السؤال نفسه. طبّق الآن التسلسل الذي صححناه.</div> : null}
+                          <div className="practice-direct-options">
+                            {practiceDirectOptions.map((option, idx) => (
+                              <button key={`${option}-${idx}`} type="button" className="practice-direct-option" onClick={() => {
+                                if (option === practiceExpectedLabel) {
+                                  let nextState = buildRunnerState(tree, mode, example);
+                                  let guard = 0;
+                                  while (guard++ < 30) {
+                                    const n = tree?.nodes?.[nextState.currentNodeId];
+                                    if (!n || n.type === "result") break;
+                                    const correct = n.answers?.find((a: any) => {
+                                      if (a.eval) {
+                                        const v = nextState.facts?.[a.eval.fact];
+                                        if (Array.isArray(a.eval.anyOf)) return a.eval.anyOf.includes(v);
+                                        if (Object.prototype.hasOwnProperty.call(a.eval, "notEquals")) return v !== a.eval.notEquals;
+                                        return v === a.eval.equals;
+                                      }
+                                      return Boolean(a.correct);
+                                    });
+                                    if (!correct) break;
+                                    nextState = chooseAnswer({ state: nextState, tree, answerId: correct.id } as any).nextState;
+                                  }
+                                  setSuccessNudge(practiceRetryReady ? "أحسنت. صححت المسار ووصلت إلى النتيجة بنفسك." : "إجابة دقيقة. سرعتك في تطبيق الخوارزمية تتحسن.");
+                                  setCardPhase("success");
+                                  window.setTimeout(() => { setState(nextState); setPracticeRetryReady(false); setCardPhase("idle"); }, 650);
+                                } else {
+                                  setFeedback({ wrongId: String(idx) });
+                                  setPracticeCorrectionMode(true);
+                                  setPracticeRetryReady(true);
+                                  setDialogBubble({ tone: "hint", text: `هذه النتيجة لا تطابق (${state.currentTarget}). سنرجع إلى نقطة القرار الأولى ونضبط طريقة التفكير خطوة خطوة، ثم تعود إلى السؤال نفسه.` });
+                                }
+                              }}>
+                                <span>{idx + 1}</span><strong>{renderSmartText(option, setActiveGlossary)}</strong>
+                              </button>
                             ))}
-                            <span className="practice-build-arrow" aria-hidden="true">↓</span>
-                            <div className="practice-build-node is-current">
-                              <small>فكّر الآن</small>
-                              <strong>{practiceQuickDecisionText(thinkingNode, state)}</strong>
-                            </div>
                           </div>
-
+                          {cardPhase === "success" ? <div className="practice-success-pulse">✓ {successNudge}</div> : null}
+                        </div>
+                      ) : isPracticeMode ? (
+                        <div className="practice-correction-board">
+                          <div className="practice-correction-head"><strong>نضبط المسار</strong><span>سؤال قصير في كل نقطة انحراف</span></div>
+                          <div className="practice-correction-question">{renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}</div>
                           <div className="practice-fast-options">
                             {thinkingNode.answers.map((a: any, idx: number) => (
-                              <button
-                                key={a.id}
-                                type="button"
-                                disabled={cardPhase !== "idle"}
-                                onClick={(e) => {
-                                  if (isAnswerCorrect(a)) {
-                                    const id = Date.now();
-                                    setClickCheck({ x: e.clientX, y: e.clientY, id });
-                                    window.setTimeout(() => setClickCheck((current) => current?.id === id ? null : current), 760);
-                                  } else {
-                                    setDialogBubble({ tone: "hint", text: practiceWrongMicroHint(a, thinkingNode, state) });
-                                  }
-                                  handlePick(a.id);
-                                }}
-                                className={`practice-fast-option ${feedback?.wrongId === a.id ? "is-wrong" : ""}`}
-                              >
-                                <span className="practice-fast-number" aria-hidden="true">{idx + 1}</span>
-                                <strong>{renderSmartText(a.text, setActiveGlossary)}</strong>
+                              <button key={a.id} type="button" disabled={cardPhase !== "idle"} onClick={() => handlePick(a.id)} className={`practice-fast-option ${feedback?.wrongId === a.id ? "is-wrong" : ""}`}>
+                                <span className="practice-fast-number">{idx + 1}</span><strong>{renderSmartText(a.text, setActiveGlossary)}</strong>
                               </button>
                             ))}
                           </div>

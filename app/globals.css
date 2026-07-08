@@ -13300,3 +13300,15 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
 }
 .practice-game-shell .practice-challenge-card .inline-correction-hint-title,
 .practice-game-shell .practice-challenge-card .inline-correction-hint-text{color:#392d13 !important;}
+
+/* Practice: direct retrieval first, algorithmic correction only after an error */
+.practice-direct-board,.practice-correction-board{margin-top:18px;padding:22px;border:1px solid rgba(47,158,158,.28);border-radius:24px;background:#f7fbfb;color:#102b3a;box-shadow:0 16px 40px rgba(16,43,58,.08)}
+.practice-direct-kicker{display:inline-flex;padding:7px 12px;border-radius:999px;background:#e4f5f3;color:#126f6b;font-size:13px;font-weight:950}
+.practice-direct-prompt{margin-top:18px;font-size:clamp(22px,3vw,31px);font-weight:950;line-height:1.7;color:#102b3a}.practice-direct-prompt strong{color:#147d78}
+.practice-direct-note{margin-top:4px;color:#58727d;font-weight:800}.practice-retry-message{margin-top:14px;padding:12px 14px;border-radius:15px;background:#fff8df;border:1px solid #ead27b;color:#5b4911;font-weight:900;line-height:1.7}
+.practice-direct-options{display:grid;gap:12px;margin-top:20px}.practice-direct-option{width:100%;display:flex;align-items:center;gap:13px;text-align:right;padding:16px 18px;border-radius:18px;border:1px solid #c8dddd;background:#fff;color:#102b3a;cursor:pointer;transition:.18s ease;font:inherit}.practice-direct-option:hover{transform:translateY(-2px);border-color:#2f9e9e;box-shadow:0 10px 24px rgba(47,158,158,.12)}.practice-direct-option span{display:grid;place-items:center;min-width:32px;height:32px;border-radius:50%;background:#e8f6f5;color:#126f6b;font-weight:950}.practice-direct-option strong{font-size:16px;line-height:1.75;color:#102b3a}
+.practice-success-pulse{margin-top:16px;padding:14px 16px;border-radius:16px;background:#eaf8f1;border:1px solid #8bc8aa;color:#185c42;font-weight:950;animation:practicePulse .55s ease}
+.practice-correction-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid #d9e8e8}.practice-correction-head strong{color:#126f6b;font-size:18px}.practice-correction-head span{color:#647d86;font-weight:800;font-size:13px}.practice-correction-question{margin:18px 0 14px;color:#102b3a;font-size:21px;font-weight:950;line-height:1.8}
+@keyframes practicePulse{0%{transform:scale(.97);opacity:.25}100%{transform:scale(1);opacity:1}}
+.practice-game-shell .final-achievement-mark{font-size:0}.practice-game-shell .final-achievement-mark::after{content:'✓';font-size:34px}
+@media(max-width:700px){.practice-direct-board,.practice-correction-board{padding:16px;border-radius:20px}.practice-correction-head{align-items:flex-start;flex-direction:column}.practice-direct-option{padding:14px}.practice-direct-option strong{font-size:15px}}
