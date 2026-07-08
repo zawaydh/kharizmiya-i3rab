@@ -4612,7 +4612,7 @@ export default function ExercisePlayer({
                             {practiceDirectOptions.map((option, idx) => (
                               <button key={`${option}-${idx}`} type="button" className="practice-direct-option" onClick={() => {
                                 if (option === practiceExpectedLabel) {
-                                  let nextState = buildRunnerState(tree, mode, example);
+                                  let nextState: any = buildRunnerState(tree, mode, example);
                                   let guard = 0;
                                   while (guard++ < 30) {
                                     const n = tree?.nodes?.[nextState.currentNodeId];
