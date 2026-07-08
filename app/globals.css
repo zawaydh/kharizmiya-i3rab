@@ -13312,3 +13312,30 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
 @keyframes practicePulse{0%{transform:scale(.97);opacity:.25}100%{transform:scale(1);opacity:1}}
 .practice-game-shell .final-achievement-mark{font-size:0}.practice-game-shell .final-achievement-mark::after{content:'✓';font-size:34px}
 @media(max-width:700px){.practice-direct-board,.practice-correction-board{padding:16px;border-radius:20px}.practice-correction-head{align-items:flex-start;flex-direction:column}.practice-direct-option{padding:14px}.practice-direct-option strong{font-size:15px}}
+
+.practice-wrong-sequence{
+  margin-top:18px;
+  padding:18px 20px;
+  border-radius:20px;
+  background:#fff8ea;
+  border:1px solid #ead59a;
+  color:#102b3a;
+  box-shadow:0 12px 28px rgba(91,73,17,.08);
+}
+.practice-wrong-title{font-size:18px;font-weight:950;color:#7a3f10;line-height:1.8}
+.practice-wrong-subtitle{font-weight:900;color:#415866;margin-bottom:8px}
+.practice-wrong-sequence ol{margin:8px 0 0;padding:0 22px 0 0;display:grid;gap:7px}
+.practice-wrong-sequence li{font-weight:850;line-height:1.85;color:#102b3a}
+.practice-wrong-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.practice-wrong-actions button{
+  border:0;
+  border-radius:999px;
+  padding:11px 18px;
+  background:#0f7775;
+  color:#fff;
+  font-weight:950;
+  cursor:pointer;
+  font:inherit;
+}
+.practice-wrong-actions button.secondary{background:#ffffff;color:#0f7775;border:1px solid #9fd0cd}
+.practice-wrong-actions button:hover{filter:brightness(.98);transform:translateY(-1px)}

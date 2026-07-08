@@ -3721,12 +3721,17 @@ export default function ExercisePlayer({
   const [stepReview, setStepReview] = React.useState<StepReviewState | null>(null);
   const [practiceCorrectionMode, setPracticeCorrectionMode] = React.useState(false);
   const [practiceRetryReady, setPracticeRetryReady] = React.useState(false);
+  const [practiceWrongPanel, setPracticeWrongPanel] = React.useState<{ wrongLabel: string; steps: string[]; nextState: any } | null>(null);
   const workAreaRef = React.useRef<HTMLElement | null>(null);
   const activeCardRef = React.useRef<HTMLDivElement | null>(null);
   const feedbackAreaRef = React.useRef<HTMLDivElement | null>(null);
   const correctAdvanceTimerRef = React.useRef<number | null>(null);
   const recentExampleIdsRef = React.useRef<string[]>([]);
   const usedExampleIdsRef = React.useRef<string[]>([]);
+
+  React.useEffect(() => {
+    setPracticeWrongPanel(null);
+  }, [exampleIndex, state?.currentTarget]);
 
   React.useEffect(() => {
     return () => {
@@ -4398,6 +4403,53 @@ export default function ExercisePlayer({
     });
   }, [isPracticeMode, practiceExpectedLabel, tree, example?.id, state?.currentTarget]);
 
+  function practiceCorrectRoute() {
+    let nextState: any = buildRunnerState(tree, mode, example);
+    const steps: string[] = [];
+    let guard = 0;
+    while (guard++ < 30) {
+      const n = tree?.nodes?.[nextState.currentNodeId];
+      if (!n || n.type === "result") break;
+      const correct = n.answers?.find((a: any) => {
+        if (a.eval) {
+          const v = nextState.facts?.[a.eval.fact];
+          if (Array.isArray(a.eval.anyOf)) return a.eval.anyOf.includes(v);
+          if (Object.prototype.hasOwnProperty.call(a.eval, "notEquals")) return v !== a.eval.notEquals;
+          return v === a.eval.equals;
+        }
+        return Boolean(a.correct);
+      });
+      if (!correct) break;
+      const answerText = String(correct.text || "").trim();
+      const nodeId = String(n.id || "");
+      let step = answerText;
+      if (steps.length === 0) step = `الكلمة ${answerText}.`;
+      else if (answerText.includes("واو الجماعة")) step = "آخره اتصل بواو الجماعة.";
+      else if (answerText.includes("ألف الاثنين")) step = "آخره اتصل بألف الاثنين.";
+      else if (answerText.includes("ياء المخاطبة")) step = "آخره اتصل بياء المخاطبة.";
+      else if (answerText.includes("نون التوكيد")) step = "آخره اتصل بنون التوكيد.";
+      else if (answerText.includes("نون النسوة")) step = "آخره اتصل بنون النسوة.";
+      else if (answerText.includes("حذف النون")) step = `إذن: ${practiceExpectedLabel}.`;
+      else if (nodeId.includes("five") || answerText.includes("الأفعال الخمسة")) step = `مضارعه من الأفعال الخمسة: ${answerText}.`;
+      else step = `${answerText}.`;
+      if (!steps.includes(step)) steps.push(step);
+      nextState = chooseAnswer({ state: nextState, tree, answerId: correct.id } as any).nextState;
+    }
+    if (practiceExpectedLabel && !steps.some((x) => x.includes(practiceExpectedLabel))) steps.push(`إذن: ${practiceExpectedLabel}.`);
+    return { steps, nextState };
+  }
+
+  function goToPracticeNext(nextState: any) {
+    setPracticeWrongPanel(null);
+    setPracticeCorrectionMode(false);
+    setPracticeRetryReady(false);
+    setDialogBubble(null);
+    setFeedback(null);
+    setSuccessNudge("واصل. في التدريب نثبت السرعة والدقة معًا.");
+    setCardPhase("success");
+    window.setTimeout(() => { setState(nextState); setCardPhase("idle"); }, 520);
+  }
+
   return (
     <div className={`exercise-page-shell ${isPracticeMode ? "practice-game-shell" : ""}`}>
       {clickCheck ? <span key={clickCheck.id} className="click-success-pop" style={{ left: clickCheck.x, top: clickCheck.y }} aria-hidden="true">✓</span> : null}
@@ -4612,37 +4664,37 @@ export default function ExercisePlayer({
                             {practiceDirectOptions.map((option, idx) => (
                               <button key={`${option}-${idx}`} type="button" className="practice-direct-option" onClick={() => {
                                 if (option === practiceExpectedLabel) {
-                                  let nextState: any = buildRunnerState(tree, mode, example);
-                                  let guard = 0;
-                                  while (guard++ < 30) {
-                                    const n = tree?.nodes?.[nextState.currentNodeId];
-                                    if (!n || n.type === "result") break;
-                                    const correct = n.answers?.find((a: any) => {
-                                      if (a.eval) {
-                                        const v = nextState.facts?.[a.eval.fact];
-                                        if (Array.isArray(a.eval.anyOf)) return a.eval.anyOf.includes(v);
-                                        if (Object.prototype.hasOwnProperty.call(a.eval, "notEquals")) return v !== a.eval.notEquals;
-                                        return v === a.eval.equals;
-                                      }
-                                      return Boolean(a.correct);
-                                    });
-                                    if (!correct) break;
-                                    nextState = chooseAnswer({ state: nextState, tree, answerId: correct.id } as any).nextState;
-                                  }
-                                  setSuccessNudge(practiceRetryReady ? "أحسنت. صححت المسار ووصلت إلى النتيجة بنفسك." : "إجابة دقيقة. سرعتك في تطبيق الخوارزمية تتحسن.");
+                                  const route = practiceCorrectRoute();
+                                  setSuccessNudge(practiceRetryReady ? "أحسنت. صححت المسار ووصلت إلى النتيجة بنفسك." : "إجابة دقيقة. طبّقت الخوارزمية بسرعة ووضوح.");
+                                  setPracticeWrongPanel(null);
                                   setCardPhase("success");
-                                  window.setTimeout(() => { setState(nextState); setPracticeRetryReady(false); setCardPhase("idle"); }, 650);
+                                  window.setTimeout(() => { setState(route.nextState); setPracticeRetryReady(false); setCardPhase("idle"); }, 650);
                                 } else {
+                                  const route = practiceCorrectRoute();
                                   setFeedback({ wrongId: String(idx) });
-                                  setPracticeCorrectionMode(true);
+                                  setPracticeWrongPanel({ wrongLabel: option, steps: route.steps, nextState: route.nextState });
+                                  setPracticeCorrectionMode(false);
                                   setPracticeRetryReady(true);
-                                  setDialogBubble({ tone: "hint", text: `هذه النتيجة لا تطابق (${state.currentTarget}). سنرجع إلى نقطة القرار الأولى ونضبط طريقة التفكير خطوة خطوة، ثم تعود إلى السؤال نفسه.` });
+                                  setDialogBubble(null);
                                 }
                               }}>
                                 <span>{idx + 1}</span><strong>{renderSmartText(option, setActiveGlossary)}</strong>
                               </button>
                             ))}
                           </div>
+                          {practiceWrongPanel ? (
+                            <div className="practice-wrong-sequence" role="alert" aria-live="polite">
+                              <div className="practice-wrong-title">ليست الإجابة دقيقة.</div>
+                              <div className="practice-wrong-subtitle">اتبع التسلسل الصحيح:</div>
+                              <ol>
+                                {practiceWrongPanel.steps.map((step, i) => <li key={`${step}-${i}`}>{renderSmartText(step, setActiveGlossary)}</li>)}
+                              </ol>
+                              <div className="practice-wrong-actions">
+                                <button type="button" onClick={() => { setPracticeWrongPanel(null); setFeedback(null); setPracticeRetryReady(true); }}>أعد المحاولة</button>
+                                <button type="button" className="secondary" onClick={() => goToPracticeNext(practiceWrongPanel.nextState)}>انتقل للسؤال التالي</button>
+                              </div>
+                            </div>
+                          ) : null}
                           {cardPhase === "success" ? <div className="practice-success-pulse">✓ {successNudge}</div> : null}
                         </div>
                       ) : isPracticeMode ? (
