@@ -4099,10 +4099,10 @@ export default function ExercisePlayer({
 
   function challengeGuidanceText() {
     if (mode !== "practice") return "";
-    if (dialogBubble?.tone === "hint") return "اقرأ التوجيه، ثم عد للسؤال واختر الإجابة الصحيحة.";
-    if (cardPhase !== "idle" && droppedChoice?.tone === "ok") return "أحسنت؛ تقدّمك محفوظ، وننتقل للجولة التالية.";
-    if (node?.type === "result") return "اقرأ الإعراب النهائي؛ فهو سبب الفوز بهذه الجولة.";
-    return `ركّز في (${state?.currentTarget || "الكلمة"})، واختر الإجابة التي تُكمل بناء الإعراب.`;
+    if (dialogBubble?.tone === "hint") return "اقرأ التلميح ثم عد للسؤال نفسه؛ لا ننتقل قبل فهم سبب الخطأ.";
+    if (cardPhase !== "idle" && droppedChoice?.tone === "ok") return "إجابة صحيحة؛ نثبتها سريعًا ثم نتابع.";
+    if (node?.type === "result") return "هنا تظهر خلاصة الإعراب بعد انتهاء السؤال.";
+    return `اقرأ الجملة، ثم ركّز في (${state?.currentTarget || "الكلمة"}) واختر العلاقة أو العلامة المطلوبة فقط.`;
   }
 
   function challengeStars(done: number, total: number) {
@@ -4137,7 +4137,7 @@ export default function ExercisePlayer({
 
   function continueLabelForStepReview(isFinal: boolean) {
     if (isFinal) return "فهمت السبب، اعرض النتيجة النهائية";
-    if (mode === "practice") return "رائع، أكمل التحدي";
+    if (mode === "practice") return "أكمل التدريب";
     return "فهمت السبب، أكمل";
   }
 
@@ -4344,20 +4344,20 @@ export default function ExercisePlayer({
       {isPracticeMode ? (
         <section className="practice-challenge-hud" aria-label="لوحة تحدي المهارة">
           <div className="practice-cup-card">
-            <span className="practice-cup-icon" aria-hidden="true">🏆</span>
+            <span className="practice-cup-icon" aria-hidden="true">✓</span>
             <div>
-              <strong>كأس الإتقان</strong>
-              <p>{coveredPercent >= 100 ? "اكتمل التحدي؛ أنت جاهز لاختبار نفسك." : "اجمع النجوم حتى تصل إلى اختبار النفس والشهادة."}</p>
+              <strong>تدرّب بهدوء</strong>
+              <p>{coveredPercent >= 100 ? "اكتملت مرحلة التدريب؛ أنت جاهز لاختبار نفسك." : "أجب عن الأسئلة القصيرة حتى تكتمل المهارة."}</p>
             </div>
           </div>
-          <div className="practice-stars-card" aria-label="نجوم التحدي">
-            <span>نجوم التحدي</span>
+          <div className="practice-stars-card" aria-label="تقدم التدريب">
+            <span>تقدّم التدريب</span>
             <div className="practice-stars-row" aria-hidden="true">
               {practiceStars.map((filled, idx) => <i key={idx} className={filled ? "is-filled" : ""}>★</i>)}
             </div>
           </div>
           <div className="practice-guide-card">
-            <strong>توجيهك الآن</strong>
+            <strong>طريقة السؤال</strong>
             <p>{practiceGuide}</p>
           </div>
         </section>
@@ -4522,10 +4522,10 @@ export default function ExercisePlayer({
                   ) : (
                     <>
                       {isPracticeMode ? (
-                        <div className="practice-mission-strip" aria-label="مهمة التحدي">
-                          <span>🎯 مهمة التحدي</span>
-                          <strong>اختر ما يناسب ({state.currentTarget})</strong>
-                          <small>كل اختيار صحيح يضيف نجمة، وكل خطأ يعطيك توجيهًا يساعدك.</small>
+                        <div className="practice-question-brief" aria-label="صيغة السؤال التدريبي">
+                          <span className="practice-question-kicker">سؤال تدريبي</span>
+                          <strong>ما الاختيار المناسب لـ ({state.currentTarget})؟</strong>
+                          <small>اختر إجابة واحدة. عند الخطأ يظهر تلميح قصير، وعند الصحة نتابع دون إطالة.</small>
                         </div>
                       ) : null}
                       <div className="exercise-question-title clean-question-title">{renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}</div>
@@ -4739,7 +4739,7 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
                     style={{ ...primaryNavBtn, opacity: canMoveAfterResult ? 1 : 0.55, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
                     disabled={!canMoveAfterResult}
                   >
-{finalCtaReady ? (resultWouldCompleteStage ? "فهمت، انتقل للمرحلة التالية" : (mode === "practice" ? "أكمل التحدي" : "فهمت الإعراب، انتقل للتالي")) : "اقرأ الإعراب النهائي أولًا"}
+{finalCtaReady ? (resultWouldCompleteStage ? "فهمت، انتقل للمرحلة التالية" : (mode === "practice" ? "أكمل التدريب" : "فهمت الإعراب، انتقل للتالي")) : "اقرأ الإعراب النهائي أولًا"}
                   </button>
                 ) : null}
                 {/* لا نعرض نقاطًا سفلية في شاشة النتيجة؛ التركيز على الإعراب النهائي وزر فهمت. */}

@@ -13006,3 +13006,81 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
   .challenge-answer-btn{gap:9px!important;}
   .challenge-option-icon{width:30px;height:30px;flex-basis:30px;border-radius:11px;}
 }
+
+/* Train stage question-only presentation update: calmer practice question shape */
+.practice-game-shell .exercise-hero-card{
+  background:linear-gradient(145deg, rgba(7,21,35,.96), rgba(9,38,44,.84)) !important;
+  border-color:rgba(47,158,158,.24) !important;
+}
+.practice-cup-icon{
+  width:38px;
+  height:38px;
+  border-radius:14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(47,158,158,.16);
+  color:#dffdfa;
+  font-size:22px;
+  filter:none;
+}
+.practice-challenge-card{
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.025)) !important;
+  border-color:rgba(47,158,158,.22) !important;
+}
+.practice-challenge-card::before{
+  content:"تدرّب";
+  background:rgba(47,158,158,.12);
+  border-color:rgba(47,158,158,.22);
+  color:#dffdfa;
+}
+.practice-question-brief{
+  display:grid;
+  gap:6px;
+  margin:8px auto 14px;
+  padding:14px 16px;
+  border-radius:18px;
+  text-align:right;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(47,158,158,.20);
+  max-width:720px;
+}
+.practice-question-kicker{
+  width:max-content;
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(47,158,158,.12);
+  border:1px solid rgba(47,158,158,.20);
+  color:#dffdfa;
+  font-weight:950;
+  font-size:12px;
+}
+.practice-question-brief strong{
+  font-size:18px;
+  color:#f8fbff;
+  line-height:1.7;
+}
+.practice-question-brief small{
+  font-size:13px;
+  color:#d9f3f2;
+  line-height:1.7;
+}
+.challenge-answer-btn{
+  border-color:rgba(47,158,158,.18)!important;
+  background:rgba(255,255,255,.045)!important;
+  box-shadow:none!important;
+}
+.challenge-answer-btn:hover{
+  border-color:rgba(47,158,158,.48)!important;
+  background:rgba(47,158,158,.10)!important;
+}
+.challenge-option-icon{
+  background:rgba(47,158,158,.14);
+  border:1px solid rgba(47,158,158,.24);
+  color:#dffdfa;
+  box-shadow:none;
+}
+.practice-stars-row i.is-filled{
+  color:#2f9e9e;
+  text-shadow:0 0 14px rgba(47,158,158,.35);
+}
