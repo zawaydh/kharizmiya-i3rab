@@ -4404,9 +4404,56 @@ export default function ExercisePlayer({
     });
   }, [isPracticeMode, practiceExpectedLabel, tree, example?.id, state?.currentTarget]);
 
-  function practiceCorrectRoute() {
-    let nextState: any = buildRunnerState(tree, mode, example);
+  function buildPracticeSequenceSteps() {
+    const facts = example?.facts || state?.facts || {};
+    const target = String(state?.currentTarget || example?.target || "الكلمة");
+    const expected = String(practiceExpectedLabel || "").trim();
     const steps: string[] = [];
+    const push = (text?: string | null) => {
+      const value = String(text || "").trim();
+      if (value && !steps.includes(value)) steps.push(value);
+    };
+
+    if (facts.wordKind === "verb" && facts.commandMeaning === "command") {
+      push("الكلمة فعل: حدث مقترن بزمن.");
+      push("وهي فعل أمر؛ لأنها طلب حصول الحدث.");
+
+      if (facts.attached === "none") {
+        push("لم يتصل بآخره شيء يؤثر في بنائه؛ لذلك نستثني البناء على حذف النون والبناء على الفتح.");
+        if (facts.ending === "weak") {
+          push("الكلمة معتلّة الآخر.");
+          const weakMap: Record<string, string> = { alif: "الألف", waw: "الواو", ya: "الياء" };
+          const weak = weakMap[String(facts.weakLetter || "")] || "حرف العلة";
+          push(`حرف العلة المحذوف: ${weak}.`);
+          if (facts.presentBase) push(`ملاحظة: لاكتشاف الحرف الأخير نُسند الفعل إلى الضمير «هو»: هو ${facts.presentBase}.`);
+          push(expected ? `إذن: ${expected}.` : "إذن: فعل أمر مبني على حذف حرف العلة.");
+        } else {
+          push("آخره صحيح، وليس معتلّ الآخر.");
+          push(expected ? `إذن: ${expected}.` : "إذن: فعل أمر مبني على السكون.");
+        }
+      } else {
+        const attachedMap: Record<string, string> = {
+          waw: "واو الجماعة",
+          alif2: "ألف الاثنين",
+          yaa: "ياء المخاطبة",
+          niswa: "نون النسوة",
+          tawkid: "نون التوكيد",
+        };
+        const attached = attachedMap[String(facts.attached || "")] || "ضمير أو نون";
+        push(`آخره اتصل بـ${attached}.`);
+        if (["waw", "alif2", "yaa"].includes(String(facts.attached))) {
+          push("هذا الاتصال من مواضع بناء فعل الأمر على حذف النون.");
+        } else if (facts.attached === "niswa") {
+          push("نون النسوة لا تجعل فعل الأمر مبنيًا على حذف النون، بل يبنى معها على السكون.");
+        } else if (facts.attached === "tawkid") {
+          push("اتصاله بنون التوكيد يجعله مبنيًا على الفتح.");
+        }
+        push(expected ? `إذن: ${expected}.` : null);
+      }
+      return steps;
+    }
+
+    let nextState: any = buildRunnerState(tree, mode, example);
     let guard = 0;
     while (guard++ < 30) {
       const n = tree?.nodes?.[nextState.currentNodeId];
@@ -4422,22 +4469,33 @@ export default function ExercisePlayer({
       });
       if (!correct) break;
       const answerText = String(correct.text || "").trim();
-      const nodeId = String(n.id || "");
-      let step = answerText;
-      if (steps.length === 0) step = `الكلمة ${answerText}.`;
-      else if (answerText.includes("واو الجماعة")) step = "آخره اتصل بواو الجماعة.";
-      else if (answerText.includes("ألف الاثنين")) step = "آخره اتصل بألف الاثنين.";
-      else if (answerText.includes("ياء المخاطبة")) step = "آخره اتصل بياء المخاطبة.";
-      else if (answerText.includes("نون التوكيد")) step = "آخره اتصل بنون التوكيد.";
-      else if (answerText.includes("نون النسوة")) step = "آخره اتصل بنون النسوة.";
-      else if (answerText.includes("حذف النون")) step = `إذن: ${practiceExpectedLabel}.`;
-      else if (nodeId.includes("five") || answerText.includes("الأفعال الخمسة")) step = `مضارعه من الأفعال الخمسة: ${answerText}.`;
-      else step = `${answerText}.`;
-      if (!steps.includes(step)) steps.push(step);
+      if (steps.length === 0) push(`ابدأ من «${target}»: ${answerText}.`);
+      else push(`${answerText}.`);
       nextState = chooseAnswer({ state: nextState, tree, answerId: correct.id } as any).nextState;
     }
-    if (practiceExpectedLabel && !steps.some((x) => x.includes(practiceExpectedLabel))) steps.push(`إذن: ${practiceExpectedLabel}.`);
-    return { steps, nextState };
+    if (expected && !steps.some((x) => x.includes(expected))) push(`إذن: ${expected}.`);
+    return steps;
+  }
+
+  function practiceCorrectRoute() {
+    let nextState: any = buildRunnerState(tree, mode, example);
+    let guard = 0;
+    while (guard++ < 30) {
+      const n = tree?.nodes?.[nextState.currentNodeId];
+      if (!n || n.type === "result") break;
+      const correct = n.answers?.find((a: any) => {
+        if (a.eval) {
+          const v = nextState.facts?.[a.eval.fact];
+          if (Array.isArray(a.eval.anyOf)) return a.eval.anyOf.includes(v);
+          if (Object.prototype.hasOwnProperty.call(a.eval, "notEquals")) return v !== a.eval.notEquals;
+          return v === a.eval.equals;
+        }
+        return Boolean(a.correct);
+      });
+      if (!correct) break;
+      nextState = chooseAnswer({ state: nextState, tree, answerId: correct.id } as any).nextState;
+    }
+    return { steps: buildPracticeSequenceSteps(), nextState };
   }
 
   function goToPracticeNext(nextState: any) {
@@ -4657,45 +4715,49 @@ export default function ExercisePlayer({
 
                       {isPracticeMode && !practiceCorrectionMode ? (
                         <div className="practice-direct-board" aria-label="تحدي الإعراب السريع">
-                          <div className="practice-direct-kicker">طبّق ما تعلّمته</div>
-                          <div className="practice-direct-prompt">ما الإعراب الصحيح لـ <strong>«{state.currentTarget}»</strong>؟</div>
-                          <div className="practice-direct-note">فكّر سريعًا، ثم اختر النتيجة النهائية.</div>
-                          {practiceRetryReady ? <div className="practice-retry-message">عدت إلى السؤال نفسه. طبّق الآن التسلسل الذي صححناه.</div> : null}
-                          <div className="practice-direct-options">
-                            {practiceDirectOptions.map((option, idx) => (
-                              <button key={`${option}-${idx}`} type="button" className="practice-direct-option" onClick={() => {
-                                if (option === practiceExpectedLabel) {
-                                  const route = practiceCorrectRoute();
-                                  setSuccessNudge(practiceRetryReady ? "أحسنت. صححت المسار ووصلت إلى النتيجة بنفسك." : "إجابة دقيقة. طبّقت الخوارزمية بسرعة ووضوح.");
-                                  setPracticeWrongPanel(null);
-                                  setCardPhase("success");
-                                  window.setTimeout(() => { setState(route.nextState); setPracticeRetryReady(false); setCardPhase("idle"); }, 650);
-                                } else {
-                                  const route = practiceCorrectRoute();
-                                  setFeedback({ wrongId: String(idx) });
-                                  setPracticeWrongPanel({ wrongLabel: option, steps: route.steps, nextState: route.nextState });
-                                  setPracticeCorrectionMode(false);
-                                  setPracticeRetryReady(true);
-                                  setDialogBubble(null);
-                                }
-                              }}>
-                                <span>{idx + 1}</span><strong>{renderSmartText(option, setActiveGlossary)}</strong>
-                              </button>
-                            ))}
-                          </div>
                           {practiceWrongPanel ? (
-                            <div className="practice-wrong-sequence" role="alert" aria-live="polite">
+                            <div className="practice-wrong-sequence is-primary-panel" role="alert" aria-live="assertive">
                               <div className="practice-wrong-title">ليست الإجابة دقيقة.</div>
                               <div className="practice-wrong-subtitle">اتبع التسلسل الصحيح:</div>
                               <ol>
                                 {practiceWrongPanel.steps.map((step, i) => <li key={`${step}-${i}`}>{renderSmartText(step, setActiveGlossary)}</li>)}
                               </ol>
                               <div className="practice-wrong-actions">
-                                <button type="button" onClick={() => { setPracticeWrongPanel(null); setFeedback(null); setPracticeRetryReady(true); }}>أعد المحاولة</button>
+                                <button type="button" onClick={() => { setPracticeWrongPanel(null); setFeedback(null); setPracticeRetryReady(true); bringWorkAreaIntoView("center", 40); }}>أعد المحاولة</button>
                                 <button type="button" className="secondary" onClick={() => goToPracticeNext(practiceWrongPanel.nextState)}>انتقل للسؤال التالي</button>
                               </div>
                             </div>
-                          ) : null}
+                          ) : (
+                            <>
+                              <div className="practice-direct-kicker">طبّق ما تعلّمته</div>
+                              <div className="practice-direct-prompt">ما الإعراب الصحيح لـ <strong>«{state.currentTarget}»</strong>؟</div>
+                              <div className="practice-direct-note">فكّر سريعًا، ثم اختر النتيجة النهائية.</div>
+                              {practiceRetryReady ? <div className="practice-retry-message">عدت إلى السؤال نفسه. طبّق الآن التسلسل الذي صححناه.</div> : null}
+                              <div className="practice-direct-options">
+                                {practiceDirectOptions.map((option, idx) => (
+                                  <button key={`${option}-${idx}`} type="button" className="practice-direct-option" onClick={() => {
+                                    if (option === practiceExpectedLabel) {
+                                      const route = practiceCorrectRoute();
+                                      setSuccessNudge(practiceRetryReady ? "أحسنت. صححت المسار ووصلت إلى النتيجة بنفسك." : "إجابة دقيقة. طبّقت الخوارزمية بسرعة ووضوح.");
+                                      setPracticeWrongPanel(null);
+                                      setCardPhase("success");
+                                      window.setTimeout(() => { setState(route.nextState); setPracticeRetryReady(false); setCardPhase("idle"); }, 650);
+                                    } else {
+                                      const route = practiceCorrectRoute();
+                                      setFeedback({ wrongId: String(idx) });
+                                      setPracticeWrongPanel({ wrongLabel: option, steps: route.steps, nextState: route.nextState });
+                                      setPracticeCorrectionMode(false);
+                                      setPracticeRetryReady(false);
+                                      setDialogBubble(null);
+                                      bringWorkAreaIntoView("center", 40);
+                                    }
+                                  }}>
+                                    <span>{idx + 1}</span><strong>{renderSmartText(option, setActiveGlossary)}</strong>
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
                           {cardPhase === "success" ? <div className="practice-success-pulse">✓ {successNudge}</div> : null}
                         </div>
                       ) : isPracticeMode ? (

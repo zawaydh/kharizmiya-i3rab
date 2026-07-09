@@ -13339,3 +13339,42 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
 }
 .practice-wrong-actions button.secondary{background:#ffffff;color:#0f7775;border:1px solid #9fd0cd}
 .practice-wrong-actions button:hover{filter:brightness(.98);transform:translateY(-1px)}
+
+/* Practice direct feedback: replace the question with a clear correction panel. */
+.practice-wrong-sequence.is-primary-panel{
+  margin: 8px 0 0 !important;
+  background: linear-gradient(135deg,#fff8e8,#f1fbf8) !important;
+  border: 1px solid rgba(224,184,76,.58) !important;
+  border-radius: 24px !important;
+  padding: 18px 18px 16px !important;
+  box-shadow: 0 18px 42px rgba(15,23,42,.10) !important;
+}
+.practice-wrong-sequence.is-primary-panel .practice-wrong-title{
+  color:#7a3f10 !important;
+  font-size:20px !important;
+}
+.practice-wrong-sequence.is-primary-panel .practice-wrong-subtitle,
+.practice-wrong-sequence.is-primary-panel li{
+  color:#102b3a !important;
+}
+.practice-wrong-sequence.is-primary-panel ol{
+  gap:9px !important;
+}
+
+/* Stop the distracting vertical shake in Learn: keep the card fixed and animate only content lightly. */
+.exercise-page-shell:not(.practice-game-shell) .sequential-active-card.phase-success,
+.exercise-page-shell:not(.practice-game-shell) .sequential-active-card.phase-leaving,
+.exercise-page-shell:not(.practice-game-shell) .sequential-active-card.phase-entering,
+.exercise-page-shell:not(.practice-game-shell) .algorithm-active-card.phase-success,
+.exercise-page-shell:not(.practice-game-shell) .algorithm-active-card.phase-leaving,
+.exercise-page-shell:not(.practice-game-shell) .algorithm-active-card.phase-entering{
+  animation: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+.exercise-page-shell:not(.practice-game-shell) .question-content-motion.question-text-leaving,
+.exercise-page-shell:not(.practice-game-shell) .question-content-motion.question-text-entering{
+  animation: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+}
