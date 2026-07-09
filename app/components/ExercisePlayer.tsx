@@ -253,6 +253,10 @@ function firstLine(text?: string) {
   return String(text || "").split("\n")[0].trim();
 }
 
+function exampleFinalLabel(example: any) {
+  return firstLine(example?.facts?.finalI3rab || example?.correctI3rab || "");
+}
+
 function shortStudentText(text?: string, fallback = "جرّب مرة أخرى.") {
   const clean = firstLine(text).replace(/^💡\s*/, "").trim();
   if (!clean) return fallback;
@@ -4322,7 +4326,7 @@ export default function ExercisePlayer({
     }
     const quizExample = example as QuizExampleLike;
     const expectedCoverage = getExampleCoverageKeys(quizExample)[0] || "";
-    const expectedLabel = quizExample?.correctI3rab || findResultLabelByCoverage(tree, expectedCoverage) || expectedCoverage;
+    const expectedLabel = exampleFinalLabel(quizExample) || findResultLabelByCoverage(tree, expectedCoverage) || expectedCoverage;
     const actualLabel = selectedQuizOption;
     const row: QuizAnswerRow = {
       exampleId: quizExample?.id || String(quizCursor),
@@ -4381,14 +4385,23 @@ export default function ExercisePlayer({
   const i3rabTokens = i3rabTokensFromDraft(i3rabDraft);
   const isPracticeMode = mode === "practice";
   const practiceExpectedCoverage = isPracticeMode ? (getExampleCoverageKeys(example)[0] || "") : "";
-  const practiceExpectedLabel = isPracticeMode ? (findResultLabelByCoverage(tree, practiceExpectedCoverage) || practiceExpectedCoverage) : "";
+  const practiceExpectedLabel = isPracticeMode
+    ? (exampleFinalLabel(example) || findResultLabelByCoverage(tree, practiceExpectedCoverage) || practiceExpectedCoverage)
+    : "";
   const practiceDirectOptions = React.useMemo(() => {
     if (!isPracticeMode || !practiceExpectedLabel) return [];
-    const labels = (Object.values(tree?.nodes || {}) as any[])
+
+    const exampleLabels = (examples || [])
+      .filter((ex: any) => ex?.id !== example?.id)
+      .map((ex: any) => exampleFinalLabel(ex))
+      .filter((x: string) => x && x !== practiceExpectedLabel);
+
+    const resultLabels = (Object.values(tree?.nodes || {}) as any[])
       .filter((n: any) => n?.type === "result")
       .map((n: any) => firstLine(n?.text))
-      .filter((x: string) => x && x !== practiceExpectedLabel);
-    const unique = Array.from(new Set(labels)) as string[];
+      .filter((x: string) => x && x !== practiceExpectedLabel && !String(x).startsWith("tawabi."));
+
+    const unique = Array.from(new Set([...exampleLabels, ...resultLabels])) as string[];
     let hash = String(example?.id || state?.currentTarget || "").split("").reduce((a, c) => ((a * 31 + c.charCodeAt(0)) >>> 0), 7);
     const distractors: string[] = [];
     while (unique.length && distractors.length < 2) {
@@ -4402,7 +4415,7 @@ export default function ExercisePlayer({
       const hb = (b + String(example?.id || "")).split("").reduce((n, c) => n + c.charCodeAt(0), 0) % 17;
       return ha - hb;
     });
-  }, [isPracticeMode, practiceExpectedLabel, tree, example?.id, state?.currentTarget]);
+  }, [isPracticeMode, practiceExpectedLabel, examples, tree, example?.id, state?.currentTarget]);
 
   function buildPracticeSequenceSteps() {
     const facts = example?.facts || state?.facts || {};
@@ -4724,7 +4737,7 @@ export default function ExercisePlayer({
                               </ol>
                               <div className="practice-wrong-actions">
                                 <button type="button" onClick={() => { setPracticeWrongPanel(null); setFeedback(null); setPracticeRetryReady(true); bringWorkAreaIntoView("center", 40); }}>أعد المحاولة</button>
-                                <button type="button" className="secondary" onClick={() => goToPracticeNext(practiceWrongPanel.nextState)}>انتقل للسؤال التالي</button>
+                                <button type="button" className="secondary" onClick={() => goToPracticeNext(practiceWrongPanel.nextState)}>أكمل بعد التصحيح</button>
                               </div>
                             </div>
                           ) : (

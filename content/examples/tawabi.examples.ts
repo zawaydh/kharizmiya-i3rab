@@ -48,6 +48,13 @@ function caseNoun(i3rabCase: string) {
   return "الإعراب";
 }
 
+function caseBare(i3rabCase: string) {
+  if (i3rabCase === "raf3") return "رفع";
+  if (i3rabCase === "nasb") return "نصب";
+  if (i3rabCase === "jarr") return "جر";
+  return "إعراب";
+}
+
 function markName(i3rabCase: string) {
   if (i3rabCase === "raf3") return "رفعه";
   if (i3rabCase === "nasb") return "نصبه";
@@ -80,9 +87,9 @@ function makeFinal(target: string, term: string, i3rabCase: string, mark: string
 }
 
 function makePhraseFinal(target: string, phraseType: string, i3rabCase: string, matbu3: string, matbu3Role: string, reason: string, extra = "") {
-  const status = caseLabel(i3rabCase);
-  return `${target}: ${phraseType} في محل ${caseNoun(i3rabCase)} نعت.
-سبب الإتباع: لأن التركيب تابع لـ(${matbu3})، و${matbu3} ${matbu3Role}؛ لذلك جاء في محل ${caseNoun(i3rabCase)}.
+  const bareCase = caseBare(i3rabCase);
+  return `${target}: ${phraseType} في محل ${bareCase} نعت.
+سبب الإتباع: لأن التركيب تابع لـ(${matbu3})، و${matbu3} ${matbu3Role}؛ لذلك جاء في محل ${bareCase}.
 سبب الاختيار: ${reason}${extra ? `\n${extra}` : ""}`;
 }
 
