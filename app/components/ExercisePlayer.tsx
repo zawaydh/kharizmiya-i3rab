@@ -2072,6 +2072,9 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
     if (nodeId === "tawabi_term") {
       return `عرفنا العلاقة بالمعنى. الآن نسمّيها نحويًا: ما المصطلح المناسب لعلاقة (${target}) بما قبلها؟`;
     }
+    if (nodeId === "tawabi_tawkid_kind") {
+      return `عرفنا أن (${target}) أكدت ما قبلها. كيف أكدت الكلمة ما قبلها؟ اختر الإجابة الصحيحة:`;
+    }
     if (nodeId === "tawabi_follow_source") {
       return `بما أن (${target}) تابع، فإعرابه لا يبدأ من حركته وحدها. من أين يأخذ حالته الإعرابية؟`;
     }
@@ -2254,6 +2257,16 @@ function tawabiStudentHintText(node: any, picked?: any, state?: any) {
     if (isHelp) return `العلاقة هي ${tawabiRelationHintName(facts?.relationKind)}؛ لذلك المصطلح المناسب هو: ${correctTerm}.${naatNote}`;
     if (!pickedText.includes(correctTerm)) return `المصطلح لا يُختار من الحركة. بما أن العلاقة بين (${targetText}) و(${matbu3}) هي ${tawabiRelationHintName(facts?.relationKind)}، فالمصطلح الصحيح: ${correctTerm}.${naatNote}`;
     return `صحيح؛ (${targetText}) ${correctTerm} لأن علاقته بـ(${matbu3}) هي ${tawabiRelationHintName(facts?.relationKind)}.${naatNote}`;
+  }
+
+  if (id === "tawabi_tawkid_kind") {
+    const kind = String(facts?.tawkidKind || "");
+    if (isHelp) return kind === "lafzi"
+      ? `لاحظ أن (${targetText}) أعادت اللفظ نفسه؛ إذن هذا توكيد لفظي.`
+      : `لاحظ أن (${targetText}) من ألفاظ التوكيد المعنوي، وفيها غالبًا ضمير يعود على المؤكَّد.`;
+    if (kind === "lafzi" && !pickedText.includes("تكرار")) return `هنا حصل التوكيد بتكرار اللفظ نفسه، لا بلفظ من ألفاظ التوكيد المعنوي؛ إذن هو توكيد لفظي.`;
+    if (kind === "manawi" && !pickedText.includes("ألفاظ")) return `هنا لم يتكرر اللفظ نفسه، بل جاءت كلمة من ألفاظ التوكيد المعنوي مثل: نفس، عين، كل، جميع، كلا، كلتا.`;
+    return kind === "lafzi" ? "صحيح؛ هذا توكيد لفظي لأنه أعاد اللفظ." : "صحيح؛ هذا توكيد معنوي لأنه جاء بلفظ من ألفاظه.";
   }
 
   if (id === "tawabi_follow_source") {
@@ -3562,6 +3575,7 @@ function activeToolForNode(node: any, tree: any, title?: string) {
     if (id === "tawabi_entry") return "entry";
     if (id === "tawabi_relation") return "relation";
     if (id === "tawabi_term") return "term";
+    if (id === "tawabi_tawkid_kind") return "term";
     if (id === "tawabi_follow_source") return "matbu3";
     if (id === "tawabi_case" || id === "tawabi_form" || id === "tawabi_shape") return "case";
     if (id === "tawabi_mark" || id.startsWith("R_tawabi_")) return "sign";
@@ -3682,6 +3696,45 @@ function findResultLabelByCoverage(tree: any, coverage?: string) {
   const nodes = Object.values(tree?.nodes || {}) as any[];
   const match = nodes.find((n) => n?.type === "result" && (n?.coverage === coverage || resultIdToCoverage(n?.id) === coverage));
   return firstLine(match?.text);
+}
+
+function coverageDisplayLabel(key?: string | null) {
+  const k = String(key || "");
+  const labels: Record<string, string> = {
+    "tawabi.naat": "النعت",
+    "tawabi.atf": "العطف",
+    "tawabi.tawkid": "التوكيد",
+    "tawabi.tawkid_lafzi": "التوكيد اللفظي",
+    "tawabi.tawkid_manawi": "التوكيد المعنوي",
+    "tawabi.badal": "البدل",
+    "tawabi.raf3": "الرفع",
+    "tawabi.nasb": "النصب",
+    "tawabi.jarr": "الجر",
+    "tawabi.singular": "المفرد",
+    "tawabi.dual": "المثنى",
+    "tawabi.jms": "جمع مذكر سالم",
+    "tawabi.jfs": "جمع مؤنث سالم",
+    "tawabi.jt": "جمع تكسير",
+    "tawabi.five": "الأسماء الخمسة",
+    "tawabi.sentence": "الجملة",
+    "tawabi.shibh": "شبه الجملة",
+    "tawabi.damma": "الضمة",
+    "tawabi.fatha": "الفتحة",
+    "tawabi.kasra": "الكسرة",
+    "tawabi.alif": "الألف",
+    "tawabi.yaa": "الياء",
+    "tawabi.waw": "الواو",
+  };
+  if (labels[k]) return labels[k];
+  return k.includes(".") ? k.split(".").pop()?.replace(/_/g, " ") || k : k;
+}
+
+function safeFinalLabel(tree: any, example: any, fallbackCoverage?: string) {
+  const fromExample = exampleFinalLabel(example);
+  if (fromExample && !fromExample.includes(".")) return fromExample;
+  const fromResult = findResultLabelByCoverage(tree, fallbackCoverage);
+  if (fromResult && !fromResult.includes(".")) return fromResult;
+  return coverageDisplayLabel(fallbackCoverage);
 }
 
 export default function ExercisePlayer({
@@ -4326,7 +4379,7 @@ export default function ExercisePlayer({
     }
     const quizExample = example as QuizExampleLike;
     const expectedCoverage = getExampleCoverageKeys(quizExample)[0] || "";
-    const expectedLabel = exampleFinalLabel(quizExample) || findResultLabelByCoverage(tree, expectedCoverage) || expectedCoverage;
+    const expectedLabel = safeFinalLabel(tree, quizExample, expectedCoverage);
     const actualLabel = selectedQuizOption;
     const row: QuizAnswerRow = {
       exampleId: quizExample?.id || String(quizCursor),
@@ -4386,7 +4439,7 @@ export default function ExercisePlayer({
   const isPracticeMode = mode === "practice";
   const practiceExpectedCoverage = isPracticeMode ? (getExampleCoverageKeys(example)[0] || "") : "";
   const practiceExpectedLabel = isPracticeMode
-    ? (exampleFinalLabel(example) || findResultLabelByCoverage(tree, practiceExpectedCoverage) || practiceExpectedCoverage)
+    ? safeFinalLabel(tree, example, practiceExpectedCoverage)
     : "";
   const practiceDirectOptions = React.useMemo(() => {
     if (!isPracticeMode || !practiceExpectedLabel) return [];
@@ -4394,7 +4447,7 @@ export default function ExercisePlayer({
     const exampleLabels = (examples || [])
       .filter((ex: any) => ex?.id !== example?.id)
       .map((ex: any) => exampleFinalLabel(ex))
-      .filter((x: string) => x && x !== practiceExpectedLabel);
+      .filter((x: string) => x && x !== practiceExpectedLabel && !String(x).includes("."));
 
     const resultLabels = (Object.values(tree?.nodes || {}) as any[])
       .filter((n: any) => n?.type === "result")
@@ -4532,7 +4585,7 @@ export default function ExercisePlayer({
           {mode !== "quiz" && (
             <div className="exercise-meta-inline">
               <span className="pill pill-accent">المنجَز: {doneCount} / {totalCount}</span>
-              <span className="pill">نتابع: {stepLabels?.[stepLabel] || stepLabel}</span>
+              <span className="pill">نتابع: {stepLabels?.[stepLabel] || coverageDisplayLabel(stepLabel)}</span>
             </div>
           )}
         </div>

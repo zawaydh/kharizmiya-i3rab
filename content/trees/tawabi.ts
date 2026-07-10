@@ -70,7 +70,7 @@ export const tawabiTree: ExerciseTree = {
           text: "أكدته ولم تضف صفة جديدة",
           next: "tawabi_term",
           eval: { fact: "relationKind", equals: "emphasis" },
-          hint: "التوكيد يثبت المعنى أو يرفع الشك. من ألفاظه: نفس، عين، كل، جميع، كلا، كلتا، بشرط أن يعود الضمير على المؤكَّد في التوكيد المعنوي."
+          hint: "التوكيد يثبت المعنى أو يرفع الشك. قد يكون لفظيًا بتكرار اللفظ نفسه، أو معنويًا بألفاظ مثل: نفس، عين، كل، جميع، كلا، كلتا، بشرط أن يعود الضمير على المؤكَّد في التوكيد المعنوي."
         },
         {
           id: "substitution",
@@ -92,9 +92,34 @@ export const tawabiTree: ExerciseTree = {
       answers: [
         { id: "naat", text: "نعت", next: "tawabi_follow_source", eval: { fact: "tawabiTerm", equals: "naat" }, hint: "النعت تابع يصف منعوته. وقد يكون مفردًا، أو جملة فيها رابط، أو شبه جملة متعلقًا بتقدير مثل: كائن أو موجود." },
         { id: "atf", text: "معطوف", next: "tawabi_follow_source", eval: { fact: "tawabiTerm", equals: "atf" }, hint: "المعطوف تابع يقع بعد حرف عطف ويشارك المعطوف عليه في الحكم والإعراب." },
-        { id: "tawkid", text: "توكيد", next: "tawabi_follow_source", eval: { fact: "tawabiTerm", equals: "tawkid" }, hint: "التوكيد لا يضيف صفة جديدة، بل يرسّخ المعنى أو يرفع احتمال المجاز أو النقص." },
+        { id: "tawkid", text: "توكيد", next: "tawabi_tawkid_kind", eval: { fact: "tawabiTerm", equals: "tawkid" }, hint: "التوكيد لا يضيف صفة جديدة، بل يرسّخ المعنى أو يرفع احتمال المجاز أو النقص. بعد اكتشافه نحدد: هل كان التوكيد بتكرار اللفظ أم بأحد ألفاظ التوكيد المعنوي؟" },
         { id: "badal", text: "بدل", next: "tawabi_follow_source", eval: { fact: "tawabiTerm", equals: "badal" }, hint: "البدل يزيل الغموض عن المبدل منه. قد يكون مطابقًا، أو بعضًا من كل، أو اشتمالًا." },
         { ...help, next: "tawabi_term" }
+      ]
+    },
+
+    tawabi_tawkid_kind: {
+      id: "tawabi_tawkid_kind",
+      type: "question",
+      context: "عرفنا أن الكلمة أكدت ما قبلها. الآن نحدد كيف حصل التوكيد دون إطالة المسار.",
+      text: "كيف أكدت الكلمة ما قبلها؟ اختر الإجابة الصحيحة:",
+      hint: "إن أعادت الكلمة اللفظ نفسه فهو توكيد لفظي. وإن جاءت بألفاظ مثل: نفس، عين، كل، جميع، كلا، كلتا؛ فهو توكيد معنوي.",
+      answers: [
+        {
+          id: "lafzi",
+          text: "أعادت تكرار اللفظ نفسه، وهذا توكيد لفظي",
+          next: "tawabi_follow_source",
+          eval: { fact: "tawkidKind", equals: "lafzi" },
+          hint: "التوكيد اللفظي يكون بتكرار اللفظ نفسه أو ما في معناه، مثل: الصدقُ الصدقُ منجاةٌ."
+        },
+        {
+          id: "manawi",
+          text: "جاءت بأحد ألفاظ التوكيد المعنوي مثل: نفس، عين، كل، جميع، كلا، كلتا",
+          next: "tawabi_follow_source",
+          eval: { fact: "tawkidKind", equals: "manawi" },
+          hint: "التوكيد المعنوي يكون بألفاظ مخصوصة، ويحتاج غالبًا ضميرًا يعود على المؤكَّد، مثل: نفسُه، كلُّهم، جميعُهم."
+        },
+        { ...help, next: "tawabi_tawkid_kind" }
       ]
     },
 

@@ -4,6 +4,8 @@ export const tawabiCoverageKeysOrdered = [
   "tawabi.naat",
   "tawabi.atf",
   "tawabi.tawkid",
+  "tawabi.tawkid_lafzi",
+  "tawabi.tawkid_manawi",
   "tawabi.badal",
   "tawabi.raf3",
   "tawabi.nasb",
@@ -30,6 +32,8 @@ function termLabel(term: string) {
   if (term === "naat") return "نعت";
   if (term === "atf") return "معطوف";
   if (term === "tawkid") return "توكيد";
+  if (term === "tawkid_lafzi") return "توكيد لفظي";
+  if (term === "tawkid_manawi") return "توكيد معنوي";
   if (term === "badal") return "بدل";
   return "تابع";
 }
@@ -84,6 +88,10 @@ function makeFinal(target: string, term: string, i3rabCase: string, mark: string
   return `${target}: ${name} ${status}، وعلامة ${markName(i3rabCase)} ${sign}.
 سبب الإتباع: لأنه تابع لـ(${matbu3})، و${matbu3} ${matbu3Role}؛ لذلك أخذ منه ${caseNoun(i3rabCase)}.
 سبب الاختيار: ${reason}${extra ? `\n${extra}` : ""}`;
+}
+
+function makeTawkidFinal(target: string, tawkidKind: "lafzi" | "manawi", i3rabCase: string, mark: string, matbu3: string, matbu3Role: string, reason: string, shape?: string, extra = "") {
+  return makeFinal(target, tawkidKind === "lafzi" ? "tawkid_lafzi" : "tawkid_manawi", i3rabCase, mark, matbu3, matbu3Role, reason, shape, extra);
 }
 
 function makePhraseFinal(target: string, phraseType: string, i3rabCase: string, matbu3: string, matbu3Role: string, reason: string, extra = "") {
@@ -213,15 +221,16 @@ export const tawabiExamples: Example[] = [
       ...base,
       relationKind: "emphasis",
       tawabiTerm: "tawkid",
+      tawkidKind: "manawi",
       case: "raf3",
       shape: "singular",
       mark: "damma",
       matbu3: "المديرُ",
       matbu3Role: "فاعل مرفوع",
       relationReason: "لأن نفسه لم تصف المدير بصفة جديدة، بل أكدت أنه حضر بذاته.",
-      finalI3rab: makeFinal("نفسُهُ", "tawkid", "raf3", "damma", "المديرُ", "فاعل مرفوع", "لأن نفسُه أكدت أن المدير حضر بذاته لا نائبه.", "singular", "الهاء: ضمير متصل مبني في محل جر مضاف إليه، وهو الرابط المطلوب في التوكيد المعنوي.")
+      finalI3rab: makeTawkidFinal("نفسُهُ", "manawi", "raf3", "damma", "المديرُ", "فاعل مرفوع", "لأن نفسُه أكدت أن المدير حضر بذاته لا نائبه.", "singular", "الهاء: ضمير متصل مبني في محل جر مضاف إليه، وهو الرابط المطلوب في التوكيد المعنوي.")
     },
-    covers: ["tawabi.tawkid", "tawabi.raf3", "tawabi.singular", "tawabi.damma"]
+    covers: ["tawabi.tawkid", "tawabi.tawkid_manawi", "tawabi.raf3", "tawabi.singular", "tawabi.damma"]
   },
   {
     id: "tw-08",
@@ -231,15 +240,16 @@ export const tawabiExamples: Example[] = [
       ...base,
       relationKind: "emphasis",
       tawabiTerm: "tawkid",
+      tawkidKind: "manawi",
       case: "nasb",
       shape: "singular",
       mark: "fatha",
       matbu3: "المعلمينَ",
       matbu3Role: "مفعول به منصوب",
       relationReason: "لأن كلهم أكدت شمول الحكم لجميع المعلمين، ولم تضف وصفًا جديدًا.",
-      finalI3rab: makeFinal("كلَّهم", "tawkid", "nasb", "fatha", "المعلمينَ", "مفعول به منصوب", "لأن كلَّهم أكدت شمول المقابلة لجميع المعلمين.", "singular", "الهاء: ضمير متصل مبني في محل جر مضاف إليه، والميم للجمع.")
+      finalI3rab: makeTawkidFinal("كلَّهم", "manawi", "nasb", "fatha", "المعلمينَ", "مفعول به منصوب", "لأن كلَّهم أكدت شمول المقابلة لجميع المعلمين.", "singular", "الهاء: ضمير متصل مبني في محل جر مضاف إليه، والميم للجمع.")
     },
-    covers: ["tawabi.tawkid", "tawabi.nasb", "tawabi.singular", "tawabi.fatha"]
+    covers: ["tawabi.tawkid", "tawabi.tawkid_manawi", "tawabi.nasb", "tawabi.singular", "tawabi.fatha"]
   },
   {
     id: "tw-09",
@@ -249,15 +259,73 @@ export const tawabiExamples: Example[] = [
       ...base,
       relationKind: "emphasis",
       tawabiTerm: "tawkid",
+      tawkidKind: "manawi",
       case: "jarr",
       shape: "singular",
       mark: "kasra",
       matbu3: "الطلابِ",
       matbu3Role: "اسم مجرور بالباء",
       relationReason: "لأن جميعهم أكدت الشمول، والهاء فيها عادت على الطلاب.",
-      finalI3rab: makeFinal("جميعِهم", "tawkid", "jarr", "kasra", "الطلابِ", "اسم مجرور بالباء", "لأن جميعِهم أكدت شمول المرور بالطلاب كلهم.", "singular", "الهاء: ضمير متصل مبني في محل جر مضاف إليه، والميم للجمع.")
+      finalI3rab: makeTawkidFinal("جميعِهم", "manawi", "jarr", "kasra", "الطلابِ", "اسم مجرور بالباء", "لأن جميعِهم أكدت شمول المرور بالطلاب كلهم.", "singular", "الهاء: ضمير متصل مبني في محل جر مضاف إليه، والميم للجمع.")
     },
-    covers: ["tawabi.tawkid", "tawabi.jarr", "tawabi.singular", "tawabi.kasra"]
+    covers: ["tawabi.tawkid", "tawabi.tawkid_manawi", "tawabi.jarr", "tawabi.singular", "tawabi.kasra"]
+  },
+  {
+    id: "tw-09-lf-raf3",
+    sentence: "الصدق الصدقُ منجاةٌ.",
+    target: "الصدقُ",
+    facts: {
+      ...base,
+      relationKind: "emphasis",
+      tawabiTerm: "tawkid",
+      tawkidKind: "lafzi",
+      case: "raf3",
+      shape: "singular",
+      mark: "damma",
+      matbu3: "الصدقُ",
+      matbu3Role: "مبتدأ مرفوع",
+      relationReason: "لأن الكلمة الثانية كررت اللفظ نفسه لتقوية المعنى وتثبيته.",
+      finalI3rab: makeTawkidFinal("الصدقُ", "lafzi", "raf3", "damma", "الصدقُ", "مبتدأ مرفوع", "لأن اللفظ تكرر نفسه، وهذا توكيد لفظي.", "singular")
+    },
+    covers: ["tawabi.tawkid", "tawabi.tawkid_lafzi", "tawabi.raf3", "tawabi.singular", "tawabi.damma"]
+  },
+  {
+    id: "tw-09-lf-nasb",
+    sentence: "كرّمتُ الطالب الطالبَ.",
+    target: "الطالبَ",
+    facts: {
+      ...base,
+      relationKind: "emphasis",
+      tawabiTerm: "tawkid",
+      tawkidKind: "lafzi",
+      case: "nasb",
+      shape: "singular",
+      mark: "fatha",
+      matbu3: "الطالبَ",
+      matbu3Role: "مفعول به منصوب",
+      relationReason: "لأن الكلمة الثانية أعادت اللفظ نفسه لتأكيد المقصود.",
+      finalI3rab: makeTawkidFinal("الطالبَ", "lafzi", "nasb", "fatha", "الطالبَ", "مفعول به منصوب", "لأن اللفظ تكرر نفسه، وهذا توكيد لفظي.", "singular")
+    },
+    covers: ["tawabi.tawkid", "tawabi.tawkid_lafzi", "tawabi.nasb", "tawabi.singular", "tawabi.fatha"]
+  },
+  {
+    id: "tw-09-lf-jarr",
+    sentence: "مررتُ بالطالب الطالبِ.",
+    target: "الطالبِ",
+    facts: {
+      ...base,
+      relationKind: "emphasis",
+      tawabiTerm: "tawkid",
+      tawkidKind: "lafzi",
+      case: "jarr",
+      shape: "singular",
+      mark: "kasra",
+      matbu3: "الطالبِ",
+      matbu3Role: "اسم مجرور بالباء",
+      relationReason: "لأن الكلمة الثانية كررت اللفظ نفسه لتأكيد المقصود.",
+      finalI3rab: makeTawkidFinal("الطالبِ", "lafzi", "jarr", "kasra", "الطالبِ", "اسم مجرور بالباء", "لأن اللفظ تكرر نفسه، وهذا توكيد لفظي.", "singular")
+    },
+    covers: ["tawabi.tawkid", "tawabi.tawkid_lafzi", "tawabi.jarr", "tawabi.singular", "tawabi.kasra"]
   },
   {
     id: "tw-10",
@@ -490,15 +558,16 @@ export const tawabiExamples: Example[] = [
       ...base,
       relationKind: "emphasis",
       tawabiTerm: "tawkid",
+      tawkidKind: "manawi",
       case: "nasb",
       shape: "dual",
       mark: "yaa",
       matbu3: "الطالبينِ",
       matbu3Role: "مفعول به منصوب بالياء لأنه مثنى",
       relationReason: "لأن كليهما أكدت شمول المقابلة للطالبين، واتصلت بضمير يعود عليهما.",
-      finalI3rab: makeFinal("كليهما", "tawkid", "nasb", "yaa", "الطالبينِ", "مفعول به منصوب بالياء لأنه مثنى", "لأن كليهما أكدت شمول المقابلة للطالبين، واتصلت بضمير يعود على المؤكَّد.", "dual", "كلا وكلتا تعربان إعراب المثنى إذا أضيفتا إلى ضمير؛ وهنا جاءت كليهما منصوبة بالياء.")
+      finalI3rab: makeTawkidFinal("كليهما", "manawi", "nasb", "yaa", "الطالبينِ", "مفعول به منصوب بالياء لأنه مثنى", "لأن كليهما أكدت شمول المقابلة للطالبين، واتصلت بضمير يعود على المؤكَّد.", "dual", "كلا وكلتا تعربان إعراب المثنى إذا أضيفتا إلى ضمير؛ وهنا جاءت كليهما منصوبة بالياء.")
     },
-    covers: ["tawabi.tawkid", "tawabi.nasb", "tawabi.dual", "tawabi.yaa"]
+    covers: ["tawabi.tawkid", "tawabi.tawkid_manawi", "tawabi.nasb", "tawabi.dual", "tawabi.yaa"]
   },
   {
     id: "tw-23",

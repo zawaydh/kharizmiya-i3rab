@@ -302,7 +302,7 @@ export const cleanKanaExamples: Example[] = [
     "id": "ka-21",
     "sentence": "المزارعُ ما زالَ يعملُ.",
     "target": "ما زالَ",
-    "facts": {"targetRole":"hidden_ism"},
+    "facts": {"targetRole":"hidden_ism","hiddenPronoun":"هو"},
     "covers":["kana_ism.hidden_damir"]
   },
   {
@@ -321,8 +321,8 @@ export const cleanKanaExamples: Example[] = [
   },
   {
     "id": "ka-24",
-    "sentence": "أصبح الملعبُ أطرافُه ممتدةً.",
-    "target": "أطرافُه ممتدةً",
+    "sentence": "أصبح الملعبُ أطرافُه ممتدةٌ.",
+    "target": "أطرافُه ممتدةٌ",
     "facts": {"targetRole":"khabar","khabarKind":"sentence","sentenceType":"nominal"},
     "covers":["kana_khabar.nominal_sentence"]
   }
