@@ -9,7 +9,7 @@ export default function HomePage() {
           <img src="/brand-wordmark.svg" alt="خوارزمية الإعراب" className="luxe-wordmark" />
           <h1>تعلّم الإعراب خطوة بخطوة</h1>
           <p className="luxe-hero-lead">
-            جرّب مثالًا تفاعليًا، اسحب الإجابة الصحيحة، وشاهد لوحة الإعراب تُبنى أمامك حتى تصل إلى الإعراب الكامل.
+            تعلّم الإعراب عبر خطوات قصيرة: اقرأ السؤال، انقر على الإجابة الصحيحة، وشاهد مسار الإعراب يُبنى أمامك حتى تصل إلى النتيجة الكاملة.
           </p>
           <div className="luxe-hero-actions luxe-hero-actions-single">
             <a href="/learn/start" className="btn luxe-primary main-cta addictive-cta">ابدأ التعلّم</a>

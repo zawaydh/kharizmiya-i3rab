@@ -253,8 +253,32 @@ function firstLine(text?: string) {
   return String(text || "").split("\n")[0].trim();
 }
 
+function normalizeQuizAnswerLabel(text?: string | null) {
+  return firstLine(String(text || ""))
+    .replace(/[\u064B-\u0652\u0670]/g, "")
+    .replace(/[ـ]/g, "")
+    .replace(/[،؛:]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isSameQuizAnswer(a?: string | null, b?: string | null) {
+  const aa = normalizeQuizAnswerLabel(a);
+  const bb = normalizeQuizAnswerLabel(b);
+  return Boolean(aa && bb && aa === bb);
+}
+
+function optionReasonForLabel(reasons: Record<string, string> | undefined, label?: string | null) {
+  if (!label || !reasons) return undefined;
+  if (reasons[label]) return reasons[label];
+  const match = Object.keys(reasons).find((key) => isSameQuizAnswer(key, label));
+  return match ? reasons[match] : undefined;
+}
+
 function exampleFinalLabel(example: any) {
-  return firstLine(example?.facts?.finalI3rab || example?.correctI3rab || "");
+  // في الاختبار النهائي يجب اعتماد صياغة الإعراب النهائية نفسها، لا مفتاح التغطية العام.
+  // هذا يمنع أن تظهر الإجابة الصحيحة مثل: "التوكيد" بدل الإعراب الكامل.
+  return firstLine(example?.correctI3rab || example?.facts?.finalI3rab || "");
 }
 
 function shortStudentText(text?: string, fallback = "جرّب مرة أخرى.") {
@@ -1441,14 +1465,14 @@ function stageOneDragInstruction(node: any, state: any) {
   const target = String(state?.currentTarget || "الكلمة");
   if (isFiveVerbDecision(node)) return `اختر «نعم» إذا كان (${target}) من الأفعال الخمسة: مضارع اتصل بواو الجماعة أو ياء المخاطبة أو ألف الاثنين. واختر «لا» إذا لم يكن كذلك.`;
   const id = String(node?.id || "");
-  if (id.includes("nun") || id.includes("built") || id.includes("binaa")) return `اسحب الإجابة التي تثبت هل خرج (${target}) إلى البناء أم بقي في طريق الإعراب.`;
-  if (id.includes("tool")) return `اسحب الإجابة التي تصف أثر ما قبل (${target}).`;
-  if (id.includes("ending") || id.includes("weak")) return `اسحب الوصف المناسب لآخر (${target}).`;
-  return "اسحب الاختيار المناسب إلى المربع، أو اضغط عليه مباشرة إذا كنت تستخدم الهاتف.";
+  if (id.includes("nun") || id.includes("built") || id.includes("binaa")) return `انقر على الإجابة التي تثبت هل خرج (${target}) إلى البناء أم بقي في طريق الإعراب.`;
+  if (id.includes("tool")) return `انقر على الإجابة التي تصف أثر ما قبل (${target}).`;
+  if (id.includes("ending") || id.includes("weak")) return `انقر على الوصف المناسب لآخر (${target}).`;
+  return "انقر على الاختيار المناسب للانتقال إلى الخطوة التالية.";
 }
 
 function answerDragLabel(mode: Mode) {
-  return mode === "learn" ? "اختر أو اسحب" : "اختر";
+  return mode === "learn" ? "انقر" : "اختر";
 }
 
 
@@ -1462,7 +1486,7 @@ function practiceQuestionShape(node: any, state: any): "match" | "drag" | "sort"
 
 function practiceShapeTitle(shape: "match" | "drag" | "sort" | "cards") {
   if (shape === "match") return "زاوج البطاقة بالإجابة المناسبة";
-  if (shape === "drag") return "اسحب الإجابة إلى منطقة الحل";
+  if (shape === "drag") return "انقر على الإجابة المناسبة";
   if (shape === "sort") return "رتّب قرارك";
   return "اختر القرار المناسب";
 }
@@ -3652,6 +3676,91 @@ function buildBalancedQuizOptions(example: QuizExampleLike | undefined, seed: st
   return shuffled;
 }
 
+function i3rabHead(label?: string | null) {
+  const line = firstLine(label || "");
+  const idx = line.indexOf(":");
+  if (idx <= 0) return "";
+  return line.slice(0, idx).trim();
+}
+
+function quizTargetHead(example?: QuizExampleLike | null) {
+  return i3rabHead(example?.correctI3rab || example?.facts?.finalI3rab || "") || String(example?.target || "").trim();
+}
+
+function localizeQuizOptionToExample(option: string, example?: QuizExampleLike | null) {
+  const line = firstLine(option);
+  const idx = line.indexOf(":");
+  const head = quizTargetHead(example);
+  if (idx <= 0 || !head) return line;
+  return `${head}${line.slice(idx)}`;
+}
+
+function localQuizExpectedLabel(label: string, example?: QuizExampleLike | null) {
+  return localizeQuizOptionToExample(label, example);
+}
+
+function swapOne(text: string, pairs: Array<[string, string]>) {
+  for (const [from, to] of pairs) {
+    if (text.includes(from)) return text.replace(from, to);
+  }
+  return "";
+}
+
+function fallbackCloseQuizDistractors(correct: string) {
+  const out: string[] = [];
+  const push = (x?: string) => {
+    const value = firstLine(x || "");
+    if (value && value !== correct && !out.includes(value)) out.push(value);
+  };
+
+  push(swapOne(correct, [["توكيد لفظي", "توكيد معنوي"], ["توكيد معنوي", "توكيد لفظي"], ["نعت", "بدل"], ["بدل", "نعت"], ["معطوف", "توكيد معنوي"], ["فاعل", "مفعول به"], ["مفعول به", "فاعل"], ["مبتدأ", "خبر"], ["خبر", "مبتدأ"]]));
+  push(swapOne(correct, [["مرفوع", "منصوب"], ["منصوب", "مجرور"], ["مجرور", "مرفوع"], ["مجزوم", "مرفوع"], ["مبني", "معرب"]]));
+  push(swapOne(correct, [["الضمة", "الفتحة"], ["الفتحة", "الكسرة"], ["الكسرة", "الضمة"], ["الياء", "الألف"], ["الألف", "الياء"], ["الواو", "الياء"], ["السكون", "الفتحة"]]));
+
+  return out;
+}
+
+function buildCloseQuizOptions(example: QuizExampleLike | undefined, seed: string, cursor: number) {
+  const raw = buildBalancedQuizOptions(example, seed, cursor);
+  const correct = localQuizExpectedLabel(example?.correctI3rab || example?.facts?.finalI3rab || "", example);
+  if (!correct) return raw.map((option) => localizeQuizOptionToExample(option, example));
+
+  const localized = Array.from(new Set(raw.map((option) => localizeQuizOptionToExample(option, example)).filter(Boolean)));
+  const distractors = localized.filter((option) => !isSameQuizAnswer(option, correct));
+  fallbackCloseQuizDistractors(correct).forEach((option) => {
+    if (!distractors.some((x) => isSameQuizAnswer(x, option))) distractors.push(option);
+  });
+
+  const orderedDistractors = stableShuffle(distractors, `${seed}-distractors`).slice(0, 3);
+  const targetPositions = [1, 2, 3, 1, 2, 3, 0];
+  const finalOptions = [...orderedDistractors];
+  const target = Math.min(targetPositions[cursor % targetPositions.length], finalOptions.length);
+  finalOptions.splice(target, 0, correct);
+  return finalOptions.slice(0, 4);
+}
+
+function buildRemedialQueueFromMistakes(rows: QuizAnswerRow[], sourceExamples: QuizExampleLike[]) {
+  const wrongRows = rows.filter((row) => !row.isCorrect);
+  const queue: QuizExampleLike[] = [];
+  const used = new Set<string>();
+
+  wrongRows.forEach((row, idx) => {
+    const sameSkill = sourceExamples.filter((ex) => getExampleCoverageKeys(ex).includes(row.expectedCoverage));
+    const preferred = sameSkill.find((ex) => String(ex.id) !== String(row.exampleId)) || sameSkill[0] || sourceExamples.find((ex) => String(ex.id) === String(row.exampleId));
+    if (!preferred) return;
+    const key = `${row.expectedCoverage}-${preferred.id}-${idx}`;
+    if (used.has(key)) return;
+    used.add(key);
+    queue.push({
+      ...preferred,
+      id: `remedial-${row.exampleId}-${idx}-${preferred.id}`,
+      prompt: "تدريب علاجي سريع: اختر الإعراب الصحيح بعد مراجعة سبب الخطأ.",
+    });
+  });
+
+  return queue.slice(0, 8);
+}
+
 function normalizeCoverageKey(key?: string | null) {
   if (!key) return null;
   return resultIdToCoverage(key) || key;
@@ -3759,6 +3868,12 @@ export default function ExercisePlayer({
   const [quizOrder, setQuizOrder] = React.useState<number[]>([]);
   const [quizCursor, setQuizCursor] = React.useState(0);
   const [quizAnswers, setQuizAnswers] = React.useState<QuizAnswerRow[]>([]);
+  const [remedialActive, setRemedialActive] = React.useState(false);
+  const [remedialQueue, setRemedialQueue] = React.useState<QuizExampleLike[]>([]);
+  const [remedialCursor, setRemedialCursor] = React.useState(0);
+  const [remedialSelected, setRemedialSelected] = React.useState<string | null>(null);
+  const [remedialChecked, setRemedialChecked] = React.useState(false);
+  const [remedialResults, setRemedialResults] = React.useState<QuizAnswerRow[]>([]);
   const [learnReady, setLearnReady] = React.useState(false);
   const [practiceReady, setPracticeReady] = React.useState(false);
   const [toast, setToast] = React.useState("");
@@ -3783,6 +3898,11 @@ export default function ExercisePlayer({
   const activeCardRef = React.useRef<HTMLDivElement | null>(null);
   const feedbackAreaRef = React.useRef<HTMLDivElement | null>(null);
   const correctAdvanceTimerRef = React.useRef<number | null>(null);
+  const answerAdvanceLockRef = React.useRef(false);
+  const exampleNavLockRef = React.useRef(false);
+  const quizFinalizeLockRef = React.useRef(false);
+  const stepReviewLockRef = React.useRef(false);
+  const practiceNextLockRef = React.useRef(false);
   const recentExampleIdsRef = React.useRef<string[]>([]);
   const usedExampleIdsRef = React.useRef<string[]>([]);
 
@@ -3808,6 +3928,14 @@ export default function ExercisePlayer({
   const currentIdx = mode === "quiz" ? quizOrder[quizCursor] ?? 0 : exampleIndex;
   const example = examples[currentIdx];
   const [state, setState] = React.useState<any>(() => buildRunnerState(tree, mode, example));
+
+  React.useEffect(() => {
+    answerAdvanceLockRef.current = false;
+    exampleNavLockRef.current = false;
+    quizFinalizeLockRef.current = false;
+    stepReviewLockRef.current = false;
+    practiceNextLockRef.current = false;
+  }, [mode, exampleIndex, quizCursor, state?.currentNodeId]);
 
   React.useEffect(() => {
     setPracticeWrongPanel(null);
@@ -3920,14 +4048,30 @@ export default function ExercisePlayer({
   const answeredQuizRows = quizAnswers.filter(Boolean);
   const quizScore = answeredQuizRows.filter((a) => a.isCorrect).length;
   const quizPercent = answeredQuizRows.length ? Math.round((quizScore / answeredQuizRows.length) * 100) : 0;
-  const canDownloadCertificate = quizFinished && quizPercent >= QUIZ_PASS_PERCENT && learnReady && practiceReady;
+  const wrongQuizRows = answeredQuizRows.filter((a) => !a.isCorrect);
+  const canDownloadCertificate = quizFinished && quizPercent >= QUIZ_PASS_PERCENT;
+  const canStartRemedial = quizFinished && wrongQuizRows.length > 0;
   const quizOptions = React.useMemo(() => {
-    return buildBalancedQuizOptions(
+    return buildCloseQuizOptions(
       example as QuizExampleLike,
       `${topicId || "topic"}-${(example as QuizExampleLike)?.id || currentIdx}-${quizCursor}`,
       quizCursor
     );
   }, [example, currentIdx, quizCursor, topicId]);
+
+  const remedialExample = remedialQueue[remedialCursor];
+  const remedialOptions = React.useMemo(() => {
+    if (!remedialExample) return [];
+    return buildCloseQuizOptions(
+      remedialExample,
+      `${topicId || "topic"}-remedial-${remedialExample.id}-${remedialCursor}`,
+      remedialCursor
+    );
+  }, [remedialExample, remedialCursor, topicId]);
+  const remedialExpectedLabel = remedialExample
+    ? localQuizExpectedLabel(safeFinalLabel(tree, remedialExample, getExampleCoverageKeys(remedialExample)[0] || ""), remedialExample)
+    : "";
+  const remedialIsCheckedCorrect = remedialChecked && isSameQuizAnswer(remedialSelected, remedialExpectedLabel);
 
   React.useEffect(() => {
     if (mode !== "quiz") return;
@@ -4029,6 +4173,9 @@ export default function ExercisePlayer({
   }
 
   async function goNextExample() {
+    if (exampleNavLockRef.current) return;
+    exampleNavLockRef.current = true;
+    const releaseNavLock = () => { window.setTimeout(() => { exampleNavLockRef.current = false; }, 350); };
     const nextCovered = markCurrentCovered();
     const percent = calcPercent(nextCovered, coverageKeysOrdered);
 
@@ -4071,6 +4218,7 @@ export default function ExercisePlayer({
         .find((item) => item.idx !== currentIdx && item.keys.some((key) => uncoveredKeys.includes(key)));
       if (!fallback) {
         setToast("لم يبق مثال جديد يغطي مهارة غير منجزة");
+        releaseNavLock();
         return;
       }
       nextIndex = fallback.idx;
@@ -4095,10 +4243,14 @@ export default function ExercisePlayer({
     setPendingStageComplete(false);
     setState(buildRunnerState(tree, mode, examples[nextIndex]));
     bringWorkAreaIntoView("center", 120);
+    releaseNavLock();
   }
 
 
   async function completeCurrentAndGoNextStage() {
+    if (exampleNavLockRef.current) return;
+    exampleNavLockRef.current = true;
+    const releaseNavLock = () => { window.setTimeout(() => { exampleNavLockRef.current = false; }, 350); };
     const nextCovered = markCurrentCovered();
     const percent = calcPercent(nextCovered, coverageKeysOrdered);
 
@@ -4111,6 +4263,7 @@ export default function ExercisePlayer({
       if (mode === "practice") setPracticeReady(true);
     } catch {
       setToast("تمت المرحلة، لكن تعذر حفظ التقدم الآن");
+      releaseNavLock();
       return;
     }
 
@@ -4128,13 +4281,16 @@ export default function ExercisePlayer({
         setExampleIndex(chosen.idx);
         setStepReview(null);
         setState(buildRunnerState(tree, mode, examples[chosen.idx]));
+        releaseNavLock();
         return;
       }
     }
 
     if (stageMeta.nextHrefPrefix && topicId) {
       router.push(`${stageMeta.nextHrefPrefix}${topicId}`);
+      return;
     }
+    releaseNavLock();
   }
 
   function resetTraining() {
@@ -4270,7 +4426,8 @@ export default function ExercisePlayer({
   }
 
   function continueAfterStepReview() {
-    if (!stepReview) return;
+    if (!stepReview || stepReviewLockRef.current) return;
+    stepReviewLockRef.current = true;
     const nextNode = tree?.nodes?.[stepReview.nextState?.currentNodeId];
     if (nextNode?.type === "result") playSoftStepSound("final");
     setState(stepReview.nextState);
@@ -4285,11 +4442,12 @@ export default function ExercisePlayer({
       setCardPhase("idle");
       setMicroCelebrate(0);
       setMicroCelebrateAnswerId(null);
+      stepReviewLockRef.current = false;
     }, 360);
   }
 
   function handlePick(answerId: string) {
-    if (!node || node.type !== "question" || mode === "quiz" || cardPhase !== "idle" || stepReview) return;
+    if (!node || node.type !== "question" || mode === "quiz" || cardPhase !== "idle" || stepReview || answerAdvanceLockRef.current) return;
 
     const activeNode = thinkingNode || node;
     const activeTree = { ...tree, nodes: { ...(tree?.nodes || {}), [String(state.currentNodeId)]: activeNode } };
@@ -4326,6 +4484,7 @@ export default function ExercisePlayer({
       return;
     }
 
+    answerAdvanceLockRef.current = true;
     const res = chooseAnswer({ state, tree: activeTree, answerId } as any);
     const piece = normalizeBuildPiece(picked?.text || "", node?.id || "");
     const msg = teacherSuccessText(thinkingNode, picked, state, piece);
@@ -4355,6 +4514,7 @@ export default function ExercisePlayer({
         setCardPhase("idle");
         setSuccessNudge("الآن طبّق التصحيح بنفسك وأعطِ النتيجة النهائية.");
         bringWorkAreaIntoView("center", 60);
+        answerAdvanceLockRef.current = false;
         return;
       }
       setState(res.nextState);
@@ -4368,30 +4528,34 @@ export default function ExercisePlayer({
         setCardPhase("idle");
         setMicroCelebrate(0);
         setMicroCelebrateAnswerId(null);
+        answerAdvanceLockRef.current = false;
       }, 260);
     }, nextNode?.type === "result" ? 520 : 420);
   }
 
   async function finalizeQuizExample() {
+    if (quizFinalizeLockRef.current) return;
     if (!selectedQuizOption) {
       setToast("اختر إجابة أولًا");
       return;
     }
+    quizFinalizeLockRef.current = true;
     const quizExample = example as QuizExampleLike;
     const expectedCoverage = getExampleCoverageKeys(quizExample)[0] || "";
-    const expectedLabel = safeFinalLabel(tree, quizExample, expectedCoverage);
+    const expectedLabel = localQuizExpectedLabel(safeFinalLabel(tree, quizExample, expectedCoverage), quizExample);
     const actualLabel = selectedQuizOption;
+    const answerIsCorrect = isSameQuizAnswer(actualLabel, expectedLabel);
     const row: QuizAnswerRow = {
       exampleId: quizExample?.id || String(quizCursor),
       sentence: quizExample?.sentence,
       target: quizExample?.target,
       expectedCoverage,
       expectedLabel,
-      actualCoverage: actualLabel === expectedLabel ? expectedCoverage : null,
+      actualCoverage: answerIsCorrect ? expectedCoverage : null,
       actualLabel,
-      isCorrect: actualLabel === expectedLabel,
+      isCorrect: answerIsCorrect,
       whyCorrect: quizExample?.whyCorrect,
-      actualOptionReason: actualLabel ? (quizExample?.optionReasons?.[actualLabel] || explainDistractor(actualLabel, expectedLabel)) : undefined,
+      actualOptionReason: actualLabel ? (optionReasonForLabel(quizExample?.optionReasons, actualLabel) || explainDistractor(actualLabel, expectedLabel)) : undefined,
     };
 
     const nextAnswers = [...quizAnswers];
@@ -4412,10 +4576,12 @@ export default function ExercisePlayer({
       } catch {
         setToast("تعذر حفظ نتيجة المرحلة النهائية الآن");
       }
+      window.setTimeout(() => { quizFinalizeLockRef.current = false; }, 250);
       return;
     }
 
     setQuizCursor(nextCursor);
+    window.setTimeout(() => { quizFinalizeLockRef.current = false; }, 250);
   }
 
   function previousQuizQuestion() {
@@ -4427,6 +4593,74 @@ export default function ExercisePlayer({
     setQuizAnswers([]);
     setSelectedQuizOption(null);
     setQuizLocked(false);
+    setRemedialActive(false);
+    setRemedialQueue([]);
+    setRemedialCursor(0);
+    setRemedialSelected(null);
+    setRemedialChecked(false);
+    setRemedialResults([]);
+    quizFinalizeLockRef.current = false;
+  }
+
+  function startRemedialTraining() {
+    const queue = buildRemedialQueueFromMistakes(answeredQuizRows, examples as QuizExampleLike[]);
+    if (!queue.length) {
+      setToast("لا توجد أخطاء واضحة لتوليد تدريب علاجي منها");
+      return;
+    }
+    setRemedialQueue(queue);
+    setRemedialCursor(0);
+    setRemedialSelected(null);
+    setRemedialChecked(false);
+    setRemedialResults([]);
+    setRemedialActive(true);
+    bringWorkAreaIntoView("center", 80);
+  }
+
+  function checkRemedialAnswer() {
+    if (!remedialExample) return;
+    if (!remedialSelected) {
+      setToast("اختر إجابة أولًا");
+      return;
+    }
+    const expectedCoverage = getExampleCoverageKeys(remedialExample)[0] || "";
+    const expectedLabel = localQuizExpectedLabel(safeFinalLabel(tree, remedialExample, expectedCoverage), remedialExample);
+    const isCorrect = isSameQuizAnswer(remedialSelected, expectedLabel);
+    const row: QuizAnswerRow = {
+      exampleId: remedialExample.id,
+      sentence: remedialExample.sentence,
+      target: remedialExample.target,
+      expectedCoverage,
+      expectedLabel,
+      actualCoverage: isCorrect ? expectedCoverage : null,
+      actualLabel: remedialSelected,
+      isCorrect,
+      whyCorrect: remedialExample.whyCorrect || "راجع المسار: نبدأ بالوظيفة أو العلاقة، ثم الحالة، ثم العلامة.",
+      actualOptionReason: isCorrect ? "صحيح؛ عالجت موضع الضعف في هذا المثال." : explainDistractor(remedialSelected, expectedLabel),
+    };
+    setRemedialResults((prev) => {
+      const next = [...prev];
+      next[remedialCursor] = row;
+      return next;
+    });
+    setRemedialChecked(true);
+  }
+
+  function goNextRemedial() {
+    if (!remedialChecked) {
+      checkRemedialAnswer();
+      return;
+    }
+    if (remedialCursor + 1 >= remedialQueue.length) {
+      setRemedialActive(false);
+      setToast("انتهى التدريب العلاجي السريع");
+      bringWorkAreaIntoView("center", 80);
+      return;
+    }
+    setRemedialCursor((c) => c + 1);
+    setRemedialSelected(null);
+    setRemedialChecked(false);
+    bringWorkAreaIntoView("center", 80);
   }
 
   const topicName = extractTopicName(title);
@@ -4565,6 +4799,8 @@ export default function ExercisePlayer({
   }
 
   function goToPracticeNext(nextState: any) {
+    if (practiceNextLockRef.current) return;
+    practiceNextLockRef.current = true;
     setPracticeWrongPanel(null);
     setPracticeCorrectionMode(false);
     setPracticeRetryReady(false);
@@ -4572,7 +4808,7 @@ export default function ExercisePlayer({
     setFeedback(null);
     setSuccessNudge("واصل. في التدريب نثبت السرعة والدقة معًا.");
     setCardPhase("success");
-    window.setTimeout(() => { setState(nextState); setCardPhase("idle"); }, 520);
+    window.setTimeout(() => { setState(nextState); setCardPhase("idle"); practiceNextLockRef.current = false; }, 520);
   }
 
   return (
@@ -4635,7 +4871,72 @@ export default function ExercisePlayer({
         </section>
       )}
 
-      {quizFinished ? (
+      {mode === "quiz" && remedialActive ? (
+        <section className="exercise-panel exercise-quiz-summary" style={box}>
+          <div className="exercise-summary-head">
+            <div>
+              <div className="exercise-summary-kicker">عالج ضعفي</div>
+              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>تدريب علاجي سريع</div>
+              <div style={{ opacity: 0.9 }}>مثال {Math.min(remedialCursor + 1, remedialQueue.length)} / {remedialQueue.length}</div>
+            </div>
+            <button type="button" onClick={() => setRemedialActive(false)} style={ghostBtn}>العودة للنتيجة</button>
+          </div>
+
+          {remedialExample ? (
+            <>
+              <section className="exercise-panel exercise-sentence-panel" style={{ ...box, marginTop: 12 }}>
+                <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
+                <div className="exercise-sentence">{renderSentence(remedialExample.sentence, remedialExample.target)}</div>
+                <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>اختر الإعراب الصحيح للتدريب على موضع الضعف.</div>
+              </section>
+
+              <div className="quiz-form-card-options" style={{ marginTop: 12 }}>
+                {remedialOptions.map((option, idx) => {
+                  const selected = remedialSelected === option;
+                  const isCorrect = remedialChecked && isSameQuizAnswer(option, remedialExpectedLabel);
+                  const isWrong = remedialChecked && selected && !isCorrect;
+                  return (
+                    <button
+                      key={`${option}-${idx}`}
+                      onClick={() => {
+                        if (remedialChecked) return;
+                        setRemedialSelected(option);
+                      }}
+                      className={`exercise-answer-btn quiz-form-option ${selected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""}`}
+                      style={{
+                        ...answerBtn,
+                        background: isCorrect ? "rgba(34,197,94,.18)" : isWrong ? "rgba(251,146,60,.18)" : selected ? "rgba(47,158,158,.22)" : "rgba(255,255,255,.05)",
+                        borderColor: isCorrect ? "rgba(34,197,94,.65)" : isWrong ? "rgba(251,146,60,.65)" : selected ? "#2f9e9e" : "rgba(255,255,255,.14)",
+                      }}
+                    >
+                      <span className="quiz-option-dot">{idx + 1}</span>
+                      <span>{option}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {remedialChecked ? (
+                <div className={`exercise-review-card ${remedialIsCheckedCorrect ? "is-correct" : "is-wrong"}`} style={{ padding: 12, border: "1px solid rgba(255,255,255,.12)", borderRadius: 16, background: remedialIsCheckedCorrect ? "rgba(34,197,94,.12)" : "rgba(251,146,60,.12)", marginTop: 12, lineHeight: 1.9 }}>
+                  <strong>{remedialIsCheckedCorrect ? "✅ صحيح" : "❌ راجع السبب"}</strong>
+                  <div><strong>الإجابة الصحيحة:</strong> {remedialExpectedLabel}</div>
+                  {!remedialIsCheckedCorrect ? <div style={{ color: "#ffd5a8" }}><strong>سبب الخطأ:</strong> {explainDistractor(remedialSelected, remedialExpectedLabel)}</div> : null}
+                  <div style={{ color: "#b8ffd4" }}><strong>تذكير سريع:</strong> {remedialExample.whyCorrect || "ابدأ بالوظيفة أو العلاقة، ثم الحالة، ثم العلامة."}</div>
+                </div>
+              ) : null}
+
+              <div className="quiz-form-actions" style={{ marginTop: 12 }}>
+                <button type="button" onClick={() => { setRemedialSelected(null); setRemedialChecked(false); }} style={ghostBtn}>إعادة المثال</button>
+                <button type="button" onClick={goNextRemedial} style={primaryNavBtn} disabled={!remedialSelected}>
+                  {remedialChecked ? (remedialCursor + 1 >= remedialQueue.length ? "إنهاء العلاج" : "مثال علاجي جديد") : "تحقق"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="exercise-practice-warning">لا توجد أمثلة علاجية جاهزة الآن.</div>
+          )}
+        </section>
+      ) : quizFinished ? (
         <section className="exercise-panel exercise-quiz-summary" style={box}>
           <div className="exercise-summary-head">
             <div>
@@ -4649,13 +4950,31 @@ export default function ExercisePlayer({
           </div>
 
           <div style={{ marginBottom: 12, opacity: 0.85 }}>معيار النجاح: {QUIZ_PASS_PERCENT}% أو أكثر</div>
-          {canDownloadCertificate ? (
-            <a href={`/certificate?topicId=${topicId}&level=${level}`} style={{ ...primaryNavBtn, display: "inline-flex", textDecoration: "none", marginBottom: 16 }}>
-              تحميل الشهادة
-            </a>
-          ) : (
+          <div className="quiz-form-actions" style={{ marginBottom: 16, justifyContent: "flex-start", flexWrap: "wrap" }}>
+            {canDownloadCertificate ? (
+              <a href={`/certificate?topicId=${topicId}&level=${level}`} style={{ ...primaryNavBtn, display: "inline-flex", textDecoration: "none" }}>
+                تحميل الشهادة
+              </a>
+            ) : (
+              <button type="button" style={{ ...primaryNavBtn, opacity: 0.45, cursor: "not-allowed" }} disabled>
+                تحميل الشهادة
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={startRemedialTraining}
+              style={{ ...primaryNavBtn, background: canStartRemedial ? undefined : "rgba(255,255,255,.12)", opacity: canStartRemedial ? 1 : 0.48, cursor: canStartRemedial ? "pointer" : "not-allowed" }}
+              disabled={!canStartRemedial}
+            >
+              عالج ضعفي
+            </button>
+          </div>
+          {!canDownloadCertificate ? (
             <div className="exercise-practice-warning" style={{ marginBottom: 16 }}>الشهادة لا تُتاح إلا بعد النجاح بنسبة 80% فأكثر.</div>
-          )}
+          ) : null}
+          {!canStartRemedial && quizFinished ? (
+            <div className="exercise-practice-warning" style={{ marginBottom: 16 }}>لا توجد أخطاء ظاهرة لبناء تدريب علاجي منها.</div>
+          ) : null}
 
           <div style={{ display: "grid", gap: 10 }}>
             {answeredQuizRows.map((a, idx) => (

@@ -13378,3 +13378,39 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
   transform: none !important;
   opacity: 1 !important;
 }
+
+
+/* Start page wording polish: no repeated sentence and click-only guidance. */
+.start-learning-refined .start-target-only-card{
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin: 8px auto 14px !important;
+  padding: 9px 16px !important;
+  background: rgba(224,184,76,.07) !important;
+  border: 1px solid rgba(224,184,76,.22) !important;
+  box-shadow: none !important;
+}
+.start-learning-refined .start-target-only-card .target-task-row{
+  font-size: 15px !important;
+}
+.click-guidance-note{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:fit-content;
+  max-width:100%;
+  margin:4px auto 8px;
+  padding:9px 14px;
+  border-radius:999px;
+  background:rgba(47,158,158,.10);
+  border:1px solid rgba(47,158,158,.24);
+  color:#d9fffb;
+  font-weight:900;
+  line-height:1.7;
+  text-align:center;
+}
+.refined-click-guidance-note span{display:inline-block;}
+@media(max-width:700px){
+  .start-learning-refined .start-target-only-card{width:100% !important;}
+  .click-guidance-note{width:100%;border-radius:16px;font-size:13px;}
+}

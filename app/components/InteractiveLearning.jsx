@@ -35,19 +35,6 @@ function shuffle(arr) {
   return [...arr];
 }
 
-function plainSentence(sentence, target) {
-  if (!sentence || !target) return sentence || "";
-  const idx = sentence.indexOf(target);
-  if (idx < 0) return sentence;
-  return (
-    <>
-      {sentence.slice(0, idx)}
-      <span className="start-target-word">{target}</span>
-      {sentence.slice(idx + target.length)}
-    </>
-  );
-}
-
 function getStepLead(stepIndex, step) {
   if (step?.lead) return step.lead;
   if (stepIndex === 0) return "أول خطوة: نميّز الكلمة.";
@@ -119,7 +106,6 @@ export default function InteractiveLearning({ examples = [] }) {
   const [board, setBoard] = useState([]);
   const [feedback, setFeedback] = useState(null);
   const [locked, setLocked] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
   const [streak, setStreak] = useState(0);
   const [activeTerm, setActiveTerm] = useState(null);
   const feedbackRef = useRef(null);
@@ -147,7 +133,6 @@ export default function InteractiveLearning({ examples = [] }) {
     setBoard([]);
     setFeedback(null);
     setLocked(false);
-    setDragOver(false);
     setStreak(0);
     setActiveTerm(null);
   }
@@ -158,14 +143,12 @@ export default function InteractiveLearning({ examples = [] }) {
     setBoard([]);
     setFeedback(null);
     setLocked(false);
-    setDragOver(false);
     setStreak(0);
     setActiveTerm(null);
   }
 
   function handleAnswer(value) {
     if (locked || done || !step) return;
-    setDragOver(false);
     if (value === step.answer) {
       setLocked(true);
       setStreak((s) => s + 1);
@@ -199,9 +182,7 @@ export default function InteractiveLearning({ examples = [] }) {
             </div>
             <div className="start-sticky-progress-bar"><i style={{ width: `${done ? 100 : Math.max(7, visualProgress)}%` }} /></div>
           </div>
-          <div className="sentence-task-card refined-sentence-task-card">
-            <div className="task-label">في جملة:</div>
-            <p className="interactive-sentence plain-sentence">{plainSentence(example.sentence, example.target)}</p>
+          <div className="sentence-task-card refined-sentence-task-card start-target-only-card">
             <div className="target-task-row">
               <span>المطلوب إعراب</span>
               <mark>{example.target}</mark>
@@ -226,9 +207,7 @@ export default function InteractiveLearning({ examples = [] }) {
                 {choices.map((choice) => (
                   <button
                     key={choice}
-                    draggable
                     disabled={locked}
-                    onDragStart={(e) => e.dataTransfer.setData("text/plain", choice)}
                     onClick={() => handleAnswer(choice)}
                     className="drag-choice"
                   >
@@ -237,20 +216,8 @@ export default function InteractiveLearning({ examples = [] }) {
                 ))}
               </div>
 
-              <div
-                className={`drop-zone build-drop-zone refined-build-drop-zone ${dragOver ? "is-over" : ""}`}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOver(true);
-                }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  handleAnswer(e.dataTransfer.getData("text/plain"));
-                }}
-                aria-label="منطقة بناء الإعراب"
-              >
-                <span className="build-value has-value">{currentBuild || "اسحب هنا أو انقر على الإجابة"}</span>
+              <div className="click-guidance-note refined-click-guidance-note" aria-live="polite">
+                <span>{currentBuild ? `آخر خطوة: ${currentBuild}` : "انقر على الإجابة الصحيحة للانتقال إلى الخطوة التالية."}</span>
               </div>
 
               {feedback ? (
