@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createInitialState } from "../../lib/exercise/state";
 import { chooseAnswer } from "../../lib/exercise/engine";
 import { getTopicProgress } from "../../lib/db";
+import { looksLikeProgrammingOption, toStudentArabicOption } from "../../lib/studentOptionText";
 
 type Mode = "learn" | "practice" | "quiz";
 
@@ -1435,6 +1436,11 @@ function normalizeThinkingNode(node: any, state: any) {
     ];
   }
 
+  answers = answers.map((answer: any) => ({
+    ...answer,
+    text: toStudentArabicOption(answer?.text),
+  }));
+
   return { ...node, context, text, hint, answers };
 }
 
@@ -1552,6 +1558,53 @@ function practiceWrongMicroHint(answer: any, node: any, state: any) {
   if (question.includes("خبر")) return `اسأل: هل (${target}) أتمت المعنى عن الاسم قبلها؟`;
   if (question.includes("آخر") || String(node?.id || "").includes("ending")) return `انظر إلى آخر (${target}) فقط.`;
   return "فكّر في علاقة الكلمة داخل الجملة، لا في الحفظ فقط.";
+}
+
+function cleanPracticeTeacherPart(text?: string | null) {
+  return String(text || "")
+    .replace(/^\s*(?:[0-9٠-٩]+)[\).:\-–—]\s*/, "")
+    .replace(/^\s*[•●▪◦\-–—]\s*/, "")
+    .replace(/^صحيح[؛،:.]?\s*/, "")
+    .replace(/اختر الإجابة الصحيحة مما (?:يأتي|يلي)[:：]?/g, "")
+    .replace(/انظر إلى الكلمة المحددة في المثال، ثم اختر ما يثبته المثال نفسه[.،]?/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function practiceTeacherNarrative(parts: Array<string | null | undefined>, target?: string) {
+  const clean = parts.map(cleanPracticeTeacherPart).filter(Boolean) as string[];
+  if (!clean.length) return "لنعد إلى الكلمة المحددة، فنحدد وظيفتها أولًا، ثم حالتها، ثم علامتها حتى نصل إلى الإعراب الصحيح.";
+
+  const connectors = ["", "ثم ", "وبعد ذلك ", "وبناءً على ما عرفناه، "];
+  const connected = clean.map((raw, index) => {
+    let part = raw
+      .replace(/^ابدأ من/, "نبدأ من")
+      .replace(/^ابدأ بـ/, "نبدأ بـ")
+      .replace(/^إذن[:：]?\s*/, "وبذلك نصل إلى النتيجة: ");
+
+    if (index === 0) {
+      if (/^(نبدأ|لنبدأ|انظر|اسأل|ننظر|نحدد|نتأكد|نفحص)/.test(part)) return part;
+      const focus = String(target || "الكلمة المحددة").trim();
+      return `نبدأ بالنظر إلى «${focus}». ${part}`;
+    }
+
+    if (/^(ثم|وبعد ذلك|بعد ذلك|وبما أن|وبما أنها|وبما أنه|لذلك|ولهذا|وبذلك|والآن|أما|إذا|عندما|وهذا|وهذه|وهو|وهي|وللتأكد|ومن هنا)/.test(part)) return part;
+    return `${connectors[Math.min(index, connectors.length - 1)]}${part}`;
+  });
+
+  return connected
+    .join(" ")
+    .replace(/\.\s*\./g, ".")
+    .replace(/\s+([،؛:.])/g, "$1")
+    .trim();
+}
+
+function practiceTeacherHint(rawHint: string, target?: string) {
+  const pieces = String(rawHint || "")
+    .split(/\n+/)
+    .map(cleanPracticeTeacherPart)
+    .filter(Boolean);
+  return practiceTeacherNarrative(pieces, target);
 }
 
 function answerEffectLabel(node: any, answer: any, state: any) {
@@ -3705,11 +3758,11 @@ function quizTargetHead(example?: QuizExampleLike | null) {
 }
 
 function localizeQuizOptionToExample(option: string, example?: QuizExampleLike | null) {
-  const line = firstLine(option);
+  const line = toStudentArabicOption(firstLine(option));
   const idx = line.indexOf(":");
   const head = quizTargetHead(example);
   if (idx <= 0 || !head) return line;
-  return `${head}${line.slice(idx)}`;
+  return toStudentArabicOption(`${head}${line.slice(idx)}`);
 }
 
 function localQuizExpectedLabel(label: string, example?: QuizExampleLike | null) {
@@ -3852,14 +3905,14 @@ function coverageDisplayLabel(key?: string | null) {
     "tawabi.waw": "الواو",
   };
   if (labels[k]) return labels[k];
-  return k.includes(".") ? k.split(".").pop()?.replace(/_/g, " ") || k : k;
+  return toStudentArabicOption(k, "التصنيف النحوي المناسب");
 }
 
 function safeFinalLabel(tree: any, example: any, fallbackCoverage?: string) {
   const fromExample = exampleFinalLabel(example);
-  if (fromExample && !fromExample.includes(".")) return fromExample;
+  if (fromExample && !looksLikeProgrammingOption(fromExample)) return toStudentArabicOption(fromExample);
   const fromResult = findResultLabelByCoverage(tree, fallbackCoverage);
-  if (fromResult && !fromResult.includes(".")) return fromResult;
+  if (fromResult && !looksLikeProgrammingOption(fromResult)) return toStudentArabicOption(fromResult);
   return coverageDisplayLabel(fallbackCoverage);
 }
 
@@ -4477,7 +4530,10 @@ export default function ExercisePlayer({
       thinkingNode?.hint ||
       "فكّر في السؤال الحالي فقط."
     ).trim();
-    setDialogBubble({ tone: "hint", text: `${smartHint}
+    const visibleHint = mode === "practice"
+      ? practiceTeacherHint(smartHint, state?.currentTarget)
+      : smartHint;
+    setDialogBubble({ tone: "hint", text: `${visibleHint}
 
 عد إلى السؤال، ثم اختر الإجابة الصحيحة مما يأتي لنكمل الإعراب.` });
     setDroppedChoice(null);
@@ -4495,7 +4551,10 @@ export default function ExercisePlayer({
 
     if (picked?.isHelp || picked?.id === "__help" || pickedText === "لا أعلم") {
       const smartHint = studentHintText(activeNode, null, state) || activeNode?.hint || "فكّر في السؤال الحالي فقط.";
-      setDialogBubble({ tone: "hint", text: `${smartHint}
+      const visibleHint = mode === "practice"
+        ? practiceTeacherHint(String(smartHint), state?.currentTarget)
+        : smartHint;
+      setDialogBubble({ tone: "hint", text: `${visibleHint}
 
 اضغط «فهمت» ثم اختر الإجابة المناسبة لنكمل الإعراب.` });
       setDroppedChoice(null);
@@ -4510,7 +4569,10 @@ export default function ExercisePlayer({
       const smartHint = isBuiltTypeNode
         ? builtNounTypeHintByValue(expectedBuiltType)
         : studentHintText(thinkingNode, picked, state);
-      setDialogBubble({ tone: "hint", text: `${isPracticeMode ? "محاولة جيدة؛ هذه فرصة لتقوية المهارة.\n" : ""}${smartHint || "فكّر في السؤال الحالي فقط."}
+      const visibleHint = isPracticeMode
+        ? practiceTeacherHint(String(smartHint || "فكّر في السؤال الحالي فقط."), state?.currentTarget)
+        : (smartHint || "فكّر في السؤال الحالي فقط.");
+      setDialogBubble({ tone: "hint", text: `${isPracticeMode ? "محاولة جيدة؛ دعنا نراجع الفكرة معًا.\n" : ""}${visibleHint}
 
 عد للسؤال وانقر على الإجابة الصحيحة لنكمل الإعراب.` });
       setDroppedChoice(null);
@@ -4807,8 +4869,18 @@ export default function ExercisePlayer({
       });
       if (!correct) break;
       const answerText = String(correct.text || "").trim();
-      if (steps.length === 0) push(`ابدأ من «${target}»: ${answerText}.`);
-      else push(`${answerText}.`);
+      const normalizedNode = normalizeThinkingNode(n, nextState);
+      const normalizedCorrect = normalizedNode?.answers?.find((a: any) => a.id === correct.id) || correct;
+      const teacherLine = teacherSuccessText(
+        normalizedNode,
+        normalizedCorrect,
+        nextState,
+        normalizeBuildPiece(answerText, n?.id || "")
+      );
+      const cleanedTeacherLine = cleanPracticeTeacherPart(teacherLine);
+      if (cleanedTeacherLine && !cleanedTeacherLine.includes("نكمل خطوة التفكير التالية")) push(cleanedTeacherLine);
+      else if (steps.length === 0) push(`نبدأ من «${target}» فنحدد أن الإجابة المناسبة هي: ${answerText}.`);
+      else push(`ثم نثبت أن الإجابة المناسبة هنا هي: ${answerText}.`);
       nextState = chooseAnswer({ state: nextState, tree, answerId: correct.id } as any).nextState;
     }
     if (expected && !steps.some((x) => x.includes(expected))) push(`إذن: ${expected}.`);
@@ -4855,7 +4927,6 @@ export default function ExercisePlayer({
       <section className="exercise-hero-card card card-glow">
         <div className="exercise-hero-main">
           <span className="exercise-badge stage-learning-badge">{stageTitle}</span>
-          {stageMeta.subtitle ? <p className="exercise-page-subtitle">{stageMeta.subtitle}</p> : null}
           {mode !== "quiz" && (
             <div className="exercise-meta-inline">
               <span className="pill pill-accent">المنجَز: {doneCount} / {totalCount}</span>
@@ -4890,12 +4961,6 @@ export default function ExercisePlayer({
         </div>
       </section>
 
-
-
-      <div className="kana-example-progress-wrap global-example-progress-wrap" aria-label="تقدم الأمثلة العام">
-        <span className="kana-example-progress-label">{mode === "quiz" ? `${Math.min(quizCursor + 1, exampleProgressTotal)} / ${exampleProgressTotal}` : `${exampleProgressDone} / ${exampleProgressTotal} مهارة`}</span>
-        <ProgressDots total={exampleProgressTotal} done={exampleProgressDone} current={exampleProgressCurrent} />
-      </div>
 
       {mode !== "quiz" && isDone && node?.type === "result" && (
         <section className="exercise-complete-banner final-only-complete-banner">
@@ -4949,7 +5014,7 @@ export default function ExercisePlayer({
                       }}
                     >
                       <span className="quiz-option-dot">{idx + 1}</span>
-                      <span>{option}</span>
+                      <span>{toStudentArabicOption(option)}</span>
                     </button>
                   );
                 })}
@@ -5021,7 +5086,7 @@ export default function ExercisePlayer({
                 <div style={{ fontWeight: 800, marginBottom: 6 }}>السؤال {idx + 1}: {a.isCorrect ? "✅ صحيح" : "❌ خطأ"}</div>
                 <div style={{ marginBottom: 6 }}>الجملة: <span style={{ fontSize: 18 }}>{renderSentence(a.sentence, a.target)}</span></div>
                 <div style={{ marginBottom: 4 }}><strong>إجابتك:</strong> {a.actualLabel || "لم يختر إجابة"}</div>
-                <div style={{ marginBottom: 4 }}><strong>الإجابة الصحيحة:</strong> {a.expectedLabel || a.expectedCoverage}</div>
+                <div style={{ marginBottom: 4 }}><strong>الإجابة الصحيحة:</strong> {a.expectedLabel || coverageDisplayLabel(a.expectedCoverage)}</div>
                 {!a.isCorrect && a.actualOptionReason && <div style={{ marginTop: 6, color: "#ffd5a8", lineHeight: 1.8 }}><strong>سبب خطأ اختيارك:</strong> {a.actualOptionReason}</div>}
                 {!a.isCorrect && a.whyCorrect && <div style={{ marginTop: 6, color: "#b8ffd4", lineHeight: 1.8 }}><strong>سبب الصحة:</strong> {a.whyCorrect}</div>}
               </div>
@@ -5057,7 +5122,7 @@ export default function ExercisePlayer({
                   }}
                 >
                   <span className="quiz-option-dot">{idx + 1}</span>
-                  <span>{option}</span>
+                  <span>{toStudentArabicOption(option)}</span>
                 </button>
               ))}
             </div>
@@ -5093,6 +5158,19 @@ export default function ExercisePlayer({
               </div>
             ) : null}
 
+            {node?.type === "question" && mode === "learn" ? (
+              <div className="solution-step-progress" aria-label="خطوات حل المثال">
+                <div className="solution-step-progress-head">
+                  <strong>خطوات حل المثال</strong>
+                  <span>الخطوة {currentStageStep} من {estimatedStepTotal}</span>
+                </div>
+                <div className="solution-step-progress-track" aria-hidden="true">
+                  <i style={{ width: `${Math.max(5, stageProgressPercent)}%` }} />
+                </div>
+                <p>كل خطوة تبني على ما عرفناه قبلها حتى نصل إلى الإعراب الكامل.</p>
+              </div>
+            ) : null}
+
             {node?.type === "question" ? (
               <div
                 ref={activeCardRef}
@@ -5108,11 +5186,6 @@ export default function ExercisePlayer({
                   if (answerId) handleLearnDrop(answerId, label);
                 }}
               >
-                <div className="algorithm-card-number algorithm-card-progress-number" aria-label="تقدم المثال">
-                  <span className="algorithm-card-progress-label">{`خطوة ${currentStageStep}/${estimatedStepTotal}`}</span>
-                  <i style={{ width: `${Math.max(5, stageProgressPercent)}%` }} />
-                </div>
-
                 <div key={`${state.currentNodeId}`} className={`question-content-motion question-text-${questionVisualPhase}`} aria-live="polite">
                   <div className="sequential-sentence-line" aria-label="الجملة">
                     <span className="dialogue-label">في الجملة:</span>
@@ -5143,11 +5216,11 @@ export default function ExercisePlayer({
                         <div className="practice-direct-board" aria-label="تحدي الإعراب السريع">
                           {practiceWrongPanel ? (
                             <div className="practice-wrong-sequence is-primary-panel" role="alert" aria-live="assertive">
-                              <div className="practice-wrong-title">ليست الإجابة دقيقة.</div>
-                              <div className="practice-wrong-subtitle">اتبع التسلسل الصحيح:</div>
-                              <ol>
-                                {practiceWrongPanel.steps.map((step, i) => <li key={`${step}-${i}`}>{renderSmartText(step, setActiveGlossary)}</li>)}
-                              </ol>
+                              <div className="practice-wrong-title">دعنا نراجعها معًا</div>
+                              <div className="practice-wrong-subtitle">سأربط لك الفكرة حتى تصل إلى الإعراب الصحيح:</div>
+                              <div className="practice-teacher-explanation">
+                                {renderSmartText(practiceTeacherNarrative(practiceWrongPanel.steps, state.currentTarget), setActiveGlossary)}
+                              </div>
                               <div className="practice-wrong-actions">
                                 <button type="button" onClick={() => { setPracticeWrongPanel(null); setFeedback(null); setPracticeRetryReady(true); bringWorkAreaIntoView("center", 40); }}>أعد المحاولة</button>
                                 <button type="button" className="secondary" onClick={() => goToPracticeNext(practiceWrongPanel.nextState)}>أكمل بعد التصحيح</button>
@@ -5178,7 +5251,7 @@ export default function ExercisePlayer({
                                       bringWorkAreaIntoView("center", 40);
                                     }
                                   }}>
-                                    <span>{idx + 1}</span><strong>{renderSmartText(option, setActiveGlossary)}</strong>
+                                    <span>{idx + 1}</span><strong>{renderSmartText(toStudentArabicOption(option), setActiveGlossary)}</strong>
                                   </button>
                                 ))}
                               </div>
@@ -5193,7 +5266,7 @@ export default function ExercisePlayer({
                           <div className="practice-fast-options">
                             {currentChoiceAnswers.map((a: any, idx: number) => (
                               <button key={a.id} type="button" disabled={cardPhase !== "idle"} onClick={() => handlePick(a.id)} className={`practice-fast-option ${feedback?.wrongId === a.id ? "is-wrong" : ""}`}>
-                                <span className="practice-fast-number">{idx + 1}</span><strong>{renderSmartText(a.text, setActiveGlossary)}</strong>
+                                <span className="practice-fast-number">{idx + 1}</span><strong>{renderSmartText(toStudentArabicOption(a.text), setActiveGlossary)}</strong>
                               </button>
                             ))}
                           </div>
@@ -5230,7 +5303,7 @@ export default function ExercisePlayer({
                                 style={answerBtn}
                               >
                                 {mode === "learn" ? <span className="answer-drag-mini">{answerDragLabel(mode)}</span> : null}
-                                <span className="answer-main-text">{String(tree?.startNodeId || "").includes("past") ? String(a.text || "") : renderSmartText(a.text, setActiveGlossary)}</span>
+                                <span className="answer-main-text">{String(tree?.startNodeId || "").includes("past") ? toStudentArabicOption(a.text) : renderSmartText(toStudentArabicOption(a.text), setActiveGlossary)}</span>
                               </button>
                             );
                           })}
@@ -5432,6 +5505,11 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
           </div> : null}
         </>
       )}
+
+      <div className="kana-example-progress-wrap global-example-progress-wrap global-example-progress-bottom" aria-label="تقدم الأمثلة العام">
+        <span className="kana-example-progress-label">{mode === "quiz" ? `${Math.min(quizCursor + 1, exampleProgressTotal)} / ${exampleProgressTotal}` : `${exampleProgressDone} / ${exampleProgressTotal} مهارة`}</span>
+        <ProgressDots total={exampleProgressTotal} done={exampleProgressDone} current={exampleProgressCurrent} />
+      </div>
 
       {activeGlossary && SMART_GLOSSARY[activeGlossary] ? (
         <div className="smart-popover" role="dialog" aria-label={SMART_GLOSSARY[activeGlossary].title}>

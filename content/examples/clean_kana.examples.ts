@@ -99,7 +99,8 @@ export const cleanKanaExamples: Example[] = [
     "facts": {
       "targetRole": "ism",
       "nounKind": "mabni",
-      "mabniType": "damir"
+      "mabniType": "damir",
+      "finalI3rab": "واو الجماعة: ضمير متصل مبني في محل رفع اسم ما انفك."
     },
     "covers": [
       "kana_ism.connected_damir"

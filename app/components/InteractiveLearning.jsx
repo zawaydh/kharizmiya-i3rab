@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { START_END_COPY } from "../../content/dialogueCopy";
+import { toStudentArabicOption } from "../../lib/studentOptionText";
 
 const START_GLOSSARY = {
   "الأفعال الخمسة": ["كل فعل مضارع اتصلت به واو الجماعة أو ياء المخاطبة أو ألف الاثنين.", "ترفع بثبوت النون، وتنصب وتجزم بحذف النون."],
@@ -211,7 +212,7 @@ export default function InteractiveLearning({ examples = [] }) {
                     onClick={() => handleAnswer(choice)}
                     className="drag-choice"
                   >
-                    {choice}
+                    {toStudentArabicOption(choice)}
                   </button>
                 ))}
               </div>

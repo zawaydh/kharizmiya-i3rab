@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PATHS_COPY } from "../../content/dialogueCopy";
+import { toStudentArabicOption } from "../../lib/studentOptionText";
 
 type TreeNode = {
   id: string;
@@ -72,7 +73,7 @@ function splitText(text?: string, max = 28) {
 
 
 function shortPathAnswerLabel(text?: string) {
-  const raw = String(text || "").trim();
+  const raw = toStudentArabicOption(text);
   if (!raw) return "";
   if (raw.startsWith("نعم")) return "نعم";
   if (raw.startsWith("لا")) return "لا";

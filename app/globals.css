@@ -13324,8 +13324,6 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
 }
 .practice-wrong-title{font-size:18px;font-weight:950;color:#7a3f10;line-height:1.8}
 .practice-wrong-subtitle{font-weight:900;color:#415866;margin-bottom:8px}
-.practice-wrong-sequence ol{margin:8px 0 0;padding:0 22px 0 0;display:grid;gap:7px}
-.practice-wrong-sequence li{font-weight:850;line-height:1.85;color:#102b3a}
 .practice-wrong-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .practice-wrong-actions button{
   border:0;
@@ -13353,12 +13351,8 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
   color:#7a3f10 !important;
   font-size:20px !important;
 }
-.practice-wrong-sequence.is-primary-panel .practice-wrong-subtitle,
-.practice-wrong-sequence.is-primary-panel li{
+.practice-wrong-sequence.is-primary-panel .practice-wrong-subtitle{
   color:#102b3a !important;
-}
-.practice-wrong-sequence.is-primary-panel ol{
-  gap:9px !important;
 }
 
 /* Stop the distracting vertical shake in Learn: keep the card fixed and animate only content lightly. */
@@ -13454,4 +13448,123 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
 .hint-after-options-btn:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* ===== 2026-07-12 Learn page hierarchy: steps above example, examples progress below ===== */
+.exercise-hero-card .exercise-page-subtitle{
+  display:none !important;
+}
+
+.solution-step-progress{
+  width:min(680px,100%);
+  margin:0 auto 12px;
+  padding:11px 14px 10px;
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(236,253,245,.98),rgba(255,247,214,.96));
+  border:1px solid rgba(47,158,158,.30);
+  box-shadow:0 10px 26px rgba(2,6,23,.11), inset 0 1px 0 rgba(255,255,255,.85);
+  color:#0f172a;
+  direction:rtl;
+}
+.solution-step-progress-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:7px;
+}
+.solution-step-progress-head strong{
+  color:#075985;
+  font-size:14px;
+  font-weight:950;
+}
+.solution-step-progress-head span{
+  padding:4px 9px;
+  border-radius:999px;
+  background:rgba(15,118,110,.10);
+  color:#0f766e;
+  font-size:12px;
+  font-weight:950;
+  white-space:nowrap;
+}
+.solution-step-progress-track{
+  height:8px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(15,118,110,.12);
+  box-shadow:inset 0 1px 2px rgba(15,23,42,.08);
+}
+.solution-step-progress-track i{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#0f766e,#2dd4bf,#e0b84c);
+  box-shadow:0 0 14px rgba(45,212,191,.32);
+  transition:width .45s ease;
+}
+.solution-step-progress p{
+  margin:6px 0 0;
+  color:#475569;
+  font-size:11.5px;
+  line-height:1.65;
+  text-align:center;
+  font-weight:750;
+}
+
+.exercise-page-shell .global-example-progress-wrap.global-example-progress-bottom{
+  display:flex !important;
+  width:fit-content !important;
+  max-width:calc(100% - 20px) !important;
+  margin:18px auto 8px !important;
+  padding:8px 12px !important;
+  border-radius:16px !important;
+  background:rgba(255,255,255,.06) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  box-shadow:none !important;
+  opacity:.90;
+}
+.exercise-page-shell .global-example-progress-wrap.global-example-progress-bottom .kana-example-progress-label{
+  color:rgba(255,255,255,.82) !important;
+  font-size:11.5px !important;
+}
+
+@media(max-width:700px){
+  .solution-step-progress{
+    margin:0 auto 9px;
+    padding:9px 10px 8px;
+    border-radius:15px;
+  }
+  .solution-step-progress-head strong{font-size:12.5px;}
+  .solution-step-progress-head span{font-size:11px;padding:3px 8px;}
+  .solution-step-progress-track{height:7px;}
+  .solution-step-progress p{font-size:10.5px;margin-top:5px;}
+  .exercise-page-shell .global-example-progress-wrap.global-example-progress-bottom{
+    margin:14px auto 4px !important;
+    padding:7px 9px !important;
+    gap:6px !important;
+  }
+}
+
+/* Practice hints: one connected teacher explanation instead of numbered steps. */
+.practice-teacher-explanation{
+  margin-top:10px;
+  padding:14px 16px;
+  border-radius:16px;
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(15,119,117,.18);
+  color:#173845;
+  font-size:16px;
+  font-weight:800;
+  line-height:2;
+  text-align:right;
+}
+.practice-wrong-sequence.is-primary-panel .practice-teacher-explanation{
+  color:#173845 !important;
+}
+@media(max-width:700px){
+  .practice-teacher-explanation{
+    padding:12px 13px;
+    font-size:14.5px;
+    line-height:1.9;
+  }
 }
