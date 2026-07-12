@@ -13414,3 +13414,44 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
   .start-learning-refined .start-target-only-card{width:100% !important;}
   .click-guidance-note{width:100%;border-radius:16px;font-size:13px;}
 }
+
+/* توجيه موحّد: السؤال ثم طلب الاختيار، ويأتي التلميح بعد جميع الخيارات. */
+.choice-selection-instruction {
+  margin: 10px 0 12px;
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.8;
+  color: rgba(235, 250, 250, 0.92);
+}
+
+.hint-after-options {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+
+.hint-after-options-btn {
+  appearance: none;
+  border: 1px solid rgba(79, 209, 197, 0.42);
+  border-radius: 999px;
+  background: rgba(23, 77, 82, 0.34);
+  color: #e8ffff;
+  padding: 9px 16px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.hint-after-options-btn:hover:not(:disabled),
+.hint-after-options-btn:focus-visible:not(:disabled) {
+  transform: translateY(-1px);
+  background: rgba(30, 111, 116, 0.46);
+  border-color: rgba(112, 235, 224, 0.72);
+  outline: none;
+}
+
+.hint-after-options-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

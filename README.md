@@ -1,20 +1,32 @@
-# kharizmiya-i3rab (MVP)
+# خوارزمية الإعراب
 
-Next.js + Supabase:
-- تسجيل/دخول Email + Password
-- جدول progress لحفظ التقدم لكل موضوع (مع RLS)
-- شهادة HTML عند اكتمال 100% (مؤقتاً)
+منصة تعليمية تفاعلية مبنية باستخدام Next.js وSupabase، وتقدّم التعلم في ثلاث مراحل: **تعلّم، تدرّب، اختبر نفسي**، مع حفظ التقدم وإصدار الشهادات.
 
-## تشغيل
-1) انسخ `.env.example` إلى `.env.local` وضع قيم Supabase.
-2) `npm i`
-3) `npm run dev`
+## التشغيل محليًا
+
+1. انسخ `.env.example` إلى `.env.local`.
+2. أضف بيانات Supabase:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3. ثبّت الحزم وشغّل المشروع:
+
+```bash
+npm install
+npm run dev
+```
+
+## البناء
+
+```bash
+npm run build
+npm start
+```
 
 ## Supabase
-نفّذ `supabase/schema.sql` داخل SQL Editor.
 
-## Vercel
-أضف Environment Variables:
-- NEXT_PUBLIC_SUPABASE_URL
-- NEXT_PUBLIC_SUPABASE_ANON_KEY
-ثم Redeploy
+- عند استخدام قاعدة البيانات الحالية العاملة: لا تُعد تشغيل ملفات SQL.
+- عند إنشاء قاعدة جديدة: نفّذ `supabase/schema.sql` أولًا، ثم ملفات `supabase/migrations` حسب ترتيب أسمائها.
+
+## النشر على Vercel
+
+أضف متغيري البيئة السابقين إلى إعدادات المشروع، ثم أعد النشر دون رفع ملفات البناء أو البيئة المحلية.

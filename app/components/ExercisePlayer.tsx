@@ -1445,16 +1445,34 @@ function isFiveVerbDecision(node: any) {
   return ["raf3_five", "nasb_five", "jazm_five"].includes(id) || text.includes("الأفعال الخمسة");
 }
 
+function isHintAnswerOption(answer: any) {
+  const text = String(answer?.text || "").trim();
+  return Boolean(
+    answer?.isHelp ||
+    answer?.id === "__help" ||
+    answer?.id === "help" ||
+    text === "لا أعلم" ||
+    text.includes("أحتاج تلميح") ||
+    text.includes("احتاج تلميح")
+  );
+}
+
+function withoutRepeatedChoiceInstruction(text: string) {
+  return String(text || "")
+    .replace(/\s*اختر الإجابة الصحيحة(?:\s+مما\s+(?:يلي|يأتي))?\s*[:：]?\s*$/, "")
+    .trim();
+}
+
 function dialogueQuestionText(node: any, target?: string, mode: Mode = "learn", state?: any, tree?: any, title?: string) {
-  if (state && tree) return openingDialogueLine(tree, node, state, title);
+  if (state && tree) return withoutRepeatedChoiceInstruction(openingDialogueLine(tree, node, state, title));
   const id = String(node?.id || "");
   const clean = cleanQuestionText(node);
   const t = target || "الكلمة المحددة";
   if (isFiveVerbDecision(node)) {
-    return `هل الفعل (${t}) من الأفعال الخمسة؟ وهي: كل فعل مضارع اتصل بواو الجماعة أو ياء المخاطبة أو ألف الاثنين.`;
+    return withoutRepeatedChoiceInstruction(`هل الفعل (${t}) من الأفعال الخمسة؟ وهي: كل فعل مضارع اتصل بواو الجماعة أو ياء المخاطبة أو ألف الاثنين.`);
   }
   const lead = "لنفكر بهدوء:";
-  return `${lead} ${clean}`;
+  return withoutRepeatedChoiceInstruction(`${lead} ${clean}`);
 }
 
 function dialogueQuestionNote(node: any) {
@@ -1796,7 +1814,6 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
   }
 
   if (start.includes("kana") || String(title || "").includes("كان")) {
-    return String(node?.text || "اختر الإجابة الصحيحة مما يلي:");
     const facts = state?.facts || {};
     const targetText = String(target || "الكلمة المحددة");
     const sentenceText = String(sentence || "الجملة");
@@ -4094,6 +4111,12 @@ export default function ExercisePlayer({
   const stageProgressPercent = stageMetaProgress.completedPercent;
   const questionVisualPhase = cardPhase === "success" ? "idle" : cardPhase;
   const stepKickerText = bridgeKickerText(tree, thinkingNode, state, title, completedStepCards);
+  const currentHintAnswer = node?.type === "question"
+    ? thinkingNode?.answers?.find((answer: any) => isHintAnswerOption(answer))
+    : null;
+  const currentChoiceAnswers = node?.type === "question"
+    ? (thinkingNode?.answers || []).filter((answer: any) => !isHintAnswerOption(answer))
+    : [];
   const resultCoverageKeys = node?.type === "result" ? resolveCoverageKeys({ tree, example, currentNodeId: state?.currentNodeId, requiredKeys: coverageKeysOrdered }) : [];
   const currentExampleKeyForStage = String(examples[currentIdx]?.id || currentIdx);
   const usedWithCurrent = new Set([...(usedExampleIdsRef.current || []), currentExampleKeyForStage]);
@@ -4444,6 +4467,21 @@ export default function ExercisePlayer({
       setMicroCelebrateAnswerId(null);
       stepReviewLockRef.current = false;
     }, 360);
+  }
+
+  function openCurrentHint() {
+    if (!node || node.type !== "question" || cardPhase !== "idle" || stepReview) return;
+    const smartHint = String(
+      currentHintAnswer?.hint ||
+      studentHintText(thinkingNode, null, state) ||
+      thinkingNode?.hint ||
+      "فكّر في السؤال الحالي فقط."
+    ).trim();
+    setDialogBubble({ tone: "hint", text: `${smartHint}
+
+عد إلى السؤال، ثم اختر الإجابة الصحيحة مما يأتي لنكمل الإعراب.` });
+    setDroppedChoice(null);
+    bringWorkAreaIntoView("soft", 40);
   }
 
   function handlePick(answerId: string) {
@@ -4887,7 +4925,8 @@ export default function ExercisePlayer({
               <section className="exercise-panel exercise-sentence-panel" style={{ ...box, marginTop: 12 }}>
                 <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
                 <div className="exercise-sentence">{renderSentence(remedialExample.sentence, remedialExample.target)}</div>
-                <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>اختر الإعراب الصحيح للتدريب على موضع الضعف.</div>
+                <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>تدرّب على موضع الضعف في هذا المثال.</div>
+                <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي:</div>
               </section>
 
               <div className="quiz-form-card-options" style={{ marginTop: 12 }}>
@@ -4997,7 +5036,8 @@ export default function ExercisePlayer({
             <div style={{ opacity: 0.6, marginBottom: 6 }}>السؤال {quizCursor + 1} من {quizOrder.length}</div>
             <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
             <div className="exercise-sentence">{renderSentence((example as QuizExampleLike)?.sentence, (example as QuizExampleLike)?.target)}</div>
-            <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>{enrichQuizPrompt((example as QuizExampleLike)?.prompt)}</div>
+            <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>{withoutRepeatedChoiceInstruction(enrichQuizPrompt((example as QuizExampleLike)?.prompt))}</div>
+            <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي:</div>
           </section>
 
           <section className="exercise-panel" style={box}>
@@ -5096,6 +5136,7 @@ export default function ExercisePlayer({
                   ) : (
                     <>
                       <div className="exercise-question-title clean-question-title">{renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}</div>
+                      <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي:</div>
                       {dialogueQuestionNote(thinkingNode) ? <div className="dialogue-question-note">{dialogueQuestionNote(thinkingNode)}</div> : null}
 
                       {isPracticeMode && !practiceCorrectionMode ? (
@@ -5150,7 +5191,7 @@ export default function ExercisePlayer({
                           <div className="practice-correction-head"><strong>نضبط المسار</strong><span>سؤال قصير في كل نقطة انحراف</span></div>
                           <div className="practice-correction-question">{renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}</div>
                           <div className="practice-fast-options">
-                            {thinkingNode.answers.map((a: any, idx: number) => (
+                            {currentChoiceAnswers.map((a: any, idx: number) => (
                               <button key={a.id} type="button" disabled={cardPhase !== "idle"} onClick={() => handlePick(a.id)} className={`practice-fast-option ${feedback?.wrongId === a.id ? "is-wrong" : ""}`}>
                                 <span className="practice-fast-number">{idx + 1}</span><strong>{renderSmartText(a.text, setActiveGlossary)}</strong>
                               </button>
@@ -5159,7 +5200,7 @@ export default function ExercisePlayer({
                         </div>
                       ) : (
                         <div className={`clean-answer-grid stage-one-draggable-grid`}>
-                          {thinkingNode.answers.map((a: any, idx: number) => {
+                          {currentChoiceAnswers.map((a: any, idx: number) => {
                             const answerClass = [
                               "exercise-answer-btn",
                               "clean-answer-btn",
@@ -5195,6 +5236,19 @@ export default function ExercisePlayer({
                           })}
                         </div>
                       )}
+
+                      {!practiceWrongPanel ? (
+                        <div className="hint-after-options">
+                          <button
+                            type="button"
+                            className="hint-after-options-btn"
+                            onClick={openCurrentHint}
+                            disabled={cardPhase !== "idle"}
+                          >
+                            أحتاج تلميحًا
+                          </button>
+                        </div>
+                      ) : null}
                     </>
                   )}
 
@@ -5272,23 +5326,6 @@ export default function ExercisePlayer({
                     )
                   ) : null}
                 </div>
-
-                {dialogBubble?.tone !== "hint" && !stepReview ? (
-                  <div className="clean-question-nav" style={{ marginTop: 10 }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const smartHint = studentHintText(thinkingNode, null, state);
-                        setDialogBubble({ tone: "hint", text: `${smartHint || "فكّر في السؤال الحالي فقط."}
-
-عد للسؤال وانقر على الإجابة الصحيحة لنكمل الإعراب.` });
-                      }}
-                      style={ghostBtn}
-                    >
-                      أحتاج تلميح
-                    </button>
-                  </div>
-                ) : null}
 
                 <div className="clean-question-nav">
                   <button type="button" onClick={() => { setFeedback(null); setDialogBubble(null); setStepReview(null); setCardPhase("idle"); setState(buildRunnerState(tree, mode, example)); }} style={ghostBtn}>إعادة المثال</button>

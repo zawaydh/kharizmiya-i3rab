@@ -9,8 +9,8 @@ export const metadata = {
   description: "منصة تعليمية تفاعلية تساعد الطلاب على فهم الإعراب عبر مسارات نحوية بصرية، تلميحات موجّهة، وتدريب خطوة بخطوة.",
   keywords: ["خوارزمية الإعراب", "تعلم الإعراب", "شرح الإعراب", "تعلم النحو", "الجملة الاسمية", "الفعل المضارع", "المبتدأ والخبر"],
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/brand-icon.svg",
+    shortcut: "/brand-icon.svg",
     apple: "/brand-icon.svg",
   },
   manifest: "/site.webmanifest",
