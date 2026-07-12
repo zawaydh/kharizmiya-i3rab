@@ -526,18 +526,6 @@ function presentBuiltClosureNote(node: any) {
   return "عندما تظهر علامة بناء في الفعل المضارع نغلق مسار الإعراب ونصل مباشرة إلى الحكم النهائي.";
 }
 
-function ProgressDots({ total, done, current }: { total: number; done: number; current?: number }) {
-  const safeTotal = Math.max(1, Math.min(total || 1, 32));
-  return (
-    <div className="progress-dots" aria-label="تقدم الأمثلة">
-      {Array.from({ length: safeTotal }).map((_, i) => {
-        const cls = i < done ? "is-done" : i === current ? "is-current" : "";
-        return <span key={i} className={cls} title={`خطوة ${i + 1}`} />;
-      })}
-    </div>
-  );
-}
-
 function getNodeContext(node: any, state: any) {
   if (node?.context) return node.context;
   const id = String(node?.id || "");
@@ -4162,7 +4150,7 @@ export default function ExercisePlayer({
   const estimatedStepTotal = stageMetaProgress.total;
   const currentStageStep = stageMetaProgress.current;
   const stageProgressPercent = stageMetaProgress.completedPercent;
-  const questionVisualPhase = cardPhase === "success" ? "idle" : cardPhase;
+  const questionVisualPhase = cardPhase;
   const stepKickerText = bridgeKickerText(tree, thinkingNode, state, title, completedStepCards);
   const currentHintAnswer = node?.type === "question"
     ? thinkingNode?.answers?.find((answer: any) => isHintAnswerOption(answer))
@@ -4603,34 +4591,42 @@ export default function ExercisePlayer({
     setFeedback(null);
 
     if (correctAdvanceTimerRef.current) window.clearTimeout(correctAdvanceTimerRef.current);
+    const successHold = nextNode?.type === "result" ? 260 : 170;
+    const exitDuration = nextNode?.type === "result" ? 300 : 240;
     correctAdvanceTimerRef.current = window.setTimeout(() => {
-      if (mode === "practice" && practiceCorrectionMode && nextNode?.type === "result") {
-        setState(buildRunnerState(tree, mode, example));
-        setPracticeCorrectionMode(false);
-        setPracticeRetryReady(true);
-        setDialogBubble(null);
-        setDroppedChoice(null);
-        setFeedback(null);
-        setCardPhase("idle");
-        setSuccessNudge("الآن طبّق التصحيح بنفسك وأعطِ النتيجة النهائية.");
-        bringWorkAreaIntoView("center", 60);
-        answerAdvanceLockRef.current = false;
-        return;
-      }
-      setState(res.nextState);
-      setDroppedChoice(null);
-      setDialogBubble(null);
-      setMicroCelebrateAnswerId(null);
-      setMicroCelebrate(0);
-      setCardPhase("entering");
-      bringWorkAreaIntoView(nextNode?.type === "result" ? "center" : "soft", 60);
+      setCardPhase("leaving");
       window.setTimeout(() => {
-        setCardPhase("idle");
-        setMicroCelebrate(0);
+        if (mode === "practice" && practiceCorrectionMode && nextNode?.type === "result") {
+          setState(buildRunnerState(tree, mode, example));
+          setPracticeCorrectionMode(false);
+          setPracticeRetryReady(true);
+          setDialogBubble(null);
+          setDroppedChoice(null);
+          setFeedback(null);
+          setCardPhase("entering");
+          setSuccessNudge("الآن طبّق التصحيح بنفسك وأعطِ النتيجة النهائية.");
+          bringWorkAreaIntoView("center", 60);
+          window.setTimeout(() => {
+            setCardPhase("idle");
+            answerAdvanceLockRef.current = false;
+          }, 280);
+          return;
+        }
+        setState(res.nextState);
+        setDroppedChoice(null);
+        setDialogBubble(null);
         setMicroCelebrateAnswerId(null);
-        answerAdvanceLockRef.current = false;
-      }, 260);
-    }, nextNode?.type === "result" ? 520 : 420);
+        setMicroCelebrate(0);
+        setCardPhase("entering");
+        bringWorkAreaIntoView(nextNode?.type === "result" ? "center" : "soft", 60);
+        window.setTimeout(() => {
+          setCardPhase("idle");
+          setMicroCelebrate(0);
+          setMicroCelebrateAnswerId(null);
+          answerAdvanceLockRef.current = false;
+        }, 280);
+      }, exitDuration);
+    }, successHold);
   }
 
   async function finalizeQuizExample() {
@@ -4767,7 +4763,9 @@ export default function ExercisePlayer({
   const stageTitle = stageLearningTitle(stageMeta.badge, title);
   const exampleProgressTotal = mode === "quiz" ? (quizOrder.length || quizCount || 1) : Math.max(1, coverageKeysOrdered.length || 1);
   const exampleProgressDone = mode === "quiz" ? Math.min(quizCursor, exampleProgressTotal) : Math.min(doneCount, exampleProgressTotal);
-  const exampleProgressCurrent = mode === "quiz" ? Math.min(quizCursor, Math.max(0, exampleProgressTotal - 1)) : Math.min(exampleProgressDone, Math.max(0, exampleProgressTotal - 1));
+  const exampleProgressPercent = mode === "quiz"
+    ? Math.min(100, Math.max(0, Math.round(((quizFinished ? exampleProgressTotal : quizCursor) / Math.max(1, exampleProgressTotal)) * 100)))
+    : Math.min(100, Math.max(0, Math.round((exampleProgressDone / Math.max(1, exampleProgressTotal)) * 100)));
   const i3rabDraft = buildI3rabDraft(tree, state, state.currentTarget);
   const i3rabTokens = i3rabTokensFromDraft(i3rabDraft);
   const isPracticeMode = mode === "practice";
@@ -4918,7 +4916,17 @@ export default function ExercisePlayer({
     setFeedback(null);
     setSuccessNudge("واصل. في التدريب نثبت السرعة والدقة معًا.");
     setCardPhase("success");
-    window.setTimeout(() => { setState(nextState); setCardPhase("idle"); practiceNextLockRef.current = false; }, 520);
+    window.setTimeout(() => {
+      setCardPhase("leaving");
+      window.setTimeout(() => {
+        setState(nextState);
+        setCardPhase("entering");
+        window.setTimeout(() => {
+          setCardPhase("idle");
+          practiceNextLockRef.current = false;
+        }, 280);
+      }, 240);
+    }, 170);
   }
 
   return (
@@ -5158,16 +5166,15 @@ export default function ExercisePlayer({
               </div>
             ) : null}
 
-            {node?.type === "question" && mode === "learn" ? (
-              <div className="solution-step-progress" aria-label="خطوات حل المثال">
+            {node?.type === "question" ? (
+              <div className="solution-step-progress solution-step-progress-sticky" aria-label="تقدم خطوات حل المثال">
                 <div className="solution-step-progress-head">
-                  <strong>خطوات حل المثال</strong>
-                  <span>الخطوة {currentStageStep} من {estimatedStepTotal}</span>
+                  <strong>خطوة {currentStageStep} من {estimatedStepTotal}</strong>
+                  <span>{stageProgressPercent}%</span>
                 </div>
                 <div className="solution-step-progress-track" aria-hidden="true">
-                  <i style={{ width: `${Math.max(5, stageProgressPercent)}%` }} />
+                  <i style={{ width: `${Math.max(4, stageProgressPercent)}%` }} />
                 </div>
-                <p>كل خطوة تبني على ما عرفناه قبلها حتى نصل إلى الإعراب الكامل.</p>
               </div>
             ) : null}
 
@@ -5240,7 +5247,15 @@ export default function ExercisePlayer({
                                       setSuccessNudge(practiceRetryReady ? "أحسنت. صححت المسار ووصلت إلى النتيجة بنفسك." : "إجابة دقيقة. طبّقت الخوارزمية بسرعة ووضوح.");
                                       setPracticeWrongPanel(null);
                                       setCardPhase("success");
-                                      window.setTimeout(() => { setState(route.nextState); setPracticeRetryReady(false); setCardPhase("idle"); }, 650);
+                                      window.setTimeout(() => {
+                                        setCardPhase("leaving");
+                                        window.setTimeout(() => {
+                                          setState(route.nextState);
+                                          setPracticeRetryReady(false);
+                                          setCardPhase("entering");
+                                          window.setTimeout(() => setCardPhase("idle"), 280);
+                                        }, 240);
+                                      }, 170);
                                     } else {
                                       const route = practiceCorrectRoute();
                                       setFeedback({ wrongId: String(idx) });
@@ -5506,9 +5521,14 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
         </>
       )}
 
-      <div className="kana-example-progress-wrap global-example-progress-wrap global-example-progress-bottom" aria-label="تقدم الأمثلة العام">
-        <span className="kana-example-progress-label">{mode === "quiz" ? `${Math.min(quizCursor + 1, exampleProgressTotal)} / ${exampleProgressTotal}` : `${exampleProgressDone} / ${exampleProgressTotal} مهارة`}</span>
-        <ProgressDots total={exampleProgressTotal} done={exampleProgressDone} current={exampleProgressCurrent} />
+      <div className="global-example-progress-wrap global-example-progress-bottom" aria-label="تقدم المرحلة">
+        <div className="global-example-progress-topline">
+          <span>{mode === "quiz" ? "تقدّم الاختبار" : "تقدّم المرحلة"}</span>
+          <strong>{mode === "quiz" ? `${Math.min(quizCursor + 1, exampleProgressTotal)} من ${exampleProgressTotal}` : `${exampleProgressDone} من ${exampleProgressTotal}`}</strong>
+        </div>
+        <div className="global-example-progress-track" aria-hidden="true">
+          <i style={{ width: `${Math.max(mode === "quiz" && !quizFinished ? 4 : 0, exampleProgressPercent)}%` }} />
+        </div>
       </div>
 
       {activeGlossary && SMART_GLOSSARY[activeGlossary] ? (
