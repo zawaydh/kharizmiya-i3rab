@@ -1825,12 +1825,12 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
       return `بعد استبعاد الأفعال الخمسة ننظر إلى آخر الفعل (${target}): هل هو صحيح الآخر أم معتل الآخر؟`;
     }
     if (nodeId.includes("weak")) {
-      return `ننظر إلى آخر أصل الفعل (${target}) في جملة ${sentence}: ما حرف العلة؟`;
+      return `ننظر إلى آخر أصل الفعل (${target}): ما حرف العلة؟`;
     }
   }
 
   if (start.includes("past")) {
-    if (nodeId === "past_word_kind") return `انظر إلى الكلمة المحددة (${target}) في جملة ${sentence}: ما نوعها؟`;
+    if (nodeId === "past_word_kind") return `انظر إلى الكلمة المحددة (${target}): ما نوعها؟`;
     if (nodeId === "past_tense") return `عرفنا أن (${target}) فعل. ما زمنه؟`;
     if (nodeId === "past_has_attachment") return `بما أن (${target}) فعل ماضٍ، والفعل الماضي مبني، نحتاج الآن إلى تحديد علامة بنائه حسب ما يتصل به. هل اتصل بآخره شيء؟`;
     if (nodeId === "past_connector_kind") return `عرفنا أن آخر الفعل (${target}) اتصل به شيء، فلنحدد ما هو لنعرف علامة البناء. فهل اتصل الفعل بـ:`;
@@ -1846,7 +1846,7 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
   }
 
   if (start.includes("imp")) {
-    if (nodeId === "imperative_word_kind") return `نركز على (${target}) في جملة ${sentence}. ما نوع الكلمة المحددة؟`;
+    if (nodeId === "imperative_word_kind") return `نركز على (${target}). ما نوع الكلمة المحددة؟`;
     if (nodeId === "imperative_meaning") return `عرفنا أن (${target}) فعل. ما دلالته هنا؟`;
     if (nodeId === "imperative_connection") return `عرفنا أن (${target}) يدل على طلب حصول الحدث، إذن هو فعل أمر. وفعل الأمر مبني دائمًا؛ هل اتصل بآخره شيء؟`;
     if (nodeId === "imperative_attached_kind") return `عرفنا أن (${target}) اتصل بآخره شيء. ما نوع هذا المتصل؟`;
@@ -2010,7 +2010,7 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
 
   if (start.includes("khabar")) {
     if (nodeId === "khabar_meaning_gate") {
-      return `لكي نعرب (${target}) في جملة ${sentence} نبدأ بالسؤال: ما وظيفة الكلمة أو التركيب المحدد بالنسبة إلى المبتدأ؟`;
+      return `لكي نعرب (${target}) نبدأ بالسؤال: ما وظيفة الكلمة أو التركيب المحدد بالنسبة إلى المبتدأ؟`;
     }
     if (nodeId === "khabar_kind") {
       return `بما أننا عرفنا أن (${target}) أخبرت عن المبتدأ وأتمت المعنى، فهي خبر. نسأل الآن: هل الخبر كلمة واحدة، أم جملة، أم شبه جملة؟`;
@@ -2047,7 +2047,7 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
 
   if (start.includes("present")) {
     if (nodeId === "present_word_kind") {
-      return `نركز على (${target}) في جملة ${sentence}. ما نوع الكلمة المحددة؟`;
+      return `نركز على (${target}). ما نوع الكلمة المحددة؟`;
     }
     if (nodeId === "present_tense") {
       return `عرفنا أن (${target}) فعل. ما زمنه؟`;
@@ -2146,7 +2146,7 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
 
   if (start.includes("tawabi")) {
     if (nodeId === "tawabi_entry") {
-      return `ننظر إلى (${target}) في جملة ${sentence}. قبل أن نسميها نعتًا أو عطفًا أو توكيدًا أو بدلًا: هل هي مرتبطة باسم قبلها أم تؤدي وظيفة أخرى؟`;
+      return `ننظر إلى (${target}). قبل أن نسميها نعتًا أو عطفًا أو توكيدًا أو بدلًا: هل هي مرتبطة باسم قبلها أم تؤدي وظيفة أخرى؟`;
     }
     if (nodeId === "tawabi_relation") {
       return `بما أن (${target}) مرتبطة باسم قبلها، نحدد نوع العلاقة: هل وصفت الاسم، أم شاركته بحرف عطف، أم أكدته، أم أوضحت المقصود منه؟`;
@@ -2180,7 +2180,7 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
       const subjectLabel = isPhrase ? "التركيب المحدد" : "الكلمة المطلوبة";
       const occurrenceText = isPhrase ? "وقع التركيب المحدد" : "وقعت الكلمة المطلوبة";
       const pronounText = isPhrase ? "وظيفته النحوية أو إعرابه" : "وظيفتها النحوية أو إعرابها";
-      return `المطلوب إعراب (${target}) في جملة ${sentence}. ${occurrenceText} في أول الجملة. قبل تحديد ${pronounText} نحتاج أولًا إلى معرفة النوع. أيُّ الخيارات الآتية يصف نوع ${subjectLabel}؟`;
+      return `المطلوب إعراب (${target}). ${occurrenceText} في أول الجملة. قبل تحديد ${pronounText} نحتاج أولًا إلى معرفة النوع. أيُّ الخيارات الآتية يصف نوع ${subjectLabel}؟`;
     }
     if (nodeId === "mubtada_function_gate") {
       const subjectLabel = String(target || "").includes(" ") ? "التركيب" : "كلمة";
@@ -2200,7 +2200,7 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
     }
   }
 
-  return `لكي نعرب ${kind} في جملة ${sentence} نركز على (${target}) ونسأل: ${cleanQuestionText(node)}`;
+  return `لكي نعرب ${kind} نركز على (${target}) ونسأل: ${cleanQuestionText(node)}`;
 }
 
 const fiveNounWrongSingularHint = (word: string) =>
@@ -4999,7 +4999,7 @@ export default function ExercisePlayer({
                 <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
                 <div className="exercise-sentence">{renderSentence(remedialExample.sentence, remedialExample.target)}</div>
                 <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>تدرّب على موضع الضعف في هذا المثال.</div>
-                <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي:</div>
+                <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي، ثم انقر عليها للمتابعة:</div>
               </section>
 
               <div className="quiz-form-card-options" style={{ marginTop: 12 }}>
@@ -5110,7 +5110,7 @@ export default function ExercisePlayer({
             <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
             <div className="exercise-sentence">{renderSentence((example as QuizExampleLike)?.sentence, (example as QuizExampleLike)?.target)}</div>
             <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>{withoutRepeatedChoiceInstruction(enrichQuizPrompt((example as QuizExampleLike)?.prompt))}</div>
-            <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي:</div>
+            <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي، ثم انقر عليها للمتابعة:</div>
           </section>
 
           <section className="exercise-panel" style={box}>
@@ -5216,7 +5216,7 @@ export default function ExercisePlayer({
                   ) : (
                     <>
                       <div className="exercise-question-title clean-question-title">{renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}</div>
-                      <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي:</div>
+                      <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي، ثم انقر عليها للمتابعة:</div>
                       {dialogueQuestionNote(thinkingNode) ? <div className="dialogue-question-note">{dialogueQuestionNote(thinkingNode)}</div> : null}
 
                       {isPracticeMode && !practiceCorrectionMode ? (
@@ -5340,16 +5340,6 @@ export default function ExercisePlayer({
                     </>
                   )}
 
-                  {stageTrailItems.length > 0 ? (
-                    <div className="stage-progress-under-options" aria-label="مسار البناء">
-                      <div className="i3rab-build-path embedded-trail" aria-label="ما بُني من الإعراب حتى الآن">
-                        <span className="i3rab-build-path-title">مسار البناء</span>
-                        <div className="i3rab-build-path-items">
-                          {stageTrailItems.map((item, idx) => <span key={`${item}-${idx}`}>✓ {item}</span>)}
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
 
                   {latestStepResult && dialogBubble?.tone !== "hint" ? (
                     <div className={`sequential-live-result ${droppedChoice?.tone === "bad" ? "is-bad" : droppedChoice?.tone === "ok" ? "is-ok" : ""}`} aria-live="polite">
