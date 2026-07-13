@@ -174,8 +174,8 @@ function renderSentence(sentence?: string, target?: string) {
 function getStageMeta(mode: Mode) {
   if (mode === "learn") {
     return {
-      badge: "تعلّم خطوة بخطوة",
-      subtitle: "رحلة مقسّمة إلى مهارات قصيرة؛ اقرأ نتيجة كل خطوة وسببها قبل الانتقال.",
+      badge: "مدرّب تفكير نحوي موجّه",
+      subtitle: "الإعراب خطوات؛ كل خطوة تفتح مسارًا وتغلق آخر حتى تصل إلى الإعراب الكامل.",
       nextLabel: "انتقل إلى تحدي المهارة →",
       nextHrefPrefix: "/train/",
     };
@@ -206,6 +206,7 @@ function stageLearningTitle(stageBadge: string, title?: string) {
   const topic = extractTopicName(title);
   if (stageBadge === "اختبر نفسي") return `اختبر نفسي في ${topic}`;
   if (stageBadge === "تحدي المهارة") return `تحدي المهارة في ${topic}`;
+  if (stageBadge === "مدرّب تفكير نحوي موجّه") return `مدرّب تفكير نحوي موجّه — ${topic}`;
   return `تعلّم ${topic} خطوة بخطوة`;
 }
 

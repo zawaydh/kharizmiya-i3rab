@@ -153,7 +153,7 @@ export default function InteractiveLearning({ examples = [] }) {
     if (value === step.answer) {
       setLocked(true);
       setStreak((s) => s + 1);
-      setFeedback({ type: "ok", text: step.reward || "رائع! أنجزت خطوة جديدة في بناء الإعراب. ننتقل بهدوء للخطوة التالية." });
+      setFeedback({ type: "ok", text: step.reward || "أحسنت؛ أغلقت هذا القرار وفتحت الخطوة التالية في مسار الإعراب." });
       setBoard((prev) => [...prev, step.boardText || value]);
       setTimeout(() => {
         setStepIndex((i) => i + 1);
@@ -170,7 +170,10 @@ export default function InteractiveLearning({ examples = [] }) {
     <main className="interactive-shell start-learning-refined" dir="rtl">
       <section className="interactive-card addictive-learning-card">
         <header className="interactive-topline clean-learning-topline">
-          <span>{example.topic}</span>
+          <div className="start-coach-copy">
+            <strong>مدرّب تفكير نحوي موجّه</strong>
+            <span>{example.topic}</span>
+          </div>
           <button onClick={nextExample} className="soft-mini-btn">مثال جديد</button>
         </header>
 
@@ -261,7 +264,7 @@ export default function InteractiveLearning({ examples = [] }) {
 
         <section className="i3rab-board addictive-board compact-build-board">
           <div className="board-title-row">
-            <h2>مسار البناء</h2>
+            <h2>مسار القرار الإعرابي</h2>
             <span>{progress}%</span>
           </div>
           <div className="board-progress"><span style={{ width: `${progress}%` }} /></div>

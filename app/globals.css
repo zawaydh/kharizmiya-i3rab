@@ -14044,3 +14044,85 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
     font-size:25px !important;
   }
 }
+
+
+/* ===== 2026-07-13 Brand positioning: guided grammatical thinking coach ===== */
+.luxe-home-page .luxe-wordmark{
+  width:min(380px,82vw) !important;
+  margin-bottom:16px !important;
+}
+.luxe-method-title{
+  display:grid;
+  gap:8px;
+  margin:0 0 18px !important;
+  text-align:center;
+}
+.luxe-method-title-main{
+  display:block;
+  color:#ffffff;
+  font-size:clamp(38px,5.5vw,72px);
+  line-height:1.15;
+  font-weight:950;
+}
+.luxe-method-title-sub{
+  display:block;
+  color:#f4cf63;
+  font-size:clamp(20px,2.5vw,34px);
+  line-height:1.55;
+  font-weight:900;
+}
+.luxe-home-page .luxe-hero-lead{
+  max-width:720px;
+  margin-inline:auto;
+  text-align:center;
+}
+.luxe-thinking-sequence{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:7px;
+  max-width:760px;
+  margin:4px auto 0;
+  color:#dffaf6;
+  font-size:13px;
+  line-height:1.5;
+}
+.luxe-thinking-sequence span{
+  padding:7px 11px;
+  border-radius:999px;
+  background:rgba(47,158,158,.12);
+  border:1px solid rgba(94,234,212,.18);
+  font-weight:850;
+}
+.luxe-thinking-sequence b{
+  color:#e0b84c;
+  font-size:16px;
+}
+.start-coach-copy{
+  display:grid;
+  gap:2px;
+  text-align:right;
+}
+.start-coach-copy strong{
+  color:#0f766e;
+  font-size:14px;
+  font-weight:950;
+}
+.start-coach-copy span{
+  color:inherit;
+  font-size:12px;
+  opacity:.78;
+  font-weight:800;
+}
+@media(max-width:700px){
+  .luxe-home-page .luxe-wordmark{width:min(320px,92vw) !important;}
+  .luxe-method-title{gap:5px;}
+  .luxe-method-title-main{font-size:clamp(32px,10vw,44px);}
+  .luxe-method-title-sub{font-size:clamp(18px,5.7vw,24px);line-height:1.55;}
+  .luxe-thinking-sequence{gap:5px;font-size:11.5px;}
+  .luxe-thinking-sequence span{padding:6px 8px;}
+  .luxe-thinking-sequence b{font-size:13px;}
+  .start-coach-copy strong{font-size:12.5px;}
+  .start-coach-copy span{font-size:11px;}
+}

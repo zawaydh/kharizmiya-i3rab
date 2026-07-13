@@ -11,7 +11,7 @@ export default function TopicsPage() {
     >
       <main className="topics-branch-page">
         <section className="card topics-branch-hero student-compact-hero">
-          <span className="section-kicker">خوارزمية الإعراب</span>
+          <span className="section-kicker">مدرّب تفكير نحوي موجّه</span>
           <h1 className="h1">اختر الموضوع</h1>
         </section>
 
