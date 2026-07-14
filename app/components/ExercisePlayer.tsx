@@ -3798,6 +3798,52 @@ function buildCloseQuizOptions(example: QuizExampleLike | undefined, seed: strin
   return finalOptions.slice(0, 4);
 }
 
+
+function buildRemedialTeacherExplanation(example?: QuizExampleLike | null, expectedLabel = "") {
+  if (!example) return "نبدأ من موقع الكلمة في الجملة، ثم نحدد وظيفتها أو نوع الفعل، وبعد ذلك نصل إلى الحكم والعلامة الصحيحة.";
+
+  const target = String(example.target || "الكلمة المحددة").replace(/[()]/g, "");
+  const facts = example.facts || {};
+  const label = expectedLabel || example.correctI3rab || facts.finalI3rab || "الإجابة الصحيحة";
+  const startId = String(facts.startNodeId || "");
+
+  if (facts.presentBase || startId.includes("imperative") || label.includes("فعل أمر")) {
+    const attached = facts.attached;
+    if (attached === "nun_niswa") return `نبدأ بـ«${target}»: هو فعل أمر اتصلت به نون النسوة. اتصال نون النسوة يجعل فعل الأمر مبنيًا على السكون، لذلك نصل إلى: ${label}.`;
+    if (["alif", "waw", "yaa"].includes(attached)) return `نبدأ بـ«${target}»: هو فعل أمر اتصل بضمير من ضمائر الأفعال الخمسة. عند الأمر نحذف النون، لذلك نصل إلى: ${label}.`;
+    if (facts.ending === "weak") {
+      const presentBase = facts.presentBase ? `نرده إلى مضارعه «${facts.presentBase}»` : "نرده إلى مضارعه";
+      const weak = facts.weakLetter === "alif" ? "الألف" : facts.weakLetter === "waw" ? "الواو" : facts.weakLetter === "ya" ? "الياء" : "حرف العلة";
+      return `نبدأ بـ«${target}»: هو فعل أمر لم يتصل به ضمير. ${presentBase} فنجد أن آخر أصله ${weak}، وقد حُذف في صيغة الأمر؛ لذلك نصل إلى: ${label}.`;
+    }
+    return `نبدأ بـ«${target}»: هو فعل أمر لم يتصل به شيء، وآخره صحيح؛ لذلك يكون مبنيًا على السكون، ونصل إلى: ${label}.`;
+  }
+
+  if (startId.includes("present") || label.includes("فعل مضارع") || Object.prototype.hasOwnProperty.call(facts, "hasTool")) {
+    const tool = facts.toolWord || facts.tool;
+    const toolText = facts.hasTool && tool ? `سبقته أداة «${tool}»` : "لم تسبقه أداة نصب أو جزم";
+    const shape = facts.shape === "five" ? "وهو من الأفعال الخمسة" : facts.ending === "weak" ? "وهو معتل الآخر" : "وهو صحيح الآخر";
+    return `نبدأ بـ«${target}»: هو فعل مضارع. ${toolText}، ${shape}. نجمع هذين القرارين لنحدد حالته وعلامته، فنصل إلى: ${label}.`;
+  }
+
+  if (startId.includes("past") || label.includes("فعل ماض")) {
+    const attached = facts.attached;
+    const attachedText = attached === "waw" ? "اتصلت به واو الجماعة" : attached === "nun_niswa" ? "اتصلت به نون النسوة" : attached === "taa_fael" || attached === "na" ? "اتصل به ضمير رفع متحرك" : attached === "alif" ? "اتصلت به ألف الاثنين" : attached === "taa_tanith" ? "اتصلت به تاء التأنيث الساكنة" : "لم يتصل بآخره ما يغيّر بناءه";
+    return `نبدأ بـ«${target}»: هو فعل ماضٍ، ثم نفحص ما اتصل بآخره. ${attachedText}؛ ومن هذا الاتصال نحدد علامة البناء ونصل إلى: ${label}.`;
+  }
+
+  if (label.includes("فاعل")) return `نبحث عمّن قام بالفعل في الجملة؛ فنجد أن «${target}» هو القائم به، لذلك وظيفته فاعل، والفاعل مرفوع دائمًا. ثم ننظر إلى صورة الكلمة لتحديد علامة الرفع، فنصل إلى: ${label}.`;
+  if (label.includes("مفعول به")) return `نبحث عمّا وقع عليه الفعل؛ فنجد أن «${target}» وقع عليه الحدث، لذلك وظيفته مفعول به، والمفعول به منصوب دائمًا. ثم ننظر إلى نوع الكلمة لتحديد علامة النصب، فنصل إلى: ${label}.`;
+  if (label.includes("مبتدأ")) return `نبدأ بالجملة الاسمية ونحدد الاسم الذي بدأ به الحديث؛ وهو «${target}»، لذلك هو مبتدأ مرفوع. ثم ننظر إلى نوعه لتحديد علامة الرفع، فنصل إلى: ${label}.`;
+  if (label.includes("خبر")) return `بعد تحديد المبتدأ أو الاسم الناسخ، نسأل: ما المعلومة التي أتمت المعنى؟ الجواب هو «${target}»، لذلك نحدد نوع الخبر وحكمه ثم علامته، فنصل إلى: ${label}.`;
+  if (label.includes("نعت")) return `نربط «${target}» بالاسم الذي قبله؛ فهو يصفه، لذلك هو نعت. والنعت يتبع منعوته في الإعراب، ثم نحدد العلامة من صورة الكلمة، فنصل إلى: ${label}.`;
+  if (label.includes("توكيد")) return `نلاحظ أن «${target}» أعاد اللفظ أو قوّى معنى الاسم قبله، لذلك هو توكيد. والتوكيد يتبع المؤكَّد في الإعراب، فننقل حكمه ثم نحدد العلامة، ونصل إلى: ${label}.`;
+  if (label.includes("بدل")) return `نلاحظ أن «${target}» هو المقصود بالحكم بعد اسم قبله، لذلك هو بدل. والبدل يتبع المبدل منه في الإعراب، ثم نحدد العلامة من صورة الكلمة، فنصل إلى: ${label}.`;
+  if (label.includes("معطوف")) return `نحدد الاسم قبل حرف العطف، ثم نجد أن «${target}» شاركه في الحكم، لذلك هو معطوف يتبع المعطوف عليه في الإعراب، فنصل إلى: ${label}.`;
+
+  return example.whyCorrect || `نبدأ بموقع «${target}» في الجملة، ثم نحدد وظيفته أو نوعه، وبعد ذلك نثبت الحكم والعلامة حتى نصل إلى: ${label}.`;
+}
+
 function buildRemedialQueueFromMistakes(rows: QuizAnswerRow[], sourceExamples: QuizExampleLike[]) {
   const wrongRows = rows.filter((row) => !row.isCorrect);
   const queue: QuizExampleLike[] = [];
@@ -3813,7 +3859,17 @@ function buildRemedialQueueFromMistakes(rows: QuizAnswerRow[], sourceExamples: Q
     queue.push({
       ...preferred,
       id: `remedial-${row.exampleId}-${idx}-${preferred.id}`,
-      prompt: "تدريب علاجي سريع: اختر الإعراب الصحيح بعد مراجعة سبب الخطأ.",
+      prompt: "لنحل مثالًا جديدًا من موضع الخطأ نفسه.",
+      facts: {
+        ...(preferred.facts || {}),
+        remedialOrigin: {
+          sentence: row.sentence,
+          target: row.target,
+          actualLabel: row.actualLabel,
+          expectedLabel: row.expectedLabel,
+          expectedCoverage: row.expectedCoverage,
+        },
+      },
     });
   });
 
@@ -4984,26 +5040,33 @@ export default function ExercisePlayer({
       )}
 
       {mode === "quiz" && remedialActive ? (
-        <section className="exercise-panel exercise-quiz-summary" style={box}>
-          <div className="exercise-summary-head">
+        <section className="exercise-panel remedial-stage" style={box}>
+          <div className="remedial-stage-head">
             <div>
-              <div className="exercise-summary-kicker">عالج ضعفي</div>
-              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>تدريب علاجي سريع</div>
-              <div style={{ opacity: 0.9 }}>مثال {Math.min(remedialCursor + 1, remedialQueue.length)} / {remedialQueue.length}</div>
+              <span>عالج ضعفي</span>
+              <h2>نفهم موضع الخطأ ثم نحل مثالًا جديدًا</h2>
+              <p>مثال {Math.min(remedialCursor + 1, remedialQueue.length)} من {remedialQueue.length}</p>
             </div>
             <button type="button" onClick={() => setRemedialActive(false)} style={ghostBtn}>العودة للنتيجة</button>
           </div>
 
           {remedialExample ? (
             <>
-              <section className="exercise-panel exercise-sentence-panel" style={{ ...box, marginTop: 12 }}>
-                <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
+              {remedialExample.facts?.remedialOrigin ? (
+                <div className="remedial-origin-card">
+                  <span>موضع الضعف الذي نعالجه</span>
+                  <p>{renderSentence(remedialExample.facts.remedialOrigin.sentence, remedialExample.facts.remedialOrigin.target)}</p>
+                  <div><strong>اختيارك السابق:</strong> {toStudentArabicOption(remedialExample.facts.remedialOrigin.actualLabel || "لم تُسجَّل إجابة")}</div>
+                </div>
+              ) : null}
+
+              <section className="remedial-example-card">
+                <span className="remedial-example-label">مثال جديد من المهارة نفسها</span>
                 <div className="exercise-sentence">{renderSentence(remedialExample.sentence, remedialExample.target)}</div>
-                <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>تدرّب على موضع الضعف في هذا المثال.</div>
-                <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي، ثم انقر عليها للمتابعة:</div>
+                <p>اختر الإعراب الصحيح للكلمة المحددة.</p>
               </section>
 
-              <div className="quiz-form-card-options" style={{ marginTop: 12 }}>
+              <div className="quiz-form-card-options remedial-options">
                 {remedialOptions.map((option, idx) => {
                   const selected = remedialSelected === option;
                   const isCorrect = remedialChecked && isSameQuizAnswer(option, remedialExpectedLabel);
@@ -5030,18 +5093,20 @@ export default function ExercisePlayer({
               </div>
 
               {remedialChecked ? (
-                <div className={`exercise-review-card ${remedialIsCheckedCorrect ? "is-correct" : "is-wrong"}`} style={{ padding: 12, border: "1px solid rgba(255,255,255,.12)", borderRadius: 16, background: remedialIsCheckedCorrect ? "rgba(34,197,94,.12)" : "rgba(251,146,60,.12)", marginTop: 12, lineHeight: 1.9 }}>
-                  <strong>{remedialIsCheckedCorrect ? "✅ صحيح" : "❌ راجع السبب"}</strong>
-                  <div><strong>الإجابة الصحيحة:</strong> {remedialExpectedLabel}</div>
-                  {!remedialIsCheckedCorrect ? <div style={{ color: "#ffd5a8" }}><strong>سبب الخطأ:</strong> {explainDistractor(remedialSelected, remedialExpectedLabel)}</div> : null}
-                  <div style={{ color: "#b8ffd4" }}><strong>تذكير سريع:</strong> {remedialExample.whyCorrect || "ابدأ بالوظيفة أو العلاقة، ثم الحالة، ثم العلامة."}</div>
+                <div className={`remedial-teacher-card ${remedialIsCheckedCorrect ? "is-correct" : "is-wrong"}`}>
+                  <div className="remedial-teacher-title">{remedialIsCheckedCorrect ? "أحسنت، ثبتت المهارة" : "لنحلها معًا"}</div>
+                  {!remedialIsCheckedCorrect ? (
+                    <p className="remedial-choice-reason"><strong>لماذا لم يناسب اختيارك؟</strong> {explainDistractor(remedialSelected, remedialExpectedLabel)}</p>
+                  ) : null}
+                  <p><strong>شرح خطوات الحل:</strong> {buildRemedialTeacherExplanation(remedialExample, remedialExpectedLabel)}</p>
+                  <div className="remedial-final-answer"><strong>الإجابة الصحيحة:</strong> {remedialExpectedLabel}</div>
                 </div>
               ) : null}
 
-              <div className="quiz-form-actions" style={{ marginTop: 12 }}>
-                <button type="button" onClick={() => { setRemedialSelected(null); setRemedialChecked(false); }} style={ghostBtn}>إعادة المثال</button>
+              <div className="quiz-form-actions remedial-actions">
+                <button type="button" onClick={() => { setRemedialSelected(null); setRemedialChecked(false); }} style={ghostBtn}>إعادة المحاولة</button>
                 <button type="button" onClick={goNextRemedial} style={primaryNavBtn} disabled={!remedialSelected}>
-                  {remedialChecked ? (remedialCursor + 1 >= remedialQueue.length ? "إنهاء العلاج" : "مثال علاجي جديد") : "تحقق"}
+                  {remedialChecked ? (remedialCursor + 1 >= remedialQueue.length ? "إنهاء العلاج" : "مثال جديد من موضع الضعف") : "تحقق من الإجابة"}
                 </button>
               </div>
             </>

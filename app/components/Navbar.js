@@ -6,22 +6,13 @@ import TopicDropdown from "./TopicDropdown";
 import { useAuthUser } from "./useAuthUser";
 import { supabase } from "../../lib/supabaseClient";
 
-function getDisplayName(user) {
-  const fullName = user?.user_metadata?.full_name?.trim?.();
-  if (fullName) return fullName;
-  const email = user?.email || "";
-  if (email.includes("@")) return email.split("@")[0];
-  return "الحساب";
-}
-
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuthUser();
+  const { isAuthenticated, isLoading } = useAuthUser();
   const locked = !isLoading && !isAuthenticated;
-  const accountLabel = "حسابي";
   const accountHref = !isLoading && isAuthenticated ? "/dashboard" : "/auth";
   const protectedHref = (href) => (locked ? "/auth" : href);
 
@@ -39,32 +30,49 @@ export default function Navbar() {
     router.push("/");
   }
 
+  function closeMenu() {
+    setOpen(false);
+  }
+
   return (
-    <header className="nav-clean nav-modern-shell nav-final-shell luxe-navbar">
-      <div className="nav-clean-inner nav-final-inner luxe-nav-inner">
-        <a href="/" className="luxe-nav-brand" aria-label="العودة إلى الصفحة الرئيسية">
-          <img src="/brand-icon.svg" alt="أيقونة منصة خوارزمية الإعراب" className="luxe-nav-icon" />
+    <header className="platform-navbar">
+      <div className="platform-navbar-inner">
+        <a href="/" className="platform-navbar-brand" aria-label="منصة خوارزمية الإعراب">
+          <img src="/brand-icon.svg" alt="" />
           <span>منصة خوارزمية الإعراب</span>
         </a>
 
-        <nav className="desktop-links nav-final-links luxe-desktop-nav" aria-label="التنقل الرئيسي">
-          <a href="/">الرئيسية</a>
-          <a href={protectedHref("/dashboard")} aria-disabled={locked}>لوحتي</a>
+        <nav className="platform-navbar-links" aria-label="التنقل الرئيسي">
+          <a href="/" className={pathname === "/" ? "is-active" : ""}>الرئيسية</a>
           <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="الموضوعات" locked={locked} />
-          <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="مسارات" locked={locked} mode="paths" />
-          <a href={accountHref} className="login-link nav-account-chip">{accountLabel}</a>
-          {isAuthenticated ? <button type="button" className="nav-logout-btn" onClick={logout}>خروج</button> : null}
+          <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="المسارات" locked={locked} mode="paths" />
+          <a href={protectedHref("/dashboard")} className={pathname === "/dashboard" ? "is-active" : ""}>لوحتي</a>
         </nav>
 
-        <button type="button" className="menu-btn nav-final-menu-btn luxe-menu-btn" onClick={() => setOpen((v) => !v)} aria-label="فتح القائمة" aria-expanded={open}>☰</button>
+        <div className="platform-navbar-account">
+          <a href={accountHref}>{isAuthenticated ? "حسابي" : "دخول"}</a>
+          {isAuthenticated ? <button type="button" onClick={logout}>خروج</button> : null}
+        </div>
 
-        <nav className={`mobile-menu-clean nav-final-mobile-menu luxe-mobile-menu ${open ? "open" : ""}`}>
-          <a href="/" onClick={() => setOpen(false)}>الرئيسية</a>
-          <a href={protectedHref("/dashboard")} onClick={() => setOpen(false)} aria-disabled={locked}>لوحتي</a>
-          <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={() => setOpen(false)} />
-          <TopicDropdown currentCode={currentTopicCode} buttonLabel="مسارات" className="mobile-topic-dropdown" locked={locked} mode="paths" onNavigate={() => setOpen(false)} />
-          <a href={accountHref} onClick={() => setOpen(false)} className="login-link mobile-login nav-account-chip">{accountLabel}</a>
-          {isAuthenticated ? <button type="button" className="nav-logout-btn mobile-logout" onClick={logout}>تسجيل الخروج</button> : null}
+        <button
+          type="button"
+          className="platform-navbar-menu"
+          onClick={() => setOpen((value) => !value)}
+          aria-label="فتح قائمة التنقل"
+          aria-expanded={open}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <nav className={`platform-navbar-mobile ${open ? "is-open" : ""}`} aria-label="التنقل على الهاتف">
+          <a href="/" onClick={closeMenu}>الرئيسية</a>
+          <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={closeMenu} />
+          <TopicDropdown currentCode={currentTopicCode} buttonLabel="المسارات" className="mobile-topic-dropdown" locked={locked} mode="paths" onNavigate={closeMenu} />
+          <a href={protectedHref("/dashboard")} onClick={closeMenu}>لوحتي</a>
+          <a href={accountHref} onClick={closeMenu}>{isAuthenticated ? "حسابي" : "دخول"}</a>
+          {isAuthenticated ? <button type="button" onClick={logout}>تسجيل الخروج</button> : null}
         </nav>
       </div>
     </header>

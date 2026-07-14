@@ -3,10 +3,6 @@
 import React from "react";
 import type { DiacriticsText, TextBlank } from "../../content/diacriticsTexts";
 
-function correctChoice(blank: TextBlank) {
-  return blank.choices.find((item) => item.correct)?.text || "";
-}
-
 function renderTemplate(
   template: string,
   blanks: TextBlank[],
@@ -52,6 +48,8 @@ export default function DiacriticsTextGame({
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [feedback, setFeedback] = React.useState<{ tone: "correct" | "wrong"; text: string } | null>(null);
   const [wrongChoice, setWrongChoice] = React.useState<string | null>(null);
+  const [advancing, setAdvancing] = React.useState(false);
+  const timerRef = React.useRef<number | null>(null);
 
   const text = texts[textIndex];
   const activeBlank = text?.blanks?.[blankIndex] || null;
@@ -62,7 +60,13 @@ export default function DiacriticsTextGame({
     setAnswers({});
     setFeedback(null);
     setWrongChoice(null);
+    setAdvancing(false);
+    if (timerRef.current) window.clearTimeout(timerRef.current);
   }, [textIndex]);
+
+  React.useEffect(() => () => {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+  }, []);
 
   if (!text) {
     return (
@@ -74,7 +78,7 @@ export default function DiacriticsTextGame({
   }
 
   function choose(textValue: string) {
-    if (!activeBlank || finished) return;
+    if (!activeBlank || finished || advancing) return;
     const selected = activeBlank.choices.find((item) => item.text === textValue);
     if (!selected) return;
 
@@ -82,7 +86,7 @@ export default function DiacriticsTextGame({
       setWrongChoice(textValue);
       setFeedback({
         tone: "wrong",
-        text: selected.feedback || activeBlank.wrongFeedback || "أعد قراءة الجملة وحدد موقع الكلمة قبل اختيار ضبطها.",
+        text: selected.feedback || activeBlank.wrongFeedback || "حدّد موقع الفراغ في الجملة، ثم اختر صورة الكلمة التي توافق حكمه الإعرابي.",
       });
       return;
     }
@@ -90,14 +94,22 @@ export default function DiacriticsTextGame({
     setWrongChoice(null);
     setAnswers((current) => ({ ...current, [activeBlank.id]: textValue }));
     setFeedback({ tone: "correct", text: selected.feedback || activeBlank.correctFeedback });
-    setBlankIndex((current) => current + 1);
+    setAdvancing(true);
+
+    timerRef.current = window.setTimeout(() => {
+      setBlankIndex((current) => current + 1);
+      setFeedback(null);
+      setAdvancing(false);
+    }, 1350);
   }
 
   function restartCurrentText() {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
     setBlankIndex(0);
     setAnswers({});
     setFeedback(null);
     setWrongChoice(null);
+    setAdvancing(false);
   }
 
   function nextText() {
@@ -105,33 +117,27 @@ export default function DiacriticsTextGame({
   }
 
   const activeId = finished ? null : activeBlank?.id || null;
-  const progress = Math.round((Math.min(blankIndex, text.blanks.length) / Math.max(1, text.blanks.length)) * 100);
+  const completedCount = Math.min(blankIndex, text.blanks.length);
+  const progress = Math.round((completedCount / Math.max(1, text.blanks.length)) * 100);
 
   return (
-    <main className="text-game-page" dir="rtl">
-      <section className="card text-game-hero">
+    <main className="text-game-page text-game-page-clean" dir="rtl">
+      <section className="card text-game-clean-head">
         <div>
-          <span className="section-kicker">لعبة النصوص: التشكيل والضبط</span>
+          <span>لعبة النصوص: التشكيل والضبط</span>
           <h1>{topicName}</h1>
-          <p>حدّد موقع الكلمة أولًا، ثم اختر صورتها المضبوطة. كل إجابة صحيحة تضيء الفراغ التالي.</p>
         </div>
-        <div className="text-game-counter">النص {textIndex + 1} من {texts.length}</div>
+        <strong>النص {textIndex + 1} من {texts.length}</strong>
       </section>
 
-      <section className="card text-game-card">
-        <div className="text-game-card-head">
-          <div>
-            <span>{text.domain}</span>
-            <h2>{text.title}</h2>
-          </div>
-          <div className="text-game-progress-meta">
-            <strong>{Math.min(blankIndex + 1, text.blanks.length)} / {text.blanks.length}</strong>
-            <span>{finished ? "اكتمل النص" : "موضع نشط"}</span>
-          </div>
+      <section className="card text-game-card text-game-card-clean">
+        <div className="text-game-clean-progress">
+          <span>{finished ? "اكتمل النص" : `الفراغ ${blankIndex + 1} من ${text.blanks.length}`}</span>
+          <i><b style={{ width: `${progress}%` }} /></i>
         </div>
 
-        <div className="text-game-progress-track" aria-label="تقدم حل النص">
-          <i style={{ width: `${progress}%` }} />
+        <div className="text-game-direct-question">
+          اختر الكلمة المناسبة حسب الموقع الإعرابي ونوع الكلمة.
         </div>
 
         <div className="text-game-passage">
@@ -139,14 +145,14 @@ export default function DiacriticsTextGame({
         </div>
 
         {!finished && activeBlank ? (
-          <div className="text-game-workspace">
-            <div className="text-game-instruction">اختر الصورة الدقيقة للكلمة في الموضع المضيء:</div>
+          <div className="text-game-workspace text-game-workspace-clean">
             <div className="text-game-options">
               {activeBlank.choices.map((item) => (
                 <button
                   key={item.text}
                   type="button"
                   onClick={() => choose(item.text)}
+                  disabled={advancing}
                   className={`text-game-option ${wrongChoice === item.text ? "is-wrong" : ""}`}
                 >
                   {item.text}
@@ -158,15 +164,15 @@ export default function DiacriticsTextGame({
 
         {feedback ? (
           <div className={`text-game-feedback ${feedback.tone === "correct" ? "is-correct" : "is-wrong"}`} aria-live="polite">
-            <strong>{feedback.tone === "correct" ? "أحسنت" : "راجع المسار"}</strong>
+            <strong>{feedback.tone === "correct" ? "أحسنت، هذا هو الضبط المناسب" : "راجع الموقع الإعرابي"}</strong>
             <p>{feedback.text}</p>
+            {feedback.tone === "correct" && advancing ? <span className="text-game-next-cue">ينتقل الآن إلى الفراغ التالي…</span> : null}
           </div>
         ) : null}
 
         {finished ? (
-          <div className="text-game-finished">
-            <span>اكتمل النص</span>
-            <h3>حوّلتَ الموقع الإعرابي إلى ضبط صحيح داخل نص غير مشكول.</h3>
+          <div className="text-game-finished text-game-finished-clean">
+            <h3>أكملت ضبط النص.</h3>
             <div className="text-game-actions">
               <a href={backHref} className="btn btn-primary">إنهاء</a>
               {texts.length > 1 ? <button type="button" className="btn btn-soft" onClick={nextText}>جرّب نصًا آخر</button> : null}
@@ -175,7 +181,7 @@ export default function DiacriticsTextGame({
           </div>
         ) : (
           <div className="text-game-secondary-actions">
-            <button type="button" className="text-link-button" onClick={restartCurrentText}>إعادة النص من البداية</button>
+            <button type="button" className="text-link-button" onClick={restartCurrentText}>إعادة النص</button>
           </div>
         )}
       </section>
