@@ -29,7 +29,7 @@ export default function Navbar() {
     const queryTopic = searchParams.get("topic");
     if (queryTopic) return queryTopic;
     const segments = (pathname || "").split("/").filter(Boolean);
-    if (segments.length >= 2 && ["learn", "train", "quiz"].includes(segments[0])) return segments[1];
+    if (segments.length >= 2 && ["learn", "train", "quiz", "texts"].includes(segments[0])) return segments[1];
     return undefined;
   }, [pathname, searchParams]);
 
@@ -43,8 +43,8 @@ export default function Navbar() {
     <header className="nav-clean nav-modern-shell nav-final-shell luxe-navbar">
       <div className="nav-clean-inner nav-final-inner luxe-nav-inner">
         <a href="/" className="luxe-nav-brand" aria-label="العودة إلى الصفحة الرئيسية">
-          <img src="/brand-icon.svg" alt="أيقونة خوارزمية الإعراب" className="luxe-nav-icon" />
-          <span>خوارزمية الإعراب</span>
+          <img src="/brand-icon.svg" alt="أيقونة منصة خوارزمية الإعراب" className="luxe-nav-icon" />
+          <span>منصة خوارزمية الإعراب</span>
         </a>
 
         <nav className="desktop-links nav-final-links luxe-desktop-nav" aria-label="التنقل الرئيسي">

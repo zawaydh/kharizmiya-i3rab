@@ -133,6 +133,7 @@ export default function DashboardPage() {
                       <a href={routes.learn} className="btn btn-soft">المرحلة الأولى</a>
                       <a href={routes.practice} className={`btn btn-soft ${!row.learn_completed ? "is-disabled-link" : ""}`}>المرحلة الثانية</a>
                       <a href={routes.quiz} className={`btn btn-soft ${!row.practice_completed ? "is-disabled-link" : ""}`}>المرحلة النهائية</a>
+                      <a href={row.quiz_total ? routes.texts : "#"} className={`btn btn-soft ${!row.quiz_total ? "is-disabled-link" : ""}`}>لعبة النصوص</a>
                       <a href={certificateAllowed ? `/certificate?topicId=${topicCode}&level=${row.level}` : "#"} className={`btn btn-soft ${!certificateAllowed ? "is-disabled-link" : ""}`}>الشهادة</a>
                     </div>
                   </article>

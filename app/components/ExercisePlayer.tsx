@@ -5054,7 +5054,7 @@ export default function ExercisePlayer({
           <div className="exercise-summary-head">
             <div>
               <div className="exercise-summary-kicker">النتيجة النهائية</div>
-              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>انتهى المرحلة النهائية</div>
+              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>انتهت المرحلة النهائية</div>
               <div style={{ opacity: 0.9 }}>نتيجتك: {quizScore} / {answeredQuizRows.length} ({quizPercent}%)</div>
             </div>
             <div className={`exercise-result-pill ${quizPercent >= QUIZ_PASS_PERCENT ? "is-pass" : "is-fail"}`}>
@@ -5081,6 +5081,12 @@ export default function ExercisePlayer({
             >
               عالج ضعفي
             </button>
+            <a
+              href={`/texts/${topicId}`}
+              style={{ ...primaryNavBtn, display: "inline-flex", textDecoration: "none", background: "linear-gradient(135deg,#7c3aed,#4f46e5)" }}
+            >
+              لعبة النصوص
+            </a>
           </div>
           {!canDownloadCertificate ? (
             <div className="exercise-practice-warning" style={{ marginBottom: 16 }}>الشهادة لا تُتاح إلا بعد النجاح بنسبة 80% فأكثر.</div>

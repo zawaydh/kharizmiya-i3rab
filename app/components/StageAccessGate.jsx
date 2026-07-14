@@ -8,6 +8,7 @@ const DEFAULT_TEXT = {
   practice: "أكمل المرحلة الأولى أولًا، ثم افتح المرحلة الثانية.",
   quiz: "أكمل المرحلة الأولى والمرحلة الثانية أولًا، ثم افتح المرحلة النهائية.",
   certificate: "الشهادة تظهر بعد إكمال المرحلة الأولى والمرحلة الثانية والنجاح في المرحلة النهائية.",
+  texts: "تفتح لعبة النصوص بعد إنهاء الاختبار مرة واحدة على الأقل.",
 };
 
 export default function StageAccessGate({ topicCode, level = 2, require = "learn", children }) {
@@ -33,6 +34,7 @@ export default function StageAccessGate({ topicCode, level = 2, require = "learn
         const learnOk = Boolean(row?.learn_completed || Number(row?.percent) >= 100);
         const practiceOk = Boolean(row?.practice_completed || Number(row?.practice_percent) >= 100);
         const quizOk = Boolean(row?.quiz_passed);
+        const quizAttempted = Number(row?.quiz_total || 0) > 0;
         const allowed =
           require === "practice"
             ? learnOk
@@ -40,7 +42,9 @@ export default function StageAccessGate({ topicCode, level = 2, require = "learn
               ? learnOk && practiceOk
               : require === "certificate"
                 ? learnOk && practiceOk && quizOk
-                : true;
+                : require === "texts"
+                  ? learnOk && practiceOk && quizAttempted
+                  : true;
         if (active) setStatus(allowed ? "allowed" : "blocked");
       } catch {
         if (active) setStatus("blocked");
@@ -61,6 +65,7 @@ export default function StageAccessGate({ topicCode, level = 2, require = "learn
 
   const nextLearn = topicCode ? `/learn/${topicCode}` : "/topics";
   const nextPractice = topicCode ? `/train/${topicCode}` : "/topics";
+  const nextQuiz = topicCode ? `/quiz/${topicCode}` : "/topics";
 
   return (
     <section className="student-flow-gate card card-glow" dir="rtl">
@@ -69,6 +74,7 @@ export default function StageAccessGate({ topicCode, level = 2, require = "learn
       <div className="student-flow-gate-actions">
         {require === "practice" ? <a className="btn btn-primary" href={nextLearn}>اذهب إلى المرحلة الأولى</a> : null}
         {require === "quiz" || require === "certificate" ? <a className="btn btn-primary" href={nextPractice}>اذهب إلى المرحلة الثانية</a> : null}
+        {require === "texts" ? <a className="btn btn-primary" href={nextQuiz}>اذهب إلى اختبر نفسي</a> : null}
         <a className="btn btn-soft" href="/dashboard">لوحتي</a>
       </div>
     </section>
