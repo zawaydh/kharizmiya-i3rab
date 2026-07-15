@@ -42,15 +42,17 @@ type PositionedNode = {
   w: number;
   h: number;
   textLines: string[];
+  targetLine?: string;
   node: TreeNode | null;
 };
 
-const BOX_W = 250;
-const BOX_H = 112;
-const DIA_W = 230;
-const DIA_H = 126;
-const LEVEL_GAP = 184;
-const SIBLING_GAP = 48;
+const BOX_W = 300;
+const BOX_H = 128;
+const QUESTION_W = 360;
+const QUESTION_BASE_H = 132;
+const ANSWER_H = 38;
+const LEVEL_GAP = 330;
+const SIBLING_GAP = 84;
 
 function splitText(text?: string, max = 28) {
   if (!text) return [];
@@ -180,8 +182,9 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
     const y = depth * LEVEL_GAP;
 
     const isQuestion = node.type === "question";
-    const w = isQuestion ? DIA_W : BOX_W;
-    const h = isQuestion ? DIA_H : BOX_H;
+    const answerCount = isQuestion ? Math.max(0, node.answers?.length || 0) : 0;
+    const w = isQuestion ? QUESTION_W : BOX_W;
+    const h = isQuestion ? QUESTION_BASE_H + answerCount * ANSWER_H + 24 : BOX_H;
 
     placed.set(id, {
       id,
@@ -190,7 +193,8 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
       y,
       w,
       h,
-      textLines: splitText(displayNodeQuestion(node), isQuestion ? 20 : 24),
+      textLines: splitText(displayNodeQuestion(node), isQuestion ? 34 : 30),
+      targetLine: isQuestion && example?.target ? example.target : undefined,
       node,
     });
 
@@ -255,7 +259,7 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
 
   const finalMaxX = Math.max(...all.map((n) => n.x + n.w));
   const width = Math.max(finalMaxX + 80, 920);
-  const height = maxY + 130;
+  const height = maxY + 340;
   return { nodes: all, edges, width, height };
 }
 
@@ -470,7 +474,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const scaledW = node.w * nextZoom;
       const scaledH = node.h * nextZoom;
       const left = Math.max(0, scaledLeft - (el.clientWidth - scaledW) / 2);
-      const top = Math.max(0, scaledTop - Math.max(28, (el.clientHeight - scaledH) * 0.32));
+      // نضع العقدة المطلوبة في الثلث العلوي من الشاشة، وتبقى فقاعة التلميح أسفلها بلا تغطية.
+      const top = Math.max(0, scaledTop - Math.max(22, el.clientHeight * 0.12));
       el.scrollTo({ left, top, behavior: "smooth" });
     });
   }
@@ -483,13 +488,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     const idx = treeNode.answers.findIndex((a: any) => a.id === answerId);
     if (idx < 0) return null;
 
-    const count = treeNode.answers.length;
-    const btnW = Math.max(48, Math.min(82, node.w / Math.max(2, count) - 8));
-    const totalW = count * btnW + (count - 1) * 5;
-    const startX = node.x + (node.w - totalW) / 2;
-    const bx = startX + idx * (btnW + 5);
-    const by = node.y + node.h - 24;
-    return { x: bx + btnW / 2, y: by + 10 };
+    const btnW = node.w - 44;
+    const bx = node.x + 22;
+    const by = node.y + QUESTION_BASE_H + idx * ANSWER_H + 6;
+    return { x: bx + btnW / 2, y: by + 15 };
   }
 
   function resetProgress(nextExample: Example | null) {
@@ -790,6 +792,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setShowHint(true);
     setMessage(hintText);
     setActiveGuidance(hintText);
+    setTimeout(() => focusNode(nodeId, 1.03), 60);
 
     const correctAnswer = node?.answers?.find((a: any) => answerIsCorrect(a, example));
     if (correctAnswer) {
@@ -822,6 +825,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       setActiveGuidance(hintText);
       setHighlightedAnswerKey(`${nodeId}:${answerId}`);
       setHighlightedAnswerKind("wrong");
+      setTimeout(() => focusNode(nodeId, 1.03), 60);
       if (anchor) {
         setActiveGuidance(hintText);
       }
@@ -923,10 +927,6 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
           </div>
         </div>
 
-        
-        <div className="paths-step-hint-panel" aria-live="polite">
-          <span>{activeGuidance || (activeNodeId ? stepHintForNode(tree.nodes[activeNodeId]) : PATHS_COPY.emptyGuidance)}</span>
-        </div>
         <div ref={canvasScrollRef} className="paths-react-canvas-scroll">
           <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
             <svg
@@ -989,12 +989,16 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     style={isStart ? { cursor: "pointer" } : undefined}
                   >
                     {isQuestion ? (
-                      <polygon
-                        points={diamondPoints(n.x, n.y, n.w, n.h)}
-                        fill="rgba(224,236,255,.98)"
-                        stroke={active ? "rgba(52,211,153,.98)" : visited ? "rgba(125,179,255,.82)" : "rgba(125,179,255,.46)"}
-                        strokeWidth={active ? 1.9 : 1.05}
-                        style={{ filter: active ? "drop-shadow(0 0 11px rgba(52,211,153,.52))" : visited ? "drop-shadow(0 0 5px rgba(125,179,255,.18))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
+                      <rect
+                        x={n.x}
+                        y={n.y}
+                        width={n.w}
+                        height={n.h}
+                        rx={24}
+                        fill="rgba(239,246,255,.99)"
+                        stroke={active ? "rgba(16,185,129,.98)" : visited ? "rgba(59,130,246,.72)" : "rgba(148,163,184,.52)"}
+                        strokeWidth={active ? 2.4 : 1.2}
+                        style={{ filter: active ? "drop-shadow(0 0 14px rgba(16,185,129,.34))" : visited ? "drop-shadow(0 5px 12px rgba(15,23,42,.08))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
                       />
                     ) : (
                       <rect
@@ -1011,35 +1015,64 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                       />
                     )}
 
-                    {n.textLines.map((line, i) => (
-                      <text
-                        key={`${n.id}-${i}`}
-                        x={n.x + n.w / 2}
-                        y={n.y + n.h / 2 + (i - (n.textLines.length - 1) / 2) * 14}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
-                      >
-                        {line}
-                      </text>
-                    ))}
+                    {isQuestion && n.targetLine ? (
+                      <g className="paths-react-target-chip">
+                        <rect x={n.x + 78} y={n.y + 18} width={n.w - 156} height={34} rx={17} />
+                        <text
+                          x={n.x + n.w / 2}
+                          y={n.y + 35}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          className="paths-react-target-text"
+                          direction="rtl"
+                        >
+                          {n.targetLine}
+                        </text>
+                      </g>
+                    ) : null}
+
+                    {n.textLines.map((line, i) => {
+                      const questionTop = isQuestion ? n.y + 78 : n.y + n.h / 2;
+                      return (
+                        <text
+                          key={`${n.id}-${i}`}
+                          x={n.x + n.w / 2}
+                          y={questionTop + (i - (n.textLines.length - 1) / 2) * 20}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
+                          direction="rtl"
+                        >
+                          {line}
+                        </text>
+                      );
+                    })}
 
                     {isQuestion && active && n.node?.answers ? (
                       <g>
                         {n.node.answers.map((answer, idx) => {
-                          const btnW = Math.max(38, Math.min(66, n.w / Math.max(2, n.node!.answers!.length) - 8));
-                          const totalW = n.node!.answers!.length * btnW + (n.node!.answers!.length - 1) * 5;
-                          const startX = n.x + (n.w - totalW) / 2;
-                          const bx = startX + idx * (btnW + 5);
-                          const by = n.y + n.h - 24;
+                          const btnW = n.w - 44;
+                          const bx = n.x + 22;
+                          const by = n.y + QUESTION_BASE_H + idx * ANSWER_H + 4;
+                          const answerLines = splitText(toStudentArabicOption(answer.text), 34).slice(0, 2);
                           const hintCorrect = showHint && active && answerIsCorrect(answer, example);
                           const answerHighlighted = highlightedAnswerKey === `${n.id}:${answer.id}`;
                           return (
-                            <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + 10 })}>
-                              <rect x={bx} y={by} width={btnW} height={20} rx={10} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" strokeWidth={0.9} />
-                              <text x={bx + btnW / 2} y={by + 10} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
-                                {shortPathAnswerLabel(answer.text)}
-                              </text>
+                            <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + 15 })}>
+                              <rect x={bx} y={by} width={btnW} height={32} rx={12} />
+                              {answerLines.map((answerLine, lineIndex) => (
+                                <text
+                                  key={`${answer.id}-${lineIndex}`}
+                                  x={bx + btnW / 2}
+                                  y={by + 16 + (lineIndex - (answerLines.length - 1) / 2) * 12}
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                  className="paths-react-answer-text"
+                                  direction="rtl"
+                                >
+                                  {answerLine}
+                                </text>
+                              ))}
                             </g>
                           );
                         })}
@@ -1049,6 +1082,24 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 );
               })}
             </svg>
+            {activeGuidance && activeNodeId && layoutNodeMap.get(activeNodeId) ? (() => {
+              const bubbleNode = layoutNodeMap.get(activeNodeId)!;
+              const bubbleWidth = Math.min(360, Math.max(280, bubbleNode.w));
+              return (
+                <div
+                  className={`paths-node-guidance-bubble ${showHint ? "is-hint" : ""}`}
+                  role="status"
+                  aria-live="polite"
+                  style={{
+                    width: bubbleWidth,
+                    left: (bubbleNode.x + bubbleNode.w / 2) * zoom - bubbleWidth / 2,
+                    top: (bubbleNode.y + bubbleNode.h + 22) * zoom,
+                  }}
+                >
+                  <span>{activeGuidance}</span>
+                </div>
+              );
+            })() : null}
           </div>
         </div>
         <div className="paths-thinking-dock paths-thinking-dock-hidden">

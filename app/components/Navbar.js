@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import TopicDropdown from "./TopicDropdown";
 import { useAuthUser } from "./useAuthUser";
@@ -8,21 +8,42 @@ import { supabase } from "../../lib/supabaseClient";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const headerRef = useRef(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const searchKey = searchParams.toString();
   const { isAuthenticated, isLoading } = useAuthUser();
   const locked = !isLoading && !isAuthenticated;
-  const accountHref = !isLoading && isAuthenticated ? "/dashboard" : "/auth";
   const protectedHref = (href) => (locked ? "/auth" : href);
 
-  const currentTopicCode = useMemo(() => {
-    const queryTopic = searchParams.get("topic");
-    if (queryTopic) return queryTopic;
-    const segments = (pathname || "").split("/").filter(Boolean);
-    if (segments.length >= 2 && ["learn", "train", "quiz", "texts"].includes(segments[0])) return segments[1];
-    return undefined;
-  }, [pathname, searchParams]);
+  const queryTopic = searchParams.get("topic");
+  const pathSegments = (pathname || "").split("/").filter(Boolean);
+  const currentTopicCode = queryTopic || (
+    pathSegments.length >= 2 && ["learn", "train", "quiz", "texts"].includes(pathSegments[0])
+      ? pathSegments[1]
+      : undefined
+  );
+
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname, searchKey]);
+
+  useEffect(() => {
+    function closeOutside(event) {
+      if (open && headerRef.current && !headerRef.current.contains(event.target)) setOpen(false);
+    }
+    function closeEscape(event) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", closeOutside);
+    document.addEventListener("keydown", closeEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOutside);
+      document.removeEventListener("keydown", closeEscape);
+    };
+  }, [open]);
 
   async function logout() {
     await supabase.auth.signOut();
@@ -35,7 +56,7 @@ export default function Navbar() {
   }
 
   return (
-    <header className="platform-navbar">
+    <header ref={headerRef} className="platform-navbar">
       <div className="platform-navbar-inner">
         <a href="/" className="platform-navbar-brand" aria-label="منصة خوارزمية الإعراب">
           <img src="/brand-icon.svg" alt="" />
@@ -50,8 +71,11 @@ export default function Navbar() {
         </nav>
 
         <div className="platform-navbar-account">
-          <a href={accountHref}>{isAuthenticated ? "حسابي" : "دخول"}</a>
-          {isAuthenticated ? <button type="button" onClick={logout}>خروج</button> : null}
+          {isAuthenticated ? (
+            <button type="button" onClick={logout}>تسجيل الخروج</button>
+          ) : (
+            <a href="/auth">تسجيل الدخول</a>
+          )}
         </div>
 
         <button
@@ -71,8 +95,11 @@ export default function Navbar() {
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={closeMenu} />
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="المسارات" className="mobile-topic-dropdown" locked={locked} mode="paths" onNavigate={closeMenu} />
           <a href={protectedHref("/dashboard")} onClick={closeMenu}>لوحتي</a>
-          <a href={accountHref} onClick={closeMenu}>{isAuthenticated ? "حسابي" : "دخول"}</a>
-          {isAuthenticated ? <button type="button" onClick={logout}>تسجيل الخروج</button> : null}
+          {isAuthenticated ? (
+            <button type="button" onClick={logout}>تسجيل الخروج</button>
+          ) : (
+            <a href="/auth" onClick={closeMenu}>تسجيل الدخول</a>
+          )}
         </nav>
       </div>
     </header>
