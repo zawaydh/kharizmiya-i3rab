@@ -13,8 +13,26 @@ export default function HomePage() {
 
         <div className="home-clean-copy home-message-column">
           <h1>الإعراب خطوات؛ كل خطوة تفتح مسارًا وتغلق آخر.</h1>
-          <a href="/learn/start" className="btn home-clean-cta">ابدأ تدريب التفكير</a>
+          <p className="home-entry-lead">ابدأ بتجربة قصيرة ترى فيها أثر الموقع الإعرابي في صورة الكلمة، ثم انتقل إلى التعلّم المنظّم.</p>
+          <div className="home-entry-actions">
+            <a href="/i3rab-in-our-speech" className="btn home-game-primary">جرّب الإعراب في كلامنا</a>
+            <a href="/learn/start" className="btn home-learning-secondary">ابدأ التعلّم المنظّم</a>
+          </div>
         </div>
+      </section>
+
+      <section className="card home-speech-game" aria-labelledby="speech-game-title">
+        <div className="home-speech-game-copy">
+          <span className="section-kicker">تطبيق سريع من الحياة اليومية</span>
+          <h2 id="speech-game-title">الإعراب في كلامنا</h2>
+          <p>ميّز بين الرفع والنصب والجر، وبين المضارع المرفوع والمنصوب والمجزوم، ثم اقرأ التعليل الذي يصل الموقع بالعلامة.</p>
+        </div>
+        <div className="home-speech-game-preview" aria-hidden="true">
+          <span>المزارعونَ / المزارعينَ</span>
+          <i>•</i>
+          <span>يكتبُ / لن يكتبَ / لم يكتبْ</span>
+        </div>
+        <a href="/i3rab-in-our-speech" className="btn home-speech-game-cta">ابدأ جولة متنوعة</a>
       </section>
 
       <section className="card home-clean-journey" aria-labelledby="journey-title">
