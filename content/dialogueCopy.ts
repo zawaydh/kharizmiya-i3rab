@@ -7,9 +7,9 @@ export const PATHS_COPY = {
   zoomOut: "−",
   treeTitle: "",
   stepHintLabel: "",
-  emptyGuidance: "انقر هنا لنبدأ، ثم اتبع السؤال داخل المسار.",
-  startNodeLine1: "انقر هنا لنبدأ",
-  startNodeLine2: "ثم أجب عن السؤال داخل المسار",
+  emptyGuidance: "جارٍ تجهيز أول تدريب داخل المسار.",
+  startNodeLine1: "المثال الحالي",
+  startNodeLine2: "ابدأ من السؤال الأول",
 };
 
 export const START_END_COPY = {

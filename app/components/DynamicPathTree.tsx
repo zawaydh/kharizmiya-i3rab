@@ -50,9 +50,9 @@ type PositionedNode = {
 const BOX_W = 250;
 const BOX_H = 112;
 const DIA_W = 270;
-const DIA_SHAPE_H = 148;
-const QUESTION_H = 226;
-const LEVEL_GAP = 244;
+const DIA_SHAPE_H = 166;
+const QUESTION_H = 238;
+const LEVEL_GAP = 248;
 const SIBLING_GAP = 38;
 
 function splitText(text?: string, max = 28) {
@@ -250,7 +250,12 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
       shapeH: isQuestion ? DIA_SHAPE_H : h,
       textLines: isQuestion ? [] : splitText(displayNodeQuestion(node, example), 24),
       contextLines: isQuestion && sentence ? splitText(`في الجملة: ${sentence}`, 34).slice(0, 2) : [],
-      questionLines: isQuestion ? splitText(displayNodeQuestion(node, example), 27).slice(0, 4) : [],
+      questionLines: isQuestion
+        ? [
+            ...splitText(displayNodeQuestion(node, example), 27).slice(0, 4),
+            "اختر الإجابة المناسبة مما يأتي:",
+          ]
+        : [],
       node,
     });
 
@@ -474,39 +479,45 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   }, [layout]);
 
   useEffect(() => {
-    setVisitedNodes([]);
-    setVisitedEdges([]);
-    setActiveNodeId(null);
-    setShowHint(false);
-    setMessage(PATHS_COPY.emptyGuidance);
-    setActiveGuidance(null);
-    setCurrentExampleIndex(-1);
-    setFinalNodeId(null);
-    setHighlightedAnswerKey(null);
-    setHighlightedAnswerKind(null);
-    setZoom(1);
-    setPathSteps([]);
     if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
-  }, [tree]);
+    const firstExample = examples[0] || null;
+    if (firstExample) {
+      setCurrentExampleIndex(0);
+      resetProgress(firstExample);
+    } else {
+      setExample(null);
+      setVisitedNodes([]);
+      setVisitedEdges([]);
+      setActiveNodeId(null);
+      setShowHint(false);
+      setMessage(PATHS_COPY.emptyGuidance);
+      setActiveGuidance(null);
+      setCurrentExampleIndex(-1);
+      setFinalNodeId(null);
+      setHighlightedAnswerKey(null);
+      setHighlightedAnswerKind(null);
+      setZoom(1);
+      setPathSteps([]);
+    }
+  }, [tree, examples]);
 
   useEffect(() => {
-    if (!layout || !canvasScrollRef.current || activeNodeId || currentExampleIndex >= 0) return;
-    const el = canvasScrollRef.current;
-    const node = layoutNodeMap.get("__exercise__") || layoutNodeMap.get(tree.startNodeId);
-    requestAnimationFrame(() => {
-      if (!node) return;
-      el.dir = "ltr";
-      const left = Math.max(0, node.x * zoom - (el.clientWidth - node.w * zoom) / 2);
-      const top = Math.max(0, node.y * zoom - 18);
-      el.scrollTo({ left, top, behavior: "auto" });
-    });
-  }, [layout, zoom, activeNodeId, currentExampleIndex, layoutNodeMap, tree.startNodeId]);
-
-  useEffect(() => {
-    if (!example || activeNodeId !== tree.startNodeId) return;
-    const t = setTimeout(() => focusNode("__exercise__", 1.02), 180);
+    if (!layout || !canvasScrollRef.current || !activeNodeId) return;
+    const t = setTimeout(() => focusNode(activeNodeId, recommendedZoom()), 150);
     return () => clearTimeout(t);
-  }, [example?.id, activeNodeId, tree.startNodeId, layout]);
+  }, [example?.id, layout, activeNodeId]);
+
+  useEffect(() => {
+    function handleResize() {
+      if (!activeNodeId) return;
+      window.clearTimeout((handleResize as any)._timer);
+      (handleResize as any)._timer = window.setTimeout(() => {
+        focusNode(activeNodeId, recommendedZoom());
+      }, 120);
+    }
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [activeNodeId, layout]);
 
   useEffect(() => {
     return () => {
@@ -514,6 +525,14 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       if (hintScrollFrameRef.current !== null) cancelAnimationFrame(hintScrollFrameRef.current);
     };
   }, []);
+
+  function recommendedZoom() {
+    const width = canvasScrollRef.current?.clientWidth || (typeof window !== "undefined" ? window.innerWidth : 1000);
+    if (width < 430) return 0.78;
+    if (width < 760) return 0.84;
+    if (width < 1050) return 0.9;
+    return 0.96;
+  }
 
   function focusNode(nodeId: string, targetZoom = 0.98) {
     if (!layout || !canvasScrollRef.current) return;
@@ -570,7 +589,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setCurrentExampleIndex(safeIndex);
     const next = examples[safeIndex] || null;
     resetProgress(next);
-    setTimeout(() => focusNode("__exercise__", 1.02), 180);
+    setTimeout(() => focusNode(tree.startNodeId, recommendedZoom()), 180);
   }
 
   function startNextExercise() {
@@ -929,43 +948,59 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const activeLayoutNode = activeNodeId ? layoutNodeMap.get(activeNodeId) : null;
   const guidanceBubble = showHint && activeGuidance && activeLayoutNode
     ? (() => {
-        const bubbleWidth = 300;
         const scrollBox = canvasScrollRef.current;
         const visibleLeft = scrollBox?.scrollLeft || 0;
         const visibleTop = scrollBox?.scrollTop || 0;
         const visibleWidth = scrollBox?.clientWidth || 720;
         const visibleHeight = scrollBox?.clientHeight || 560;
-        const nodeLeft = activeLayoutNode.x * zoom - visibleLeft;
-        const nodeTop = activeLayoutNode.y * zoom - visibleTop;
+        const bubbleWidth = Math.min(300, Math.max(190, visibleWidth - 28));
+        const bubbleHeight = visibleWidth < 520 ? 154 : 142;
+        const gap = 18;
+
+        const nodeLeft = activeLayoutNode.x * zoom;
+        const nodeTop = activeLayoutNode.y * zoom;
         const nodeWidth = activeLayoutNode.w * zoom;
         const nodeHeight = activeLayoutNode.h * zoom;
-        const rightSpace = visibleWidth - (nodeLeft + nodeWidth);
-        const leftSpace = nodeLeft;
-        const aboveSpace = nodeTop;
-        const belowSpace = visibleHeight - (nodeTop + nodeHeight);
-        let placement: "right" | "left" | "above" | "below" = "above";
-        if (rightSpace >= bubbleWidth + 30) placement = "right";
-        else if (leftSpace >= bubbleWidth + 30) placement = "left";
-        else if (aboveSpace >= 175) placement = "above";
-        else placement = belowSpace >= 155 ? "below" : "above";
+        const nodeCenterX = nodeLeft + nodeWidth / 2;
+        const nodeCenterY = nodeTop + nodeHeight / 2;
 
-        const centerX = (activeLayoutNode.x + activeLayoutNode.w / 2) * zoom;
-        const centerY = (activeLayoutNode.y + activeLayoutNode.h / 2) * zoom;
-        const gap = 16;
-        const style: React.CSSProperties = {};
+        const spaceAbove = nodeTop - visibleTop;
+        const spaceBelow = visibleTop + visibleHeight - (nodeTop + nodeHeight);
+        const spaceRight = visibleLeft + visibleWidth - (nodeLeft + nodeWidth);
+        const spaceLeft = nodeLeft - visibleLeft;
+
+        let placement: "right" | "left" | "above" | "below" = "above";
+        if (spaceAbove >= bubbleHeight + gap) placement = "above";
+        else if (spaceBelow >= bubbleHeight + gap) placement = "below";
+        else if (spaceRight >= bubbleWidth + gap) placement = "right";
+        else if (spaceLeft >= bubbleWidth + gap) placement = "left";
+        else placement = spaceBelow >= spaceAbove ? "below" : "above";
+
+        let left = nodeCenterX - bubbleWidth / 2;
+        let top = nodeTop - bubbleHeight - gap;
+        if (placement === "below") top = nodeTop + nodeHeight + gap;
         if (placement === "right") {
-          style.left = (activeLayoutNode.x + activeLayoutNode.w) * zoom + gap;
-          style.top = centerY;
-        } else if (placement === "left") {
-          style.left = activeLayoutNode.x * zoom - gap;
-          style.top = centerY;
-        } else if (placement === "below") {
-          style.left = centerX;
-          style.top = (activeLayoutNode.y + activeLayoutNode.h) * zoom + gap;
-        } else {
-          style.left = centerX;
-          style.top = activeLayoutNode.y * zoom - gap;
+          left = nodeLeft + nodeWidth + gap;
+          top = nodeCenterY - bubbleHeight / 2;
         }
+        if (placement === "left") {
+          left = nodeLeft - bubbleWidth - gap;
+          top = nodeCenterY - bubbleHeight / 2;
+        }
+
+        const minLeft = visibleLeft + 12;
+        const maxLeft = Math.max(minLeft, visibleLeft + visibleWidth - bubbleWidth - 12);
+        const minTop = visibleTop + 12;
+        const maxTop = Math.max(minTop, visibleTop + visibleHeight - bubbleHeight - 12);
+        left = Math.min(maxLeft, Math.max(minLeft, left));
+        top = Math.min(maxTop, Math.max(minTop, top));
+
+        const style: React.CSSProperties = {
+          left,
+          top,
+          width: bubbleWidth,
+          minHeight: bubbleHeight,
+        };
         return { placement, style };
       })()
     : null;
@@ -983,9 +1018,6 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       <div className="paths-react-board-wrap">
         <div className="paths-react-workbar">
           <div className="paths-react-workbar-left">
-            <button type="button" className="btn btn-soft paths-react-start-btn" onClick={() => startExampleAt(0)}>
-              {PATHS_COPY.visualButton}
-            </button>
             <button type="button" className="btn btn-primary btn-workbar-glow" onClick={startNextExercise}>
               {PATHS_COPY.startButton}
             </button>
@@ -1134,10 +1166,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                           <text
                             key={`${n.id}-question-${i}`}
                             x={n.x + n.w / 2}
-                            y={n.y + 78 + (i - ((n.questionLines || []).length - 1) / 2) * 14}
+                            y={n.y + 96 + (i - ((n.questionLines || []).length - 1) / 2) * 14}
                             textAnchor="middle"
                             dominantBaseline="middle"
-                            className="paths-react-question-text"
+                            className={line.includes("اختر الإجابة المناسبة") ? "paths-react-question-instruction" : "paths-react-question-text"}
                           >
                             {line}
                           </text>

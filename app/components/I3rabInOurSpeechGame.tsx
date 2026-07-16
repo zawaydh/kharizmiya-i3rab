@@ -97,12 +97,9 @@ export default function I3rabInOurSpeechGame() {
   const roundProgress =
     ((roundIndex + (finished ? 1 : blankIndex / round.blanks.length)) / rounds.length) * 100;
   const stages = algorithmStages(round);
-  const observationPrompt = isVerbRound(round)
-    ? "راقب أثر ما سبق الفعل أو ما اتصل به في صورته."
-    : "راقب كيف تتغير صورة الكلمة داخل الجملة.";
 
   function choose(value: string) {
-    if (!activeBlank || finished || solvedCurrent) return;
+    if (!activeBlank || finished || solvedCurrent || feedback) return;
 
     if (value !== activeBlank.correct) {
       setWrongChoice(value);
@@ -115,16 +112,15 @@ export default function I3rabInOurSpeechGame() {
     setFeedback({ tone: "correct", text: activeBlank.feedback });
   }
 
-  function continueStep() {
-    if (!activeBlank) return;
+  function acknowledgeFeedback() {
+    if (!feedback || !activeBlank) return;
 
-    setAnswers((current) => ({
-      ...current,
-      [activeBlank.id]: activeBlank.correct,
-    }));
+    if (feedback.tone === "correct") {
+      setBlankIndex((current) => current + 1);
+    }
+
     setFeedback(null);
     setWrongChoice(null);
-    setBlankIndex((current) => current + 1);
   }
 
   function nextRound() {
@@ -143,31 +139,17 @@ export default function I3rabInOurSpeechGame() {
   }
 
   return (
-    <main className="speech-game-page" dir="rtl">
-      <section className="card speech-game-hero">
-        <div className="speech-game-hero-copy">
-          <span>مدخل تطبيقي لفكرة الخوارزمية</span>
-          <h1>الإعراب في كلامنا</h1>
-          <p>
-            الكلمة نفسها قد تتغير صورتها بحسب موقعها في الجملة، والفعل قد تتغير صورته بحسب ما سبقه أو ما اتصل به.
-          </p>
-        </div>
+    <main className="speech-game-page speech-game-page-compact" dir="rtl">
+      <section className="card speech-game-card speech-game-card-unified">
+        <header className="speech-game-compact-head">
+          <div>
+            <span>مدخل تطبيقي لفكرة الخوارزمية</span>
+            <h1>الإعراب في كلامنا</h1>
+          </div>
+          <p>اختر صورة الكلمة أو الفعل المناسبة، ثم اكتشف سبب تغيّرها.</p>
+        </header>
 
-        <div
-          className={`speech-game-algorithm ${isVerbRound(round) ? "is-verb" : "is-noun"}`}
-          aria-label="تسلسل التعليل في الجولة"
-        >
-          {stages.map((stage, index) => (
-            <React.Fragment key={stage}>
-              <span className={index === stages.length - 1 ? "is-result" : ""}>{stage}</span>
-              {index < stages.length - 1 ? <i aria-hidden="true">←</i> : null}
-            </React.Fragment>
-          ))}
-        </div>
-      </section>
-
-      <section className="card speech-game-card">
-        <div className="speech-game-progress">
+        <div className="speech-game-progress speech-game-progress-compact">
           <div>
             <span>الجولة {roundIndex + 1} من {rounds.length}</span>
             <small>{round.domain}</small>
@@ -182,22 +164,19 @@ export default function I3rabInOurSpeechGame() {
           <i style={{ width: `${Math.max(4, roundProgress)}%` }} />
         </div>
 
-        <div className="speech-game-round-head">
-          <div>
-            <span>{observationPrompt}</span>
-            <h2>{round.title}</h2>
-          </div>
-          {!finished ? <em>اختر الصورة المناسبة للفراغ المضيء.</em> : null}
+        <div className="speech-game-round-title">
+          <span>{round.title}</span>
         </div>
 
-        <div className="speech-game-challenge">
-          <div className="speech-game-sentence">
-            {renderRound(round, blankIndex, answers)}
-          </div>
-
-          {!finished && activeBlank ? (
-            <div className="speech-game-interaction">
-              <div className="speech-game-question">أي صورة تلائم هذا الموقع في الجملة؟</div>
+        <div className="speech-game-swap-zone" aria-live="polite">
+          {!feedback && !finished && activeBlank ? (
+            <div className="speech-game-challenge speech-game-challenge-direct">
+              <div className="speech-game-sentence">
+                {renderRound(round, blankIndex, answers)}
+              </div>
+              <div className="speech-game-question">
+                اختر الصورة المناسبة للفراغ {blankIndex + 1}.
+              </div>
               <div className="speech-game-options">
                 {round.choices.map((value) => (
                   <button
@@ -219,58 +198,72 @@ export default function I3rabInOurSpeechGame() {
               </div>
             </div>
           ) : null}
+
+          {feedback && activeBlank ? (
+            <div
+              className={`speech-game-feedback-screen ${
+                feedback.tone === "correct" ? "is-correct" : "is-wrong"
+              }`}
+              role="status"
+            >
+              {feedback.tone === "correct" ? (
+                <div className="speech-game-correct-pop" aria-hidden="true">✓ صحيح</div>
+              ) : null}
+
+              <span className="speech-game-feedback-role">{activeBlank.role}</span>
+              <h2>
+                {feedback.tone === "correct"
+                  ? "ممتاز، أحسنت الربط. واصل؛ أنت تطبّق الخوارزمية بنفسك."
+                  : "فكرتك قريبة، راجع العلاقة ثم حاول من جديد."}
+              </h2>
+              <p>{feedback.text}</p>
+
+              <div className="speech-game-feedback-path" aria-label="تسلسل التعليل">
+                {stages.map((stage, index) => (
+                  <React.Fragment key={stage}>
+                    <span className={index === stages.length - 1 ? "is-result" : ""}>{stage}</span>
+                    {index < stages.length - 1 ? <i aria-hidden="true">←</i> : null}
+                  </React.Fragment>
+                ))}
+              </div>
+
+              <strong className="speech-game-return-copy">
+                {feedback.tone === "correct"
+                  ? "عُد وأكمل فراغات النص."
+                  : "عُد إلى النص واختر الصورة التي تناسب هذا الموقع."}
+              </strong>
+              <button type="button" className="btn btn-primary speech-game-ok-btn" onClick={acknowledgeFeedback}>
+                حسنًا
+              </button>
+            </div>
+          ) : null}
+
+          {finished ? (
+            <div className="speech-game-finished speech-game-finished-inline">
+              <span>الموقع أو العامل غيّر الصورة، والخوارزمية فسّرت السبب</span>
+              <h2>أكملت الجولة وربطت كل صورة بوظيفتها وحكمها ونوعها وعلامتها.</h2>
+              <div className="speech-game-solution-grid">
+                {round.blanks.map((blank) => (
+                  <article key={blank.id}>
+                    <strong>{blank.correct}</strong>
+                    <small>{blank.role}</small>
+                  </article>
+                ))}
+              </div>
+              <div className="speech-game-finished-actions">
+                <button type="button" className="btn btn-primary" onClick={nextRound}>
+                  تابع إلى جولة جديدة
+                </button>
+                <a href="/learn/start" className="btn btn-soft">
+                  ابدأ التعلّم المنظّم
+                </a>
+                <button type="button" className="btn btn-soft" onClick={restart}>
+                  أعد هذه الجولة
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
-
-        {feedback && activeBlank ? (
-          <div
-            className={`speech-game-feedback ${
-              feedback.tone === "correct" ? "is-correct" : "is-wrong"
-            }`}
-            aria-live="polite"
-          >
-            <span className="speech-game-feedback-role">{activeBlank.role}</span>
-            <strong>
-              {feedback.tone === "correct"
-                ? "أحسنت، ربطت الصورة بالموقع أو العامل"
-                : "هذه الصورة لا تلائم هذا الموضع"}
-            </strong>
-            <p>{feedback.text}</p>
-            <div className="speech-game-feedback-actions">
-              <a href={activeBlank.learnHref} className="btn btn-soft">
-                أكمل تعلّم {activeBlank.learnLabel}
-              </a>
-              <button type="button" className="btn btn-primary" onClick={continueStep}>
-                {feedback.tone === "wrong" ? "اعرض الصواب ثم تابع" : "تابع التحدي"}
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        {finished ? (
-          <div className="speech-game-finished">
-            <span>الموقع أو العامل غيّر الصورة، والخوارزمية فسّرت السبب</span>
-            <h2>أكملت الجولة وربطت كل صورة بوظيفتها وحكمها ونوعها وعلامتها.</h2>
-            <div className="speech-game-solution-grid">
-              {round.blanks.map((blank) => (
-                <article key={blank.id}>
-                  <strong>{blank.correct}</strong>
-                  <small>{blank.role}</small>
-                </article>
-              ))}
-            </div>
-            <div className="speech-game-finished-actions">
-              <button type="button" className="btn btn-primary" onClick={nextRound}>
-                تابع إلى جولة جديدة
-              </button>
-              <a href="/learn/start" className="btn btn-soft">
-                ابدأ التعلّم المنظّم
-              </a>
-              <button type="button" className="btn btn-soft" onClick={restart}>
-                أعد هذه الجولة
-              </button>
-            </div>
-          </div>
-        ) : null}
       </section>
     </main>
   );

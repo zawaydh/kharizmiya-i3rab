@@ -21,19 +21,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="card home-speech-game home-speech-explainer" aria-labelledby="speech-game-how-title">
-        <div className="home-speech-game-copy">
-          <span className="section-kicker">كيف تعمل التجربة؟</span>
-          <h2 id="speech-game-how-title">اختر، ثم اكتشف السبب</h2>
-          <p>تضع الصورة المناسبة في الجملة، ثم يربط التعليل بين الموقع أو العامل، والوظيفة، والحكم، ونوع الكلمة أو الفعل، والعلامة.</p>
-        </div>
-        <div className="home-speech-game-preview" aria-label="أمثلة على تغير الصورة">
-          <span>المزارعونَ ← المزارعينَ</span>
-          <i aria-hidden="true">•</i>
-          <span>يكتبُ ← لن يكتبَ ← لم يكتبْ</span>
-        </div>
-      </section>
-
       <section className="card home-clean-journey" aria-labelledby="journey-title">
         <div className="home-clean-section-head">
           <span className="section-kicker">رحلتك في كل موضوع</span>

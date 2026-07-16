@@ -25,7 +25,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "العمل والزراعة",
     focus: "جمع المذكر السالم بين الرفع والنصب",
     template: "حصدَ {b1} القمحَ، ثم كرّمت الجمعيةُ {b2} المتميزينَ.",
-    choices: ["المزارعونَ", "المزارعينَ"],
+    choices: ["المزارعونَ", "المزارعينَ", "المزارعُ"],
     blanks: [
       {
         id: "b1",
@@ -53,7 +53,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "الهندسة والعمل",
     focus: "المثنى بين الرفع والنصب",
     template: "راجعَ {b1} المخططَ، ثم استقبل المديرُ {b2} في مكتبه.",
-    choices: ["المهندسانِ", "المهندسَيْنِ"],
+    choices: ["المهندسانِ", "المهندسَيْنِ", "المهندسُ"],
     blanks: [
       {
         id: "b1",
@@ -155,7 +155,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "التعليم",
     focus: "اسم كان واسم إن",
     template: "كانَ {b1} حاضرًا، وإنَّ {b2} مخلصٌ.",
-    choices: ["المعلّمُ", "المعلّمَ"],
+    choices: ["المعلّمُ", "المعلّمَ", "المعلّمِ"],
     blanks: [
       {
         id: "b1",
@@ -183,7 +183,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "الدراسة",
     focus: "الخبر قبل كان وبعدها",
     template: "الطالبُ {b1}، وكان الطالبُ {b2}.",
-    choices: ["مجتهدٌ", "مجتهدًا"],
+    choices: ["مجتهدٌ", "مجتهدًا", "مجتهدٍ"],
     blanks: [
       {
         id: "b1",
@@ -285,7 +285,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "المشروعات",
     focus: "الأفعال الخمسة وثبوت النون أو حذفها",
     template: "المهندسونَ {b1} المشروعَ اليوم، ولن {b2} قبل المراجعة، ولم {b3} النسخةَ أمس.",
-    choices: ["يسلّمونَ", "يسلّموا"],
+    choices: ["يسلّمونَ", "يسلّموا", "يسلّمْ"],
     blanks: [
       {
         id: "b1",
@@ -322,7 +322,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "التعلّم والعمل",
     focus: "ياء المخاطبة في الأفعال الخمسة",
     template: "أنتِ {b1} التقريرَ بعناية، ولن {b2} قبل المراجعة، ولم {b3} الملاحظاتِ أمس.",
-    choices: ["تكتبينَ", "تكتبي"],
+    choices: ["تكتبينَ", "تكتبي", "تكتبْ"],
     blanks: [
       {
         id: "b1",
@@ -433,7 +433,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "القانون والمجتمع",
     focus: "الاسم المنقوص في الرفع والنصب والجر",
     template: "حضرَ {b1}، وقابلتُ {b2}، ومررتُ بـ{b3}.",
-    choices: ["قاضٍ", "قاضيًا"],
+    choices: ["قاضٍ", "قاضيًا", "القاضي"],
     blanks: [
       {
         id: "b1",
