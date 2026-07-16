@@ -24,7 +24,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     title: "من الحقل إلى التكريم",
     domain: "العمل والزراعة",
     focus: "جمع المذكر السالم بين الرفع والنصب",
-    template: "حصدَ {b1} القمحَ، ثم كرّمت الجمعيةُ {b2} المتميزينَ.",
+    template: "حصدَ {b1} المجتهدونَ القمحَ، ثم كرّمت الجمعيةُ {b2} المتميزينَ.",
     choices: ["المزارعونَ", "المزارعينَ", "المزارعُ"],
     blanks: [
       {
@@ -52,7 +52,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     title: "مراجعة المخطط",
     domain: "الهندسة والعمل",
     focus: "المثنى بين الرفع والنصب",
-    template: "راجعَ {b1} المخططَ، ثم استقبل المديرُ {b2} في مكتبه.",
+    template: "راجعَ {b1} المجتهدانِ المخططَ، ثم استقبل المديرُ {b2} المبدعَيْنِ في مكتبه.",
     choices: ["المهندسانِ", "المهندسَيْنِ", "المهندسُ"],
     blanks: [
       {
@@ -81,7 +81,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "الأسرة والمدرسة",
     focus: "الأسماء الخمسة في الرفع والنصب والجر",
     template: "حضرَ {b1} إلى المدرسة، وقابلتُ {b2}، ثم سلّمتُ على {b3}.",
-    choices: ["أبوك", "أباك", "أبيك"],
+    choices: ["أبوك", "أباك", "أبيك", "أبُك"],
     blanks: [
       {
         id: "b1",
@@ -118,7 +118,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "الحياة الوظيفية",
     focus: "الاسم المفرد بين الضمة والفتحة والكسرة",
     template: "وصلَ {b1} مبكرًا، وقابلتُ {b2}، ثم تحدثتُ مع {b3}.",
-    choices: ["المديرُ", "المديرَ", "المديرِ"],
+    choices: ["المديرُ", "المديرَ", "المديرِ", "المديرْ"],
     blanks: [
       {
         id: "b1",
@@ -211,7 +211,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "المدرسة",
     focus: "النعت يتبع المنعوت في الإعراب",
     template: "حضرَ الطالبُ {b1}، وكرّمتُ الطالبَ {b2}، وسلّمتُ على الطالبِ {b3}.",
-    choices: ["المجتهدُ", "المجتهدَ", "المجتهدِ"],
+    choices: ["المجتهدُ", "المجتهدَ", "المجتهدِ", "المجتهدْ"],
     blanks: [
       {
         id: "b1",
@@ -248,7 +248,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "الدراسة",
     focus: "المضارع الصحيح بين الرفع والنصب والجزم",
     template: "الطالبُ {b1} واجبَه، ولن {b2} التقريرَ متأخرًا، ولم {b3} أمس.",
-    choices: ["يكتبُ", "يكتبَ", "يكتبْ"],
+    choices: ["يكتبُ", "يكتبَ", "يكتبْ", "يكتبْنَ"],
     blanks: [
       {
         id: "b1",
@@ -285,7 +285,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "المشروعات",
     focus: "الأفعال الخمسة وثبوت النون أو حذفها",
     template: "المهندسونَ {b1} المشروعَ اليوم، ولن {b2} قبل المراجعة، ولم {b3} النسخةَ أمس.",
-    choices: ["يسلّمونَ", "يسلّموا", "يسلّمْ"],
+    choices: ["يسلّمونَ", "يسلّموا", "يسلّمْ", "يسلّمانِ"],
     blanks: [
       {
         id: "b1",
@@ -322,7 +322,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "التعلّم والعمل",
     focus: "ياء المخاطبة في الأفعال الخمسة",
     template: "أنتِ {b1} التقريرَ بعناية، ولن {b2} قبل المراجعة، ولم {b3} الملاحظاتِ أمس.",
-    choices: ["تكتبينَ", "تكتبي", "تكتبْ"],
+    choices: ["تكتبينَ", "تكتبي", "تكتبْ", "تكتبنَ"],
     blanks: [
       {
         id: "b1",
@@ -359,7 +359,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "الرياضة",
     focus: "المضارع المعتل بالياء",
     template: "الطفلُ {b1} الكرةَ، ولن {b2} بها بعيدًا، ولم {b3} اليوم.",
-    choices: ["يرمي", "يرميَ", "يرمِ"],
+    choices: ["يرمي", "يرميَ", "يرمِ", "يرمينَ"],
     blanks: [
       {
         id: "b1",
@@ -396,7 +396,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "الحياة والقيم",
     focus: "المضارع المعتل بالواو",
     template: "المتطوعُ {b1} إلى الخير، ولن {b2} إلى خصام، ولم {b3} إلى الإساءة.",
-    choices: ["يدعو", "يدعوَ", "يدعُ"],
+    choices: ["يدعو", "يدعوَ", "يدعُ", "يدعونَ"],
     blanks: [
       {
         id: "b1",
@@ -433,7 +433,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "القانون والمجتمع",
     focus: "الاسم المنقوص في الرفع والنصب والجر",
     template: "حضرَ {b1}، وقابلتُ {b2}، ومررتُ بـ{b3}.",
-    choices: ["قاضٍ", "قاضيًا", "القاضي"],
+    choices: ["قاضٍ", "قاضيًا", "قاضيٌ", "قاضيْ"],
     blanks: [
       {
         id: "b1",
@@ -470,7 +470,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "التواصل",
     focus: "بناء الماضي بحسب ما اتصل به",
     template: "هو {b1} الرسالةَ، وهم {b2} الرسالةَ، وهنَّ {b3} الرسالةَ.",
-    choices: ["كتبَ", "كتبوا", "كتبْنَ"],
+    choices: ["كتبَ", "كتبوا", "كتبْنَ", "كتبتْ"],
     blanks: [
       {
         id: "b1",
@@ -507,7 +507,7 @@ export const I3RAB_IN_OUR_SPEECH_ROUNDS: SpeechGameRound[] = [
     domain: "الصف",
     focus: "بناء فعل الأمر بحسب المخاطَب",
     template: "يا خالدُ {b1}، ويا طالبانِ {b2}، ويا طلابُ {b3}.",
-    choices: ["اكتبْ", "اكتبا", "اكتبوا"],
+    choices: ["اكتبْ", "اكتبا", "اكتبوا", "اكتبي"],
     blanks: [
       {
         id: "b1",

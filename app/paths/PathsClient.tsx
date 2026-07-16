@@ -6,10 +6,18 @@ import AuthLockGate from "../components/AuthLockGate";
 import DynamicPathTree from "../components/DynamicPathTree";
 import { getTopicByCode } from "../../lib/topics";
 
+const PATH_TOPIC_CODES = new Set([
+  "nominal-advanced", "khabar", "kana-wa-akhawatuha", "inna-wa-akhawatuha",
+  "past-verb", "present-verb", "imperative-verb", "fael", "mafool-bih",
+]);
+
 export default function PathsClient() {
   const searchParams = useSearchParams();
-  const requestedTopic = searchParams.get("topic") || "first-word-key";
-  const topic = useMemo(() => getTopicByCode(requestedTopic) || getTopicByCode("first-word-key"), [requestedTopic]);
+  const requestedTopic = searchParams.get("topic") || "nominal-advanced";
+  const topic = useMemo(() => {
+    const safeCode = PATH_TOPIC_CODES.has(requestedTopic) ? requestedTopic : "nominal-advanced";
+    return getTopicByCode(safeCode) || getTopicByCode("nominal-advanced");
+  }, [requestedTopic]);
 
   return (
     <AuthLockGate

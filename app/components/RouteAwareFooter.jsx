@@ -2,12 +2,12 @@
 
 import { usePathname } from "next/navigation";
 
-const HIDDEN_DURING_WORK = ["/learn/", "/train/", "/quiz/", "/texts/", "/paths"];
+const HIDDEN_DURING_WORK = ["/learn/", "/train/", "/quiz/", "/texts/", "/paths", "/i3rab-in-our-speech"];
 
 export default function RouteAwareFooter() {
   const pathname = usePathname() || "/";
   const hidden = HIDDEN_DURING_WORK.some((prefix) =>
-    prefix === "/paths" ? pathname === "/paths" : pathname.startsWith(prefix)
+    prefix === "/paths" ? pathname === "/paths" : prefix === "/i3rab-in-our-speech" ? pathname === prefix : pathname.startsWith(prefix)
   );
 
   if (hidden) return null;

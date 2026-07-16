@@ -6,41 +6,6 @@ import {
   type SpeechGameRound,
 } from "../../content/games/i3rab_in_our_speech";
 
-const VERB_ROUND_IDS = new Set([
-  "present-strong",
-  "five-verbs-men",
-  "five-verbs-female",
-  "weak-ya",
-  "weak-waw",
-  "past-forms",
-  "imperative-forms",
-]);
-
-function isVerbRound(round: SpeechGameRound) {
-  return VERB_ROUND_IDS.has(round.id);
-}
-
-function algorithmStages(round: SpeechGameRound) {
-  if (isVerbRound(round)) {
-    return [
-      "ما سبق الفعل أو ما اتصل به",
-      "الحكم",
-      "نوع الفعل وحالة آخره",
-      "العلامة",
-      "الصورة الصحيحة",
-    ];
-  }
-
-  return [
-    "الموقع في الجملة",
-    "الوظيفة النحوية",
-    "الحكم الإعرابي",
-    "نوع الاسم",
-    "العلامة",
-    "الصورة الصحيحة",
-  ];
-}
-
 function renderRound(
   round: SpeechGameRound,
   activeIndex: number,
@@ -94,9 +59,6 @@ export default function I3rabInOurSpeechGame() {
   const activeBlank = round.blanks[blankIndex] || null;
   const finished = blankIndex >= round.blanks.length;
   const solvedCurrent = Boolean(activeBlank && answers[activeBlank.id]);
-  const roundProgress =
-    ((roundIndex + (finished ? 1 : blankIndex / round.blanks.length)) / rounds.length) * 100;
-  const stages = algorithmStages(round);
 
   function choose(value: string) {
     if (!activeBlank || finished || solvedCurrent || feedback) return;
@@ -146,26 +108,14 @@ export default function I3rabInOurSpeechGame() {
             <span>مدخل تطبيقي لفكرة الخوارزمية</span>
             <h1>الإعراب في كلامنا</h1>
           </div>
-          <p>اختر صورة الكلمة أو الفعل المناسبة، ثم اكتشف سبب تغيّرها.</p>
+          <p>اختر صورة الكلمة أو الفعل المناسبة، ثم اقرأ سبب الاختيار.</p>
         </header>
 
-        <div className="speech-game-progress speech-game-progress-compact">
-          <div>
-            <span>الجولة {roundIndex + 1} من {rounds.length}</span>
-            <small>{round.domain}</small>
-          </div>
+        <div className="speech-game-meta" aria-label="تقدم الجولة">
+          <span>الجولة {roundIndex + 1} من {rounds.length}</span>
           <strong>
-            {finished
-              ? "اكتملت الجولة"
-              : `الفراغ ${blankIndex + 1} من ${round.blanks.length}`}
+            {finished ? "اكتملت الجولة" : `الفراغ ${blankIndex + 1} من ${round.blanks.length}`}
           </strong>
-        </div>
-        <div className="speech-game-progress-track" aria-hidden="true">
-          <i style={{ width: `${Math.max(4, roundProgress)}%` }} />
-        </div>
-
-        <div className="speech-game-round-title">
-          <span>{round.title}</span>
         </div>
 
         <div className="speech-game-swap-zone" aria-live="polite">
@@ -213,19 +163,10 @@ export default function I3rabInOurSpeechGame() {
               <span className="speech-game-feedback-role">{activeBlank.role}</span>
               <h2>
                 {feedback.tone === "correct"
-                  ? "ممتاز، أحسنت الربط. واصل؛ أنت تطبّق الخوارزمية بنفسك."
-                  : "فكرتك قريبة، راجع العلاقة ثم حاول من جديد."}
+                  ? "أحسنت، واصل؛ أنت تربط الموقع بصورة الكلمة بنفسك."
+                  : "راجع العلاقة بهدوء، ثم جرّب مرة أخرى."}
               </h2>
               <p>{feedback.text}</p>
-
-              <div className="speech-game-feedback-path" aria-label="تسلسل التعليل">
-                {stages.map((stage, index) => (
-                  <React.Fragment key={stage}>
-                    <span className={index === stages.length - 1 ? "is-result" : ""}>{stage}</span>
-                    {index < stages.length - 1 ? <i aria-hidden="true">←</i> : null}
-                  </React.Fragment>
-                ))}
-              </div>
 
               <strong className="speech-game-return-copy">
                 {feedback.tone === "correct"
@@ -240,8 +181,8 @@ export default function I3rabInOurSpeechGame() {
 
           {finished ? (
             <div className="speech-game-finished speech-game-finished-inline">
-              <span>الموقع أو العامل غيّر الصورة، والخوارزمية فسّرت السبب</span>
-              <h2>أكملت الجولة وربطت كل صورة بوظيفتها وحكمها ونوعها وعلامتها.</h2>
+              <span>أكملت الجولة</span>
+              <h2>ربطت صورة كل كلمة أو فعل بموقعه أو بالعامل الذي سبقه.</h2>
               <div className="speech-game-solution-grid">
                 {round.blanks.map((blank) => (
                   <article key={blank.id}>

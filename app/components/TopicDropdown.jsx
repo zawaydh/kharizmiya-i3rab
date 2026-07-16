@@ -185,7 +185,10 @@ export default function TopicDropdown({
         <div className="tree-dropdown-panel" dir="rtl">
           <div className="tree-dropdown-title">{mode === "paths" ? "المسارات البصرية" : "الموضوعات"}</div>
           <ul className="tree-menu-root">
-            {TOPIC_TREE.map((item) => (
+            {(mode === "paths"
+              ? TOPIC_TREE.filter((item) => ["nominal-sentence", "verbal-sentence"].includes(item.id))
+              : TOPIC_TREE
+            ).map((item) => (
               <TreeItem key={item.id} item={item} go={go} mode={mode} />
             ))}
           </ul>

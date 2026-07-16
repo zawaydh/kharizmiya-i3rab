@@ -49,11 +49,11 @@ type PositionedNode = {
 
 const BOX_W = 250;
 const BOX_H = 112;
-const DIA_W = 270;
-const DIA_SHAPE_H = 166;
-const QUESTION_H = 238;
-const LEVEL_GAP = 248;
-const SIBLING_GAP = 38;
+const DIA_W = 250;
+const DIA_SHAPE_H = 150;
+const QUESTION_H = 194;
+const LEVEL_GAP = 202;
+const SIBLING_GAP = 46;
 
 function splitText(text?: string, max = 28) {
   if (!text) return [];
@@ -249,10 +249,10 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
       h,
       shapeH: isQuestion ? DIA_SHAPE_H : h,
       textLines: isQuestion ? [] : splitText(displayNodeQuestion(node, example), 24),
-      contextLines: isQuestion && sentence ? splitText(`في الجملة: ${sentence}`, 34).slice(0, 2) : [],
+      contextLines: isQuestion && sentence ? splitText(`المثال: ${sentence}`, 40).slice(0, 1) : [],
       questionLines: isQuestion
         ? [
-            ...splitText(displayNodeQuestion(node, example), 27).slice(0, 4),
+            ...splitText(displayNodeQuestion(node, example), 25).slice(0, 3),
             "اختر الإجابة المناسبة مما يأتي:",
           ]
         : [],
@@ -342,6 +342,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const autoNextTimerRef = useRef(null as null | ReturnType<typeof setTimeout>);
   const hintScrollFrameRef = useRef<number | null>(null);
   const [, setHintViewportVersion] = useState(0);
+  const [hintPlacement, setHintPlacement] = useState<"above" | "below">("above");
 
   function cleanLearningText(text?: string, limit = 170) {
     const cleaned = (text || "")
@@ -502,22 +503,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   }, [tree, examples]);
 
   useEffect(() => {
-    if (!layout || !canvasScrollRef.current || !activeNodeId) return;
-    const t = setTimeout(() => focusNode(activeNodeId, recommendedZoom()), 150);
+    if (!layout || !canvasScrollRef.current || !example || activeNodeId !== tree.startNodeId) return;
+    const t = setTimeout(() => focusNode(tree.startNodeId, 1.08), 170);
     return () => clearTimeout(t);
-  }, [example?.id, layout, activeNodeId]);
-
-  useEffect(() => {
-    function handleResize() {
-      if (!activeNodeId) return;
-      window.clearTimeout((handleResize as any)._timer);
-      (handleResize as any)._timer = window.setTimeout(() => {
-        focusNode(activeNodeId, recommendedZoom());
-      }, 120);
-    }
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [activeNodeId, layout]);
+  }, [example?.id, layout, tree.startNodeId]);
 
   useEffect(() => {
     return () => {
@@ -526,20 +515,12 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     };
   }, []);
 
-  function recommendedZoom() {
-    const width = canvasScrollRef.current?.clientWidth || (typeof window !== "undefined" ? window.innerWidth : 1000);
-    if (width < 430) return 0.78;
-    if (width < 760) return 0.84;
-    if (width < 1050) return 0.9;
-    return 0.96;
-  }
-
-  function focusNode(nodeId: string, targetZoom = 0.98) {
+  function focusNode(nodeId: string, targetZoom = 1.08) {
     if (!layout || !canvasScrollRef.current) return;
     const node = layoutNodeMap.get(nodeId);
     if (!node) return;
 
-    const nextZoom = Math.max(0.78, Math.min(1.08, targetZoom));
+    const nextZoom = Math.max(1, Math.min(1.18, targetZoom));
     setZoom(nextZoom);
 
     requestAnimationFrame(() => {
@@ -551,7 +532,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const scaledW = node.w * nextZoom;
       const scaledH = node.h * nextZoom;
       const left = Math.max(0, scaledLeft - (el.clientWidth - scaledW) / 2);
-      const top = Math.max(0, scaledTop - Math.max(34, (el.clientHeight - scaledH) * 0.38));
+      const top = Math.max(0, scaledTop - Math.max(28, (el.clientHeight - scaledH) * 0.32));
       el.scrollTo({ left, top, behavior: "smooth" });
     });
   }
@@ -579,7 +560,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setHighlightedAnswerKind(null);
     setFinalNodeId(null);
     setMessage("ابدأ بالسؤال الظاهر داخل المسار.");
-    setActiveGuidance("اقرأ المثال والكلمة الهدف، ثم أجب عن السؤال الظاهر فقط.");
+    setActiveGuidance(null);
     setPathSteps([]);
   }
 
@@ -589,7 +570,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setCurrentExampleIndex(safeIndex);
     const next = examples[safeIndex] || null;
     resetProgress(next);
-    setTimeout(() => focusNode(tree.startNodeId, recommendedZoom()), 180);
+    setTimeout(() => focusNode(tree.startNodeId, 1.08), 180);
   }
 
   function startNextExercise() {
@@ -866,7 +847,12 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setShowHint(true);
     setMessage(hintText);
     setActiveGuidance(hintText);
-    setTimeout(() => focusNode(nodeId, 1.03), 40);
+    const scrollBox = canvasScrollRef.current;
+    const layoutNode = layoutNodeMap.get(nodeId);
+    if (scrollBox && layoutNode) {
+      const nodeTop = layoutNode.y * zoom - scrollBox.scrollTop;
+      setHintPlacement(nodeTop > 190 ? "above" : "below");
+    }
 
     const correctAnswer = node?.answers?.find((a: any) => answerIsCorrect(a, example));
     if (correctAnswer) {
@@ -879,11 +865,6 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     }
   }
 
-  function showBubbleBesideNode(nodeId: string, text: string, bubbleZoom = zoom) {
-    setShowHint(true);
-    setActiveGuidance(cleanLearningText(text, 170));
-    setTimeout(() => focusNode(nodeId, bubbleZoom), 30);
-  }
 
 
   function handleAnswer(nodeId: string, answerId: string, anchor?: { x: number; y: number }) {
@@ -901,10 +882,13 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       setActiveGuidance(hintText);
       setHighlightedAnswerKey(`${nodeId}:${answerId}`);
       setHighlightedAnswerKind("wrong");
-      if (anchor) {
-        setActiveGuidance(hintText);
+      if (anchor) setActiveGuidance(hintText);
+      const scrollBox = canvasScrollRef.current;
+      const layoutNode = layoutNodeMap.get(nodeId);
+      if (scrollBox && layoutNode) {
+        const nodeTop = layoutNode.y * zoom - scrollBox.scrollTop;
+        setHintPlacement(nodeTop > 190 ? "above" : "below");
       }
-      setTimeout(() => focusNode(nodeId, 1.03), 40);
       return;
     }
 
@@ -925,10 +909,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const targetWord = example?.target ? `كلمة: ${example.target}` : "الكلمة المطلوبة";
       const finalText = `هكذا وصلنا لإعراب ${targetWord}: ${nextNode.text}. السبب: ${finalReason}`;
       setMessage(finalText);
-      setActiveGuidance("اكتمل الإعراب النهائي. راجع النتيجة النهائية أسفل الصفحة.");
+      setActiveGuidance(null);
       setTimeout(() => {
         focusNode(nextId, 1.06);
-        showBubbleBesideNode(nextId, finalText, 1.06);
       }, 90);
       if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
     } else {
@@ -949,59 +932,18 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const guidanceBubble = showHint && activeGuidance && activeLayoutNode
     ? (() => {
         const scrollBox = canvasScrollRef.current;
-        const visibleLeft = scrollBox?.scrollLeft || 0;
-        const visibleTop = scrollBox?.scrollTop || 0;
         const visibleWidth = scrollBox?.clientWidth || 720;
         const visibleHeight = scrollBox?.clientHeight || 560;
-        const bubbleWidth = Math.min(300, Math.max(190, visibleWidth - 28));
-        const bubbleHeight = visibleWidth < 520 ? 154 : 142;
-        const gap = 18;
-
-        const nodeLeft = activeLayoutNode.x * zoom;
-        const nodeTop = activeLayoutNode.y * zoom;
-        const nodeWidth = activeLayoutNode.w * zoom;
-        const nodeHeight = activeLayoutNode.h * zoom;
-        const nodeCenterX = nodeLeft + nodeWidth / 2;
-        const nodeCenterY = nodeTop + nodeHeight / 2;
-
-        const spaceAbove = nodeTop - visibleTop;
-        const spaceBelow = visibleTop + visibleHeight - (nodeTop + nodeHeight);
-        const spaceRight = visibleLeft + visibleWidth - (nodeLeft + nodeWidth);
-        const spaceLeft = nodeLeft - visibleLeft;
-
-        let placement: "right" | "left" | "above" | "below" = "above";
-        if (spaceAbove >= bubbleHeight + gap) placement = "above";
-        else if (spaceBelow >= bubbleHeight + gap) placement = "below";
-        else if (spaceRight >= bubbleWidth + gap) placement = "right";
-        else if (spaceLeft >= bubbleWidth + gap) placement = "left";
-        else placement = spaceBelow >= spaceAbove ? "below" : "above";
-
-        let left = nodeCenterX - bubbleWidth / 2;
-        let top = nodeTop - bubbleHeight - gap;
-        if (placement === "below") top = nodeTop + nodeHeight + gap;
-        if (placement === "right") {
-          left = nodeLeft + nodeWidth + gap;
-          top = nodeCenterY - bubbleHeight / 2;
-        }
-        if (placement === "left") {
-          left = nodeLeft - bubbleWidth - gap;
-          top = nodeCenterY - bubbleHeight / 2;
-        }
-
-        const minLeft = visibleLeft + 12;
-        const maxLeft = Math.max(minLeft, visibleLeft + visibleWidth - bubbleWidth - 12);
-        const minTop = visibleTop + 12;
-        const maxTop = Math.max(minTop, visibleTop + visibleHeight - bubbleHeight - 12);
-        left = Math.min(maxLeft, Math.max(minLeft, left));
-        top = Math.min(maxTop, Math.max(minTop, top));
-
-        const style: React.CSSProperties = {
-          left,
-          top,
-          width: bubbleWidth,
-          minHeight: bubbleHeight,
-        };
-        return { placement, style };
+        const nodeCenterX = activeLayoutNode.x * zoom + (activeLayoutNode.w * zoom) / 2 - (scrollBox?.scrollLeft || 0);
+        const nodeTop = activeLayoutNode.y * zoom - (scrollBox?.scrollTop || 0);
+        const nodeBottom = nodeTop + (activeLayoutNode.shapeH || activeLayoutNode.h) * zoom;
+        const bubbleWidth = Math.min(310, Math.max(220, visibleWidth - 32));
+        const left = Math.min(visibleWidth - 14, Math.max(14, nodeCenterX));
+        const top = hintPlacement === "above"
+          ? Math.max(14, nodeTop - 14)
+          : Math.min(visibleHeight - 14, nodeBottom + 14);
+        const style: React.CSSProperties = { left, top, width: bubbleWidth };
+        return { placement: hintPlacement, style };
       })()
     : null;
 
@@ -1042,7 +984,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
           </div>
 
           <div className="paths-react-zoom-tools">
-            <button type="button" className="btn btn-soft btn-zoom" onClick={() => setZoom((z) => Math.max(0.72, +(z - 0.08).toFixed(2)))}>
+            <button type="button" className="btn btn-soft btn-zoom" onClick={() => setZoom((z) => Math.max(1, +(z - 0.08).toFixed(2)))}>
               {PATHS_COPY.zoomOut}
             </button>
             
@@ -1053,19 +995,20 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
         </div>
 
         
-        <div
-          ref={canvasScrollRef}
-          className="paths-react-canvas-scroll"
-          onScroll={() => {
-            if (!showHint) return;
-            if (hintScrollFrameRef.current !== null) cancelAnimationFrame(hintScrollFrameRef.current);
-            hintScrollFrameRef.current = requestAnimationFrame(() => {
-              hintScrollFrameRef.current = null;
-              setHintViewportVersion((value) => value + 1);
-            });
-          }}
-        >
-          <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
+        <div className="paths-react-canvas-shell">
+          <div
+            ref={canvasScrollRef}
+            className="paths-react-canvas-scroll"
+            onScroll={() => {
+              if (!showHint) return;
+              if (hintScrollFrameRef.current !== null) cancelAnimationFrame(hintScrollFrameRef.current);
+              hintScrollFrameRef.current = requestAnimationFrame(() => {
+                hintScrollFrameRef.current = null;
+                setHintViewportVersion((value) => value + 1);
+              });
+            }}
+          >
+            <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
             <svg
               viewBox={`0 0 ${layout.width} ${layout.height}`}
               width={layout.width * zoom}
@@ -1127,6 +1070,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                   >
                     {isQuestion ? (
                       <polygon
+                        className={active ? "paths-react-active-pulse" : undefined}
                         points={diamondPoints(n.x, n.y, n.w, n.shapeH || DIA_SHAPE_H)}
                         fill={active ? "#ecfdf5" : visited ? "#f0fdfa" : "#fffdf4"}
                         stroke={active ? "rgba(16,185,129,.98)" : visited ? "rgba(20,184,166,.72)" : "rgba(212,175,55,.55)"}
@@ -1215,6 +1159,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 );
               })}
             </svg>
+            </div>
+          </div>
+          <div className="paths-react-hint-layer" aria-hidden={!guidanceBubble}>
             {guidanceBubble ? (
               <div
                 className={`paths-react-answer-hint paths-react-answer-hint-${guidanceBubble.placement}`}
@@ -1223,7 +1170,18 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 role="status"
                 aria-live="polite"
               >
-                {activeGuidance}
+                <span>{activeGuidance}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowHint(false);
+                    setActiveGuidance(null);
+                    setHighlightedAnswerKey(null);
+                    setHighlightedAnswerKind(null);
+                  }}
+                >
+                  حسنًا
+                </button>
               </div>
             ) : null}
           </div>
