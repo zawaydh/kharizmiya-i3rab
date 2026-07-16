@@ -3509,19 +3509,124 @@ function thinkingTrailForResult(text?: string) {
   return ["اتبعنا القرارات بالترتيب", "لم نقفز إلى النتيجة مباشرة"];
 }
 
-function explainDistractor(actual?: string | null, expected?: string | null) {
+function quizExpectedCause(expected?: string | null, example?: QuizExampleLike | null) {
+  const e = String(expected || "");
+  const target = String(example?.target || "الكلمة المحددة");
+
+  if (e.includes("فعل أمر")) {
+    if (e.includes("نون النسوة")) return `اتصل «${target}» بنون النسوة؛ لذلك بُني فعل الأمر على السكون، ونون النسوة فاعل.`;
+    if (e.includes("نون التوكيد")) return `اتصل «${target}» بنون التوكيد؛ لذلك بُني فعل الأمر على الفتح.`;
+    if (e.includes("حذف النون")) {
+      if (e.includes("ألف الاثنين")) return `اتصل «${target}» بألف الاثنين، وهو من صيغ الأفعال الخمسة؛ لذلك بُني الأمر على حذف النون.`;
+      if (e.includes("واو الجماعة")) return `اتصل «${target}» بواو الجماعة، وهو من صيغ الأفعال الخمسة؛ لذلك بُني الأمر على حذف النون.`;
+      if (e.includes("ياء المخاطبة")) return `اتصل «${target}» بياء المخاطبة، وهو من صيغ الأفعال الخمسة؛ لذلك بُني الأمر على حذف النون.`;
+      return `اتصل «${target}» بما يجعله من صيغ الأفعال الخمسة؛ لذلك بُني على حذف النون.`;
+    }
+    if (e.includes("حذف حرف العلة")) {
+      const letter = e.includes("الألف") ? "الألف" : e.includes("الواو") ? "الواو" : e.includes("الياء") ? "الياء" : "حرف العلة";
+      return `آخر «${target}» حرف علة هو ${letter}، وفعل الأمر يُبنى على ما يُجزم به مضارعه؛ لذلك بُني على حذف حرف العلة.`;
+    }
+    if (e.includes("السكون")) return `«${target}» فعل أمر صحيح الآخر ولم يتصل به ما يغيّر بناءه؛ لذلك بُني على السكون.`;
+  }
+
+  if (e.includes("فعل ماض")) {
+    if (e.includes("واو الجماعة")) return `اتصل الفعل الماضي «${target}» بواو الجماعة؛ لذلك بُني على الضم، مع مراعاة التقدير إذا كان ناقصًا.`;
+    if (e.includes("ضمير رفع متحرك") || e.includes("تاء الفاعل") || e.includes("نا الفاعلين") || e.includes("نون النسوة")) return `اتصل الفعل الماضي «${target}» بضمير رفع متحرك؛ لذلك بُني على السكون.`;
+    if (e.includes("ألف الاثنين")) return `اتصل الفعل الماضي «${target}» بألف الاثنين؛ لذلك بقي مبنيًا على الفتح.`;
+    if (e.includes("الفتح المقدر")) return `«${target}» فعل ماضٍ ناقص، فبُنِي على فتح مقدر على حرف العلة أو على الحرف المحذوف.`;
+    if (e.includes("الفتح")) return `الفعل الماضي مبني دائمًا، ولم يتصل بـ«${target}» ما ينقله إلى السكون أو الضم؛ لذلك بُني على الفتح.`;
+  }
+
+  if (e.includes("فعل مضارع")) {
+    if (e.includes("مبني") && e.includes("نون النسوة")) return `اتصل «${target}» بنون النسوة؛ لذلك خرج من الإعراب وبُني على السكون.`;
+    if (e.includes("مبني") && e.includes("نون التوكيد")) return `اتصل «${target}» بنون التوكيد اتصالًا مباشرًا؛ لذلك بُني على الفتح.`;
+    if (e.includes("منصوب")) {
+      const tool = example?.facts?.toolWord ? `سبقته أداة النصب «${example.facts.toolWord}»` : "سبقه عامل نصب";
+      if (e.includes("حذف النون")) return `${tool}، وهو من الأفعال الخمسة؛ لذلك نُصب بحذف النون.`;
+      if (e.includes("فتحة مقدرة")) return `${tool}، وآخره لا تظهر عليه الفتحة؛ لذلك نُصب بفتحة مقدرة.`;
+      return `${tool}؛ لذلك صار منصوبًا، ثم حددنا علامته من صورة آخر الفعل.`;
+    }
+    if (e.includes("مجزوم")) {
+      const tool = example?.facts?.toolWord ? `سبقته أداة الجزم «${example.facts.toolWord}»` : "سبقه عامل جزم";
+      if (e.includes("حذف النون")) return `${tool}، وهو من الأفعال الخمسة؛ لذلك جُزم بحذف النون.`;
+      if (e.includes("حذف حرف العلة")) return `${tool}، وهو معتل الآخر؛ لذلك جُزم بحذف حرف العلة.`;
+      return `${tool}، وهو صحيح الآخر؛ لذلك جُزم بالسكون.`;
+    }
+    if (e.includes("مرفوع")) {
+      if (e.includes("ثبوت النون")) return `لم يسبق «${target}» ناصب ولا جازم، وهو من الأفعال الخمسة؛ لذلك رُفع بثبوت النون.`;
+      if (e.includes("مقدرة")) return `لم يسبق «${target}» ناصب ولا جازم، لكنه معتل الآخر؛ لذلك رُفع بضمة مقدرة.`;
+      return `لم يسبق «${target}» ناصب ولا جازم؛ لذلك بقي مرفوعًا بالضمة.`;
+    }
+  }
+
+  if (e.includes("مفعول به")) return `وقع الفعل على «${target}»، فهي مفعول به، والمفعول به منصوب؛ ثم نحدد علامة النصب من نوع الاسم.`;
+  if (e.includes("فاعل")) return `«${target}» هو من قام بالفعل أو اتصف به، فهو فاعل، والفاعل مرفوع؛ ثم نحدد علامة الرفع من نوع الاسم.`;
+  if (e.includes("مبتدأ")) return `بدأت الجملة الاسمية بالحديث عن «${target}»، فهو مبتدأ، والمبتدأ مرفوع.`;
+  if (e.includes("خبر")) return `«${target}» أتم المعنى عن الاسم قبله، فهو خبر، ثم نطبق حكم الباب وعلامته.`;
+  if (e.includes("توكيد")) return `أكد «${target}» ما قبله، فهو توكيد يتبع المؤكَّد في الحالة الإعرابية والعلامة المناسبة لنوعه.`;
+  if (e.includes("نعت")) return `وصف «${target}» الاسم قبله، فهو نعت يتبعه في الإعراب والتعريف والعدد والجنس.`;
+  if (e.includes("بدل")) return `جاء «${target}» مقصودًا بالحكم بعد اسم قبله، فهو بدل يتبع المبدل منه في الإعراب.`;
+  if (e.includes("معطوف")) return `ربط حرف العطف «${target}» بما قبله، فالمعطوف يتبع المعطوف عليه في الإعراب.`;
+  return "نحدد أولًا نوع الكلمة وموقعها، ثم الحكم، ثم العلامة المناسبة لصورتها.";
+}
+
+function explainDistractor(actual?: string | null, expected?: string | null, example?: QuizExampleLike | null) {
   const a = String(actual || "");
   const e = String(expected || "");
-  if (!a) return "لم يتم اختيار إجابة.";
-  if (a === e) return "صحيح؛ الاختيار يوافق مسار التفكير.";
-  if (/مرفوع|منصوب|مجزوم|مبني/.test(a) && /مرفوع|منصوب|مجزوم|مبني/.test(e)) {
-    if ((a.includes("مرفوع") && !e.includes("مرفوع")) || (a.includes("منصوب") && !e.includes("منصوب")) || (a.includes("مجزوم") && !e.includes("مجزوم"))) return "الخطأ في الحالة الإعرابية؛ ارجع للأداة أو الموقع قبل العلامة.";
-    if ((a.includes("مبني") && !e.includes("مبني")) || (!a.includes("مبني") && e.includes("مبني"))) return "الخطأ في التفريق بين المبني والمعرب.";
+  if (!a) return "لم تختر إجابة.";
+  if (isSameQuizAnswer(a, e)) return "صحيح؛ الاختيار يوافق مسار التفكير.";
+
+  const cause = quizExpectedCause(e, example);
+  const target = String(example?.target || "الكلمة المحددة");
+
+  if (e.includes("فعل أمر")) {
+    if (a.includes("معرب")) return `سبب الخطأ أنك عاملت «${target}» فعلًا معربًا، بينما فعل الأمر مبني دائمًا. ${cause}`;
+    if (!a.includes("فعل أمر")) return `سبب الخطأ أنك لم تثبت أن «${target}» فعل أمر يدل على الطلب. فعل الأمر مبني دائمًا. ${cause}`;
+    return `أصبت في تحديد فعل الأمر، لكن علامة البناء أو سببها لا يوافقان المثال. ${cause}`;
   }
-  if (/مبتدأ|خبر|فاعل|مفعول/.test(a+e)) return "الخطأ في الموقع النحوي؛ اسأل: ما وظيفة الكلمة في الجملة؟";
-  if (/الأفعال الخمسة|ثبوت النون|حذف النون/.test(a+e)) return "الخطأ في فحص الاتصال: واو الجماعة/ياء المخاطبة/ألف الاثنين.";
-  if (/حرف العلة|مقدرة|ظاهرة|السكون|الفتحة|الضمة|الكسرة/.test(a+e)) return "الخطأ في العلامة؛ بعد تحديد الحالة افحص آخر الكلمة.";
-  return "الإجابة قريبة، لكن أحد قرارات المسار غير مطابق لهذا المثال.";
+
+  if (e.includes("فعل ماض")) {
+    if (a.includes("معرب")) return `سبب الخطأ أنك عاملت «${target}» فعلًا معربًا، بينما الفعل الماضي مبني دائمًا. ${cause}`;
+    if (!a.includes("فعل ماض")) return `سبب الخطأ في تحديد زمن الفعل؛ «${target}» فعل ماضٍ، والفعل الماضي مبني دائمًا. ${cause}`;
+    return `نوع الفعل صحيح، لكن علامة البناء أو الضمير المتصل في اختيارك لا يوافقان المثال. ${cause}`;
+  }
+
+  if (e.includes("فعل مضارع")) {
+    if (e.includes("مبني") && !a.includes("مبني")) return `سبب الخطأ أنك أعربت «${target}»، مع أن اتصاله هنا أخرجه إلى البناء. ${cause}`;
+    if (!e.includes("مبني") && a.includes("مبني")) return `سبب الخطأ أنك بنيت «${target}»، بينما المضارع هنا معرب؛ لم يتصل به ما يوجب البناء. ${cause}`;
+    if (a.includes("مرفوع") && !e.includes("مرفوع")) return `سبب الخطأ أنك اخترت الرفع قبل فحص العامل السابق. ${cause}`;
+    if (a.includes("منصوب") && !e.includes("منصوب")) return `سبب الخطأ أنك اخترت النصب، لكن العامل في الجملة لا ينصب الفعل. ${cause}`;
+    if (a.includes("مجزوم") && !e.includes("مجزوم")) return `سبب الخطأ أنك اخترت الجزم، لكن العامل في الجملة لا يجزم الفعل. ${cause}`;
+    return `الحالة أو العلامة في اختيارك لا تطابق عامل الفعل وصورته. ${cause}`;
+  }
+
+  const roles = ["مبتدأ", "خبر", "فاعل", "مفعول به", "اسم كان", "خبر كان", "اسم إن", "خبر إن", "نعت", "معطوف", "توكيد", "بدل"];
+  const expectedRole = roles.find((role) => e.includes(role));
+  const actualRole = roles.find((role) => a.includes(role));
+  if (expectedRole && actualRole && expectedRole !== actualRole) return `سبب الخطأ في الوظيفة النحوية: اخترت «${actualRole}»، بينما علاقة «${target}» في الجملة تجعلها «${expectedRole}». ${cause}`;
+
+  if (e.includes("مبني") && !a.includes("مبني")) return `سبب الخطأ أنك أعربت اسمًا مبنيًا؛ الاسم المبني لا تتغير حركة آخره، بل يُعرب في محل بحسب موقعه. ${cause}`;
+  if (!e.includes("مبني") && a.includes("مبني")) return `سبب الخطأ أنك بنيت كلمة معربة؛ هذه الكلمة تتغير علامتها بحسب موقعها. ${cause}`;
+
+  const cases = ["مرفوع", "منصوب", "مجرور", "مجزوم"];
+  const expectedCase = cases.find((item) => e.includes(item));
+  const actualCase = cases.find((item) => a.includes(item));
+  if (expectedCase && actualCase && expectedCase !== actualCase) return `سبب الخطأ في الحالة الإعرابية: اخترت «${actualCase}»، والصواب «${expectedCase}» لأن الموقع أو العامل يفرض ذلك. ${cause}`;
+
+  const marks = ["الضمة", "الفتحة", "الكسرة", "السكون", "الواو", "الألف", "الياء", "ثبوت النون", "حذف النون", "حذف حرف العلة"];
+  const expectedMark = marks.find((item) => e.includes(item));
+  const actualMark = marks.find((item) => a.includes(item));
+  if (expectedMark && actualMark && expectedMark !== actualMark) return `سبب الخطأ في العلامة: اخترت «${actualMark}»، بينما نوع الكلمة وحالتها يقتضيان «${expectedMark}». ${cause}`;
+
+  return `أحد قرارات اختيارك لا يوافق المثال. ${cause}`;
+}
+
+function explainCorrectQuizAnswer(expected?: string | null, example?: QuizExampleLike | null) {
+  const e = String(expected || "");
+  const target = String(example?.target || "الكلمة المحددة");
+  const cause = quizExpectedCause(e, example);
+  if (!e) return cause;
+  return `نبدأ من «${target}»: ${cause} لذلك تكون الإجابة الصحيحة: ${firstLine(e)}`;
 }
 
 function enrichQuizPrompt(prompt?: string) {
@@ -4707,8 +4812,8 @@ export default function ExercisePlayer({
       actualCoverage: answerIsCorrect ? expectedCoverage : null,
       actualLabel,
       isCorrect: answerIsCorrect,
-      whyCorrect: quizExample?.whyCorrect,
-      actualOptionReason: actualLabel ? (optionReasonForLabel(quizExample?.optionReasons, actualLabel) || explainDistractor(actualLabel, expectedLabel)) : undefined,
+      whyCorrect: explainCorrectQuizAnswer(expectedLabel, quizExample),
+      actualOptionReason: actualLabel ? (explainDistractor(actualLabel, expectedLabel, quizExample) || optionReasonForLabel(quizExample?.optionReasons, actualLabel)) : undefined,
     };
 
     const nextAnswers = [...quizAnswers];
@@ -5168,7 +5273,7 @@ export default function ExercisePlayer({
                 <div style={{ marginBottom: 4 }}><strong>إجابتك:</strong> {a.actualLabel || "لم يختر إجابة"}</div>
                 <div style={{ marginBottom: 4 }}><strong>الإجابة الصحيحة:</strong> {a.expectedLabel || coverageDisplayLabel(a.expectedCoverage)}</div>
                 {!a.isCorrect && a.actualOptionReason && <div style={{ marginTop: 6, color: "#ffd5a8", lineHeight: 1.8 }}><strong>سبب خطأ اختيارك:</strong> {a.actualOptionReason}</div>}
-                {!a.isCorrect && a.whyCorrect && <div style={{ marginTop: 6, color: "#b8ffd4", lineHeight: 1.8 }}><strong>سبب الصحة:</strong> {a.whyCorrect}</div>}
+                {!a.isCorrect && a.whyCorrect && <div style={{ marginTop: 6, color: "#b8ffd4", lineHeight: 1.8 }}><strong>كيف نصل إلى الصواب:</strong> {a.whyCorrect}</div>}
               </div>
             ))}
           </div>

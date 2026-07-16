@@ -2,6 +2,7 @@ import "./globals.css";
 
 export const dynamic = "force-dynamic";
 import Navbar from "./components/Navbar";
+import RouteAwareFooter from "./components/RouteAwareFooter";
 import { Suspense } from "react";
 
 export const metadata = {
@@ -34,10 +35,7 @@ export default function RootLayout({ children }) {
 
         <main className="container">{children}</main>
 
-        <footer className="footer">
-          <strong>جميع الحقوق محفوظة © 2026 منصة خوارزمية الإعراب</strong>
-          <span>فكرة وإعداد وتطوير: فاطمة علي الزوايدة</span>
-        </footer>
+        <RouteAwareFooter />
       </body>
     </html>
   );

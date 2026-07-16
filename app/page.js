@@ -3,12 +3,15 @@
 export default function HomePage() {
   return (
     <div className="landing-page home-clean-page">
-      <section className="card home-clean-hero">
-        <div className="home-clean-mark" aria-hidden="true">
-          <img src="/brand-icon.svg" alt="" />
+      <section className="card home-clean-hero home-balanced-hero">
+        <div className="home-brand-column">
+          <div className="home-clean-mark" aria-hidden="true">
+            <img src="/brand-icon.svg" alt="" />
+          </div>
+          <div className="home-clean-kicker">مدرّب تفكير نحوي موجّه</div>
         </div>
-        <div className="home-clean-copy">
-          <span className="home-clean-kicker">مدرّب تفكير نحوي موجّه</span>
+
+        <div className="home-clean-copy home-message-column">
           <h1>الإعراب خطوات؛ كل خطوة تفتح مسارًا وتغلق آخر.</h1>
           <a href="/learn/start" className="btn home-clean-cta">ابدأ تدريب التفكير</a>
         </div>
