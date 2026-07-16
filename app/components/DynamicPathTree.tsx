@@ -327,8 +327,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [message, setMessage] = useState(PATHS_COPY.emptyGuidance);
   const [showHint, setShowHint] = useState(false);
   const [zoom, setZoom] = useState(1);
-  // التوجيه المختصر يظهر في لوحة ثابتة فوق الشجرة، والشرح التفصيلي في أسفل الصفحة.
-  // لا نستخدم فقاعات عائمة حتى لا تغطي المثال أو الخيارات.
+  // يظهر التوجيه في فقاعة مرتبطة بالعقدة الحالية من غير أن تغطي المعين أو الخيارات.
   const [activeGuidance, setActiveGuidance] = useState<string | null>(null);
   const [currentExampleIndex, setCurrentExampleIndex] = useState(-1);
   const [finalNodeId, setFinalNodeId] = useState<string | null>(null);
@@ -336,6 +335,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [highlightedAnswerKind, setHighlightedAnswerKind] = useState<"correct" | "wrong" | "hint" | null>(null);
   const [pathSteps, setPathSteps] = useState<string[]>([]);
   const autoNextTimerRef = useRef(null as null | ReturnType<typeof setTimeout>);
+  const hintScrollFrameRef = useRef<number | null>(null);
+  const [, setHintViewportVersion] = useState(0);
 
   function cleanLearningText(text?: string, limit = 170) {
     const cleaned = (text || "")
@@ -510,6 +511,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   useEffect(() => {
     return () => {
       if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
+      if (hintScrollFrameRef.current !== null) cancelAnimationFrame(hintScrollFrameRef.current);
     };
   }, []);
 
@@ -859,7 +861,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   }
 
   function showBubbleBesideNode(nodeId: string, text: string, bubbleZoom = zoom) {
+    setShowHint(true);
     setActiveGuidance(cleanLearningText(text, 170));
+    setTimeout(() => focusNode(nodeId, bubbleZoom), 30);
   }
 
 
@@ -940,9 +944,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
         const aboveSpace = nodeTop;
         const belowSpace = visibleHeight - (nodeTop + nodeHeight);
         let placement: "right" | "left" | "above" | "below" = "above";
-        if (rightSpace >= bubbleWidth + 28) placement = "right";
-        else if (leftSpace >= bubbleWidth + 28) placement = "left";
-        else if (aboveSpace < 150 && belowSpace > aboveSpace) placement = "below";
+        if (rightSpace >= bubbleWidth + 30) placement = "right";
+        else if (leftSpace >= bubbleWidth + 30) placement = "left";
+        else if (aboveSpace >= 175) placement = "above";
+        else placement = belowSpace >= 155 ? "below" : "above";
 
         const centerX = (activeLayoutNode.x + activeLayoutNode.w / 2) * zoom;
         const centerY = (activeLayoutNode.y + activeLayoutNode.h / 2) * zoom;
@@ -1016,7 +1021,18 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
         </div>
 
         
-        <div ref={canvasScrollRef} className="paths-react-canvas-scroll">
+        <div
+          ref={canvasScrollRef}
+          className="paths-react-canvas-scroll"
+          onScroll={() => {
+            if (!showHint) return;
+            if (hintScrollFrameRef.current !== null) cancelAnimationFrame(hintScrollFrameRef.current);
+            hintScrollFrameRef.current = requestAnimationFrame(() => {
+              hintScrollFrameRef.current = null;
+              setHintViewportVersion((value) => value + 1);
+            });
+          }}
+        >
           <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
             <svg
               viewBox={`0 0 ${layout.width} ${layout.height}`}

@@ -6,6 +6,41 @@ import {
   type SpeechGameRound,
 } from "../../content/games/i3rab_in_our_speech";
 
+const VERB_ROUND_IDS = new Set([
+  "present-strong",
+  "five-verbs-men",
+  "five-verbs-female",
+  "weak-ya",
+  "weak-waw",
+  "past-forms",
+  "imperative-forms",
+]);
+
+function isVerbRound(round: SpeechGameRound) {
+  return VERB_ROUND_IDS.has(round.id);
+}
+
+function algorithmStages(round: SpeechGameRound) {
+  if (isVerbRound(round)) {
+    return [
+      "ما سبق الفعل أو ما اتصل به",
+      "الحكم",
+      "نوع الفعل وحالة آخره",
+      "العلامة",
+      "الصورة الصحيحة",
+    ];
+  }
+
+  return [
+    "الموقع في الجملة",
+    "الوظيفة النحوية",
+    "الحكم الإعرابي",
+    "نوع الاسم",
+    "العلامة",
+    "الصورة الصحيحة",
+  ];
+}
+
 function renderRound(
   round: SpeechGameRound,
   activeIndex: number,
@@ -35,8 +70,10 @@ function renderRound(
             answer ? "is-solved" : active ? "is-active" : "is-waiting"
           }`}
           aria-current={active ? "step" : undefined}
+          aria-label={`الفراغ ${indexInRound + 1}${answer ? `: ${answer}` : ""}`}
         >
-          {answer || "ــــــــــــ"}
+          <small aria-hidden="true">{indexInRound + 1}</small>
+          <b>{answer || "ــــــ"}</b>
         </span>
       );
     });
@@ -57,7 +94,12 @@ export default function I3rabInOurSpeechGame() {
   const activeBlank = round.blanks[blankIndex] || null;
   const finished = blankIndex >= round.blanks.length;
   const solvedCurrent = Boolean(activeBlank && answers[activeBlank.id]);
-  const roundProgress = ((roundIndex + (finished ? 1 : blankIndex / round.blanks.length)) / rounds.length) * 100;
+  const roundProgress =
+    ((roundIndex + (finished ? 1 : blankIndex / round.blanks.length)) / rounds.length) * 100;
+  const stages = algorithmStages(round);
+  const observationPrompt = isVerbRound(round)
+    ? "راقب أثر ما سبق الفعل أو ما اتصل به في صورته."
+    : "راقب كيف تتغير صورة الكلمة داخل الجملة.";
 
   function choose(value: string) {
     if (!activeBlank || finished || solvedCurrent) return;
@@ -103,23 +145,38 @@ export default function I3rabInOurSpeechGame() {
   return (
     <main className="speech-game-page" dir="rtl">
       <section className="card speech-game-hero">
-        <span>مدخل تطبيقي لفكرة الخوارزمية</span>
-        <h1>الإعراب في كلامنا</h1>
-        <p>
-          الكلمة أو الفعل واحد، لكن صورته تتغيّر عندما يتغيّر موقعه الإعرابي أو العامل الذي سبقه.
-        </p>
-        <div className="speech-game-algorithm" aria-label="تسلسل التفكير في اللعبة">
-          <span>الموقع</span><i>←</i><span>الوظيفة</span><i>←</i><span>الحكم</span><i>←</i><span>العلامة</span><i>←</i><strong>الصورة الصحيحة</strong>
+        <div className="speech-game-hero-copy">
+          <span>مدخل تطبيقي لفكرة الخوارزمية</span>
+          <h1>الإعراب في كلامنا</h1>
+          <p>
+            الكلمة نفسها قد تتغير صورتها بحسب موقعها في الجملة، والفعل قد تتغير صورته بحسب ما سبقه أو ما اتصل به.
+          </p>
+        </div>
+
+        <div
+          className={`speech-game-algorithm ${isVerbRound(round) ? "is-verb" : "is-noun"}`}
+          aria-label="تسلسل التعليل في الجولة"
+        >
+          {stages.map((stage, index) => (
+            <React.Fragment key={stage}>
+              <span className={index === stages.length - 1 ? "is-result" : ""}>{stage}</span>
+              {index < stages.length - 1 ? <i aria-hidden="true">←</i> : null}
+            </React.Fragment>
+          ))}
         </div>
       </section>
 
       <section className="card speech-game-card">
         <div className="speech-game-progress">
           <div>
-            <span>النص {roundIndex + 1} من {rounds.length}</span>
+            <span>الجولة {roundIndex + 1} من {rounds.length}</span>
             <small>{round.domain}</small>
           </div>
-          <strong>{finished ? "اكتمل النص" : `الفراغ ${blankIndex + 1} من ${round.blanks.length}`}</strong>
+          <strong>
+            {finished
+              ? "اكتملت الجولة"
+              : `الفراغ ${blankIndex + 1} من ${round.blanks.length}`}
+          </strong>
         </div>
         <div className="speech-game-progress-track" aria-hidden="true">
           <i style={{ width: `${Math.max(4, roundProgress)}%` }} />
@@ -127,42 +184,42 @@ export default function I3rabInOurSpeechGame() {
 
         <div className="speech-game-round-head">
           <div>
-            <span>{round.focus}</span>
+            <span>{observationPrompt}</span>
             <h2>{round.title}</h2>
           </div>
-          <em>اختر الصورة المناسبة للفراغ المضيء</em>
+          {!finished ? <em>اختر الصورة المناسبة للفراغ المضيء.</em> : null}
         </div>
 
-        <div className="speech-game-sentence">
-          {renderRound(round, blankIndex, answers)}
-        </div>
-
-        {!finished && activeBlank ? (
-          <div className="speech-game-workspace">
-            <div className="speech-game-question">
-              أي صورة تلائم هذا الموقع في الجملة؟
-            </div>
-            <div className="speech-game-options">
-              {round.choices.map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  disabled={solvedCurrent}
-                  className={
-                    wrongChoice === value
-                      ? "is-wrong"
-                      : answers[activeBlank.id] === value
-                      ? "is-correct"
-                      : ""
-                  }
-                  onClick={() => choose(value)}
-                >
-                  {value}
-                </button>
-              ))}
-            </div>
+        <div className="speech-game-challenge">
+          <div className="speech-game-sentence">
+            {renderRound(round, blankIndex, answers)}
           </div>
-        ) : null}
+
+          {!finished && activeBlank ? (
+            <div className="speech-game-interaction">
+              <div className="speech-game-question">أي صورة تلائم هذا الموقع في الجملة؟</div>
+              <div className="speech-game-options">
+                {round.choices.map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    disabled={solvedCurrent}
+                    className={
+                      wrongChoice === value
+                        ? "is-wrong"
+                        : answers[activeBlank.id] === value
+                        ? "is-correct"
+                        : ""
+                    }
+                    onClick={() => choose(value)}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
 
         {feedback && activeBlank ? (
           <div
@@ -174,8 +231,8 @@ export default function I3rabInOurSpeechGame() {
             <span className="speech-game-feedback-role">{activeBlank.role}</span>
             <strong>
               {feedback.tone === "correct"
-                ? "أحسنت، ربطت الصورة بالموقع الإعرابي"
-                : "هذه الصورة لا تلائم هذا الموقع"}
+                ? "أحسنت، ربطت الصورة بالموقع أو العامل"
+                : "هذه الصورة لا تلائم هذا الموضع"}
             </strong>
             <p>{feedback.text}</p>
             <div className="speech-game-feedback-actions">
@@ -183,7 +240,7 @@ export default function I3rabInOurSpeechGame() {
                 أكمل تعلّم {activeBlank.learnLabel}
               </a>
               <button type="button" className="btn btn-primary" onClick={continueStep}>
-                تابع التحدي
+                {feedback.tone === "wrong" ? "اعرض الصواب ثم تابع" : "تابع التحدي"}
               </button>
             </div>
           </div>
@@ -191,8 +248,8 @@ export default function I3rabInOurSpeechGame() {
 
         {finished ? (
           <div className="speech-game-finished">
-            <span>الموقع غيّر الصورة، والخوارزمية فسّرت السبب</span>
-            <h2>أكملت النص وربطت كل صورة بوظيفتها وحكمها وعلامتها.</h2>
+            <span>الموقع أو العامل غيّر الصورة، والخوارزمية فسّرت السبب</span>
+            <h2>أكملت الجولة وربطت كل صورة بوظيفتها وحكمها ونوعها وعلامتها.</h2>
             <div className="speech-game-solution-grid">
               {round.blanks.map((blank) => (
                 <article key={blank.id}>
@@ -203,13 +260,13 @@ export default function I3rabInOurSpeechGame() {
             </div>
             <div className="speech-game-finished-actions">
               <button type="button" className="btn btn-primary" onClick={nextRound}>
-                تابع إلى نص جديد
+                تابع إلى جولة جديدة
               </button>
               <a href="/learn/start" className="btn btn-soft">
                 ابدأ التعلّم المنظّم
               </a>
               <button type="button" className="btn btn-soft" onClick={restart}>
-                أعد هذا النص
+                أعد هذه الجولة
               </button>
             </div>
           </div>

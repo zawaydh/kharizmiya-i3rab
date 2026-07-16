@@ -21,18 +21,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="card home-speech-game" aria-labelledby="speech-game-title">
+      <section className="card home-speech-game home-speech-explainer" aria-labelledby="speech-game-how-title">
         <div className="home-speech-game-copy">
-          <span className="section-kicker">تطبيق سريع من الحياة اليومية</span>
-          <h2 id="speech-game-title">الإعراب في كلامنا</h2>
-          <p>ميّز بين الرفع والنصب والجر، وبين المضارع المرفوع والمنصوب والمجزوم، ثم اقرأ التعليل الذي يصل الموقع بالعلامة.</p>
+          <span className="section-kicker">كيف تعمل التجربة؟</span>
+          <h2 id="speech-game-how-title">اختر، ثم اكتشف السبب</h2>
+          <p>تضع الصورة المناسبة في الجملة، ثم يربط التعليل بين الموقع أو العامل، والوظيفة، والحكم، ونوع الكلمة أو الفعل، والعلامة.</p>
         </div>
-        <div className="home-speech-game-preview" aria-hidden="true">
-          <span>المزارعونَ / المزارعينَ</span>
-          <i>•</i>
-          <span>يكتبُ / لن يكتبَ / لم يكتبْ</span>
+        <div className="home-speech-game-preview" aria-label="أمثلة على تغير الصورة">
+          <span>المزارعونَ ← المزارعينَ</span>
+          <i aria-hidden="true">•</i>
+          <span>يكتبُ ← لن يكتبَ ← لم يكتبْ</span>
         </div>
-        <a href="/i3rab-in-our-speech" className="btn home-speech-game-cta">ابدأ جولة متنوعة</a>
       </section>
 
       <section className="card home-clean-journey" aria-labelledby="journey-title">
