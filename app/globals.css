@@ -14894,3 +14894,637 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
   .home-clean-cta{min-height:50px!important;}
   .platform-navbar-mobile{max-height:calc(100vh - 82px);overflow:auto;}
 }
+
+/* ===== 2026-07-15 Final clarity pass: home typography, stages, nav, and stable learning motion ===== */
+
+/* Avoid small, heavily bold Arabic text in the main navigation. */
+.platform-navbar-brand{
+  font-size:16px !important;
+  font-weight:600 !important;
+  letter-spacing:0 !important;
+}
+.platform-navbar-brand span{font-size:16px !important;font-weight:600 !important;}
+.platform-navbar-links>a,
+.platform-navbar-links .topic-picker-btn,
+.platform-navbar-account>a,
+.platform-navbar-account>button{
+  min-height:44px !important;
+  padding:9px 14px !important;
+  font-size:16px !important;
+  font-weight:500 !important;
+  line-height:1.55 !important;
+}
+.platform-navbar .tree-menu-label,
+.platform-navbar .tree-menu-action{
+  min-height:44px !important;
+  font-size:15.5px !important;
+  font-weight:500 !important;
+  line-height:1.55 !important;
+}
+
+/* Balance the coach identity and the central statement instead of making one tiny and one oversized. */
+.home-clean-hero{
+  min-height:380px !important;
+  grid-template-columns:minmax(0,1fr) 220px !important;
+  gap:clamp(28px,4vw,48px) !important;
+  padding:clamp(30px,5vw,56px) !important;
+}
+.home-clean-copy{
+  gap:15px !important;
+  align-content:center !important;
+}
+.home-clean-kicker{
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  color:#77e4d9 !important;
+  font-size:clamp(27px,3vw,34px) !important;
+  font-weight:500 !important;
+  line-height:1.55 !important;
+}
+.home-clean-copy h1{
+  width:100% !important;
+  max-width:760px !important;
+  font-size:clamp(40px,4.25vw,50px) !important;
+  font-weight:600 !important;
+  line-height:1.45 !important;
+  letter-spacing:0 !important;
+  text-wrap:balance;
+}
+.home-clean-mark img{
+  width:min(100%,220px) !important;
+}
+.home-clean-cta{
+  min-height:52px !important;
+  padding-inline:24px !important;
+  font-size:17px !important;
+  font-weight:500 !important;
+}
+
+/* The three learning stages use the same calm card rhythm as the after-test choices. */
+.home-clean-section-head .section-kicker{
+  font-size:16px !important;
+  font-weight:500 !important;
+}
+.home-clean-section-head h2{
+  font-size:clamp(27px,3vw,34px) !important;
+  font-weight:600 !important;
+  line-height:1.5 !important;
+}
+.home-clean-stages{
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  align-items:stretch !important;
+  gap:10px !important;
+}
+.home-clean-stages>i{display:none !important;}
+.home-clean-stage{
+  min-height:148px !important;
+  display:grid !important;
+  grid-template-columns:auto 1fr !important;
+  align-content:start !important;
+  align-items:start !important;
+  gap:12px !important;
+  padding:16px !important;
+  border-radius:15px !important;
+  background:rgba(255,255,255,.035) !important;
+  border:1px solid rgba(255,255,255,.07) !important;
+}
+.home-clean-stage>span{
+  width:36px !important;
+  height:36px !important;
+  flex-basis:36px !important;
+  border-radius:12px !important;
+  font-size:16px !important;
+  font-weight:600 !important;
+}
+.home-clean-stage h3{
+  margin:1px 0 7px !important;
+  font-size:21px !important;
+  font-weight:600 !important;
+  line-height:1.45 !important;
+}
+.home-clean-stage p{
+  margin:0 !important;
+  font-size:17px !important;
+  font-weight:400 !important;
+  line-height:1.75 !important;
+  opacity:.82 !important;
+}
+.home-clean-after>h3{
+  font-size:20px !important;
+  font-weight:600 !important;
+}
+.home-clean-after-grid strong{
+  font-size:19px !important;
+  font-weight:600 !important;
+  line-height:1.5 !important;
+}
+.home-clean-after-grid span{
+  font-size:17px !important;
+  font-weight:400 !important;
+  line-height:1.75 !important;
+  opacity:.82 !important;
+}
+
+/* The instruction is part of the question, not a detached banner the learner may skip. */
+.exercise-page-shell .choice-selection-instruction{display:none !important;}
+.exercise-page-shell .question-choice-prompt,
+.quiz-question-with-instruction .question-choice-prompt{
+  display:inline !important;
+  color:#0f766e !important;
+  font-size:.86em !important;
+  font-weight:600 !important;
+  line-height:inherit !important;
+}
+.quiz-question-with-instruction .question-choice-prompt{color:#5eead4 !important;}
+
+/* Keep the sentence and card fixed. Only the current question area slides. */
+.exercise-page-shell:not(.practice-game-shell) .question-content-motion{
+  min-height:320px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-start !important;
+  overflow:hidden !important;
+  padding:2px !important;
+}
+.exercise-page-shell .question-content-motion.question-text-leaving{
+  animation:khQuestionOnlyExit .26s ease-in both !important;
+}
+.exercise-page-shell .question-content-motion.question-text-entering{
+  animation:khQuestionOnlyEnter .30s ease-out both !important;
+}
+@keyframes khQuestionOnlyExit{
+  from{opacity:1;transform:translateX(0)}
+  to{opacity:0;transform:translateX(20px)}
+}
+@keyframes khQuestionOnlyEnter{
+  from{opacity:0;transform:translateX(-20px)}
+  to{opacity:1;transform:translateX(0)}
+}
+.exercise-page-shell .sequential-sentence-line{
+  transform:none !important;
+  animation:none !important;
+}
+
+/* The next example is an explicit learner decision after reading the final result. */
+.exercise-page-shell .final-next-instruction{
+  margin:12px auto 0 !important;
+  padding:10px 14px !important;
+  max-width:680px !important;
+  border-radius:14px !important;
+  background:rgba(47,158,158,.08) !important;
+  border:1px solid rgba(47,158,158,.18) !important;
+  color:#d9fff9 !important;
+  text-align:center !important;
+  font-size:16px !important;
+  font-weight:500 !important;
+  line-height:1.8 !important;
+}
+.exercise-page-shell .next-example-glow{
+  font-size:17px !important;
+  font-weight:600 !important;
+}
+
+@media(max-width:820px){
+  .platform-navbar-brand span{font-size:15px !important;font-weight:600 !important;}
+  .platform-navbar-mobile>a,
+  .platform-navbar-mobile>button,
+  .platform-navbar-mobile .topic-picker-btn{
+    min-height:44px !important;
+    font-size:16px !important;
+    font-weight:500 !important;
+    line-height:1.55 !important;
+  }
+  .platform-navbar-mobile .tree-menu-label,
+  .platform-navbar-mobile .tree-menu-action{
+    min-height:44px !important;
+    font-size:15.5px !important;
+    font-weight:500 !important;
+  }
+  .home-clean-hero{
+    min-height:0 !important;
+    grid-template-columns:1fr !important;
+    gap:10px !important;
+    padding:22px 15px !important;
+  }
+  .home-clean-mark img{width:82px !important;}
+  .home-clean-copy{gap:10px !important;}
+  .home-clean-kicker{
+    font-size:22px !important;
+    font-weight:500 !important;
+    line-height:1.55 !important;
+  }
+  .home-clean-copy h1{
+    max-width:360px !important;
+    font-size:clamp(28px,8.3vw,32px) !important;
+    font-weight:600 !important;
+    line-height:1.58 !important;
+  }
+  .home-clean-cta{
+    width:min(100%,280px) !important;
+    min-height:48px !important;
+    font-size:16px !important;
+    font-weight:500 !important;
+  }
+  .home-clean-stages{
+    grid-template-columns:1fr !important;
+    gap:9px !important;
+  }
+  .home-clean-stage{
+    min-height:0 !important;
+    padding:15px !important;
+  }
+  .home-clean-stage h3{font-size:20px !important;}
+  .home-clean-stage p{font-size:16.5px !important;}
+  .home-clean-after-grid strong{font-size:18.5px !important;}
+  .home-clean-after-grid span{font-size:16.5px !important;}
+  .exercise-page-shell:not(.practice-game-shell) .question-content-motion{
+    min-height:290px !important;
+  }
+  .exercise-page-shell .final-next-instruction{
+    padding:9px 11px !important;
+    font-size:15px !important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .exercise-page-shell .question-content-motion.question-text-leaving,
+  .exercise-page-shell .question-content-motion.question-text-entering{
+    animation:none !important;
+  }
+}
+
+/* ===== Learn card flow + restored visual Paths (2026-07-16) ===== */
+
+/* The learner only needs example progress. The per-example step bar is intentionally removed. */
+.exercise-page-shell .solution-step-progress,
+.exercise-page-shell .solution-step-progress-sticky{
+  display:none !important;
+}
+
+/* Learn mode: each question card rises calmly; the page layout itself stays stable. */
+.exercise-page-shell.learn-card-flow-shell .algorithm-active-card.sequential-active-card,
+.exercise-page-shell.learn-card-flow-shell .sequential-active-card.clean-question-block{
+  will-change:transform,opacity !important;
+  transform-origin:center bottom !important;
+  border-radius:24px !important;
+  box-shadow:0 14px 34px rgba(15,23,42,.12) !important;
+}
+.exercise-page-shell.learn-card-flow-shell .algorithm-active-card.phase-success,
+.exercise-page-shell.learn-card-flow-shell .sequential-active-card.phase-success{
+  animation:khLearnCardConfirm .18s ease-out both !important;
+}
+.exercise-page-shell.learn-card-flow-shell .algorithm-active-card.phase-leaving,
+.exercise-page-shell.learn-card-flow-shell .sequential-active-card.phase-leaving{
+  animation:khLearnCardRiseOut .34s cubic-bezier(.4,0,.2,1) both !important;
+  pointer-events:none !important;
+}
+.exercise-page-shell.learn-card-flow-shell .algorithm-active-card.phase-entering,
+.exercise-page-shell.learn-card-flow-shell .sequential-active-card.phase-entering{
+  animation:khLearnCardRiseIn .42s cubic-bezier(.22,.75,.25,1) both !important;
+  pointer-events:none !important;
+}
+.exercise-page-shell.learn-card-flow-shell .question-content-motion,
+.exercise-page-shell.learn-card-flow-shell .question-content-motion.question-text-leaving,
+.exercise-page-shell.learn-card-flow-shell .question-content-motion.question-text-entering{
+  animation:none !important;
+  transform:none !important;
+  opacity:1 !important;
+}
+@keyframes khLearnCardConfirm{
+  from{transform:translateY(0);filter:none}
+  to{transform:translateY(-4px);filter:drop-shadow(0 8px 14px rgba(16,185,129,.14))}
+}
+@keyframes khLearnCardRiseOut{
+  from{opacity:1;transform:translateY(-4px) scale(1)}
+  to{opacity:0;transform:translateY(-34px) scale(.985)}
+}
+@keyframes khLearnCardRiseIn{
+  from{opacity:0;transform:translateY(28px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* Restore Paths as a visual navigation map: branching diamonds, compact choices and visible guidance. */
+.paths-node-guidance-bubble{display:none !important;}
+.paths-step-hint-panel{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:42px !important;
+  margin:8px 0 10px !important;
+  padding:9px 14px !important;
+  border-radius:14px !important;
+  background:#fff7d6 !important;
+  color:#172033 !important;
+  border:1px solid rgba(212,175,55,.42) !important;
+  box-shadow:0 8px 22px rgba(15,35,55,.10) !important;
+  font-size:13px !important;
+  font-weight:500 !important;
+  line-height:1.7 !important;
+  text-align:center !important;
+}
+.paths-react-board-wrap{
+  overflow:hidden !important;
+  padding:12px !important;
+  border-radius:20px !important;
+  background:#f6f8fb !important;
+  border:1px solid #e6e8ee !important;
+  box-shadow:0 14px 34px rgba(15,23,42,.08) !important;
+}
+.paths-react-canvas-scroll{
+  direction:ltr !important;
+  overflow:auto !important;
+  min-height:540px !important;
+  max-height:72vh !important;
+  padding:10px !important;
+  border-radius:18px !important;
+  background:linear-gradient(180deg,#fff,#fbfdff) !important;
+  border:1px solid rgba(15,35,55,.09) !important;
+  scroll-behavior:smooth !important;
+  scroll-padding:28px !important;
+}
+.paths-react-canvas-stage{background:transparent !important;}
+.paths-react-svg{background:transparent !important;}
+.paths-react-svg text{
+  font-family:var(--font-arabic),"Noto Naskh Arabic",Tahoma,sans-serif !important;
+  letter-spacing:0 !important;
+}
+.paths-react-question-text{
+  fill:#132335 !important;
+  font-size:12px !important;
+  font-weight:500 !important;
+}
+.paths-react-box-text{
+  fill:#0b1725 !important;
+  font-size:13px !important;
+  font-weight:500 !important;
+}
+.paths-react-edge-label{
+  fill:rgba(37,75,105,.78) !important;
+  font-size:10px !important;
+  font-weight:400 !important;
+  paint-order:stroke !important;
+  stroke:#fff !important;
+  stroke-width:3px !important;
+}
+.paths-react-answer rect{
+  fill:#ecfdf5 !important;
+  stroke:rgba(34,197,94,.78) !important;
+  stroke-width:.9px !important;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.10)) !important;
+}
+.paths-react-answer:hover rect{
+  fill:rgba(94,234,212,.18) !important;
+  stroke:rgba(47,158,158,.75) !important;
+}
+.paths-react-answer-text{
+  fill:#173044 !important;
+  font-size:9.5px !important;
+  font-weight:500 !important;
+}
+.paths-react-answer-hint{
+  position:absolute !important;
+  z-index:30 !important;
+  max-width:300px !important;
+  min-width:210px !important;
+  padding:10px 12px !important;
+  border-radius:15px !important;
+  background:#fff7d6 !important;
+  color:#172033 !important;
+  border:1px solid rgba(224,184,76,.48) !important;
+  box-shadow:0 14px 32px rgba(15,35,55,.18) !important;
+  font-size:12px !important;
+  font-weight:500 !important;
+  line-height:1.75 !important;
+  text-align:right !important;
+  white-space:pre-line !important;
+  pointer-events:none !important;
+  transform:translate(-50%,calc(-100% - 12px)) !important;
+}
+.paths-react-answer-hint::after{
+  content:"" !important;
+  display:block !important;
+  position:absolute !important;
+  bottom:-7px !important;
+  left:50% !important;
+  right:auto !important;
+  width:12px !important;
+  height:12px !important;
+  background:#fff7d6 !important;
+  border-right:1px solid rgba(224,184,76,.48) !important;
+  border-bottom:1px solid rgba(224,184,76,.48) !important;
+  transform:translateX(-50%) rotate(45deg) !important;
+}
+
+@media(max-width:700px){
+  .exercise-page-shell.learn-card-flow-shell .algorithm-active-card.sequential-active-card,
+  .exercise-page-shell.learn-card-flow-shell .sequential-active-card.clean-question-block{
+    min-height:auto !important;
+    border-radius:20px !important;
+  }
+  .paths-step-hint-panel{
+    min-height:38px !important;
+    padding:8px 10px !important;
+    font-size:11.5px !important;
+  }
+  .paths-react-board-wrap{padding:7px !important;}
+  .paths-react-canvas-scroll{
+    min-height:500px !important;
+    max-height:68vh !important;
+    padding:7px !important;
+  }
+  .paths-react-question-text{font-size:11.5px !important;}
+  .paths-react-box-text{font-size:12px !important;}
+  .paths-react-answer-text{font-size:9px !important;}
+  .paths-react-edge-label{font-size:9.5px !important;}
+  .paths-react-answer-hint{max-width:230px !important;min-width:175px !important;font-size:11px !important;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .exercise-page-shell.learn-card-flow-shell .algorithm-active-card,
+  .exercise-page-shell.learn-card-flow-shell .sequential-active-card{
+    animation:none !important;
+    transform:none !important;
+    opacity:1 !important;
+  }
+}
+
+/* ===== Readable visual paths: target in every diamond + inline choices/hint (2026-07-16) ===== */
+.paths-step-hint-panel{
+  display:none !important;
+}
+.paths-react-canvas-scroll{
+  scroll-padding:18px !important;
+}
+.paths-diamond-content{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:8px 4px;
+  box-sizing:border-box;
+  color:#102235;
+  text-align:center;
+  overflow:hidden;
+  font-family:var(--font-arabic),"Noto Naskh Arabic",Tahoma,sans-serif;
+}
+.paths-diamond-target{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:92%;
+  min-height:34px;
+  padding:5px 16px;
+  border-radius:999px;
+  border:1px solid rgba(20,184,166,.58);
+  background:rgba(236,253,245,.98);
+  color:#0f766e;
+  font-size:18px;
+  font-weight:650;
+  line-height:1.35;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.paths-diamond-question{
+  width:100%;
+  margin:0;
+  color:#132335;
+  font-size:17px;
+  font-weight:500;
+  line-height:1.75;
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+.paths-node-controls{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+  box-sizing:border-box;
+  padding:2px 8px 6px;
+  font-family:var(--font-arabic),"Noto Naskh Arabic",Tahoma,sans-serif;
+}
+.paths-node-answer-grid{
+  display:grid;
+  gap:9px;
+  width:100%;
+  align-items:stretch;
+}
+.paths-node-answer-grid-1{grid-template-columns:1fr;max-width:260px;margin-inline:auto;}
+.paths-node-answer-grid-2{grid-template-columns:repeat(2,minmax(0,1fr));}
+.paths-node-answer-grid-3{grid-template-columns:repeat(3,minmax(0,1fr));}
+.paths-node-answer-button{
+  min-width:0;
+  min-height:48px;
+  padding:8px 10px;
+  border-radius:14px;
+  border:1px solid rgba(15,118,110,.34);
+  background:#ffffff;
+  color:#173044;
+  box-shadow:0 4px 12px rgba(15,35,55,.08);
+  font:inherit;
+  font-size:15px;
+  font-weight:500;
+  line-height:1.55;
+  text-align:center;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  cursor:pointer;
+  transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease;
+}
+.paths-node-answer-button:hover,
+.paths-node-answer-button:focus-visible{
+  transform:translateY(-1px);
+  border-color:rgba(20,184,166,.78);
+  background:#f0fdfa;
+  box-shadow:0 7px 18px rgba(15,118,110,.12);
+  outline:none;
+}
+.paths-node-answer-button.is-wrong{
+  border-color:#f97316;
+  background:#fff7ed;
+}
+.paths-node-answer-button.is-correct,
+.paths-node-answer-button.is-correct-hint{
+  border-color:#10b981;
+  background:#ecfdf5;
+}
+.paths-node-hint-button{
+  align-self:center;
+  min-height:40px;
+  min-width:150px;
+  padding:7px 18px;
+  border-radius:999px;
+  border:1px solid rgba(212,175,55,.52);
+  background:#fff9db;
+  color:#6b4f00;
+  font:inherit;
+  font-size:14px;
+  font-weight:550;
+  line-height:1.4;
+  cursor:pointer;
+}
+.paths-node-inline-hint{
+  position:relative;
+  width:100%;
+  max-height:98px;
+  overflow:auto;
+  padding:11px 14px;
+  box-sizing:border-box;
+  border-radius:16px;
+  border:1px solid rgba(212,175,55,.42);
+  background:#fff7d6;
+  color:#172033;
+  box-shadow:0 10px 24px rgba(15,35,55,.12);
+  font-size:13.5px;
+  font-weight:400;
+  line-height:1.75;
+  text-align:right;
+}
+.paths-node-inline-hint::before{
+  content:"";
+  position:absolute;
+  top:-7px;
+  left:50%;
+  width:12px;
+  height:12px;
+  transform:translateX(-50%) rotate(45deg);
+  background:#fff7d6;
+  border-top:1px solid rgba(212,175,55,.42);
+  border-left:1px solid rgba(212,175,55,.42);
+}
+
+@media(max-width:700px){
+  .paths-diamond-target{
+    min-height:31px;
+    padding:4px 12px;
+    font-size:16px;
+  }
+  .paths-diamond-question{
+    font-size:15.5px;
+    line-height:1.7;
+  }
+  .paths-node-controls{gap:8px;padding-inline:6px;}
+  .paths-node-answer-grid-3{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .paths-node-answer-button{
+    min-height:45px;
+    padding:7px 8px;
+    font-size:13.5px;
+    line-height:1.5;
+  }
+  .paths-node-hint-button{
+    min-height:38px;
+    font-size:13px;
+  }
+  .paths-node-inline-hint{
+    max-height:92px;
+    padding:10px 12px;
+    font-size:12.5px;
+  }
+}

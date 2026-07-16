@@ -4558,7 +4558,7 @@ export default function ExercisePlayer({
     setMicroCelebrateAnswerId(null);
     setMicroCelebrate(0);
     setCardPhase("entering");
-    bringWorkAreaIntoView(nextNode?.type === "result" ? "center" : "soft", 80);
+    if (nextNode?.type === "result") bringWorkAreaIntoView("center", 80);
     window.setTimeout(() => {
       setCardPhase("idle");
       setMicroCelebrate(0);
@@ -4675,7 +4675,7 @@ export default function ExercisePlayer({
         setMicroCelebrateAnswerId(null);
         setMicroCelebrate(0);
         setCardPhase("entering");
-        bringWorkAreaIntoView(nextNode?.type === "result" ? "center" : "soft", 60);
+        if (nextNode?.type === "result") bringWorkAreaIntoView("center", 60);
         window.setTimeout(() => {
           setCardPhase("idle");
           setMicroCelebrate(0);
@@ -4987,7 +4987,7 @@ export default function ExercisePlayer({
   }
 
   return (
-    <div className={`exercise-page-shell ${isPracticeMode ? "practice-game-shell" : ""}`}>
+    <div className={`exercise-page-shell ${isPracticeMode ? "practice-game-shell" : ""} ${mode === "learn" ? "learn-card-flow-shell" : ""}`}>
       {clickCheck ? <span key={clickCheck.id} className="click-success-pop" style={{ left: clickCheck.x, top: clickCheck.y }} aria-hidden="true">✓</span> : null}
       <section className="exercise-hero-card card card-glow">
         <div className="exercise-hero-main">
@@ -5181,8 +5181,10 @@ export default function ExercisePlayer({
             <div style={{ opacity: 0.6, marginBottom: 6 }}>السؤال {quizCursor + 1} من {quizOrder.length}</div>
             <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
             <div className="exercise-sentence">{renderSentence((example as QuizExampleLike)?.sentence, (example as QuizExampleLike)?.target)}</div>
-            <div style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>{withoutRepeatedChoiceInstruction(enrichQuizPrompt((example as QuizExampleLike)?.prompt))}</div>
-            <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي، ثم انقر عليها للمتابعة:</div>
+            <div className="quiz-question-with-instruction" style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>
+              {withoutRepeatedChoiceInstruction(enrichQuizPrompt((example as QuizExampleLike)?.prompt))}
+              <span className="question-choice-prompt"> اختر الإجابة الصحيحة مما يأتي:</span>
+            </div>
           </section>
 
           <section className="exercise-panel" style={box}>
@@ -5239,18 +5241,6 @@ export default function ExercisePlayer({
             ) : null}
 
             {node?.type === "question" ? (
-              <div className="solution-step-progress solution-step-progress-sticky" aria-label="تقدم خطوات حل المثال">
-                <div className="solution-step-progress-head">
-                  <strong>خطوة {currentStageStep} من {estimatedStepTotal}</strong>
-                  <span>{stageProgressPercent}%</span>
-                </div>
-                <div className="solution-step-progress-track" aria-hidden="true">
-                  <i style={{ width: `${Math.max(4, stageProgressPercent)}%` }} />
-                </div>
-              </div>
-            ) : null}
-
-            {node?.type === "question" ? (
               <div
                 ref={activeCardRef}
                 className={`clean-question-block algorithm-step-card algorithm-active-card sequential-active-card ${isPracticeMode ? "practice-challenge-card" : ""} ${dropOver ? "is-drop-over" : ""} phase-${cardPhase}`}
@@ -5265,11 +5255,11 @@ export default function ExercisePlayer({
                   if (answerId) handleLearnDrop(answerId, label);
                 }}
               >
+                <div className="sequential-sentence-line" aria-label="الجملة">
+                  <span className="dialogue-label">في الجملة:</span>
+                  <span className="dialogue-sentence-text">{renderSentence(state.currentSentence, state.currentTarget)}</span>
+                </div>
                 <div key={`${state.currentNodeId}`} className={`question-content-motion question-text-${questionVisualPhase}`} aria-live="polite">
-                  <div className="sequential-sentence-line" aria-label="الجملة">
-                    <span className="dialogue-label">في الجملة:</span>
-                    <span className="dialogue-sentence-text">{renderSentence(state.currentSentence, state.currentTarget)}</span>
-                  </div>
                   {dialogBubble?.tone === "hint" ? (
                     <div className="inline-correction-hint" role="note" aria-live="polite">
                       <span className="inline-correction-hint-title">فكّر معي</span>
@@ -5287,8 +5277,10 @@ export default function ExercisePlayer({
                     </div>
                   ) : (
                     <>
-                      <div className="exercise-question-title clean-question-title">{renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}</div>
-                      <div className="choice-selection-instruction">اختر الإجابة الصحيحة مما يأتي، ثم انقر عليها للمتابعة:</div>
+                      <div className="exercise-question-title clean-question-title">
+                        {renderSmartText(dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title), setActiveGlossary)}
+                        <span className="question-choice-prompt"> اختر الإجابة الصحيحة مما يأتي:</span>
+                      </div>
                       {dialogueQuestionNote(thinkingNode) ? <div className="dialogue-question-note">{dialogueQuestionNote(thinkingNode)}</div> : null}
 
                       {isPracticeMode && !practiceCorrectionMode ? (
@@ -5517,6 +5509,15 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
                 </div>
                 {!finalCtaReady ? <div className="final-read-cue" aria-live="polite">توقّف لحظة واقرأ الإعراب النهائي؛ هذه نتيجة المسار الذي بنيته.</div> : null}
                 <div className="final-motivation-line">كل خطوة سابقة كانت جزءًا من بناء هذا الإعراب.</div>
+                {finalCtaReady ? (
+                  <div className="final-next-instruction" aria-live="polite">
+                    {resultWouldCompleteStage
+                      ? "اكتمل هذا المستوى. انتقل إلى المرحلة التالية لمواصلة رحلتك."
+                      : mode === "practice"
+                        ? "اكتمل هذا المثال. انتقل إلى المثال التالي لمواصلة التدريب."
+                        : "اكتمل بناء إعراب هذا المثال. انتقل إلى المثال التالي لمواصلة التعلّم."}
+                  </div>
+                ) : null}
               </div>
               )}
 
@@ -5552,7 +5553,13 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
                     style={{ ...primaryNavBtn, opacity: canMoveAfterResult ? 1 : 0.55, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
                     disabled={!canMoveAfterResult}
                   >
-{finalCtaReady ? (resultWouldCompleteStage ? "فهمت، انتقل للمرحلة التالية" : (mode === "practice" ? "أكمل التحدي" : "فهمت الإعراب، انتقل للتالي")) : "اقرأ الإعراب النهائي أولًا"}
+{finalCtaReady
+  ? (resultWouldCompleteStage
+      ? "انتقل إلى المرحلة التالية"
+      : mode === "practice"
+        ? "انتقل إلى المثال التالي"
+        : "انتقل إلى المثال التالي")
+  : "اقرأ الإعراب النهائي أولًا"}
                   </button>
                 ) : null}
                 {/* لا نعرض نقاطًا سفلية في شاشة النتيجة؛ التركيز على الإعراب النهائي وزر فهمت. */}

@@ -25,12 +25,10 @@ export default function HomePage() {
             <span>1</span>
             <div><h3>تعلّم</h3><p>اكتشف مسار الحل خطوة خطوة.</p></div>
           </article>
-          <i aria-hidden="true">←</i>
           <article className="home-clean-stage">
             <span>2</span>
-            <div><h3>تدرّب</h3><p>طبّق في أمثلة أسرع.</p></div>
+            <div><h3>تدرّب</h3><p>طبّق ما فهمته في أمثلة أسرع.</p></div>
           </article>
-          <i aria-hidden="true">←</i>
           <article className="home-clean-stage">
             <span>3</span>
             <div><h3>اختبر نفسي</h3><p>حل باستقلال وأثبت إتقانك.</p></div>
