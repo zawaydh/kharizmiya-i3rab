@@ -6,6 +6,13 @@ import {
   type SpeechGameRound,
 } from "../../content/games/i3rab_in_our_speech";
 
+const CORRECT_ENCOURAGEMENT = [
+  "أحسنت، اختيار دقيق. واصل بهذا التركيز.",
+  "ممتاز، ربطت الموقع بصورة الكلمة بنفسك.",
+  "رائع، أنت تطبّق الخوارزمية خطوةً خطوة.",
+  "اختيار موفق. تقدّمك واضح، أكمل.",
+];
+
 function renderRound(
   round: SpeechGameRound,
   activeIndex: number,
@@ -59,6 +66,7 @@ export default function I3rabInOurSpeechGame() {
   const activeBlank = round.blanks[blankIndex] || null;
   const finished = blankIndex >= round.blanks.length;
   const solvedCurrent = Boolean(activeBlank && answers[activeBlank.id]);
+  const encouragement = CORRECT_ENCOURAGEMENT[(roundIndex + blankIndex) % CORRECT_ENCOURAGEMENT.length];
 
   function choose(value: string) {
     if (!activeBlank || finished || solvedCurrent || feedback) return;
@@ -104,18 +112,15 @@ export default function I3rabInOurSpeechGame() {
     <main className="speech-game-page speech-game-page-compact" dir="rtl">
       <section className="card speech-game-card speech-game-card-unified">
         <header className="speech-game-compact-head">
-          <div>
-            <span>مدخل تطبيقي لفكرة الخوارزمية</span>
-            <h1>الإعراب في كلامنا</h1>
-          </div>
-          <p>اختر صورة الكلمة أو الفعل المناسبة، ثم اقرأ سبب الاختيار.</p>
+          <h1>الإعراب في كلامنا</h1>
+          <p>اختر المناسب، ثم اكتشف السبب.</p>
         </header>
 
-        <div className="speech-game-meta" aria-label="تقدم الجولة">
-          <span>الجولة {roundIndex + 1} من {rounds.length}</span>
-          <strong>
-            {finished ? "اكتملت الجولة" : `الفراغ ${blankIndex + 1} من ${round.blanks.length}`}
-          </strong>
+        <div className="speech-game-meta" aria-label="موضعك في اللعبة">
+          <span>
+            الجولة {roundIndex + 1}/{rounds.length}
+            {!finished ? ` · الفراغ ${blankIndex + 1}/${round.blanks.length}` : " · اكتملت الجولة"}
+          </span>
         </div>
 
         <div className="speech-game-swap-zone" aria-live="polite">
@@ -124,9 +129,7 @@ export default function I3rabInOurSpeechGame() {
               <div className="speech-game-sentence">
                 {renderRound(round, blankIndex, answers)}
               </div>
-              <div className="speech-game-question">
-                اختر الصورة المناسبة للفراغ {blankIndex + 1}.
-              </div>
+              <div className="speech-game-question">اختر المناسب:</div>
               <div className="speech-game-options">
                 {round.choices.map((value) => (
                   <button
@@ -157,14 +160,16 @@ export default function I3rabInOurSpeechGame() {
               role="status"
             >
               {feedback.tone === "correct" ? (
-                <div className="speech-game-correct-pop" aria-hidden="true">✓ صحيح</div>
+                <div className="speech-game-correct-pop" aria-label="إجابة صحيحة">
+                  <span aria-hidden="true">✓</span>
+                  <strong>صحيح</strong>
+                </div>
               ) : null}
 
-              <span className="speech-game-feedback-role">{activeBlank.role}</span>
               <h2>
                 {feedback.tone === "correct"
-                  ? "أحسنت، واصل؛ أنت تربط الموقع بصورة الكلمة بنفسك."
-                  : "راجع العلاقة بهدوء، ثم جرّب مرة أخرى."}
+                  ? encouragement
+                  : "اقتربت من الإجابة. اقرأ السبب ثم حاول من جديد."}
               </h2>
               <p>{feedback.text}</p>
 

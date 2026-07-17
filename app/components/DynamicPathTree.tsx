@@ -40,20 +40,23 @@ type PositionedNode = {
   y: number;
   w: number;
   h: number;
-  shapeH?: number;
   textLines: string[];
-  contextLines?: string[];
-  questionLines?: string[];
   node: TreeNode | null;
+};
+
+type HintBubble = {
+  text: string;
+  left: number;
+  top: number;
+  placement: "right" | "left" | "above" | "below";
 };
 
 const BOX_W = 250;
 const BOX_H = 112;
-const DIA_W = 250;
-const DIA_SHAPE_H = 150;
-const QUESTION_H = 194;
-const LEVEL_GAP = 202;
-const SIBLING_GAP = 46;
+const DIA_W = 230;
+const DIA_H = 126;
+const LEVEL_GAP = 184;
+const SIBLING_GAP = 48;
 
 function splitText(text?: string, max = 28) {
   if (!text) return [];
@@ -76,71 +79,38 @@ function splitText(text?: string, max = 28) {
 
 
 function shortPathAnswerLabel(text?: string) {
-  const raw = String(text || "").replace(/\s+/g, " ").trim();
+  const raw = String(text || "").trim();
   if (!raw) return "";
-
-  // نحافظ على معنى الخيار، لكن نعرض داخل العقدة العبارة الأقصر التي يحتاجها الطالب.
-  if (raw.includes("نون النسوة") && raw.includes("نون التوكيد")) return "نون النسوة/التوكيد";
-  if (raw.includes("نون النسوة")) return "نون النسوة";
-  if (raw.includes("نون التوكيد")) return "نون التوكيد";
-  if (raw.includes("لم يتصل") || raw.includes("لا يتصل")) return "لم يتصل";
-  if (raw.includes("واو الجماعة")) return "واو الجماعة";
-  if (raw.includes("ألف الاثنين")) return "ألف الاثنين";
-  if (raw.includes("ياء المخاطبة")) return "ياء المخاطبة";
-  if (raw.includes("أداة نصب") || raw.includes("ناصبة")) return "أداة نصب";
-  if (raw.includes("أداة جزم") || raw.includes("جازمة")) return "أداة جزم";
-  if (raw.includes("صحيح الآخر")) return "صحيح الآخر";
-  if (raw.includes("معتل الآخر")) return "معتل الآخر";
-  if (/^فعل(?:[：:]|\s|$)/.test(raw) || raw.includes("حدث مقترن بزمن")) return "فعل";
-  if (/^اسم(?:[：:]|\s|$)/.test(raw)) return "اسم";
-  if (/^حرف(?:[：:]|\s|$)/.test(raw)) return "حرف";
-  if (raw.includes("مفرد")) return "مفرد";
-  if (raw.includes("مثنى")) return "مثنى";
-  if (raw.includes("جمع")) return raw.replace(/^.*?(جمع)/, "$1").slice(0, 19);
   if (raw.startsWith("نعم")) return "نعم";
   if (raw.startsWith("لا")) return "لا";
-  return raw.length > 17 ? raw.slice(0, 16).trim() + "…" : raw;
+  if (raw.includes("أداة نصب") || raw.includes("ناصبة")) return "ناصب";
+  if (raw.includes("أداة جزم") || raw.includes("جازمة")) return "جازم";
+  if (raw.includes("صحيح الآخر")) return "صحيح";
+  if (raw.includes("معتل الآخر")) return "معتل";
+  if (raw.includes("واو الجماعة")) return "واو";
+  if (raw.includes("ألف الاثنين")) return "ألف";
+  if (raw.includes("ياء المخاطبة")) return "ياء";
+  if (raw.includes("نون النسوة")) return "نون النسوة";
+  if (raw.includes("نون التوكيد")) return "نون التوكيد";
+  if (raw.includes("مفرد")) return "مفرد";
+  if (raw.includes("مثنى")) return "مثنى";
+  if (raw.includes("جمع")) return raw.replace(/^.*?(جمع)/, "$1").slice(0, 18);
+  return raw.length > 12 ? raw.slice(0, 11) + "…" : raw;
 }
 
-function displayNodeQuestion(node: TreeNode | null | undefined, example?: Example | null) {
-  const raw = String(node?.text || "").replace(/\s+/g, " ").trim();
+function displayNodeQuestion(node: TreeNode | null | undefined) {
+  const raw = String(node?.text || "").trim();
   const hint = String(node?.hint || "").trim();
   const context = String((node as any)?.context || "").trim();
-  const target = String(example?.target || "").trim();
-
-  let question = raw;
-  if (!question) question = "تابع السؤال المناسب لهذا المثال.";
-  if (question === "ماذا نتحقق الآن؟") {
-    if (hint.includes("العدد") || hint.includes("النوع")) question = "ما صورة الكلمة من حيث العدد أو النوع؟";
-    else if (hint.includes("علامة")) question = "ما العلامة المناسبة هنا؟";
-    else if (hint.includes("اسم معرب") || hint.includes("اسم مبني")) question = "ما نوع الكلمة الآن؟";
-    else if (context) question = context.replace(/^عرفنا\s*/, "حدّدنا ").replace(/[.،]+$/, "") + "؛ ماذا نختار الآن؟";
-    else question = "ماذا نلاحظ الآن؟";
+  if (!raw) return "تابع السؤال المناسب لهذا المثال.";
+  if (raw === "ماذا نتحقق الآن؟" || raw === "ماذا نتحقق الآن؟") {
+    if (hint.includes("العدد") || hint.includes("النوع")) return "ما صورة الكلمة من حيث العدد أو النوع؟";
+    if (hint.includes("علامة")) return "ما العلامة المناسبة هنا؟";
+    if (hint.includes("اسم معرب") || hint.includes("اسم مبني")) return "ما نوع الكلمة الآن؟";
+    if (context) return context.replace(/^عرفنا\s*/, "حدّدنا ").replace(/[.،]+$/, "") + "؛ ماذا نختار الآن؟";
+    return "ماذا نلاحظ الآن؟";
   }
-
-  if (!target || question.includes(target)) return question;
-
-  const quotedTarget = `«${target}»`;
-  if (question.includes("هل اتصل به")) {
-    return question.replace("هل اتصل به", `هل اتصل بالفعل ${quotedTarget}`);
-  }
-  if (question.includes("هل اتصل بالفعل")) {
-    return question.replace("هل اتصل بالفعل", `هل اتصل بالفعل ${quotedTarget}`);
-  }
-  if (question.includes("ما زمن الفعل")) {
-    return question.replace("ما زمن الفعل", `ما زمن الفعل ${quotedTarget}`);
-  }
-  if (question.includes("ما نوع الكلمة المحددة")) {
-    return question.replace("ما نوع الكلمة المحددة", `ما نوع الكلمة ${quotedTarget}`);
-  }
-  if (question.includes("ما دور الكلمة المحددة في الجملة")) {
-    return question.replace("ما دور الكلمة المحددة في الجملة", `ما دور ${quotedTarget} في الجملة`);
-  }
-  if (question.includes("الكلمة المحددة")) {
-    return question.replace(/الكلمة المحددة/g, quotedTarget);
-  }
-
-  return `في ${quotedTarget}: ${question}`;
+  return raw;
 }
 
 function diamondPoints(x: number, y: number, w: number, h: number) {
@@ -158,26 +128,6 @@ function centerTop(n: PositionedNode) {
 function pathD(a: { x: number; y: number }, b: { x: number; y: number }) {
   const midY = (a.y + b.y) / 2;
   return `M ${a.x} ${a.y} L ${a.x} ${midY} L ${b.x} ${midY} L ${b.x} ${b.y}`;
-}
-
-function answerButtonLayout(node: PositionedNode, count: number, index: number) {
-  const columns = count <= 3 ? Math.max(1, count) : 3;
-  const row = Math.floor(index / columns);
-  const column = index % columns;
-  const remaining = count - row * columns;
-  const itemsInRow = Math.min(columns, remaining);
-  const gap = 9;
-  const available = node.w - 18;
-  const buttonWidth = Math.min(116, (available - gap * (itemsInRow - 1)) / itemsInRow);
-  const rowWidth = itemsInRow * buttonWidth + gap * (itemsInRow - 1);
-  const startX = node.x + (node.w - rowWidth) / 2;
-  const shapeH = node.shapeH || DIA_SHAPE_H;
-  return {
-    x: startX + column * (buttonWidth + gap),
-    y: node.y + shapeH + 10 + row * 31,
-    w: buttonWidth,
-    h: 24,
-  };
 }
 
 function answerIsCorrect(answer: { correct?: boolean; eval?: { fact: string; equals?: any; anyOf?: any[]; notEquals?: any } }, example: Example | null) {
@@ -237,8 +187,7 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
 
     const isQuestion = node.type === "question";
     const w = isQuestion ? DIA_W : BOX_W;
-    const h = isQuestion ? QUESTION_H : BOX_H;
-    const sentence = String(example?.sentence || "").replace(/\s+/g, " ").trim();
+    const h = isQuestion ? DIA_H : BOX_H;
 
     placed.set(id, {
       id,
@@ -247,15 +196,7 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
       y,
       w,
       h,
-      shapeH: isQuestion ? DIA_SHAPE_H : h,
-      textLines: isQuestion ? [] : splitText(displayNodeQuestion(node, example), 24),
-      contextLines: isQuestion && sentence ? splitText(`المثال: ${sentence}`, 40).slice(0, 1) : [],
-      questionLines: isQuestion
-        ? [
-            ...splitText(displayNodeQuestion(node, example), 25).slice(0, 3),
-            "اختر الإجابة المناسبة مما يأتي:",
-          ]
-        : [],
+      textLines: splitText(displayNodeQuestion(node), isQuestion ? 20 : 24),
       node,
     });
 
@@ -332,17 +273,15 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [message, setMessage] = useState(PATHS_COPY.emptyGuidance);
   const [showHint, setShowHint] = useState(false);
   const [zoom, setZoom] = useState(1);
-  // يظهر التوجيه في فقاعة مرتبطة بالعقدة الحالية من غير أن تغطي المعين أو الخيارات.
+  // التلميح طبقة مستقلة فوق مساحة الرسم؛ لا يغيّر مواضع العقد أو الأسهم.
   const [activeGuidance, setActiveGuidance] = useState<string | null>(null);
+  const [hintBubble, setHintBubble] = useState<HintBubble | null>(null);
   const [currentExampleIndex, setCurrentExampleIndex] = useState(-1);
   const [finalNodeId, setFinalNodeId] = useState<string | null>(null);
   const [highlightedAnswerKey, setHighlightedAnswerKey] = useState<string | null>(null);
   const [highlightedAnswerKind, setHighlightedAnswerKind] = useState<"correct" | "wrong" | "hint" | null>(null);
   const [pathSteps, setPathSteps] = useState<string[]>([]);
   const autoNextTimerRef = useRef(null as null | ReturnType<typeof setTimeout>);
-  const hintScrollFrameRef = useRef<number | null>(null);
-  const [, setHintViewportVersion] = useState(0);
-  const [hintPlacement, setHintPlacement] = useState<"above" | "below">("above");
 
   function cleanLearningText(text?: string, limit = 170) {
     const cleaned = (text || "")
@@ -480,38 +419,50 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   }, [layout]);
 
   useEffect(() => {
+    setVisitedNodes([]);
+    setVisitedEdges([]);
+    setActiveNodeId(null);
+    setShowHint(false);
+    setHintBubble(null);
+    setMessage(PATHS_COPY.emptyGuidance);
+    setActiveGuidance(null);
+    setCurrentExampleIndex(-1);
+    setFinalNodeId(null);
+    setHighlightedAnswerKey(null);
+    setHighlightedAnswerKind(null);
+    setZoom(1);
+    setPathSteps([]);
     if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
-    const firstExample = examples[0] || null;
-    if (firstExample) {
+
+    const first = examples[0] || null;
+    if (first) {
       setCurrentExampleIndex(0);
-      resetProgress(firstExample);
-    } else {
-      setExample(null);
-      setVisitedNodes([]);
-      setVisitedEdges([]);
-      setActiveNodeId(null);
-      setShowHint(false);
-      setMessage(PATHS_COPY.emptyGuidance);
-      setActiveGuidance(null);
-      setCurrentExampleIndex(-1);
-      setFinalNodeId(null);
-      setHighlightedAnswerKey(null);
-      setHighlightedAnswerKind(null);
-      setZoom(1);
-      setPathSteps([]);
+      resetProgress(first);
     }
   }, [tree, examples]);
 
   useEffect(() => {
-    if (!layout || !canvasScrollRef.current || !example || activeNodeId !== tree.startNodeId) return;
-    const t = setTimeout(() => focusNode(tree.startNodeId, 1.08), 170);
+    if (!layout || !canvasScrollRef.current || activeNodeId || currentExampleIndex >= 0) return;
+    const el = canvasScrollRef.current;
+    const node = layoutNodeMap.get("__exercise__") || layoutNodeMap.get(tree.startNodeId);
+    requestAnimationFrame(() => {
+      if (!node) return;
+      el.dir = "ltr";
+      const left = Math.max(0, node.x * zoom - (el.clientWidth - node.w * zoom) / 2);
+      const top = Math.max(0, node.y * zoom - 18);
+      el.scrollTo({ left, top, behavior: "auto" });
+    });
+  }, [layout, zoom, activeNodeId, currentExampleIndex, layoutNodeMap, tree.startNodeId]);
+
+  useEffect(() => {
+    if (!example || activeNodeId !== tree.startNodeId) return;
+    const t = setTimeout(() => focusNode("__exercise__", 1.02), 180);
     return () => clearTimeout(t);
-  }, [example?.id, layout, tree.startNodeId]);
+  }, [example?.id, activeNodeId, tree.startNodeId, layout]);
 
   useEffect(() => {
     return () => {
       if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
-      if (hintScrollFrameRef.current !== null) cancelAnimationFrame(hintScrollFrameRef.current);
     };
   }, []);
 
@@ -545,8 +496,13 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     const idx = treeNode.answers.findIndex((a: any) => a.id === answerId);
     if (idx < 0) return null;
 
-    const button = answerButtonLayout(node, treeNode.answers.length, idx);
-    return { x: button.x + button.w / 2, y: button.y + button.h / 2 };
+    const count = treeNode.answers.length;
+    const btnW = Math.max(48, Math.min(82, node.w / Math.max(2, count) - 8));
+    const totalW = count * btnW + (count - 1) * 5;
+    const startX = node.x + (node.w - totalW) / 2;
+    const bx = startX + idx * (btnW + 5);
+    const by = node.y + node.h - 24;
+    return { x: bx + btnW / 2, y: by + 10 };
   }
 
   function resetProgress(nextExample: Example | null) {
@@ -555,6 +511,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setVisitedEdges([`__exercise__->${tree.startNodeId}`]);
     setActiveNodeId(tree.startNodeId);
     setShowHint(false);
+    setHintBubble(null);
     setActiveGuidance(null);
     setHighlightedAnswerKey(null);
     setHighlightedAnswerKind(null);
@@ -570,7 +527,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setCurrentExampleIndex(safeIndex);
     const next = examples[safeIndex] || null;
     resetProgress(next);
-    setTimeout(() => focusNode(tree.startNodeId, 1.08), 180);
+    setTimeout(() => focusNode("__exercise__", 1.02), 180);
   }
 
   function startNextExercise() {
@@ -839,6 +796,48 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     return teacherSequenceText(node, teacherPrefix + (node.hint || node.teaching_note || "راجع خصائص الكلمة ثم اختر الإجابة التي تطابق المثال."));
   }
 
+  function openHintBubble(nodeId: string, text: string) {
+    const scrollBox = canvasScrollRef.current;
+    const node = layoutNodeMap.get(nodeId);
+    if (!scrollBox || !node) {
+      setHintBubble({ text, left: 18, top: 18, placement: "below" });
+      return;
+    }
+
+    const viewportW = scrollBox.clientWidth;
+    const viewportH = scrollBox.clientHeight;
+    const nodeLeft = node.x * zoom - scrollBox.scrollLeft;
+    const nodeTop = node.y * zoom - scrollBox.scrollTop;
+    const nodeW = node.w * zoom;
+    const nodeH = node.h * zoom;
+    const bubbleW = Math.min(300, Math.max(210, viewportW - 36));
+    const bubbleH = 150;
+    const gap = 16;
+
+    let placement: HintBubble["placement"] = "right";
+    let left = nodeLeft + nodeW + gap;
+    let top = nodeTop + nodeH / 2 - bubbleH / 2;
+
+    if (viewportW - (nodeLeft + nodeW) >= bubbleW + gap) {
+      placement = "right";
+    } else if (nodeLeft >= bubbleW + gap) {
+      placement = "left";
+      left = nodeLeft - bubbleW - gap;
+    } else if (nodeTop >= bubbleH + gap) {
+      placement = "above";
+      left = nodeLeft + nodeW / 2 - bubbleW / 2;
+      top = nodeTop - bubbleH - gap;
+    } else {
+      placement = "below";
+      left = nodeLeft + nodeW / 2 - bubbleW / 2;
+      top = nodeTop + nodeH + gap;
+    }
+
+    left = Math.max(12, Math.min(left, viewportW - bubbleW - 12));
+    top = Math.max(12, Math.min(top, viewportH - bubbleH - 12));
+    setHintBubble({ text, left, top, placement });
+  }
+
   function showHintNearAnswer(nodeId: string) {
     const node = tree.nodes[nodeId];
     const hintText = node
@@ -847,12 +846,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setShowHint(true);
     setMessage(hintText);
     setActiveGuidance(hintText);
-    const scrollBox = canvasScrollRef.current;
-    const layoutNode = layoutNodeMap.get(nodeId);
-    if (scrollBox && layoutNode) {
-      const nodeTop = layoutNode.y * zoom - scrollBox.scrollTop;
-      setHintPlacement(nodeTop > 190 ? "above" : "below");
-    }
+    openHintBubble(nodeId, hintText);
 
     const correctAnswer = node?.answers?.find((a: any) => answerIsCorrect(a, example));
     if (correctAnswer) {
@@ -865,6 +859,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     }
   }
 
+  function showBubbleBesideNode(nodeId: string, text: string, bubbleZoom = zoom) {
+    setActiveGuidance(cleanLearningText(text, 170));
+  }
 
 
   function handleAnswer(nodeId: string, answerId: string, anchor?: { x: number; y: number }) {
@@ -882,13 +879,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       setActiveGuidance(hintText);
       setHighlightedAnswerKey(`${nodeId}:${answerId}`);
       setHighlightedAnswerKind("wrong");
-      if (anchor) setActiveGuidance(hintText);
-      const scrollBox = canvasScrollRef.current;
-      const layoutNode = layoutNodeMap.get(nodeId);
-      if (scrollBox && layoutNode) {
-        const nodeTop = layoutNode.y * zoom - scrollBox.scrollTop;
-        setHintPlacement(nodeTop > 190 ? "above" : "below");
-      }
+      openHintBubble(nodeId, hintText);
       return;
     }
 
@@ -900,6 +891,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setHighlightedAnswerKey(`${nodeId}:${answerId}`);
     setHighlightedAnswerKind("correct");
     setShowHint(false);
+    setHintBubble(null);
     setActiveGuidance(null);
 
     if (nextNode?.type === "result") {
@@ -928,25 +920,6 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
 
   if (!layout) return null;
 
-  const activeLayoutNode = activeNodeId ? layoutNodeMap.get(activeNodeId) : null;
-  const guidanceBubble = showHint && activeGuidance && activeLayoutNode
-    ? (() => {
-        const scrollBox = canvasScrollRef.current;
-        const visibleWidth = scrollBox?.clientWidth || 720;
-        const visibleHeight = scrollBox?.clientHeight || 560;
-        const nodeCenterX = activeLayoutNode.x * zoom + (activeLayoutNode.w * zoom) / 2 - (scrollBox?.scrollLeft || 0);
-        const nodeTop = activeLayoutNode.y * zoom - (scrollBox?.scrollTop || 0);
-        const nodeBottom = nodeTop + (activeLayoutNode.shapeH || activeLayoutNode.h) * zoom;
-        const bubbleWidth = Math.min(310, Math.max(220, visibleWidth - 32));
-        const left = Math.min(visibleWidth - 14, Math.max(14, nodeCenterX));
-        const top = hintPlacement === "above"
-          ? Math.max(14, nodeTop - 14)
-          : Math.min(visibleHeight - 14, nodeBottom + 14);
-        const style: React.CSSProperties = { left, top, width: bubbleWidth };
-        return { placement: hintPlacement, style };
-      })()
-    : null;
-
   return (
     <section className="card paths-react-card">
       <div className="paths-react-head">
@@ -970,6 +943,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 if (!activeNodeId) return;
                 if (showHint) {
                   setShowHint(false);
+                  setHintBubble(null);
                   setActiveGuidance(null);
                   setHighlightedAnswerKey(null);
                   setHighlightedAnswerKind(null);
@@ -996,18 +970,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
 
         
         <div className="paths-react-canvas-shell">
-          <div
-            ref={canvasScrollRef}
-            className="paths-react-canvas-scroll"
-            onScroll={() => {
-              if (!showHint) return;
-              if (hintScrollFrameRef.current !== null) cancelAnimationFrame(hintScrollFrameRef.current);
-              hintScrollFrameRef.current = requestAnimationFrame(() => {
-                hintScrollFrameRef.current = null;
-                setHintViewportVersion((value) => value + 1);
-              });
-            }}
-          >
+          <div ref={canvasScrollRef} className="paths-react-canvas-scroll">
             <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
             <svg
               viewBox={`0 0 ${layout.width} ${layout.height}`}
@@ -1070,12 +1033,11 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                   >
                     {isQuestion ? (
                       <polygon
-                        className={active ? "paths-react-active-pulse" : undefined}
-                        points={diamondPoints(n.x, n.y, n.w, n.shapeH || DIA_SHAPE_H)}
-                        fill={active ? "#ecfdf5" : visited ? "#f0fdfa" : "#fffdf4"}
-                        stroke={active ? "rgba(16,185,129,.98)" : visited ? "rgba(20,184,166,.72)" : "rgba(212,175,55,.55)"}
+                        points={diamondPoints(n.x, n.y, n.w, n.h)}
+                        fill="rgba(224,236,255,.98)"
+                        stroke={active ? "rgba(52,211,153,.98)" : visited ? "rgba(125,179,255,.82)" : "rgba(125,179,255,.46)"}
                         strokeWidth={active ? 1.9 : 1.05}
-                        style={{ filter: active ? "drop-shadow(0 0 12px rgba(16,185,129,.46))" : visited ? "drop-shadow(0 0 5px rgba(20,184,166,.16))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
+                        style={{ filter: active ? "drop-shadow(0 0 11px rgba(52,211,153,.52))" : visited ? "drop-shadow(0 0 5px rgba(125,179,255,.18))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
                       />
                     ) : (
                       <rect
@@ -1092,63 +1054,45 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                       />
                     )}
 
-                    {isQuestion ? (
-                      <>
-                        {(n.contextLines || []).map((line, i) => (
-                          <text
-                            key={`${n.id}-context-${i}`}
-                            x={n.x + n.w / 2}
-                            y={n.y + 39 + i * 13}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            className="paths-react-context-text"
-                          >
-                            {line}
-                          </text>
-                        ))}
-                        {(n.questionLines || []).map((line, i) => (
-                          <text
-                            key={`${n.id}-question-${i}`}
-                            x={n.x + n.w / 2}
-                            y={n.y + 96 + (i - ((n.questionLines || []).length - 1) / 2) * 14}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            className={line.includes("اختر الإجابة المناسبة") ? "paths-react-question-instruction" : "paths-react-question-text"}
-                          >
-                            {line}
-                          </text>
-                        ))}
-                      </>
-                    ) : n.textLines.map((line, i) => (
+                    {n.textLines.map((line, i) => (
                       <text
                         key={`${n.id}-${i}`}
                         x={n.x + n.w / 2}
-                        y={n.y + n.h / 2 + (i - (n.textLines.length - 1) / 2) * 14}
+                        y={n.y + n.h / 2 + (isQuestion ? -9 : 0) + (i - (n.textLines.length - 1) / 2) * 14}
                         textAnchor="middle"
                         dominantBaseline="middle"
-                        className="paths-react-box-text"
+                        className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
                       >
                         {line}
                       </text>
                     ))}
+                    {isQuestion ? (
+                      <text
+                        x={n.x + n.w / 2}
+                        y={n.y + n.h - 38}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        className="paths-react-question-instruction"
+                      >
+                        اختر المناسب:
+                      </text>
+                    ) : null}
 
                     {isQuestion && active && n.node?.answers ? (
                       <g>
                         {n.node.answers.map((answer, idx) => {
-                          const button = answerButtonLayout(n, n.node!.answers!.length, idx);
-                          const bx = button.x;
-                          const by = button.y;
-                          const btnW = button.w;
-                          const btnH = button.h;
+                          const btnW = Math.max(38, Math.min(66, n.w / Math.max(2, n.node!.answers!.length) - 8));
+                          const totalW = n.node!.answers!.length * btnW + (n.node!.answers!.length - 1) * 5;
+                          const startX = n.x + (n.w - totalW) / 2;
+                          const bx = startX + idx * (btnW + 5);
+                          const by = n.y + n.h - 24;
                           const hintCorrect = showHint && active && answerIsCorrect(answer, example);
                           const answerHighlighted = highlightedAnswerKey === `${n.id}:${answer.id}`;
-                          const displayLabel = shortPathAnswerLabel(answer.text);
-                          const compactLabel = displayLabel.length > 11;
                           return (
-                            <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 })}>
-                              <rect x={bx} y={by} width={btnW} height={btnH} rx={12} fill="rgba(255,255,255,.96)" stroke="rgba(16,185,129,.45)" strokeWidth={1} />
-                              <text x={bx + btnW / 2} y={by + btnH / 2} textAnchor="middle" dominantBaseline="middle" className={`paths-react-answer-text ${compactLabel ? "paths-react-answer-text-compact" : ""}`}>
-                                {displayLabel}
+                            <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + 10 })}>
+                              <rect x={bx} y={by} width={btnW} height={20} rx={10} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" strokeWidth={0.9} />
+                              <text x={bx + btnW / 2} y={by + 10} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
+                                {shortPathAnswerLabel(answer.text)}
                               </text>
                             </g>
                           );
@@ -1161,30 +1105,29 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
             </svg>
             </div>
           </div>
-          <div className="paths-react-hint-layer" aria-hidden={!guidanceBubble}>
-            {guidanceBubble ? (
-              <div
-                className={`paths-react-answer-hint paths-react-answer-hint-${guidanceBubble.placement}`}
-                style={guidanceBubble.style}
-                dir="rtl"
-                role="status"
-                aria-live="polite"
+          {showHint && hintBubble ? (
+            <div
+              className={`paths-hint-bubble paths-hint-bubble-${hintBubble.placement}`}
+              style={{ left: hintBubble.left, top: hintBubble.top }}
+              role="status"
+              aria-live="polite"
+              dir="rtl"
+            >
+              <p>{hintBubble.text}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowHint(false);
+                  setHintBubble(null);
+                  setActiveGuidance(null);
+                  setHighlightedAnswerKey(null);
+                  setHighlightedAnswerKind(null);
+                }}
               >
-                <span>{activeGuidance}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowHint(false);
-                    setActiveGuidance(null);
-                    setHighlightedAnswerKey(null);
-                    setHighlightedAnswerKind(null);
-                  }}
-                >
-                  حسنًا
-                </button>
-              </div>
-            ) : null}
-          </div>
+                حسنًا
+              </button>
+            </div>
+          ) : null}
         </div>
         <div className="paths-thinking-dock paths-thinking-dock-hidden">
           <details open>
