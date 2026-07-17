@@ -890,3 +890,11 @@
   .paths-hint-bubble p{font-size:11.8px;line-height:1.72;}
   .paths-hint-bubble button{min-height:32px;font-size:12px;}
 }
+
+/* 2026-07: warm-yellow path identity with turquoise outlines. */
+.paths-react-edge-label{
+  fill:rgba(15,118,110,.72)!important;
+}
+.paths-react-question-instruction{
+  fill:#9a6700!important;
+}

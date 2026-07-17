@@ -981,7 +981,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
             >
               <defs>
                 <marker id="pathsArrow" markerWidth="6" markerHeight="6" refX="5.4" refY="3" orient="auto">
-                  <path d="M0,0 L6,3 L0,6 Z" fill="rgba(125,179,255,.72)" />
+                  <path d="M0,0 L6,3 L0,6 Z" fill="rgba(20,184,166,.58)" />
                 </marker>
                 <marker id="pathsArrowActive" markerWidth="7" markerHeight="7" refX="6.2" refY="3.5" orient="auto">
                   <path d="M0,0 L7,3.5 L0,7 Z" fill="rgba(52,211,153,.96)" />
@@ -1002,7 +1002,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     <path
                       d={pathD(start, end)}
                       fill="none"
-                      stroke={active ? "rgba(52,211,153,.98)" : "rgba(125,179,255,.58)"}
+                      stroke={active ? "rgba(20,184,166,.98)" : "rgba(20,184,166,.38)"}
                       strokeWidth={active ? 2.05 : 1.1}
                       markerEnd={active ? "url(#pathsArrowActive)" : "url(#pathsArrow)"}
                       style={{ filter: active ? "drop-shadow(0 0 9px rgba(52,211,153,.72)) drop-shadow(0 0 18px rgba(34,211,238,.26))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
@@ -1034,10 +1034,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     {isQuestion ? (
                       <polygon
                         points={diamondPoints(n.x, n.y, n.w, n.h)}
-                        fill="rgba(224,236,255,.98)"
-                        stroke={active ? "rgba(52,211,153,.98)" : visited ? "rgba(125,179,255,.82)" : "rgba(125,179,255,.46)"}
+                        fill={active ? "#fff3b0" : visited ? "#fff8cf" : "#fffdf0"}
+                        stroke={active ? "rgba(20,184,166,.98)" : visited ? "rgba(20,184,166,.72)" : "rgba(20,184,166,.42)"}
                         strokeWidth={active ? 1.9 : 1.05}
-                        style={{ filter: active ? "drop-shadow(0 0 11px rgba(52,211,153,.52))" : visited ? "drop-shadow(0 0 5px rgba(125,179,255,.18))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
+                        style={{ filter: active ? "drop-shadow(0 0 11px rgba(20,184,166,.48)) drop-shadow(0 0 20px rgba(250,204,21,.16))" : visited ? "drop-shadow(0 0 5px rgba(20,184,166,.16))" : undefined, transition: "fill .2s ease, stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
                       />
                     ) : (
                       <rect
@@ -1047,7 +1047,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                         height={n.h}
                         rx={18}
                         fill={isStart ? "#fff3b0" : isResult ? "#fff3b0" : "#dcfce7"}
-                        stroke={isResult ? "rgba(52,211,153,.82)" : "rgba(125,179,255,.55)"}
+                        stroke={isResult ? "rgba(20,184,166,.82)" : "rgba(20,184,166,.72)"}
                         strokeWidth={1.05}
                         className={`${isStart && !example ? "paths-react-start-pulse" : ""} ${isFinalResult ? "paths-react-result-pulse" : ""}`}
                         style={{ filter: isFinalResult ? "drop-shadow(0 0 16px rgba(52,211,153,.75))" : visited ? "drop-shadow(0 0 8px rgba(52,211,153,.18))" : undefined, transition: "stroke .2s ease, filter .2s ease" }}

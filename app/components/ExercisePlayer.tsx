@@ -4117,6 +4117,8 @@ export default function ExercisePlayer({
   const workAreaRef = React.useRef<HTMLElement | null>(null);
   const activeCardRef = React.useRef<HTMLDivElement | null>(null);
   const feedbackAreaRef = React.useRef<HTMLDivElement | null>(null);
+  const questionMotionRef = React.useRef<HTMLDivElement | null>(null);
+  const [questionMotionHeight, setQuestionMotionHeight] = React.useState<number | null>(null);
   const correctAdvanceTimerRef = React.useRef<number | null>(null);
   const answerAdvanceLockRef = React.useRef(false);
   const exampleNavLockRef = React.useRef(false);
@@ -4143,6 +4145,13 @@ export default function ExercisePlayer({
       const top = window.scrollY + rect.top - headerOffset - extra;
       window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
     }, delay);
+  }
+
+  function lockQuestionMotionHeight() {
+    const el = questionMotionRef.current;
+    if (!el) return;
+    const height = Math.ceil(el.getBoundingClientRect().height);
+    if (height > 0) setQuestionMotionHeight(height);
   }
 
   const currentIdx = mode === "quiz" ? quizOrder[quizCursor] ?? 0 : exampleIndex;
@@ -4332,6 +4341,27 @@ export default function ExercisePlayer({
   const chosenFollowUp = currentFollowUp?.options?.find((o) => o.label === followUpChoice);
   const followUpIsCorrect = Boolean(chosenFollowUp?.correct);
   const canMoveAfterResult = (!currentFollowUp || mode === "learn" || followUpIsCorrect) && finalCtaReady;
+
+  React.useLayoutEffect(() => {
+    if (node?.type !== "question") {
+      setQuestionMotionHeight(null);
+      return undefined;
+    }
+
+    const el = questionMotionRef.current;
+    if (cardPhase === "entering" && el) {
+      const nextHeight = Math.ceil(el.getBoundingClientRect().height);
+      if (nextHeight > 0) setQuestionMotionHeight((current) => Math.max(current || 0, nextHeight));
+      return undefined;
+    }
+
+    if (cardPhase === "idle" && questionMotionHeight !== null) {
+      const frame = window.requestAnimationFrame(() => setQuestionMotionHeight(null));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    return undefined;
+  }, [cardPhase, node?.type, questionMotionHeight, state?.currentNodeId]);
 
   React.useEffect(() => {
     if (node?.type !== "result") {
@@ -4654,22 +4684,27 @@ export default function ExercisePlayer({
   function continueAfterStepReview() {
     if (!stepReview || stepReviewLockRef.current) return;
     stepReviewLockRef.current = true;
-    const nextNode = tree?.nodes?.[stepReview.nextState?.currentNodeId];
+    const nextState = stepReview.nextState;
+    const nextNode = tree?.nodes?.[nextState?.currentNodeId];
     if (nextNode?.type === "result") playSoftStepSound("final");
-    setState(stepReview.nextState);
-    setStepReview(null);
-    setDroppedChoice(null);
-    setDialogBubble(null);
-    setMicroCelebrateAnswerId(null);
-    setMicroCelebrate(0);
-    setCardPhase("entering");
-    if (nextNode?.type === "result") bringWorkAreaIntoView("center", 80);
+    lockQuestionMotionHeight();
+    setCardPhase("leaving");
     window.setTimeout(() => {
-      setCardPhase("idle");
-      setMicroCelebrate(0);
+      setState(nextState);
+      setStepReview(null);
+      setDroppedChoice(null);
+      setDialogBubble(null);
       setMicroCelebrateAnswerId(null);
-      stepReviewLockRef.current = false;
-    }, 360);
+      setMicroCelebrate(0);
+      setCardPhase("entering");
+      if (nextNode?.type === "result") bringWorkAreaIntoView("center", 80);
+      window.setTimeout(() => {
+        setCardPhase("idle");
+        setMicroCelebrate(0);
+        setMicroCelebrateAnswerId(null);
+        stepReviewLockRef.current = false;
+      }, 430);
+    }, 390);
   }
 
   function openCurrentHint() {
@@ -4753,9 +4788,10 @@ export default function ExercisePlayer({
     setFeedback(null);
 
     if (correctAdvanceTimerRef.current) window.clearTimeout(correctAdvanceTimerRef.current);
-    const successHold = nextNode?.type === "result" ? 260 : 170;
-    const exitDuration = nextNode?.type === "result" ? 300 : 240;
+    const successHold = nextNode?.type === "result" ? 260 : 220;
+    const exitDuration = nextNode?.type === "result" ? 390 : 390;
     correctAdvanceTimerRef.current = window.setTimeout(() => {
+      lockQuestionMotionHeight();
       setCardPhase("leaving");
       window.setTimeout(() => {
         if (mode === "practice" && practiceCorrectionMode && nextNode?.type === "result") {
@@ -4771,7 +4807,7 @@ export default function ExercisePlayer({
           window.setTimeout(() => {
             setCardPhase("idle");
             answerAdvanceLockRef.current = false;
-          }, 280);
+          }, 430);
           return;
         }
         setState(res.nextState);
@@ -4786,7 +4822,7 @@ export default function ExercisePlayer({
           setMicroCelebrate(0);
           setMicroCelebrateAnswerId(null);
           answerAdvanceLockRef.current = false;
-        }, 280);
+        }, 430);
       }, exitDuration);
     }, successHold);
   }
@@ -5079,6 +5115,7 @@ export default function ExercisePlayer({
     setSuccessNudge("واصل. في التدريب نثبت السرعة والدقة معًا.");
     setCardPhase("success");
     window.setTimeout(() => {
+      lockQuestionMotionHeight();
       setCardPhase("leaving");
       window.setTimeout(() => {
         setState(nextState);
@@ -5086,9 +5123,9 @@ export default function ExercisePlayer({
         window.setTimeout(() => {
           setCardPhase("idle");
           practiceNextLockRef.current = false;
-        }, 280);
-      }, 240);
-    }, 170);
+        }, 430);
+      }, 390);
+    }, 220);
   }
 
   return (
@@ -5376,7 +5413,16 @@ export default function ExercisePlayer({
                   <span className="dialogue-label">في الجملة:</span>
                   <span className="dialogue-sentence-text">{renderSentence(state.currentSentence, state.currentTarget)}</span>
                 </div>
-                <div key={`${state.currentNodeId}`} className={`question-content-motion question-text-${questionVisualPhase}`} aria-live="polite">
+                <div
+                  className="question-slide-viewport"
+                  style={questionMotionHeight ? { height: `${questionMotionHeight}px` } : undefined}
+                >
+                <div
+                  key={`${state.currentNodeId}`}
+                  ref={questionMotionRef}
+                  className={`question-content-motion question-text-${questionVisualPhase}`}
+                  aria-live="polite"
+                >
                   {dialogBubble?.tone === "hint" ? (
                     <div className="inline-correction-hint" role="note" aria-live="polite">
                       <span className="inline-correction-hint-title">فكّر معي</span>
@@ -5429,14 +5475,15 @@ export default function ExercisePlayer({
                                       setPracticeWrongPanel(null);
                                       setCardPhase("success");
                                       window.setTimeout(() => {
+                                        lockQuestionMotionHeight();
                                         setCardPhase("leaving");
                                         window.setTimeout(() => {
                                           setState(route.nextState);
                                           setPracticeRetryReady(false);
                                           setCardPhase("entering");
-                                          window.setTimeout(() => setCardPhase("idle"), 280);
-                                        }, 240);
-                                      }, 170);
+                                          window.setTimeout(() => setCardPhase("idle"), 430);
+                                        }, 390);
+                                      }, 220);
                                     } else {
                                       const route = practiceCorrectRoute();
                                       setFeedback({ wrongId: String(idx) });
@@ -5584,6 +5631,7 @@ export default function ExercisePlayer({
                       </div>
                     )
                   ) : null}
+                </div>
                 </div>
 
                 <div className="clean-question-nav">
