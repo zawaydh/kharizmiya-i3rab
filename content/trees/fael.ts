@@ -1,6 +1,5 @@
 export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
 
-const help = { id: "help", text: "أحتاج تلميحًا", next: "fael_context", isHelp: true, correct: false };
 
 export const faelTree: ExerciseTree = {
   startNodeId: "fael_context",
@@ -10,7 +9,7 @@ export const faelTree: ExerciseTree = {
       type: "question",
       context: "نبدأ من السياق قبل أن نحدد الدور.",
       text: "ما السياق الذي وردت فيه الكلمة المحددة؟",
-      hint: "انظر إلى بداية الجملة: هل بدأت بفعل، أم بدأت باسم؟ التفاصيل الأخرى تظهر في التلميح لا في الأزرار.",
+      hint: "انظر إلى بداية الجملة: هل بدأت بفعل، أم بدأت باسم؟ ",
       answers: [
         {
           id: "verbal",
@@ -28,7 +27,6 @@ export const faelTree: ExerciseTree = {
           eval: { fact: "contextType", anyOf: ["nominal_with_verb", "nominal_connected"] },
           hint: "إذا بدأت الجملة بفعل فهي جملة فعلية غالبًا، أما إذا بدأت باسم فهي جملة اسمية."
         },
-        { ...help, next: "fael_context" }
       ]
     },
 
@@ -60,7 +58,6 @@ export const faelTree: ExerciseTree = {
           correct: false,
           hint: "المفعول به هو ما وقع عليه الفعل، أما الفاعل فهو من قام بالفعل أو ما أحدثه."
         },
-        { ...help, next: "fael_role_verbal" }
       ]
     },
 
@@ -92,7 +89,6 @@ export const faelTree: ExerciseTree = {
           correct: false,
           hint: "المفعول به وقع عليه الفعل، ولا يكون هو من قام بالفعل."
         },
-        { ...help, next: "fael_role_hidden" }
       ]
     },
 
@@ -108,7 +104,6 @@ export const faelTree: ExerciseTree = {
         { id: "c", text: "أنا", next: "R_fael_hidden", eval: { fact: "hiddenPronoun", equals: "أنا" }, hint: "أنا تناسب الفعل الذي يبدأ بهمزة المتكلم، مثل: أقرأُ." },
         { id: "d", text: "نحن", next: "R_fael_hidden", eval: { fact: "hiddenPronoun", equals: "نحن" }, hint: "نحن تناسب الفعل الذي يبدأ بنون المتكلمين، مثل: نساعدُ." },
         { id: "e", text: "أنت", next: "R_fael_hidden", eval: { fact: "hiddenPronoun", equals: "أنت" }, hint: "أنت تناسب فعل الأمر الموجه للمخاطب، مثل: اقرأْ." },
-        { ...help, next: "fael_hidden_estimate" }
       ]
     },
 
@@ -122,7 +117,6 @@ export const faelTree: ExerciseTree = {
         { id: "a", text: "مرفوع أو في محل رفع", next: "fael_form", correct: true, hint: "صحيح؛ الفاعل يكون مرفوعًا، أو في محل رفع إذا كان مبنيًا أو مصدرًا مؤولًا." },
         { id: "b", text: "منصوب", next: "fael_hukm", correct: false, hint: "النصب يناسب المفعول به غالبًا، أما الفاعل فحكمه الرفع دائمًا." },
         { id: "c", text: "مجرور", next: "fael_hukm", correct: false, hint: "الجر يكون بعد حرف جر أو بالإضافة، أما الفاعل فحكمه الرفع دائمًا." },
-        { ...help, next: "fael_hukm" }
       ]
     },
 
@@ -136,7 +130,6 @@ export const faelTree: ExerciseTree = {
         { id: "a", text: "اسم ظاهر معرب", next: "fael_mu3rab_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم الظاهر المعرب كلمة مستقلة تظهر عليها علامة رفع أو تكون مقدرة، مثل: الطالبُ والوالدانِ والمعلمونَ." },
         { id: "b", text: "اسم مبني", next: "fael_mabni_type", eval: { fact: "roleKind", anyOf: ["mabni", "connected"] }, hint: "الأسماء المبنية تشمل أسماء الإشارة والأسماء الموصولة والضمائر المتصلة. المبني لا تظهر عليه علامة رفع، بل يكون في محل رفع فاعل." },
         { id: "c", text: "مصدر مؤول", next: "R_fael_masdar", eval: { fact: "roleKind", equals: "masdar" }, hint: "المصدر المؤول ليس اسمًا مبنيًا؛ بل تركيب يؤول بمصدر في معنى اسم، مثل: أن تنجحَ = نجاحك، وما فعلتَ = فعلك." },
-        { ...help, next: "fael_form" }
       ]
     },
 
@@ -145,7 +138,7 @@ export const faelTree: ExerciseTree = {
       type: "question",
       context: "بما أن الفاعل اسم ظاهر معرب، نحدد صورته حتى نعرف علامة رفعه.",
       text: "ما صورة الفاعل المعرب؟",
-      hint: "انظر إلى الكلمة المستهدفة نفسها: هل تدل على واحد، أم اثنين، أم جماعة؟ وهل هي من الأسماء الخمسة؟ سيربط التلميح الصورة بالمثال مباشرة.",
+      hint: "افحص صورة الكلمة: هل تدل على واحد، اثنين، جماعة، أم هي من الأسماء الخمسة؟",
       answers: [
         { id: "a", text: "مفرد", next: "fael_raf3_mark", eval: { fact: "shape", equals: "singular" }, hint: "المفرد العادي يدل على واحد أو واحدة ويُرفع غالبًا بالضمة، مثل: الطالبُ." },
         { id: "b", text: "مثنى", next: "fael_raf3_mark", eval: { fact: "shape", equals: "dual" }, hint: "المثنى يدل على اثنين أو اثنتين، وغالبًا ينتهي بـ انِ في الرفع مثل: الوالدانِ." },
@@ -153,7 +146,6 @@ export const faelTree: ExerciseTree = {
         { id: "d", text: "جمع مؤنث سالم", next: "fael_raf3_mark", eval: { fact: "shape", equals: "jfs" }, hint: "جمع المؤنث السالم يدل على جماعة إناث وينتهي غالبًا بـ ات، مثل: الطالباتُ." },
         { id: "e", text: "جمع تكسير", next: "fael_raf3_mark", eval: { fact: "shape", equals: "jt" }, hint: "جمع التكسير تتغير فيه صورة المفرد عند الجمع، مثل: طفل ← أطفال." },
         { id: "f", text: "من الأسماء الخمسة", next: "fael_raf3_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة هي: أب، أخ، حم، فو، ذو. تعرب بالحروف إذا كانت مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
-        { ...help, next: "fael_mu3rab_shape" }
       ]
     },
 
@@ -162,13 +154,12 @@ export const faelTree: ExerciseTree = {
       type: "question",
       context: "بما أن الفاعل مرفوع وقد عرفنا صورته، نختار علامة رفعه.",
       text: "اختر علامة الرفع المناسبة للكلمة المحددة:",
-      hint: "اختر علامة الرفع من صورة الكلمة نفسها: المفرد وجمع التكسير وجمع المؤنث السالم يرفع بالضمة، والمثنى بالألف، وجمع المذكر السالم والأسماء الخمسة بالواو.",
+      hint: "اختر علامة الرفع من صورة الكلمة نفسها: المفرد وجمع التكسير وعلامة رفع جمع المؤنث السالم الضمة، والمثنى بالألف، وجمع المذكر السالم والأسماء الخمسة بالواو.",
       answers: [
         { id: "a", text: "الضمة الظاهرة", next: "R_fael_mu3rab", eval: { fact: "raf3Mark", equals: "damma" }, hint: "الضمة تناسب المفرد العادي وجمع التكسير وجمع المؤنث السالم إذا ظهرت الحركة على آخر الكلمة." },
         { id: "b", text: "الألف", next: "R_fael_mu3rab", eval: { fact: "raf3Mark", equals: "alif" }, hint: "الألف علامة رفع المثنى، مثل: الوالدانِ والصديقانِ." },
         { id: "c", text: "الواو", next: "R_fael_mu3rab", eval: { fact: "raf3Mark", equals: "waw" }, hint: "الواو علامة رفع جمع المذكر السالم، وتكون علامة رفع الأسماء الخمسة إذا استوفت شروطها: مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
         { id: "d", text: "ثبوت النون", next: "fael_raf3_mark", correct: false, hint: "ثبوت النون ليس علامة رفع للأسماء، بل يخص الفعل المضارع المتصل بألف الاثنين أو واو الجماعة أو ياء المخاطبة." },
-        { ...help, next: "fael_raf3_mark" }
       ]
     },
 
@@ -182,7 +173,6 @@ export const faelTree: ExerciseTree = {
         { id: "a", text: "اسم إشارة", next: "R_fael_mabni", eval: { fact: "mabniType", equals: "ishara" }, hint: "اسم الإشارة مثل: هذا وهذه. إذا دل على من قام بالفعل فهو في محل رفع فاعل." },
         { id: "b", text: "اسم موصول", next: "R_fael_mabni", eval: { fact: "mabniType", equals: "mawsool" }, hint: "الاسم الموصول مثل: الذي والتي، وتأتي بعده صلة توضحه." },
         { id: "c", text: "ضمير متصل", next: "R_fael_connected", eval: { fact: "roleKind", equals: "connected" }, hint: "الضمير المتصل من الأسماء المبنية، مثل التاء في فهمتُ ونا في حفظنا وواو الجماعة ونون النسوة وألف الاثنين وياء المخاطبة." },
-        { ...help, next: "fael_mabni_type" }
       ]
     },
 

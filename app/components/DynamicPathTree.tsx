@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PATHS_COPY } from "../../content/dialogueCopy";
+import { diagnosticHintText, firstLevelHintText } from "../../lib/hintText";
 
 type TreeNode = {
   id: string;
@@ -53,9 +54,9 @@ type HintBubble = {
 
 const BOX_W = 250;
 const BOX_H = 112;
-const DIA_W = 230;
-const DIA_H = 126;
-const LEVEL_GAP = 184;
+const DIA_W = 250;
+const DIA_H = 158;
+const LEVEL_GAP = 220;
 const SIBLING_GAP = 48;
 
 function splitText(text?: string, max = 28) {
@@ -81,6 +82,9 @@ function splitText(text?: string, max = 28) {
 function shortPathAnswerLabel(text?: string) {
   const raw = String(text || "").trim();
   if (!raw) return "";
+  if (raw.startsWith("فعل:")) return "فعل";
+  if (raw.startsWith("اسم:")) return "اسم";
+  if (raw.startsWith("حرف:")) return "حرف";
   if (raw.startsWith("نعم")) return "نعم";
   if (raw.startsWith("لا")) return "لا";
   if (raw.includes("أداة نصب") || raw.includes("ناصبة")) return "ناصب";
@@ -98,19 +102,71 @@ function shortPathAnswerLabel(text?: string) {
   return raw.length > 12 ? raw.slice(0, 11) + "…" : raw;
 }
 
-function displayNodeQuestion(node: TreeNode | null | undefined) {
+function displayNodeQuestion(node: TreeNode | null | undefined, example?: Example | null) {
   const raw = String(node?.text || "").trim();
   const hint = String(node?.hint || "").trim();
   const context = String((node as any)?.context || "").trim();
-  if (!raw) return "تابع السؤال المناسب لهذا المثال.";
-  if (raw === "ماذا نتحقق الآن؟" || raw === "ماذا نتحقق الآن؟") {
-    if (hint.includes("العدد") || hint.includes("النوع")) return "ما صورة الكلمة من حيث العدد أو النوع؟";
-    if (hint.includes("علامة")) return "ما العلامة المناسبة هنا؟";
-    if (hint.includes("اسم معرب") || hint.includes("اسم مبني")) return "ما نوع الكلمة الآن؟";
-    if (context) return context.replace(/^عرفنا\s*/, "حدّدنا ").replace(/[.،]+$/, "") + "؛ ماذا نختار الآن؟";
-    return "ماذا نلاحظ الآن؟";
+  const target = String(example?.target || "").trim();
+  const quoted = target ? `«${target}»` : "الكلمة";
+  if (!raw) return target ? `ما الحكم المناسب لـ${quoted}؟` : "تابع السؤال المناسب لهذا المثال.";
+
+  let question = raw;
+  if (raw === "ماذا نتحقق الآن؟") {
+    if (hint.includes("العدد") || hint.includes("النوع")) question = `ما صورة ${quoted}؟`;
+    else if (hint.includes("علامة")) question = `ما العلامة المناسبة لـ${quoted}؟`;
+    else if (hint.includes("اسم معرب") || hint.includes("اسم مبني")) question = `ما نوع ${quoted}؟`;
+    else if (context) question = context.replace(/^عرفنا\s*/, "حدّدنا ").replace(/[.،]+$/, "") + "؛ ماذا نختار الآن؟";
+    else question = `ماذا نلاحظ في ${quoted}؟`;
   }
-  return raw;
+
+  if (target) {
+    const exact: Array<[RegExp, string]> = [
+      [/ما نوع الكلمة المحددة[؟?]?/g, `ما نوع كلمة ${quoted}؟`],
+      [/ما نوع الكلمة[؟?]?/g, `ما نوع كلمة ${quoted}؟`],
+      [/ما نوع هذه الكلمة[؟?]?/g, `ما نوع كلمة ${quoted}؟`],
+      [/ما دور الكلمة المحددة في الجملة[؟?]?/g, `ما دور ${quoted} في الجملة؟`],
+      [/ما السياق الذي وردت فيه الكلمة المحددة[؟?]?/g, `ما السياق الذي وردت فيه ${quoted}؟`],
+      [/اختر الصورة المناسبة للكلمة المحددة[:：]?/g, `ما صورة ${quoted}؟`],
+      [/ما صورة الفعل[؟?]?/g, `ما صورة الفعل ${quoted}؟`],
+      [/هل اتصل به ما يجعله مبني[ًًّاا]*[؟?]?/g, `هل اتصل بالفعل ${quoted} ما يجعله مبنيًّا؟`],
+      [/هل سبق الفعلَ ناصبٌ أو جازم[؟?]?/g, `هل سبق ${quoted} ناصب أو جازم؟`],
+      [/هل سبق الفعل ناصب أو جازم[؟?]?/g, `هل سبق ${quoted} ناصب أو جازم؟`],
+      [/هل فعل الأمر صحيح الآخر أم معتل الآخر[؟?]?/g, `هل ${quoted} صحيح الآخر أم معتل الآخر؟`],
+    ];
+    exact.forEach(([pattern, replacement]) => { question = question.replace(pattern, replacement); });
+    question = question
+      .replace(/الكلمة المحددة/g, quoted)
+      .replace(/الفعل المحدد/g, `الفعل ${quoted}`)
+      .replace(/المحدد/g, quoted);
+
+    if (!question.includes(target) && /[؟?]/.test(question)) {
+      question = `${quoted}: ${question}`;
+    }
+  }
+  return question;
+}
+
+function answerButtonLayout(node: PositionedNode, count: number, idx: number) {
+  const columns = Math.min(3, Math.max(1, count));
+  const row = Math.floor(idx / columns);
+  const col = idx % columns;
+  const rows = Math.ceil(count / columns);
+  const itemsInRow = Math.min(columns, count - row * columns);
+  const gapX = 6;
+  const gapY = 5;
+  const btnH = 22;
+  const btnW = count <= 2 ? 86 : 68;
+  const rowWidth = itemsInRow * btnW + Math.max(0, itemsInRow - 1) * gapX;
+  const startX = node.x + (node.w - rowWidth) / 2;
+  const firstY = node.y + node.h - (rows * btnH + Math.max(0, rows - 1) * gapY) - 11;
+  return {
+    bx: startX + col * (btnW + gapX),
+    by: firstY + row * (btnH + gapY),
+    btnW,
+    btnH,
+    rows,
+    firstY,
+  };
 }
 
 function diamondPoints(x: number, y: number, w: number, h: number) {
@@ -196,7 +252,7 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
       y,
       w,
       h,
-      textLines: splitText(displayNodeQuestion(node), isQuestion ? 20 : 24),
+      textLines: splitText(displayNodeQuestion(node, example), isQuestion ? 24 : 24),
       node,
     });
 
@@ -305,7 +361,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
 
   function teacherSequenceText(node: TreeNode | null | undefined, baseText?: string) {
     const text = baseText || node?.hint || node?.teaching_note || "اختر الدليل النحوي الذي يثبته المثال.";
-    return cleanLearningText(text, 165);
+    return cleanLearningText(diagnosticHintText(text, example?.target), 165);
   }
 
   function stepHintForNode(node: TreeNode | null | undefined) {
@@ -337,7 +393,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     if (id.includes("khabar") || text.includes("خبر")) {
       return "في الخبر نسأل: ماذا أخبرنا عن المبتدأ؟ ثم نحدد هل الخبر مفرد أم جملة أم شبه جملة.";
     }
-    if (node?.hint || node?.teaching_note) return cleanLearningText(node.hint || node.teaching_note, 150);
+    if (node?.hint || node?.teaching_note) return cleanLearningText(firstLevelHintText(node?.id, node.hint || node.teaching_note, example?.target, node?.text), 150);
     return "اقرأ المثال والكلمة الهدف، ثم اختر الإجابة التي يثبتها الدليل النحوي.";
   }
 
@@ -497,12 +553,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     if (idx < 0) return null;
 
     const count = treeNode.answers.length;
-    const btnW = Math.max(48, Math.min(82, node.w / Math.max(2, count) - 8));
-    const totalW = count * btnW + (count - 1) * 5;
-    const startX = node.x + (node.w - totalW) / 2;
-    const bx = startX + idx * (btnW + 5);
-    const by = node.y + node.h - 24;
-    return { x: bx + btnW / 2, y: by + 10 };
+    const { bx, by, btnW, btnH } = answerButtonLayout(node, count, idx);
+    return { x: bx + btnW / 2, y: by + btnH / 2 };
   }
 
   function resetProgress(nextExample: Example | null) {
@@ -610,16 +662,16 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
         const pickedSingular = picked.includes("مفرد");
         if (shape === "singular") return `(${target}) اسم ظاهر يدل على واحد وليس مثنى ولا جمعًا، وليس من الأسماء الخمسة. لذلك صورته مفرد، وعلامة رفعه الضمة.`;
         if (shape === "dual") return pickedSingular
-          ? `(${target}) ليست مفردًا؛ لأنها تدل على اثنين، وانتهت بألف ونون في هذا المثال، لذلك صورتها مثنى، والمثنى يرفع بالألف.`
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على اثنين، وانتهت بألف ونون في هذا المثال، لذلك صورتها مثنى، وعلامة رفع المثنى الألف.`
           : `(${target}) يدل على اثنين، وانتهى بألف ونون في هذا المثال، لذلك صورته مثنى، وعلامة رفعه الألف.`;
         if (shape === "jms") return pickedSingular
-          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة ذكور عاقلة، وانتهت بواو ونون في هذا المثال، لذلك صورتها جمع مذكر سالم، وجمع المذكر السالم يرفع بالواو.`
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة ذكور عاقلة، وانتهت بواو ونون في هذا المثال، لذلك صورتها جمع مذكر سالم، وعلامة رفع جمع المذكر السالم الواو.`
           : `(${target}) جمع مذكر سالم؛ يدل على جماعة ذكور عاقلة، وانتهى بواو ونون في هذا المثال، لذلك علامة رفعه الواو.`;
         if (shape === "jfs") return pickedSingular
           ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة إناث، وانتهت بألف وتاء زائدتين، لذلك صورتها جمع مؤنث سالم، وعلامة رفعه الضمة.`
           : `(${target}) جمع مؤنث سالم؛ يدل على جماعة إناث وينتهي بألف وتاء زائدتين، وعلامة رفعه الضمة.`;
         if (shape === "jt") return pickedSingular
-          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة، وتغيّرت صورة المفرد عند الجمع مثل: طفل ← أطفال، لذلك صورتها جمع تكسير، وجمع التكسير يرفع بالضمة.`
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة، وتغيّرت صورة المفرد عند الجمع مثل: طفل ← أطفال، لذلك صورتها جمع تكسير، وعلامة رفع جمع التكسير الضمة.`
           : `(${target}) جمع تكسير؛ تغيّرت صورة مفرده عند الجمع مثل طفل ← أطفال، وعلامة رفعه الضمة.`;
         if (shape === "five") return pickedSingular
           ? `صحيح أن (${target}) يدل على واحد، لكنه ليس مفردًا عاديًا في الإعراب؛ لأنه من الأسماء الخمسة، وقد جاء مفردًا مضافًا إلى غير ياء المتكلم، لذلك يرفع بالواو.`
@@ -628,10 +680,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
 
       if (nodeId === "fael_raf3_mark") {
         if (shape === "five") return `الضمة للمفرد العادي مثل الطالبُ. أما (${target}) فمن الأسماء الخمسة، وقد تحققت شروط إعرابه بالحروف: مفرد، مضاف، ومضاف إلى غير ياء المتكلم؛ لذلك علامة رفعه الواو.`;
-        if (shape === "dual") return `(${target}) مثنى، والمثنى يرفع بالألف لا بالضمة ولا بالواو.`;
-        if (shape === "jms") return `(${target}) جمع مذكر سالم، وجمع المذكر السالم يرفع بالواو.`;
-        if (shape === "jfs") return `(${target}) جمع مؤنث سالم، وجمع المؤنث السالم يرفع بالضمة الظاهرة.`;
-        if (shape === "jt") return `(${target}) جمع تكسير، وجمع التكسير يرفع بالضمة مثل المفرد العادي.`;
+        if (shape === "dual") return `(${target}) مثنى، وعلامة رفع المثنى الألف لا بالضمة ولا بالواو.`;
+        if (shape === "jms") return `(${target}) جمع مذكر سالم، وعلامة رفع جمع المذكر السالم الواو.`;
+        if (shape === "jfs") return `(${target}) جمع مؤنث سالم، وعلامة رفع جمع المؤنث السالم الضمة الظاهرة.`;
+        if (shape === "jt") return `(${target}) جمع تكسير، وعلامة رفع جمع التكسير الضمة مثل المفرد العادي.`;
         if (shape === "singular") return `(${target}) مفرد عادي مرفوع، وعلامة رفع المفرد هنا الضمة الظاهرة.`;
       }
 
@@ -694,18 +746,18 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       }
 
       if (nodeId === "mafool_mu3rab_shape") {
-        if (shape === "singular") return `(${target}) اسم ظاهر يدل على شيء واحد، وليس مثنى ولا جمعًا ولا من الأسماء الخمسة؛ لذلك صورته مفرد، والمفرد ينصب بالفتحة.`;
+        if (shape === "singular") return `(${target}) اسم ظاهر يدل على شيء واحد، وليس مثنى ولا جمعًا ولا من الأسماء الخمسة؛ لذلك صورته مفرد، وعلامة نصب المفرد الفتحة.`;
         if (shape === "dual") return pickedSingular
-          ? `(${target}) ليست مفردًا؛ لأنها تدل على اثنين، وانتهت بياء ونون لأنها منصوبة، لذلك صورتها مثنى، والمثنى ينصب بالياء.`
-          : `(${target}) يدل على اثنين، وانتهى بياء ونون لأنه منصوب، لذلك صورته مثنى، والمثنى ينصب بالياء.`;
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على اثنين، وانتهت بياء ونون لأنها منصوبة، لذلك صورتها مثنى، وعلامة نصب المثنى الياء.`
+          : `(${target}) يدل على اثنين، وانتهى بياء ونون لأنه منصوب، لذلك صورته مثنى، وعلامة نصب المثنى الياء.`;
         if (shape === "jms") return pickedSingular
-          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة ذكور عاقلة، وانتهت بياء ونون لأنها منصوبة، لذلك صورتها جمع مذكر سالم، وجمع المذكر السالم ينصب بالياء.`
+          ? `(${target}) ليست مفردًا؛ لأنها تدل على جماعة ذكور عاقلة، وانتهت بياء ونون لأنها منصوبة، لذلك صورتها جمع مذكر سالم، وعلامة نصب جمع المذكر السالم الياء.`
           : `(${target}) جمع مذكر سالم؛ يدل على جماعة ذكور عاقلة، وانتهى بياء ونون لأنه منصوب، لذلك علامة نصبه الياء.`;
         if (shape === "jfs") return pickedSingular
-          ? `(${target}) ليست مفردًا؛ لأنها جمع مؤنث سالم؛ تدل على جماعة إناث، وانتهت بألف وتاء زائدتين، وجمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة.`
+          ? `(${target}) ليست مفردًا؛ لأنها جمع مؤنث سالم؛ تدل على جماعة إناث، وانتهت بألف وتاء زائدتين، وعلامة نصب جمع المؤنث السالم الكسرة نيابة عن الفتحة.`
           : `(${target}) جمع مؤنث سالم؛ جمع مؤنث مختوم بألف وتاء زائدتين، وينصب بالكسرة نيابة عن الفتحة.`;
         if (shape === "jt") return pickedSingular
-          ? `(${target}) ليست مفردًا؛ لأنها جمع تكسير، تغيّرت فيه صورة المفرد عند الجمع، وجمع التكسير ينصب بالفتحة.`
+          ? `(${target}) ليست مفردًا؛ لأنها جمع تكسير، تغيّرت فيه صورة المفرد عند الجمع، وعلامة نصب جمع التكسير الفتحة.`
           : `(${target}) جمع تكسير؛ تغيّرت صورة مفرده عند الجمع، وينصب بالفتحة غالبًا.`;
         if (shape === "five") return pickedSingular
           ? `صحيح أن (${target}) يدل على واحد، لكنه ليس مفردًا عاديًا في الإعراب؛ لأنه من الأسماء الخمسة، وقد جاء مفردًا مضافًا إلى غير ياء المتكلم، لذلك ينصب بالألف.`
@@ -714,10 +766,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
 
       if (nodeId === "mafool_nasb_mark") {
         if (shape === "singular") return `(${target}) مفرد منصوب، وعلامة نصب المفرد هنا الفتحة الظاهرة.`;
-        if (shape === "dual") return `(${target}) مثنى، والمثنى ينصب بالياء لا بالفتحة.`;
-        if (shape === "jms") return `(${target}) جمع مذكر سالم، وجمع المذكر السالم ينصب بالياء.`;
-        if (shape === "jfs") return `(${target}) جمع مؤنث سالم، وجمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة.`;
-        if (shape === "jt") return `(${target}) جمع تكسير، وجمع التكسير ينصب بالفتحة مثل المفرد العادي.`;
+        if (shape === "dual") return `(${target}) مثنى، وعلامة نصب المثنى الياء لا بالفتحة.`;
+        if (shape === "jms") return `(${target}) جمع مذكر سالم، وعلامة نصب جمع المذكر السالم الياء.`;
+        if (shape === "jfs") return `(${target}) جمع مؤنث سالم، وعلامة نصب جمع المؤنث السالم الكسرة نيابة عن الفتحة.`;
+        if (shape === "jt") return `(${target}) جمع تكسير، وعلامة نصب جمع التكسير الفتحة مثل المفرد العادي.`;
         if (shape === "five") return `(${target}) من الأسماء الخمسة المستوفية للشروط: مفردة، مضافة، ومضافة إلى غير ياء المتكلم؛ لذلك علامة نصبه الألف.`;
       }
 
@@ -785,7 +837,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     }
 
     if (node.id === "m3_pluralType") {
-      return teacherSequenceText(node, teacherPrefix + `راجع نوع الجمع في ${target}: جمع المذكر السالم يرفع بالواو، أما جمع المؤنث السالم وجمع التكسير فيرفعان بالضمة في هذا المسار.`);
+      return teacherSequenceText(node, teacherPrefix + `راجع نوع الجمع في ${target}: علامة رفع جمع المذكر السالم الواو، أما جمع المؤنث السالم وجمع التكسير فيرفعان بالضمة في هذا المسار.`);
     }
 
     if (String(node.id || "").includes("built_type") || String(node.id || "").includes("mabniType")) {
@@ -841,8 +893,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   function showHintNearAnswer(nodeId: string) {
     const node = tree.nodes[nodeId];
     const hintText = node
-      ? targetedHintForWrongAnswer(node, { text: "", eval: undefined }, example)
-      : "راجع الإجابة الصحيحة ثم تابع.";
+      ? firstLevelHintText(node.id, node.hint || node.teaching_note, example?.target, node.text)
+      : "راجع الكلمة في المثال، ثم اختر الدليل المناسب.";
     setShowHint(true);
     setMessage(hintText);
     setActiveGuidance(hintText);
@@ -873,7 +925,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
 
     const correct = answerIsCorrect(answer, example);
     if (!correct) {
-      const hintText = targetedHintForWrongAnswer(node, answer, example);
+      const hintText = diagnosticHintText(targetedHintForWrongAnswer(node, answer, example), example?.target);
       setShowHint(true);
       setMessage(hintText);
       setActiveGuidance(hintText);
@@ -1009,7 +1061,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     />
                     {edge.label ? (
                       <text x={midX} y={midY} textAnchor="middle" className="paths-react-edge-label">
-                        {edge.label}
+                        {shortPathAnswerLabel(edge.label)}
                       </text>
                     ) : null}
                   </g>
@@ -1058,7 +1110,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                       <text
                         key={`${n.id}-${i}`}
                         x={n.x + n.w / 2}
-                        y={n.y + n.h / 2 + (isQuestion ? -9 : 0) + (i - (n.textLines.length - 1) / 2) * 14}
+                        y={n.y + n.h / 2 + (isQuestion ? -20 : 0) + (i - (n.textLines.length - 1) / 2) * 14}
                         textAnchor="middle"
                         dominantBaseline="middle"
                         className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
@@ -1069,7 +1121,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     {isQuestion ? (
                       <text
                         x={n.x + n.w / 2}
-                        y={n.y + n.h - 38}
+                        y={n.y + n.h - ((Math.ceil((n.node?.answers?.length || 1) / 3) * 22) + Math.max(0, Math.ceil((n.node?.answers?.length || 1) / 3) - 1) * 5) - 22}
                         textAnchor="middle"
                         dominantBaseline="middle"
                         className="paths-react-question-instruction"
@@ -1081,17 +1133,13 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     {isQuestion && active && n.node?.answers ? (
                       <g>
                         {n.node.answers.map((answer, idx) => {
-                          const btnW = Math.max(38, Math.min(66, n.w / Math.max(2, n.node!.answers!.length) - 8));
-                          const totalW = n.node!.answers!.length * btnW + (n.node!.answers!.length - 1) * 5;
-                          const startX = n.x + (n.w - totalW) / 2;
-                          const bx = startX + idx * (btnW + 5);
-                          const by = n.y + n.h - 24;
+                          const { bx, by, btnW, btnH } = answerButtonLayout(n, n.node!.answers!.length, idx);
                           const hintCorrect = showHint && active && answerIsCorrect(answer, example);
                           const answerHighlighted = highlightedAnswerKey === `${n.id}:${answer.id}`;
                           return (
-                            <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + 10 })}>
-                              <rect x={bx} y={by} width={btnW} height={20} rx={10} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" strokeWidth={0.9} />
-                              <text x={bx + btnW / 2} y={by + 10} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
+                            <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 })}>
+                              <rect x={bx} y={by} width={btnW} height={btnH} rx={11} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" strokeWidth={0.9} />
+                              <text x={bx + btnW / 2} y={by + btnH / 2} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
                                 {shortPathAnswerLabel(answer.text)}
                               </text>
                             </g>

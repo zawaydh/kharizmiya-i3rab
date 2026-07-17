@@ -2,7 +2,7 @@ export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
 
 const wordKindHint = `الفعل يدل على حدث وزمن، مثل: كتب، يكتب، اكتب. الاسم يقبل علامات مثل: أل، التنوين، الجر. والحرف لا يظهر معناه كاملًا إلا مع غيره.`;
 
-const commandMeaningHint = `فعل الأمر يدل على طلب حصول الحدث من المخاطب، مثل: اكتبْ، ادعُ، اكتبي. لا يدل على حدث وقع وانتهى، ولا على حدث يقع الآن من غير طلب.`;
+const commandMeaningHint = `هل الفعل يخبر عن حدث وقع أو يقع، أم يطلب من المخاطب حدوثه؟`;
 
 const weakByPresentHint = `نسند فعل الأمر إلى المضارع مع الضمير (هو) لنتأكد من الحرف الأخير في أصل الفعل: ادعُ ← هو يدعو، ارمِ ← هو يرمي، اسعَ ← هو يسعى. فإذا كان الحرف الأخير في الأصل ألفًا أو واوًا أو ياءً ثم حُذف في الأمر، فالأمر مبني على حذف حرف العلة.`;
 
@@ -18,7 +18,6 @@ export const imperativeVerbTree: ExerciseTree = {
         { id: "a", text: "فعل: حدث مقترن بزمن", next: "imperative_meaning", eval: { fact: "wordKind", equals: "verb" } },
         { id: "b", text: "اسم", next: "imperative_word_kind", correct: false, hint: "الاسم لا يدل على طلب أو زمن بنفسه. انظر إلى الكلمة المحددة: هل تطلب فعلًا من مخاطب؟" },
         { id: "c", text: "حرف", next: "imperative_word_kind", correct: false, hint: "الحرف لا يظهر معناه كاملًا إلا مع غيره، أما الكلمة المحددة فتدل على عمل مطلوب." },
-        { id: "d", text: "أحتاج تلميح", next: "imperative_word_kind", correct: false, hint: wordKindHint },
       ],
     },
 
@@ -32,7 +31,6 @@ export const imperativeVerbTree: ExerciseTree = {
         { id: "a", text: "حدث وقع وانتهى", next: "imperative_meaning", correct: false, hint: "هذا معنى الفعل الماضي مثل: كتبَ. أما الكلمة المحددة فهي طلب موجّه للمخاطب." },
         { id: "b", text: "حدث يقع الآن أو يستقبل", next: "imperative_meaning", correct: false, hint: "هذا معنى المضارع مثل: يكتبُ. أما الكلمة المحددة فهي طلب حصول الفعل." },
         { id: "c", text: "طلب حصول الحدث", next: "imperative_connection", eval: { fact: "commandMeaning", equals: "command" } },
-        { id: "d", text: "أحتاج تلميح", next: "imperative_meaning", correct: false, hint: commandMeaningHint },
       ],
     },
 
@@ -45,7 +43,6 @@ export const imperativeVerbTree: ExerciseTree = {
       answers: [
         { id: "a", text: "نعم، اتصل بآخره شيء", next: "imperative_attached_kind", eval: { fact: "attached", notEquals: "none" } },
         { id: "b", text: "لا، لم يتصل به شيء", next: "imperative_ending", eval: { fact: "attached", equals: "none" } },
-        { id: "c", text: "أحتاج تلميح", next: "imperative_connection", correct: false, hint: "أسند الفعل إلى المضارع مع الضمير (هو) لتعرف أصل آخره، ثم انظر إلى الزائد بعد الأصل: اكتبْ ← هو يكتب فلا متصل، اكتبنَ ← هو يكتب وبعده نون النسوة، اكتبنَّ ← هو يكتب وبعده نون التوكيد، اكتبوا/اكتبا/اكتبي اتصلت بضمائر مخاطبة." },
       ],
     },
 
@@ -59,7 +56,6 @@ export const imperativeVerbTree: ExerciseTree = {
         { id: "a", text: "نون النسوة", next: "R_imperative_sukoon_niswa", eval: { fact: "attached", equals: "niswa" }, hint: "نون النسوة تدل على جماعة الإناث، مثل: اكتبْنَ، وهي ضمير في محل رفع فاعل." },
         { id: "b", text: "نون التوكيد", next: "R_imperative_fath_tawkid", eval: { fact: "attached", equals: "tawkid" }, hint: "نون التوكيد تؤكد الفعل وتقوّي معناه، مثل: اكتبنَّ، ولا تدل على مؤنث." },
         { id: "c", text: "ألف الاثنين / واو الجماعة / ياء المخاطبة", next: "R_imperative_delete_noon_attached", eval: { fact: "attached", anyOf: ["alif2", "waw", "yaa"] }, hint: "هذه ضمائر مخاطبة تتصل بفعل الأمر، وعلامة البناء معها واحدة: حذف النون." },
-        { id: "f", text: "أحتاج تلميح", next: "imperative_attached_kind", correct: false, hint: "أسند الفعل إلى المضارع مع الضمير (هو): اكتبنَ ← هو يكتب. ما الزائد بعد أصل الفعل؟ نون النسوة؟ نون التوكيد؟ أم ألف الاثنين/واو الجماعة/ياء المخاطبة؟" },
       ],
     },
 
@@ -72,7 +68,6 @@ export const imperativeVerbTree: ExerciseTree = {
       answers: [
         { id: "a", text: "صحيح الآخر", next: "R_imperative_sukoon_sahih", eval: { fact: "ending", equals: "sahih" } },
         { id: "b", text: "معتل الآخر", next: "imperative_weak_letter", eval: { fact: "ending", equals: "weak" } },
-        { id: "c", text: "أحتاج تلميح", next: "imperative_ending", correct: false, hint: `${weakByPresentHint}\nأما إذا لم يكن آخر أصله حرف علة، مثل: اكتبْ، فهو صحيح الآخر.` },
       ],
     },
 
@@ -86,7 +81,6 @@ export const imperativeVerbTree: ExerciseTree = {
         { id: "a", text: "الألف", next: "R_imperative_delete_letter_alif", eval: { fact: "weakLetter", equals: "alif" } },
         { id: "b", text: "الواو", next: "R_imperative_delete_letter_waw", eval: { fact: "weakLetter", equals: "waw" } },
         { id: "c", text: "الياء", next: "R_imperative_delete_letter_ya", eval: { fact: "weakLetter", equals: "ya" } },
-        { id: "d", text: "أحتاج تلميح", next: "imperative_weak_letter", correct: false, hint: weakByPresentHint },
       ],
     },
 

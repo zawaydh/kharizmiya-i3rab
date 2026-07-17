@@ -1,6 +1,5 @@
 export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
 
-const help = { id: "help", text: "أحتاج تلميحًا", next: "tawabi_relation", isHelp: true, correct: false };
 
 export const tawabiTree: ExerciseTree = {
   startNodeId: "tawabi_entry",
@@ -40,7 +39,6 @@ export const tawabiTree: ExerciseTree = {
           correct: false,
           hint: "هذا أقرب إلى المضاف إليه، مثل: كتابُ الطالبِ. المضاف إليه مجرور بالإضافة، أما التابع فحكمه يتغير بحسب المتبوع: رفعًا أو نصبًا أو جرًّا."
         },
-        { ...help, next: "tawabi_entry" }
       ]
     },
 
@@ -77,9 +75,8 @@ export const tawabiTree: ExerciseTree = {
           text: "فسرته ويمكن أن يحل محله",
           next: "tawabi_term",
           eval: { fact: "relationKind", equals: "substitution" },
-          hint: "اختبار البدل: احذف الاسم السابق وضع الكلمة المحددة مكانه. إذا بقي المعنى مستقيمًا غالبًا، فالعلاقة بدل."
+          hint: "في البدل المطابق يمكن إحلال التابع محل الاسم السابق. أما بدل البعض والاشتمال فقد يحتاج ضميرًا يعود على المبدل منه."
         },
-        { ...help, next: "tawabi_relation" }
       ]
     },
 
@@ -94,7 +91,6 @@ export const tawabiTree: ExerciseTree = {
         { id: "atf", text: "معطوف", next: "tawabi_follow_source", eval: { fact: "tawabiTerm", equals: "atf" }, hint: "المعطوف تابع يقع بعد حرف عطف ويشارك المعطوف عليه في الحكم والإعراب." },
         { id: "tawkid", text: "توكيد", next: "tawabi_tawkid_kind", eval: { fact: "tawabiTerm", equals: "tawkid" }, hint: "التوكيد لا يضيف صفة جديدة، بل يرسّخ المعنى أو يرفع احتمال المجاز أو النقص. بعد اكتشافه نحدد: هل كان التوكيد بتكرار اللفظ أم بأحد ألفاظ التوكيد المعنوي؟" },
         { id: "badal", text: "بدل", next: "tawabi_follow_source", eval: { fact: "tawabiTerm", equals: "badal" }, hint: "البدل يزيل الغموض عن المبدل منه. قد يكون مطابقًا، أو بعضًا من كل، أو اشتمالًا." },
-        { ...help, next: "tawabi_term" }
       ]
     },
 
@@ -119,7 +115,6 @@ export const tawabiTree: ExerciseTree = {
           eval: { fact: "tawkidKind", equals: "manawi" },
           hint: "التوكيد المعنوي يكون بألفاظ مخصوصة، ويحتاج غالبًا ضميرًا يعود على المؤكَّد، مثل: نفسُه، كلُّهم، جميعُهم."
         },
-        { ...help, next: "tawabi_tawkid_kind" }
       ]
     },
 
@@ -151,7 +146,6 @@ export const tawabiTree: ExerciseTree = {
           correct: false,
           hint: "الحركة أو الحرف علامة نهائية، وليست البداية. قد يتبع التابع متبوعه في الرفع لكن تختلف العلامة؛ مثل: الطلابُ المجتهدونَ."
         },
-        { ...help, next: "tawabi_follow_source" }
       ]
     },
 
@@ -165,7 +159,6 @@ export const tawabiTree: ExerciseTree = {
         { id: "raf3", text: "الرفع", next: "tawabi_form", eval: { fact: "case", equals: "raf3" }, hint: "إذا كان المتبوع مرفوعًا، فالفرع التابع له مرفوع أيضًا، ولو اختلفت علامة الرفع." },
         { id: "nasb", text: "النصب", next: "tawabi_form", eval: { fact: "case", equals: "nasb" }, hint: "إذا كان المتبوع منصوبًا، فالفرع التابع له منصوب أيضًا، ثم نبحث عن العلامة المناسبة لصورة التابع." },
         { id: "jarr", text: "الجر", next: "tawabi_form", eval: { fact: "case", equals: "jarr" }, hint: "إذا كان المتبوع مجرورًا، فالفرع التابع له مجرور أيضًا، سواء كان نعتًا أو معطوفًا أو توكيدًا أو بدلًا." },
-        { ...help, next: "tawabi_case" }
       ]
     },
 
@@ -181,7 +174,6 @@ export const tawabiTree: ExerciseTree = {
         { id: "sentence", text: "جملة", next: "R_tawabi_sentence", eval: { fact: "roleKind", equals: "sentence" }, hint: "النعت الجملة يأتي بعد نكرة، ويحتاج رابطًا يعود على المنعوت؛ مثل: خطيبٍ يرفعُ صوتَهُ." },
         { id: "shibh", text: "شبه جملة", next: "R_tawabi_shibh", eval: { fact: "roleKind", equals: "shibh" }, hint: "النعت شبه الجملة يكون جارًا ومجرورًا أو ظرفًا، ويتعلق بتقدير مثل: كائن أو موجود." },
         { id: "verb", text: "فعل وحده", next: "tawabi_form", correct: false, hint: "إذا كان المحدد جملة فعلية فلا نعرب الفعل وحده تابعًا؛ بل نعرب الجملة كلها في محل إعراب تابع، إذا تحققت شروط النعت الجملة." },
-        { ...help, next: "tawabi_form" }
       ]
     },
 
@@ -198,7 +190,6 @@ export const tawabiTree: ExerciseTree = {
         { id: "jfs", text: "جمع مؤنث سالم", next: "tawabi_mark", eval: { fact: "shape", equals: "jfs" }, hint: "جمع المؤنث السالم ينتهي غالبًا بألف وتاء زائدتين، وينصب بالكسرة نيابة عن الفتحة." },
         { id: "jt", text: "جمع تكسير", next: "tawabi_mark", eval: { fact: "shape", equals: "jt" }, hint: "جمع التكسير تتغير فيه صورة المفرد، مثل: طفل ← أطفال، ويعرب غالبًا بالحركات." },
         { id: "five", text: "من الأسماء الخمسة", next: "tawabi_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة تعرب بالحروف إذا كانت مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
-        { ...help, next: "tawabi_shape" }
       ]
     },
 
@@ -215,7 +206,6 @@ export const tawabiTree: ExerciseTree = {
         { id: "alif", text: "الألف", next: "R_tawabi_mu3rab", eval: { fact: "mark", equals: "alif" }, hint: "الألف علامة رفع المثنى، وعلامة نصب الأسماء الخمسة إذا تحققت شروطها." },
         { id: "yaa", text: "الياء", next: "R_tawabi_mu3rab", eval: { fact: "mark", equals: "yaa" }, hint: "الياء علامة نصب وجر المثنى وجمع المذكر السالم، وعلامة جر الأسماء الخمسة." },
         { id: "waw", text: "الواو", next: "R_tawabi_mu3rab", eval: { fact: "mark", equals: "waw" }, hint: "الواو علامة رفع جمع المذكر السالم، وعلامة رفع الأسماء الخمسة إذا تحققت شروطها." },
-        { ...help, next: "tawabi_mark" }
       ]
     },
 

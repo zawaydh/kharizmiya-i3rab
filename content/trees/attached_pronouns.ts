@@ -8,7 +8,7 @@ export const attachedPronounsTree: ExerciseTree = {
       "type": "question",
       "context": "الضمير اسم مبني، لذلك لا نبحث عن حركة آخره أولًا، بل نسأل: ما الموقع الذي شغله في الجملة؟",
       "text": "كيف نبدأ إعراب الضمير المتصل أو المنفصل؟",
-      "hint": "استبدل الضمير باسم ظاهر لتفهم العلاقة: مثل هذا كتابه، أي هذا كتاب محمد. عندها تعرف هل هو في رفع أو نصب أو جر، وهل الجر بحرف أو بالإضافة.",
+      "hint": "ضع اسمًا ظاهرًا مكان الضمير، ثم حدد الموقع الذي شغله الاسم البديل في الجملة.",
       "answers": [
         { "id": "a", "text": "أحدد علاقته وموقعه: رفع أم نصب أم جر", "next": "pronoun_step_1", "correct": true },
         { "id": "b", "text": "أبحث عن حركة آخره فقط", "next": "pronoun_relation_gate", "correct": false, "hint": "الضمائر مبنية؛ لذلك الأهم هو المحل الإعرابي لا الحركة الظاهرة." },
@@ -20,7 +20,7 @@ export const attachedPronounsTree: ExerciseTree = {
       "type": "question",
       "context": "عرفنا أن الكلمة ضمير، والضمائر مبنية، لذلك نبحث عن المحل الإعرابي الذي شغله الضمير.",
       "text": "ما الخطوة الصحيحة الآن؟",
-      "hint": "ضع اسمًا ظاهرًا مكان الضمير لتعرف موقعه. مثل: هذا كتابه، أصلها هذا كتاب محمد؛ فالهاء دلت على المضاف إليه. عد للسؤال وانقر على الإجابة الصحيحة لنكمل الإعراب.",
+      "hint": "ضع اسمًا ظاهرًا مكان الضمير، ثم اسأل: ما الموقع الذي شغله الاسم البديل؟",
       "answers": [
         {
           "id": "a",
@@ -42,7 +42,7 @@ export const attachedPronounsTree: ExerciseTree = {
       "type": "question",
       "context": "نبحث عن موقع الضمير.",
       "text": "هل حلّ محل اسم مرفوع أم منصوب أم مجرور؟",
-      "hint": "ضع اسمًا ظاهرًا مكان الضمير. مثال: هذا كتابه = هذا كتاب محمد؛ فإذا صار الاسم بعد مضاف فهو في محل جر بالإضافة، وإذا جاء بعد حرف جر فهو في محل جر بحرف الجر. عد للسؤال وانقر على الإجابة الصحيحة لنكمل الإعراب.",
+      "hint": "ضع اسمًا ظاهرًا مكان الضمير، ثم ميز: هل جاء بعد حرف جر، أم صار مضافًا إليه، أم شغل موقعًا مرفوعًا أو منصوبًا؟",
       "answers": [
         {
           "id": "a",
@@ -131,31 +131,31 @@ export const attachedPronounsTree: ExerciseTree = {
       "id": "R_pronoun_raf3_attached",
       "type": "result",
       "coverage": "pronoun.raf3.attached",
-      "text": "ضمير متصل مبني في محل رفع."
+      "text": "ضمير متصل مبني في محل رفع فاعل."
     },
     "R_pronoun_raf3_separate": {
       "id": "R_pronoun_raf3_separate",
       "type": "result",
       "coverage": "pronoun.raf3.separate",
-      "text": "ضمير منفصل مبني في محل رفع."
+      "text": "ضمير منفصل مبني في محل رفع مبتدأ."
     },
     "R_pronoun_nasb_attached": {
       "id": "R_pronoun_nasb_attached",
       "type": "result",
       "coverage": "pronoun.nasb.attached",
-      "text": "ضمير متصل مبني في محل نصب."
+      "text": "ضمير متصل مبني في محل نصب مفعول به."
     },
     "R_pronoun_nasb_separate": {
       "id": "R_pronoun_nasb_separate",
       "type": "result",
       "coverage": "pronoun.nasb.separate",
-      "text": "ضمير منفصل مبني في محل نصب."
+      "text": "ضمير منفصل مبني في محل نصب مفعول به مقدم."
     },
     "R_pronoun_jar": {
       "id": "R_pronoun_jar",
       "type": "result",
       "coverage": "pronoun.jar",
-      "text": "إذن إعراب الكلمة: ضمير متصل مبني في محل جر، ويحدد السياق هل هو جر بحرف الجر أو جر بالإضافة."
+      "text": "ضمير متصل مبني في محل جر مضاف إليه."
     }
   }
 };

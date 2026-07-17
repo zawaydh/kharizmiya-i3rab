@@ -2,9 +2,9 @@ export type Example = { id: string; sentence: string; target: string; facts: Rec
 export const ismManqousCoverageKeysOrdered = ["manqous.nasb", "manqous.raf3.kept", "manqous.raf3.deleted", "manqous.jar.kept", "manqous.jar.deleted"];
 export const ismManqousExamples: Example[] = [
   { id: "mn-01", sentence: "رأيتُ قاضيًا عادلًا.", target: "قاضيًا", facts: { case: "nasb" }, covers: ["manqous.nasb"] },
-  { id: "mn-02", sentence: "جاءَ القاضيُ.", target: "القاضيُ", facts: { case: "raf3", yStatus: "kept" }, covers: ["manqous.raf3.kept"] },
+  { id: "mn-02", sentence: "جاءَ القاضي.", target: "القاضي", facts: { case: "raf3", yStatus: "kept" }, covers: ["manqous.raf3.kept"] },
   { id: "mn-03", sentence: "جاءَ قاضٍ عادلٌ.", target: "قاضٍ", facts: { case: "raf3", yStatus: "deleted" }, covers: ["manqous.raf3.deleted"] },
-  { id: "mn-04", sentence: "مررتُ بالقاضيِ.", target: "القاضيِ", facts: { case: "jar", yStatus: "kept" }, covers: ["manqous.jar.kept"] },
+  { id: "mn-04", sentence: "مررتُ بالقاضي.", target: "القاضي", facts: { case: "jar", yStatus: "kept" }, covers: ["manqous.jar.kept"] },
   { id: "mn-05", sentence: "مررتُ بقاضٍ عادلٍ.", target: "قاضٍ", facts: { case: "jar", yStatus: "deleted" }, covers: ["manqous.jar.deleted"] }
 ];
 const resultByCover: Record<string, string> = {

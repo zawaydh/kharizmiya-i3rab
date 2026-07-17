@@ -22,7 +22,7 @@ export const cleanKhabarCoverageKeysOrdered = [
 export const cleanKhabarExamples: Example[] = [
   {
     id: 'kh-01',
-    sentence: 'الجنديُ شجاعٌ.',
+    sentence: 'الجنديُّ شجاعٌ.',
     target: 'شجاعٌ',
     facts: {
     "khabarKind": "single",
@@ -371,7 +371,7 @@ export const cleanKhabarExamples: Example[] = [
 export const cleanKhabarQuizExamples = [
 {
   "id": "kh-01",
-  "sentence": "الجنديُ شجاعٌ.",
+  "sentence": "الجنديُّ شجاعٌ.",
   "target": "شجاعٌ",
   "facts": {
     "khabarKind": "single",

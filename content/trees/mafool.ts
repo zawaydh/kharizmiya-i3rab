@@ -1,6 +1,5 @@
 export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
 
-const help = { id: "help", text: "أحتاج تلميحًا", next: "mafool_context", isHelp: true, correct: false };
 
 export const mafoolTree: ExerciseTree = {
   startNodeId: "mafool_context",
@@ -10,7 +9,7 @@ export const mafoolTree: ExerciseTree = {
       type: "question",
       context: "نبدأ من السياق قبل أن نحدد الدور.",
       text: "ما السياق الذي وردت فيه الكلمة المحددة؟",
-      hint: "انظر إلى أول الجملة: هل بدأت بفعل يدل على حدث وزمن، أم بدأت باسم؟ التفاصيل الأخرى تترك للتلميح.",
+      hint: "انظر إلى أول الجملة: هل بدأت بفعل يدل على حدث وزمن، أم بدأت باسم؟ ",
       answers: [
         {
           id: "verbal",
@@ -26,7 +25,6 @@ export const mafoolTree: ExerciseTree = {
           correct: false,
           hint: "إذا بدأت الجملة بفعل مثل: كتبَ أو رأيتُ أو شكرَ، فهي جملة فعلية غالبًا."
         },
-        { ...help, next: "mafool_context" }
       ]
     },
 
@@ -58,7 +56,6 @@ export const mafoolTree: ExerciseTree = {
           eval: { fact: "roleKind", anyOf: ["visible", "mabni", "connected", "masdar"] },
           hint: "صحيح؛ المفعول به هو ما وقع عليه فعل الفاعل."
         },
-        { ...help, next: "mafool_role" }
       ]
     },
 
@@ -72,7 +69,6 @@ export const mafoolTree: ExerciseTree = {
         { id: "nasb", text: "منصوب أو في محل نصب", next: "mafool_form", correct: true, hint: "صحيح؛ المفعول به يكون منصوبًا، أو في محل نصب إذا كان مبنيًا أو مصدرًا مؤولًا." },
         { id: "raf3", text: "مرفوع", next: "mafool_hukm", correct: false, hint: "الرفع يناسب الفاعل غالبًا؛ لأنه من قام بالفعل. أما المفعول به فقد وقع عليه الفعل، وحكمه النصب أو في محل نصب." },
         { id: "jarr", text: "مجرور", next: "mafool_hukm", correct: false, hint: "الجر يكون بعد حرف جر أو بالإضافة. أما المفعول به فحكمه النصب أو في محل نصب." },
-        { ...help, next: "mafool_hukm" }
       ]
     },
 
@@ -86,7 +82,6 @@ export const mafoolTree: ExerciseTree = {
         { id: "visible", text: "اسم ظاهر معرب", next: "mafool_mu3rab_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم الظاهر المعرب كلمة مستقلة تظهر عليها علامة نصب أو علامة نيابة، مثل: الواجبَ والطالبينِ والمعلمينَ." },
         { id: "mabni", text: "اسم مبني", next: "mafool_mabni_type", eval: { fact: "roleKind", anyOf: ["mabni", "connected"] }, hint: "الأسماء المبنية تشمل أسماء الإشارة والأسماء الموصولة والضمائر المتصلة. المبني لا تظهر عليه علامة نصب، بل يكون في محل نصب مفعول به." },
         { id: "masdar", text: "مصدر مؤول", next: "R_mafool_masdar", eval: { fact: "roleKind", equals: "masdar" }, hint: "المصدر المؤول ليس اسمًا مبنيًا؛ بل تركيب يؤول بمصدر في معنى اسم، مثل: أن تنجحَ = نجاحَك، وما فعلتَ = فعلَك." },
-        { ...help, next: "mafool_form" }
       ]
     },
 
@@ -95,7 +90,7 @@ export const mafoolTree: ExerciseTree = {
       type: "question",
       context: "بما أن المفعول به اسم ظاهر معرب، نحدد صورته حتى نعرف علامة نصبه.",
       text: "ما صورة المفعول به المعرب؟",
-      hint: "انظر إلى الكلمة المستهدفة نفسها: هل تدل على واحد، أم اثنين، أم جماعة؟ وهل هي من الأسماء الخمسة؟ سيربط التلميح الصورة بالمثال مباشرة.",
+      hint: "افحص صورة الكلمة: هل تدل على واحد، اثنين، جماعة، أم هي من الأسماء الخمسة؟",
       answers: [
         { id: "singular", text: "مفرد", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "singular" }, hint: "المفرد العادي يدل على واحد أو واحدة وينصب غالبًا بالفتحة، مثل: الواجبَ." },
         { id: "dual", text: "مثنى", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "dual" }, hint: "المثنى يدل على اثنين أو اثنتين، وينصب بالياء مثل: الطالبينِ." },
@@ -103,7 +98,6 @@ export const mafoolTree: ExerciseTree = {
         { id: "jfs", text: "جمع مؤنث سالم", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "jfs" }, hint: "جمع المؤنث السالم ينتهي غالبًا بألف وتاء زائدتين، وينصب بالكسرة نيابة عن الفتحة مثل: الطالباتِ." },
         { id: "jt", text: "جمع تكسير", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "jt" }, hint: "جمع التكسير تتغير فيه صورة المفرد عند الجمع، مثل: قصة ← قصص، وينصب بالفتحة غالبًا." },
         { id: "five", text: "من الأسماء الخمسة", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة هي: أب، أخ، حم، فو، ذو. تعرب بالحروف إذا كانت مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
-        { ...help, next: "mafool_mu3rab_shape" }
       ]
     },
 
@@ -118,7 +112,6 @@ export const mafoolTree: ExerciseTree = {
         { id: "yaa", text: "الياء", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "yaa" }, hint: "الياء علامة نصب المثنى وجمع المذكر السالم، مثل: الطالبينِ والمعلمينَ." },
         { id: "kasra", text: "الكسرة", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "kasra" }, hint: "الكسرة تنوب عن الفتحة في نصب جمع المؤنث السالم، مثل: الطالباتِ." },
         { id: "alif", text: "الألف", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "alif" }, hint: "الألف علامة نصب الأسماء الخمسة إذا استوفت شروطها: مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
-        { ...help, next: "mafool_nasb_mark" }
       ]
     },
 
@@ -132,7 +125,6 @@ export const mafoolTree: ExerciseTree = {
         { id: "ishara", text: "اسم إشارة", next: "R_mafool_mabni", eval: { fact: "mabniType", equals: "ishara" }, hint: "اسم الإشارة مثل: هذا وهذه. إذا وقع عليه الفعل فهو في محل نصب مفعول به." },
         { id: "mawsool", text: "اسم موصول", next: "R_mafool_mabni", eval: { fact: "mabniType", equals: "mawsool" }, hint: "الاسم الموصول مثل: الذي والتي، وتأتي بعده صلة توضحه." },
         { id: "connected", text: "ضمير متصل", next: "R_mafool_connected", eval: { fact: "roleKind", equals: "connected" }, hint: "الضمير المتصل من الأسماء المبنية، مثل الهاء في كتبَهُ، والياء في ساعدَني، ونا في شكرَنا." },
-        { ...help, next: "mafool_mabni_type" }
       ]
     },
 

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { START_END_COPY } from "../../content/dialogueCopy";
 import { toStudentArabicOption } from "../../lib/studentOptionText";
+import { firstLevelHintText } from "../../lib/hintText";
 
 const START_GLOSSARY = {
   "الأفعال الخمسة": ["كل فعل مضارع اتصلت به واو الجماعة أو ياء المخاطبة أو ألف الاثنين.", "ترفع بثبوت النون، وتنصب وتجزم بحذف النون."],
@@ -67,10 +68,18 @@ function refinedQuestion(example, step, stepIndex) {
 
 function refinedHint(example, step, stepIndex) {
   const q = String(step?.question || "");
-  if (stepIndex === 0 && q.includes("اسم") && q.includes("فعل") && q.includes("حرف")) {
-    return "إذا دلّت الكلمة على حدث وزمن فهي فعل. وإذا دلّت على معنى بلا زمن غالبًا فهي اسم.";
+  const target = example?.target || "الكلمة";
+
+  if (example?.id === "kana" && stepIndex === 0) {
+    return `اسأل: ما المعلومة التي أضافتها «${target}» عن الجو بعد دخول كان؟`;
   }
-  return step?.hint || "فكّر في السؤال الحالي فقط.";
+  if (example?.id === "inna" && stepIndex === 0) {
+    return `احذف إن مؤقتًا، ثم اسأل: عن أي اسم بدأنا الحديث؟ تتبع الاسم نفسه بعد عودة إن.`;
+  }
+  if (stepIndex === 0 && q.includes("اسم") && q.includes("فعل") && q.includes("حرف")) {
+    return `هل تدل «${target}» على حدث وزمن، أم على معنى بلا زمن، أم لا يظهر معناها إلا مع غيرها؟`;
+  }
+  return firstLevelHintText(step?.id || `${example?.id || "start"}_${stepIndex}`, step?.hint, target, q);
 }
 
 function wrongFeedbackFor(choice, step, example, stepIndex) {
@@ -109,6 +118,7 @@ export default function InteractiveLearning({ examples = [] }) {
   const [locked, setLocked] = useState(false);
   const [streak, setStreak] = useState(0);
   const [activeTerm, setActiveTerm] = useState(null);
+  const [showHint, setShowHint] = useState(false);
   const feedbackRef = useRef(null);
 
   const example = examples[exampleIndex] || examples[0];
@@ -118,6 +128,10 @@ export default function InteractiveLearning({ examples = [] }) {
   const progress = example ? Math.round((Math.min(stepIndex, example.steps.length) / example.steps.length) * 100) : 0;
   const visualProgress = example ? Math.round((Math.min(stepIndex + 1, example.steps.length) / example.steps.length) * 100) : 0;
   const currentBuild = board.length ? board[board.length - 1] : "";
+
+  useEffect(() => {
+    setShowHint(false);
+  }, [exampleIndex, stepIndex]);
 
   useEffect(() => {
     if (feedback?.type === "bad") {
@@ -136,6 +150,7 @@ export default function InteractiveLearning({ examples = [] }) {
     setLocked(false);
     setStreak(0);
     setActiveTerm(null);
+    setShowHint(false);
   }
 
   function nextExample() {
@@ -146,12 +161,14 @@ export default function InteractiveLearning({ examples = [] }) {
     setLocked(false);
     setStreak(0);
     setActiveTerm(null);
+    setShowHint(false);
   }
 
   function handleAnswer(value) {
     if (locked || done || !step) return;
     if (value === step.answer) {
       setLocked(true);
+      setShowHint(false);
       setStreak((s) => s + 1);
       setFeedback({ type: "ok", text: step.reward || "أحسنت؛ أغلقت هذا القرار وفتحت الخطوة التالية في مسار الإعراب." });
       setBoard((prev) => [...prev, step.boardText || value]);
@@ -205,7 +222,21 @@ export default function InteractiveLearning({ examples = [] }) {
                 <span className="step-lead">{getStepLead(stepIndex, step)}</span>
                 <SmartText text={refinedQuestion(example, step, stepIndex)} onTerm={setActiveTerm} />
               </h1>
-              <p className="step-hint"><SmartText text={refinedHint(example, step, stepIndex)} onTerm={setActiveTerm} /></p>
+              <div className="start-hint-control">
+                <button
+                  type="button"
+                  className="soft-mini-btn start-hint-request"
+                  onClick={() => setShowHint((value) => !value)}
+                  aria-expanded={showHint}
+                >
+                  {showHint ? "إخفاء التلميح" : "أحتاج تلميحًا"}
+                </button>
+              </div>
+              {showHint ? (
+                <p className="step-hint" role="status">
+                  <SmartText text={refinedHint(example, step, stepIndex)} onTerm={setActiveTerm} />
+                </p>
+              ) : null}
 
               <div className="drag-choices compact-choices">
                 {choices.map((choice) => (

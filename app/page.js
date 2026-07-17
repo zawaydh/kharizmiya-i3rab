@@ -1,12 +1,8 @@
 "use client";
 
-import BrandIntroAnimation from "./components/BrandIntroAnimation";
-
 export default function HomePage() {
   return (
-    <>
-      <BrandIntroAnimation />
-      <div className="landing-page home-clean-page">
+    <div className="landing-page home-clean-page">
       <section className="card home-clean-hero home-balanced-hero">
         <div className="home-brand-column">
           <div className="home-clean-mark" aria-hidden="true">
@@ -56,6 +52,5 @@ export default function HomePage() {
         </div>
       </section>
       </div>
-    </>
   );
 }

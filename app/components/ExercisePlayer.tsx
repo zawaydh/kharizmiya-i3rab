@@ -6,6 +6,7 @@ import { createInitialState } from "../../lib/exercise/state";
 import { chooseAnswer } from "../../lib/exercise/engine";
 import { getTopicProgress } from "../../lib/db";
 import { looksLikeProgrammingOption, toStudentArabicOption } from "../../lib/studentOptionText";
+import { diagnosticHintText, firstLevelHintText } from "../../lib/hintText";
 
 type Mode = "learn" | "practice" | "quiz";
 
@@ -83,6 +84,8 @@ type Props = {
 };
 
 const QUIZ_PASS_PERCENT = 80;
+const STAGED_QUESTION_EXIT_MS = 460;
+const STAGED_QUESTION_ENTER_MS = 480;
 
 function buildEmptyCovered(keys: string[] = []) {
   const out: Record<string, boolean> = {};
@@ -1326,7 +1329,7 @@ function normalizeThinkingNode(node: any, state: any) {
   const id = String(node.id || "");
   let context = String(node.context || getNodeContext(node, state));
   let text = String(node.text || "ماذا نتحقق الآن؟");
-  let hint = shortStudentText(node.hint, "اختر القرار التالي فقط.");
+  let hint = firstLevelHintText(id, node.hint, state?.currentTarget, text);
 
   // نحافظ على سؤال العقدة نفسه ما دام موجَّهًا للكلمة، ولا نحوله إلى سؤال ميتا عن طريقة الحل.
   if (/هل هو:|هل هي:|إذا كان/.test(text)) text = text.replace(/^إذا كان\s*/,'').replace(/^الآن:\s*/,'ما التصنيف المناسب الآن؟ ');
@@ -1355,7 +1358,7 @@ function normalizeThinkingNode(node: any, state: any) {
     return {
       ...a,
       text: isFive ? (yesLike && !noLike ? "نعم" : "لا") : a.text,
-      hint: a.hint || makeDecisionHint(a.text, text),
+      hint: diagnosticHintText(a.hint || makeDecisionHint(a.text, text), state?.currentTarget),
     };
   });
 
@@ -1420,7 +1423,7 @@ function normalizeThinkingNode(node: any, state: any) {
         next: id,
         correct: false,
         isHelp: true,
-        hint: hint || node.hint || "اقرأ المثال مرة أخرى، ثم اسأل: ما موقع الكلمة المحددة؟",
+        hint: firstLevelHintText(id, hint || node.hint, state?.currentTarget, text),
       },
     ];
   }
@@ -1798,9 +1801,9 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
   const kind = topicKindForDialogue(tree, title);
 
   if (start.includes("present")) {
-    if (nodeId === "present_word_kind") return `نركز على (${target}) في الجملة. ما نوع الكلمة المحددة؟`;
+    if (nodeId === "present_word_kind") return `ما نوع كلمة «${target}»؟`;
     if (nodeId === "present_tense") return `عرفنا أن (${target}) فعل. ما زمنه؟`;
-    if (nodeId === "present_build_check") return `عرفنا أن (${target}) فعل مضارع. والمضارع قد يكون مبنيًا أو معربًا. هل اتصل به ما يجعله مبنيًا؟`;
+    if (nodeId === "present_build_check") return `هل اتصل بالفعل «${target}» ما يجعله مبنيًّا؟`;
     if (nodeId === "present_tool_presence") return `بما أن (${target}) لم يتصل به ما يبنيه، فهو معرب. ننظر إلى ما قبله: هل سبقه ناصب أو جازم؟`;
     if (nodeId === "present_raf3_shape") return `لم يسبق (${target}) ناصب ولا جازم، إذن هو مرفوع. نحدد صورته لنعرف علامة رفعه.`;
     if (nodeId === "present_nasb_shape") return `سبق (${target}) حرف نصب، إذن هو منصوب. نحدد صورته لنعرف علامة نصبه.`;
@@ -1847,7 +1850,7 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
   }
 
   if (start.includes("imp")) {
-    if (nodeId === "imperative_word_kind") return `نركز على (${target}). ما نوع الكلمة المحددة؟`;
+    if (nodeId === "imperative_word_kind") return `ما نوع كلمة «${target}»؟`;
     if (nodeId === "imperative_meaning") return `عرفنا أن (${target}) فعل. ما دلالته هنا؟`;
     if (nodeId === "imperative_connection") return `عرفنا أن (${target}) يدل على طلب حصول الحدث، إذن هو فعل أمر. وفعل الأمر مبني دائمًا؛ هل اتصل بآخره شيء؟`;
     if (nodeId === "imperative_attached_kind") return `عرفنا أن (${target}) اتصل بآخره شيء. ما نوع هذا المتصل؟`;
@@ -2048,19 +2051,19 @@ function openingDialogueLine(tree: any, node: any, state: any, title?: string) {
 
   if (start.includes("present")) {
     if (nodeId === "present_word_kind") {
-      return `نركز على (${target}). ما نوع الكلمة المحددة؟`;
+      return `ما نوع كلمة «${target}»؟`;
     }
     if (nodeId === "present_tense") {
       return `عرفنا أن (${target}) فعل. ما زمنه؟`;
     }
     if (nodeId === "present_build_check") {
-      return `عرفنا أن (${target}) فعل مضارع. والفعل المضارع قد يكون مبنيًا أو معربًا. هل اتصل به ما يجعله مبنيًا؟`;
+      return `هل اتصل بالفعل «${target}» ما يجعله مبنيًّا؟`;
     }
     if (nodeId === "present_tool_presence") {
       return `عرفنا أن (${target}) فعل مضارع معرب. لننظر إلى ما قبله: هل سبق الفعل ناصب أو جازم؟`;
     }
     if (nodeId.includes("_shape")) {
-      return `عرفنا حالته الإعرابية، والآن نحدد علامته من صورة الفعل (${target}). ما صورة الفعل؟`;
+      return `ما صورة الفعل «${target}»؟`;
     }
     if (nodeId === "present_jazm_weak_letter") {
       return `عرفنا أن (${target}) فعل مضارع مجزوم معتل الآخر، وقد حُذف حرف العلة. ما حرف العلة المحذوف؟`;
@@ -2238,9 +2241,14 @@ function tawabiCaseStatusHint(i3rabCase?: string) {
   return "تابع";
 }
 
-function tawabiShapeNameHint(shape?: string) {
+function tawabiIsMulhaqBilMuthanna(targetText?: string) {
+  const plain = String(targetText || "").replace(/[ًٌٍَُِّْـ]/g, "");
+  return /^(كلا|كلتا|كلي|كلتي)/.test(plain);
+}
+
+function tawabiShapeNameHint(shape?: string, targetText?: string) {
   if (shape === "singular") return "مفرد في العدد";
-  if (shape === "dual") return "مثنى أو ملحق بالمثنى";
+  if (shape === "dual") return tawabiIsMulhaqBilMuthanna(targetText) ? "ملحق بالمثنى" : "مثنى";
   if (shape === "jms") return "جمع مذكر سالم";
   if (shape === "jfs") return "جمع مؤنث سالم";
   if (shape === "jt") return "جمع تكسير";
@@ -2289,18 +2297,18 @@ function tawabiCorrectMarkHint(facts: any, targetText: string) {
   const shape = String(facts?.shape || "");
   const mark = String(facts?.mark || "");
   const i3rabCase = String(facts?.case || "");
-  if (i3rabCase === "raf3" && mark === "damma") return `(${targetText}) ${tawabiShapeNameHint(shape)} مرفوع؛ لذلك علامة رفعه الضمة. الحالة جاءت من المتبوع، أما الضمة فجاءت من صورة التابع.`;
-  if (i3rabCase === "nasb" && mark === "fatha") return `(${targetText}) ${tawabiShapeNameHint(shape)} منصوب؛ لذلك علامة نصبه الفتحة. لا نأخذ العلامة من المتبوع مباشرة، بل من صورة التابع.`;
-  if (i3rabCase === "jarr" && mark === "kasra") return `(${targetText}) ${tawabiShapeNameHint(shape)} مجرور؛ لذلك علامة جره الكسرة.`;
-  if (shape === "jfs" && i3rabCase === "nasb" && mark === "kasra") return `(${targetText}) جمع مؤنث سالم منصوب؛ وجمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة.`;
-  if (shape === "dual" && mark === "alif") return `(${targetText}) مثنى أو ملحق بالمثنى مرفوع؛ لذلك علامة رفعه الألف.`;
-  if (shape === "dual" && mark === "yaa") return `(${targetText}) مثنى أو ملحق بالمثنى في حالة ${tawabiCaseNounHint(i3rabCase)}؛ لذلك علامته الياء.`;
+  if (i3rabCase === "raf3" && mark === "damma") return `(${targetText}) ${tawabiShapeNameHint(shape, targetText)} مرفوع؛ لذلك علامة رفعه الضمة. الحالة جاءت من المتبوع، أما الضمة فجاءت من صورة التابع.`;
+  if (i3rabCase === "nasb" && mark === "fatha") return `(${targetText}) ${tawabiShapeNameHint(shape, targetText)} منصوب؛ لذلك علامة نصبه الفتحة. لا نأخذ العلامة من المتبوع مباشرة، بل من صورة التابع.`;
+  if (i3rabCase === "jarr" && mark === "kasra") return `(${targetText}) ${tawabiShapeNameHint(shape, targetText)} مجرور؛ لذلك علامة جره الكسرة.`;
+  if (shape === "jfs" && i3rabCase === "nasb" && mark === "kasra") return `(${targetText}) جمع مؤنث سالم منصوب؛ وعلامة نصب جمع المؤنث السالم الكسرة نيابة عن الفتحة.`;
+  if (shape === "dual" && mark === "alif") return `(${targetText}) ${tawabiShapeNameHint(shape, targetText)} مرفوع؛ لذلك علامة رفعه الألف.`;
+  if (shape === "dual" && mark === "yaa") return `(${targetText}) ${tawabiShapeNameHint(shape, targetText)} في حالة ${tawabiCaseNounHint(i3rabCase)}؛ لذلك علامته الياء.`;
   if (shape === "jms" && mark === "waw") return `(${targetText}) جمع مذكر سالم مرفوع؛ لذلك علامة رفعه الواو.`;
   if (shape === "jms" && mark === "yaa") return `(${targetText}) جمع مذكر سالم في حالة ${tawabiCaseNounHint(i3rabCase)}؛ لذلك علامته الياء.`;
   if (shape === "five" && mark === "waw") return `(${targetText}) من الأسماء الخمسة مرفوع؛ لذلك علامة رفعه الواو.`;
   if (shape === "five" && mark === "alif") return `(${targetText}) من الأسماء الخمسة منصوب؛ لذلك علامة نصبه الألف.`;
   if (shape === "five" && mark === "yaa") return `(${targetText}) من الأسماء الخمسة مجرور؛ لذلك علامة جره الياء.`;
-  return `الحالة الصحيحة لـ(${targetText}) هي ${tawabiCaseNounHint(i3rabCase)}، وصورته ${tawabiShapeNameHint(shape)}؛ لذلك علامته ${tawabiMarkNameHint(mark)}.`;
+  return `الحالة الصحيحة لـ(${targetText}) هي ${tawabiCaseNounHint(i3rabCase)}، وصورته ${tawabiShapeNameHint(shape, targetText)}؛ لذلك علامته ${tawabiMarkNameHint(mark)}.`;
 }
 
 function tawabiStudentHintText(node: any, picked?: any, state?: any) {
@@ -2383,13 +2391,13 @@ function tawabiStudentHintText(node: any, picked?: any, state?: any) {
     if (isHelp) return correctShape;
     if (pickedText.includes("مفرد") && facts?.shape !== "singular") {
       if (facts?.shape === "five") return `صحيح أن (${targetText}) يدل على واحد، لكنه من الأسماء الخمسة في الإعراب، لا مفرد عادي؛ لذلك يعرب بالحروف.`;
-      return `(${targetText}) ليس مفردًا في هذه الخطوة؛ صورته الصحيحة: ${tawabiShapeNameHint(facts?.shape)}. ${correctShape}`;
+      return `(${targetText}) ليس مفردًا في هذه الخطوة؛ صورته الصحيحة: ${tawabiShapeNameHint(facts?.shape, targetText)}. ${correctShape}`;
     }
-    if (pickedText.includes("مثنى") && facts?.shape !== "dual") return `المثنى يدل على اثنين أو ما يلحق بهما. أما (${targetText}) فصورته الصحيحة: ${tawabiShapeNameHint(facts?.shape)}.`;
-    if (pickedText.includes("جمع مذكر") && facts?.shape !== "jms") return `جمع المذكر السالم يدل على جماعة ذكور عاقلة وينتهي بواو ونون أو ياء ونون. أما (${targetText}) فصورته: ${tawabiShapeNameHint(facts?.shape)}.`;
-    if (pickedText.includes("جمع مؤنث") && facts?.shape !== "jfs") return `جمع المؤنث السالم ينتهي غالبًا بألف وتاء زائدتين. أما (${targetText}) فصورته: ${tawabiShapeNameHint(facts?.shape)}.`;
-    if (pickedText.includes("جمع تكسير") && facts?.shape !== "jt") return `جمع التكسير تتغير فيه صورة المفرد. أما (${targetText}) فصورته: ${tawabiShapeNameHint(facts?.shape)}.`;
-    if (pickedText.includes("الأسماء الخمسة") && facts?.shape !== "five") return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو، بشروطها. أما (${targetText}) فصورته: ${tawabiShapeNameHint(facts?.shape)}.`;
+    if (pickedText.includes("مثنى") && facts?.shape !== "dual") return `المثنى يدل على اثنين أو ما يلحق بهما. أما (${targetText}) فصورته الصحيحة: ${tawabiShapeNameHint(facts?.shape, targetText)}.`;
+    if (pickedText.includes("جمع مذكر") && facts?.shape !== "jms") return `جمع المذكر السالم يدل على جماعة ذكور عاقلة وينتهي بواو ونون أو ياء ونون. أما (${targetText}) فصورته: ${tawabiShapeNameHint(facts?.shape, targetText)}.`;
+    if (pickedText.includes("جمع مؤنث") && facts?.shape !== "jfs") return `جمع المؤنث السالم ينتهي غالبًا بألف وتاء زائدتين. أما (${targetText}) فصورته: ${tawabiShapeNameHint(facts?.shape, targetText)}.`;
+    if (pickedText.includes("جمع تكسير") && facts?.shape !== "jt") return `جمع التكسير تتغير فيه صورة المفرد. أما (${targetText}) فصورته: ${tawabiShapeNameHint(facts?.shape, targetText)}.`;
+    if (pickedText.includes("الأسماء الخمسة") && facts?.shape !== "five") return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو، بشروطها. أما (${targetText}) فصورته: ${tawabiShapeNameHint(facts?.shape, targetText)}.`;
     return correctShape;
   }
 
@@ -2397,7 +2405,7 @@ function tawabiStudentHintText(node: any, picked?: any, state?: any) {
     if (isHelp) return correctMark;
     const pickedMark = pickedText.includes("الضمة") ? "damma" : pickedText.includes("الفتحة") ? "fatha" : pickedText.includes("الكسرة") ? "kasra" : pickedText.includes("الألف") ? "alif" : pickedText.includes("الياء") ? "yaa" : pickedText.includes("الواو") ? "waw" : "";
     if (pickedMark && pickedMark !== facts?.mark) {
-      return `ليست ${pickedText} هنا. القاعدة: الحالة من المتبوع، والعلامة من صورة التابع. (${targetText}) حالته ${correctCase} وصورته ${tawabiShapeNameHint(facts?.shape)}؛ لذلك علامته ${tawabiMarkNameHint(facts?.mark)}.`;
+      return `ليست ${pickedText} هنا. القاعدة: الحالة من المتبوع، والعلامة من صورة التابع. (${targetText}) حالته ${correctCase} وصورته ${tawabiShapeNameHint(facts?.shape, targetText)}؛ لذلك علامته ${tawabiMarkNameHint(facts?.mark)}.`;
     }
     return correctMark;
   }
@@ -2487,11 +2495,11 @@ function studentHintText(node: any, picked?: any, state?: any) {
 
     if (id === "mafool_mu3rab_shape") {
       const correctShapeHint = (() => {
-        if (shape === "singular") return `(${targetText}) اسم ظاهر معرب يدل على شيء واحد، وليس مثنى ولا جمعًا ولا من الأسماء الخمسة؛ لذلك صورته مفرد، والمفرد ينصب بالفتحة.`;
-        if (shape === "dual") return `(${targetText}) يدل على اثنين، وانتهى بياء ونون لأنه منصوب؛ لذلك صورته مثنى، والمثنى ينصب بالياء.`;
-        if (shape === "jms") return `(${targetText}) يدل على جماعة ذكور عاقلة، وانتهى بياء ونون لأنه منصوب؛ لذلك صورته جمع مذكر سالم، وجمع المذكر السالم ينصب بالياء.`;
-        if (shape === "jfs") return `(${targetText}) جمع مؤنث سالم؛ لأنه جمع مؤنث مختوم بألف وتاء زائدتين، وجمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة.`;
-        if (shape === "jt") return `(${targetText}) جمع تكسير؛ لأنه يدل على جماعة مع تغيّر صورة المفرد عند الجمع مثل: قصة ← قصص، وجمع التكسير ينصب بالفتحة.`;
+        if (shape === "singular") return `(${targetText}) اسم ظاهر معرب يدل على شيء واحد، وليس مثنى ولا جمعًا ولا من الأسماء الخمسة؛ لذلك صورته مفرد، وعلامة نصب المفرد الفتحة.`;
+        if (shape === "dual") return `(${targetText}) يدل على اثنين، وانتهى بياء ونون لأنه منصوب؛ لذلك صورته مثنى، وعلامة نصب المثنى الياء.`;
+        if (shape === "jms") return `(${targetText}) يدل على جماعة ذكور عاقلة، وانتهى بياء ونون لأنه منصوب؛ لذلك صورته جمع مذكر سالم، وعلامة نصب جمع المذكر السالم الياء.`;
+        if (shape === "jfs") return `(${targetText}) جمع مؤنث سالم؛ لأنه جمع مؤنث مختوم بألف وتاء زائدتين، وعلامة نصب جمع المؤنث السالم الكسرة نيابة عن الفتحة.`;
+        if (shape === "jt") return `(${targetText}) جمع تكسير؛ لأنه يدل على جماعة مع تغيّر صورة المفرد عند الجمع مثل: قصة ← قصص، وعلامة نصب جمع التكسير الفتحة.`;
         if (shape === "five") return `(${targetText}) من الأسماء الخمسة، وقد تحققت شروط إعرابها بالحروف: ${fiveConditions}. لذلك لا نعاملها كمفرد عادي، بل نختار: من الأسماء الخمسة، وعلامة نصبها الألف.`;
         return `انظر إلى (${targetText}) نفسها: هل تدل على واحد، أم اثنين، أم جماعة؟ وهل هي من الأسماء الخمسة؟ صورة الكلمة هي التي تقودنا إلى علامة النصب.`;
       })();
@@ -2514,19 +2522,19 @@ function studentHintText(node: any, picked?: any, state?: any) {
     if (id === "mafool_nasb_mark") {
       const correctMarkHint = (() => {
         if (shape === "singular") return `(${targetText}) مفرد منصوب؛ لذلك علامة نصبه الفتحة الظاهرة على آخره.`;
-        if (shape === "dual") return `(${targetText}) مثنى منصوب؛ والمثنى ينصب بالياء، لذلك علامة نصبه الياء.`;
-        if (shape === "jms") return `(${targetText}) جمع مذكر سالم منصوب؛ وجمع المذكر السالم ينصب بالياء، لذلك علامة نصبه الياء.`;
-        if (shape === "jfs") return `(${targetText}) جمع مؤنث سالم منصوب؛ وجمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة، لذلك علامة نصبه الكسرة.`;
-        if (shape === "jt") return `(${targetText}) جمع تكسير منصوب؛ وجمع التكسير ينصب بالفتحة مثل المفرد العادي، لذلك علامة نصبه الفتحة.`;
+        if (shape === "dual") return `(${targetText}) مثنى منصوب؛ لذلك علامة نصبه الياء.`;
+        if (shape === "jms") return `(${targetText}) جمع مذكر سالم منصوب؛ لذلك علامة نصبه الياء.`;
+        if (shape === "jfs") return `(${targetText}) جمع مؤنث سالم منصوب؛ لذلك علامة نصبه الكسرة نيابة عن الفتحة.`;
+        if (shape === "jt") return `(${targetText}) جمع تكسير منصوب؛ وعلامة نصب جمع التكسير الفتحة مثل المفرد العادي، لذلك علامة نصبه الفتحة.`;
         if (shape === "five") return `(${targetText}) من الأسماء الخمسة، وقد تحققت شروط إعرابه بالحروف: ${fiveConditions}؛ لذلك علامة نصبه الألف.`;
         return `اختر علامة النصب من صورة (${targetText}) نفسها.`;
       })();
       if (pickedText.includes("تلميح")) return correctMarkHint;
       if (pickedText.includes("الفتحة") && nasbMark !== "fatha") {
         if (shape === "five") return `الفتحة علامة نصب المفرد العادي مثل: الواجبَ. أما (${targetText}) فمن الأسماء الخمسة، وقد تحققت شروط إعرابه بالحروف: ${fiveConditions}؛ لذلك علامة نصبه الألف.`;
-        if (shape === "jfs") return `لا ننصب (${targetText}) بالفتحة؛ لأنه جمع مؤنث سالم، وجمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة.`;
-        if (shape === "dual") return `لا ننصب (${targetText}) بالفتحة؛ لأنه مثنى، والمثنى ينصب بالياء.`;
-        if (shape === "jms") return `لا ننصب (${targetText}) بالفتحة؛ لأنه جمع مذكر سالم، وجمع المذكر السالم ينصب بالياء.`;
+        if (shape === "jfs") return `لا ننصب (${targetText}) بالفتحة؛ لأنه جمع مؤنث سالم، وعلامة نصب جمع المؤنث السالم الكسرة نيابة عن الفتحة.`;
+        if (shape === "dual") return `لا ننصب (${targetText}) بالفتحة؛ لأنه مثنى، وعلامة نصب المثنى الياء.`;
+        if (shape === "jms") return `لا ننصب (${targetText}) بالفتحة؛ لأنه جمع مذكر سالم، وعلامة نصب جمع المذكر السالم الياء.`;
         return correctMarkHint;
       }
       if (pickedText.includes("الياء") && nasbMark !== "yaa") return `الياء علامة نصب المثنى وجمع المذكر السالم. أما (${targetText}) فليست من هاتين الصورتين هنا؛ ${correctMarkHint}`;
@@ -2679,11 +2687,11 @@ function studentHintText(node: any, picked?: any, state?: any) {
 
     if (id === "fael_mu3rab_shape") {
       const correctShapeHint = (() => {
-        if (facts.shape === "singular") return `(${targetText}) اسم ظاهر معرب يدل على واحد، وليس مثنى ولا جمعًا ولا من الأسماء الخمسة؛ لذلك صورته مفرد، والمفرد يرفع بالضمة.`;
-        if (facts.shape === "dual") return `(${targetText}) يدل على اثنين، وانتهى بألف ونون في هذا المثال؛ لذلك صورته مثنى، والمثنى يرفع بالألف.`;
-        if (facts.shape === "jms") return `(${targetText}) يدل على جماعة ذكور عاقلة، وانتهى بواو ونون في هذا المثال؛ لذلك صورته جمع مذكر سالم، وجمع المذكر السالم يرفع بالواو.`;
-        if (facts.shape === "jfs") return `(${targetText}) جمع مؤنث سالم؛ لأنه يدل على جماعة إناث وينتهي بألف وتاء زائدتين، وجمع المؤنث السالم يرفع بالضمة.`;
-        if (facts.shape === "jt") return `(${targetText}) جمع تكسير؛ لأنه يدل على جماعة مع تغيّر صورة المفرد عند الجمع مثل: طفل ← أطفال، وجمع التكسير يرفع بالضمة.`;
+        if (facts.shape === "singular") return `(${targetText}) اسم ظاهر معرب يدل على واحد، وليس مثنى ولا جمعًا ولا من الأسماء الخمسة؛ لذلك صورته مفرد، وعلامة رفع المفرد الضمة.`;
+        if (facts.shape === "dual") return `(${targetText}) يدل على اثنين، وانتهى بألف ونون في هذا المثال؛ لذلك صورته مثنى، وعلامة رفع المثنى الألف.`;
+        if (facts.shape === "jms") return `(${targetText}) يدل على جماعة ذكور عاقلة، وانتهى بواو ونون في هذا المثال؛ لذلك صورته جمع مذكر سالم، وعلامة رفع جمع المذكر السالم الواو.`;
+        if (facts.shape === "jfs") return `(${targetText}) جمع مؤنث سالم؛ لأنه يدل على جماعة إناث وينتهي بألف وتاء زائدتين، وعلامة رفع جمع المؤنث السالم الضمة.`;
+        if (facts.shape === "jt") return `(${targetText}) جمع تكسير؛ لأنه يدل على جماعة مع تغيّر صورة المفرد عند الجمع مثل: طفل ← أطفال، وعلامة رفع جمع التكسير الضمة.`;
         if (facts.fiveNoun || facts.shape === "five") return `(${targetText}) من الأسماء الخمسة؛ أصله (أب)، وقد تحققت شروط إعرابه بالحروف: ${fiveConditions}. لذلك لا نعامله كمفرد عادي، بل نختار: من الأسماء الخمسة، وعلامة رفعه الواو.`;
         return `انظر إلى (${targetText}) نفسها: هل تدل على واحد، أم اثنين، أم جماعة؟ وهل هي من الأسماء الخمسة؟ صورة الكلمة هي التي تقودنا إلى علامة الرفع.`;
       })();
@@ -2706,18 +2714,18 @@ function studentHintText(node: any, picked?: any, state?: any) {
     if (id === "fael_raf3_mark") {
       const correctMarkHint = (() => {
         if (facts.shape === "singular") return `(${targetText}) مفرد مرفوع؛ لذلك علامة رفعه الضمة الظاهرة على آخره.`;
-        if (facts.shape === "dual") return `(${targetText}) مثنى مرفوع؛ والمثنى يرفع بالألف، لذلك علامة رفعه الألف.`;
-        if (facts.shape === "jms") return `(${targetText}) جمع مذكر سالم مرفوع؛ وجمع المذكر السالم يرفع بالواو، لذلك علامة رفعه الواو.`;
-        if (facts.shape === "jfs") return `(${targetText}) جمع مؤنث سالم مرفوع؛ وجمع المؤنث السالم يرفع بالضمة، لذلك علامة رفعه الضمة.`;
-        if (facts.shape === "jt") return `(${targetText}) جمع تكسير مرفوع؛ وجمع التكسير يرفع بالضمة مثل المفرد العادي، لذلك علامة رفعه الضمة.`;
+        if (facts.shape === "dual") return `(${targetText}) مثنى مرفوع؛ لذلك علامة رفعه الألف.`;
+        if (facts.shape === "jms") return `(${targetText}) جمع مذكر سالم مرفوع؛ لذلك علامة رفعه الواو.`;
+        if (facts.shape === "jfs") return `(${targetText}) جمع مؤنث سالم مرفوع؛ وعلامة رفع جمع المؤنث السالم الضمة، لذلك علامة رفعه الضمة.`;
+        if (facts.shape === "jt") return `(${targetText}) جمع تكسير مرفوع؛ وعلامة رفع جمع التكسير الضمة مثل المفرد العادي، لذلك علامة رفعه الضمة.`;
         if (facts.fiveNoun || facts.shape === "five") return `(${targetText}) من الأسماء الخمسة، وقد تحققت شروط إعرابه بالحروف: ${fiveConditions}؛ لذلك علامة رفعه الواو.`;
         return `اختر علامة الرفع من صورة (${targetText}) نفسها.`;
       })();
       if (pickedText.includes("تلميح")) return correctMarkHint;
       if (pickedText.includes("الضمة") && facts.raf3Mark !== "damma") {
         if (facts.fiveNoun || facts.shape === "five") return `الضمة علامة رفع المفرد العادي مثل: الطالبُ. أما (${targetText}) فمن الأسماء الخمسة، وقد تحققت شروط إعرابه بالحروف: ${fiveConditions}؛ لذلك علامة رفعه الواو.`;
-        if (facts.shape === "dual") return `لا نرفع (${targetText}) بالضمة؛ لأنه مثنى، والمثنى يرفع بالألف.`;
-        if (facts.shape === "jms") return `لا نرفع (${targetText}) بالضمة؛ لأنه جمع مذكر سالم، وجمع المذكر السالم يرفع بالواو.`;
+        if (facts.shape === "dual") return `لا نرفع (${targetText}) بالضمة؛ لأنه مثنى، وعلامة رفع المثنى الألف.`;
+        if (facts.shape === "jms") return `لا نرفع (${targetText}) بالضمة؛ لأنه جمع مذكر سالم، وعلامة رفع جمع المذكر السالم الواو.`;
         return correctMarkHint;
       }
       if (pickedText.includes("الألف") && facts.raf3Mark !== "alif") return `الألف علامة رفع المثنى فقط. أما (${targetText}) فليست مثنى في هذا المثال؛ ${correctMarkHint}`;
@@ -2775,10 +2783,10 @@ function studentHintText(node: any, picked?: any, state?: any) {
         return `تاء التأنيث علامة ساكنة لا تدل على الفاعل. مثل: غادرتْ الطائرةُ المطارَ، أو: الطائرةُ غادرتْ المطارَ؛ فالفاعل في الثانية ضمير مستتر تقديره هي لأن الفاعل لا يتقدم على الفعل. انظر هل المتصل هنا تاء تأنيث فعلًا أم ضمير.${reminder}`;
       }
       if (pickedText.includes("ضمير رفع") && facts.connectorKind !== "raf3") {
-        return `ضمير الرفع يضمر الفاعل؛ أي من قام بالفعل. أمّا إذا كان المتصل يدل على الشيء الذي وقع عليه الفعل فهو ضمير نصب، لا ضمير رفع.${reminder}`;
+        return `ضمير الرفع يدل على الفاعل ويشغل موقعه؛ أي من قام بالفعل. أمّا إذا كان المتصل يدل على الشيء الذي وقع عليه الفعل فهو ضمير نصب، لا ضمير رفع.${reminder}`;
       }
       if (pickedText.includes("ضمير نصب") && facts.connectorKind !== "nasb") {
-        return `ضمير النصب يضمر المفعول به؛ أي الشيء أو الشخص الذي وقع عليه الفعل، ولا يدل على من قام بالفعل. اسأل: هل المتصل دل على الفاعل أم على المفعول به؟${reminder}`;
+        return `ضمير النصب يدل على المفعول به ويشغل موقعه؛ أي الشيء أو الشخص الذي وقع عليه الفعل، ولا يدل على من قام بالفعل. اسأل: هل المتصل دل على الفاعل أم على المفعول به؟${reminder}`;
       }
       return `اسأل عن دلالة المتصل: هل أضمر الفاعل؟ فهو ضمير رفع. هل أضمر المفعول به؟ فهو ضمير نصب. أم أنه تاء تأنيث ساكنة لا تدل على فاعل؟${reminder}`;
     }
@@ -4703,18 +4711,19 @@ export default function ExercisePlayer({
         setMicroCelebrate(0);
         setMicroCelebrateAnswerId(null);
         stepReviewLockRef.current = false;
-      }, 430);
-    }, 390);
+      }, STAGED_QUESTION_ENTER_MS);
+    }, STAGED_QUESTION_EXIT_MS);
   }
 
   function openCurrentHint() {
     if (!node || node.type !== "question" || cardPhase !== "idle" || stepReview) return;
-    const smartHint = String(
+    const rawHint = String(
       currentHintAnswer?.hint ||
       studentHintText(thinkingNode, null, state) ||
       thinkingNode?.hint ||
       "فكّر في السؤال الحالي فقط."
     ).trim();
+    const smartHint = firstLevelHintText(thinkingNode?.id, rawHint, state?.currentTarget, thinkingNode?.text);
     const visibleHint = mode === "practice"
       ? practiceTeacherHint(smartHint, state?.currentTarget)
       : smartHint;
@@ -4735,7 +4744,8 @@ export default function ExercisePlayer({
     const correctAnswer = activeNode.answers.find((a: any) => isAnswerCorrect(a));
 
     if (picked?.isHelp || picked?.id === "__help" || pickedText === "لا أعلم") {
-      const smartHint = studentHintText(activeNode, null, state) || activeNode?.hint || "فكّر في السؤال الحالي فقط.";
+      const rawHint = studentHintText(activeNode, null, state) || activeNode?.hint || "فكّر في السؤال الحالي فقط.";
+      const smartHint = firstLevelHintText(activeNode?.id, String(rawHint), state?.currentTarget, activeNode?.text);
       const visibleHint = mode === "practice"
         ? practiceTeacherHint(String(smartHint), state?.currentTarget)
         : smartHint;
@@ -4754,9 +4764,10 @@ export default function ExercisePlayer({
       const smartHint = isBuiltTypeNode
         ? builtNounTypeHintByValue(expectedBuiltType)
         : studentHintText(thinkingNode, picked, state);
+      const cleanedDiagnosticHint = diagnosticHintText(String(smartHint || "فكّر في السؤال الحالي فقط."), state?.currentTarget);
       const visibleHint = isPracticeMode
-        ? practiceTeacherHint(String(smartHint || "فكّر في السؤال الحالي فقط."), state?.currentTarget)
-        : (smartHint || "فكّر في السؤال الحالي فقط.");
+        ? practiceTeacherHint(cleanedDiagnosticHint, state?.currentTarget)
+        : cleanedDiagnosticHint;
       setDialogBubble({ tone: "hint", text: `${isPracticeMode ? "محاولة جيدة؛ دعنا نراجع الفكرة معًا.\n" : ""}${visibleHint}
 
 عد للسؤال وانقر على الإجابة الصحيحة لنكمل الإعراب.` });
@@ -4789,7 +4800,7 @@ export default function ExercisePlayer({
 
     if (correctAdvanceTimerRef.current) window.clearTimeout(correctAdvanceTimerRef.current);
     const successHold = nextNode?.type === "result" ? 260 : 220;
-    const exitDuration = nextNode?.type === "result" ? 390 : 390;
+    const exitDuration = STAGED_QUESTION_EXIT_MS;
     correctAdvanceTimerRef.current = window.setTimeout(() => {
       lockQuestionMotionHeight();
       setCardPhase("leaving");
@@ -4807,7 +4818,7 @@ export default function ExercisePlayer({
           window.setTimeout(() => {
             setCardPhase("idle");
             answerAdvanceLockRef.current = false;
-          }, 430);
+          }, STAGED_QUESTION_ENTER_MS);
           return;
         }
         setState(res.nextState);
@@ -4822,7 +4833,7 @@ export default function ExercisePlayer({
           setMicroCelebrate(0);
           setMicroCelebrateAnswerId(null);
           answerAdvanceLockRef.current = false;
-        }, 430);
+        }, STAGED_QUESTION_ENTER_MS);
       }, exitDuration);
     }, successHold);
   }
@@ -5123,8 +5134,8 @@ export default function ExercisePlayer({
         window.setTimeout(() => {
           setCardPhase("idle");
           practiceNextLockRef.current = false;
-        }, 430);
-      }, 390);
+        }, STAGED_QUESTION_ENTER_MS);
+      }, STAGED_QUESTION_EXIT_MS);
     }, 220);
   }
 
@@ -5481,8 +5492,8 @@ export default function ExercisePlayer({
                                           setState(route.nextState);
                                           setPracticeRetryReady(false);
                                           setCardPhase("entering");
-                                          window.setTimeout(() => setCardPhase("idle"), 430);
-                                        }, 390);
+                                          window.setTimeout(() => setCardPhase("idle"), STAGED_QUESTION_ENTER_MS);
+                                        }, STAGED_QUESTION_EXIT_MS);
                                       }, 220);
                                     } else {
                                       const route = practiceCorrectRoute();

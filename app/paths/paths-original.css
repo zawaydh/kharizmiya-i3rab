@@ -898,3 +898,49 @@
 .paths-react-question-instruction{
   fill:#9a6700!important;
 }
+
+
+/* Final path corrections: keep the start visible and make every choice readable. */
+.paths-react-workbar{
+  position:relative!important;
+  top:auto!important;
+  z-index:12!important;
+  margin:0 0 10px!important;
+}
+.paths-react-question-instruction{
+  fill:#8a5b00!important;
+  font-size:11.5px!important;
+  font-weight:700!important;
+  opacity:1!important;
+  letter-spacing:0!important;
+}
+.paths-react-question-text{
+  font-size:12.5px!important;
+  font-weight:500!important;
+}
+.paths-react-answer-text{
+  font-size:10.5px!important;
+  font-weight:500!important;
+}
+.paths-react-answer rect{
+  fill:#ffffff!important;
+  stroke:rgba(20,184,166,.58)!important;
+}
+@media(max-width:700px){
+  .paths-react-workbar{margin-bottom:8px!important;}
+  .paths-react-question-instruction{font-size:10.5px!important;}
+  .paths-react-question-text{font-size:11.8px!important;}
+  .paths-react-answer-text{font-size:9.8px!important;}
+}
+
+/* Final readability pass requested after mobile/desktop review. */
+.paths-react-question-instruction{font-size:12.5px!important;font-weight:700!important;}
+.paths-react-question-text{font-size:13.5px!important;font-weight:500!important;}
+.paths-react-box-text{font-size:13.5px!important;font-weight:500!important;}
+.paths-react-answer-text{font-size:11.5px!important;font-weight:500!important;}
+.paths-react-edge-label{font-size:10.5px!important;font-weight:400!important;}
+@media(max-width:700px){
+  .paths-react-question-instruction{font-size:11.5px!important;}
+  .paths-react-question-text,.paths-react-box-text{font-size:12.5px!important;}
+  .paths-react-answer-text{font-size:10.5px!important;}
+}

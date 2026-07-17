@@ -66,14 +66,19 @@ function markName(i3rabCase: string) {
   return "إعرابه";
 }
 
-function markLabel(mark: string, shape?: string, i3rabCase?: string) {
+function isMulhaqBilMuthanna(target?: string) {
+  const plain = String(target || "").replace(/[ًٌٍَُِّْـ]/g, "");
+  return /^(كلا|كلتا|كلي|كلتي)/.test(plain);
+}
+
+function markLabel(mark: string, shape?: string, i3rabCase?: string, target?: string) {
   if (mark === "damma") return "الضمة الظاهرة على آخره";
   if (mark === "fatha") return "الفتحة الظاهرة على آخره";
   if (mark === "kasra" && shape === "jfs" && i3rabCase === "nasb") return "الكسرة نيابة عن الفتحة لأنه جمع مؤنث سالم";
   if (mark === "kasra") return "الكسرة الظاهرة على آخره";
-  if (mark === "alif" && shape === "dual") return "الألف لأنه مثنى أو ملحق بالمثنى";
+  if (mark === "alif" && shape === "dual") return `الألف لأنه ${isMulhaqBilMuthanna(target) ? "ملحق بالمثنى" : "مثنى"}`;
   if (mark === "alif" && shape === "five") return "الألف لأنه من الأسماء الخمسة";
-  if (mark === "yaa" && shape === "dual") return "الياء لأنه مثنى أو ملحق بالمثنى";
+  if (mark === "yaa" && shape === "dual") return `الياء لأنه ${isMulhaqBilMuthanna(target) ? "ملحق بالمثنى" : "مثنى"}`;
   if (mark === "yaa" && shape === "jms") return "الياء لأنه جمع مذكر سالم";
   if (mark === "yaa" && shape === "five") return "الياء لأنه من الأسماء الخمسة";
   if (mark === "waw" && shape === "jms") return "الواو لأنه جمع مذكر سالم";
@@ -84,7 +89,7 @@ function markLabel(mark: string, shape?: string, i3rabCase?: string) {
 function makeFinal(target: string, term: string, i3rabCase: string, mark: string, matbu3: string, matbu3Role: string, reason: string, shape?: string, extra = "") {
   const name = termLabel(term);
   const status = caseLabel(i3rabCase);
-  const sign = markLabel(mark, shape, i3rabCase);
+  const sign = markLabel(mark, shape, i3rabCase, target);
   return `${target}: ${name} ${status}، وعلامة ${markName(i3rabCase)} ${sign}.
 سبب الإتباع: لأنه تابع لـ(${matbu3})، و${matbu3} ${matbu3Role}؛ لذلك أخذ منه ${caseNoun(i3rabCase)}.
 سبب الاختيار: ${reason}${extra ? `\n${extra}` : ""}`;

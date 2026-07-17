@@ -12512,7 +12512,7 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
   color:#102b3a !important;
 }
 
-/* Stop the distracting vertical shake in Learn: keep the card fixed and animate only content lightly. */
+/* Keep the outer card fixed in Learn. The inner question layer is animated later. */
 .exercise-page-shell:not(.practice-game-shell) .sequential-active-card.phase-success,
 .exercise-page-shell:not(.practice-game-shell) .sequential-active-card.phase-leaving,
 .exercise-page-shell:not(.practice-game-shell) .sequential-active-card.phase-entering,
@@ -12522,12 +12522,6 @@ html, body, .exercise-page-shell { overflow-x: hidden !important; }
   animation: none !important;
   transform: none !important;
   filter: none !important;
-}
-.exercise-page-shell:not(.practice-game-shell) .question-content-motion.question-text-leaving,
-.exercise-page-shell:not(.practice-game-shell) .question-content-motion.question-text-entering{
-  animation: none !important;
-  transform: none !important;
-  opacity: 1 !important;
 }
 
 
@@ -15255,164 +15249,6 @@ body{padding-top:var(--platform-nav-height) !important;}
   .speech-game-ok-btn{width:100%!important;justify-content:center!important;}
 }
 
-/* ===== Animated brand reveal on first home-page visit in each session ===== */
-.brand-intro{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  display:grid;
-  place-items:center;
-  overflow:hidden;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 50% 45%,rgba(29,186,170,.12),transparent 34%),
-    linear-gradient(145deg,#06121f 0%,#071827 54%,#081323 100%);
-  animation:brandIntroOverlay 2.2s ease both;
-}
-.brand-intro::before{
-  content:"";
-  position:absolute;
-  inset:-30%;
-  background:conic-gradient(from 0deg,transparent,rgba(48,214,195,.07),transparent 28%);
-  animation:brandIntroAmbient 2s linear both;
-}
-.brand-intro-stage{
-  position:relative;
-  z-index:1;
-  display:grid;
-  justify-items:center;
-  gap:8px;
-  width:min(92vw,720px);
-  text-align:center;
-}
-.brand-intro-title{
-  position:relative;
-  z-index:2;
-  font-family:inherit;
-  font-size:clamp(34px,7.2vw,68px);
-  line-height:1.35;
-  font-weight:600;
-  letter-spacing:-.02em;
-  white-space:nowrap;
-  filter:drop-shadow(0 9px 18px rgba(0,0,0,.24));
-  animation:brandIntroTitleIn .46s cubic-bezier(.2,.82,.25,1) both;
-}
-.brand-intro-khwarizmiya{color:#eaf7f5;}
-.brand-intro-i3rab{color:#f3d36b;}
-.brand-intro-logo-wrap{
-  position:relative;
-  width:clamp(126px,24vw,178px);
-  aspect-ratio:1;
-  margin-top:-2px;
-}
-.brand-intro-logo{
-  position:relative;
-  z-index:2;
-  display:block;
-  width:100%;
-  height:100%;
-  overflow:visible;
-  filter:drop-shadow(0 15px 22px rgba(18,71,72,.28));
-}
-.brand-intro-eye,
-.brand-intro-kha-dot,
-.brand-intro-diamond{
-  transform-box:fill-box;
-  transform-origin:center;
-}
-.brand-intro-eye{
-  animation:brandIntroEyeBuild 1.02s cubic-bezier(.18,.8,.26,1) .32s both;
-}
-.brand-intro-kha-dot{
-  animation:brandIntroDotOrbit .88s cubic-bezier(.22,.76,.2,1) .43s both;
-}
-.brand-intro-diamond{
-  animation:brandIntroDiamondSet .46s cubic-bezier(.16,.88,.24,1) 1.12s both;
-}
-.brand-intro-orbit{
-  position:absolute;
-  z-index:1;
-  inset:10%;
-  border:1px solid rgba(53,230,211,.24);
-  border-top-color:rgba(255,226,122,.72);
-  border-radius:50%;
-  opacity:0;
-  animation:brandIntroOrbitRing .82s ease .56s both;
-}
-.brand-intro-glow{
-  position:absolute;
-  z-index:0;
-  inset:21%;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(53,230,211,.23),rgba(53,230,211,0) 68%);
-  opacity:0;
-  animation:brandIntroLogoGlow .58s ease 1.22s both;
-}
-.brand-intro-tagline{
-  color:#8fe3d9;
-  font-size:clamp(14px,2.2vw,18px);
-  font-weight:500;
-  opacity:0;
-  transform:translateY(8px);
-  animation:brandIntroTaglineIn .42s ease 1.35s both;
-}
-@keyframes brandIntroOverlay{
-  0%{opacity:0;visibility:visible}
-  7%{opacity:1}
-  82%{opacity:1}
-  100%{opacity:0;visibility:hidden}
-}
-@keyframes brandIntroAmbient{
-  0%{transform:rotate(-22deg) scale(.88);opacity:0}
-  22%{opacity:1}
-  100%{transform:rotate(42deg) scale(1.08);opacity:.1}
-}
-@keyframes brandIntroTitleIn{
-  0%{opacity:0;transform:translateY(18px) scale(.98);filter:blur(5px)}
-  68%{opacity:1;filter:blur(0)}
-  100%{opacity:1;transform:translateY(0) scale(1);filter:drop-shadow(0 9px 18px rgba(0,0,0,.24))}
-}
-@keyframes brandIntroEyeBuild{
-  0%{opacity:0;transform:translate(128px,-92px) rotate(-74deg) scale(.17)}
-  14%{opacity:1}
-  72%{transform:translate(-7px,5px) rotate(12deg) scale(1.05)}
-  100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}
-}
-@keyframes brandIntroDotOrbit{
-  0%{opacity:0;transform:translate(-118px,-104px) rotate(-150deg) scale(.44)}
-  13%{opacity:1}
-  50%{transform:translate(68px,-30px) rotate(76deg) scale(.7)}
-  82%{opacity:1;transform:translate(0,0) rotate(178deg) scale(.9)}
-  100%{opacity:0;transform:translate(0,0) rotate(225deg) scale(.72)}
-}
-@keyframes brandIntroDiamondSet{
-  0%{opacity:0;transform:rotate(-90deg) scale(.36)}
-  68%{opacity:1;transform:rotate(8deg) scale(1.12)}
-  100%{opacity:1;transform:rotate(0) scale(1)}
-}
-@keyframes brandIntroOrbitRing{
-  0%{opacity:0;transform:rotate(-90deg) scale(.62)}
-  44%{opacity:.8}
-  100%{opacity:0;transform:rotate(190deg) scale(1.16)}
-}
-@keyframes brandIntroLogoGlow{
-  0%{opacity:0;transform:scale(.55)}
-  56%{opacity:1;transform:scale(1.28)}
-  100%{opacity:.52;transform:scale(1)}
-}
-@keyframes brandIntroTaglineIn{
-  to{opacity:1;transform:translateY(0)}
-}
-@media(max-width:520px){
-  .brand-intro-stage{gap:4px;width:96vw}
-  .brand-intro-title{font-size:clamp(31px,10vw,45px)}
-  .brand-intro-logo-wrap{width:126px}
-  .brand-intro-tagline{font-size:13px}
-}
-@media(prefers-reduced-motion:reduce){
-  .brand-intro{display:none!important}
-}
-
 /* === السؤال المرحلي: انتقال أفقي داخل بطاقة ثابتة === */
 .sequential-active-card.phase-success,
 .sequential-active-card.phase-leaving,
@@ -15504,4 +15340,110 @@ body{padding-top:var(--platform-nav-height) !important;}
     from { opacity: .55; }
     to { opacity: 1; }
   }
+}
+
+/* === FIX 2026-07-17: visible horizontal withdrawal for staged questions ===
+   Keep the sentence and the outer exercise card fixed. Animate only the
+   current question/options layer, with selectors strong enough to override
+   older production-pass rules that disabled the Learn animation. */
+html body .exercise-page-shell .sequential-active-card.phase-success,
+html body .exercise-page-shell .sequential-active-card.phase-leaving,
+html body .exercise-page-shell .sequential-active-card.phase-entering,
+html body .exercise-page-shell .algorithm-active-card.phase-success,
+html body .exercise-page-shell .algorithm-active-card.phase-leaving,
+html body .exercise-page-shell .algorithm-active-card.phase-entering {
+  animation: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+html body .exercise-page-shell .question-slide-viewport {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  contain: paint;
+  transition: height 180ms ease-out !important;
+}
+
+html body .exercise-page-shell .question-content-motion {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+html body .exercise-page-shell .question-content-motion.question-text-idle {
+  animation: none !important;
+  transform: translate3d(0, 0, 0) !important;
+  opacity: 1 !important;
+}
+
+html body .exercise-page-shell .question-content-motion.question-text-success {
+  animation: khStagedQuestionConfirmVisible 220ms ease-out both !important;
+}
+
+html body .exercise-page-shell .question-content-motion.question-text-leaving {
+  animation: khStagedQuestionWithdrawVisible 460ms cubic-bezier(.40, 0, .20, 1) both !important;
+  pointer-events: none !important;
+}
+
+html body .exercise-page-shell .question-content-motion.question-text-entering {
+  animation: khStagedQuestionArriveVisible 480ms cubic-bezier(.20, .78, .24, 1) both !important;
+  pointer-events: none !important;
+}
+
+@keyframes khStagedQuestionConfirmVisible {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+  55%  { transform: translate3d(0, 0, 0) scale(1.012); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+
+@keyframes khStagedQuestionWithdrawVisible {
+  0%   { transform: translate3d(0, 0, 0); opacity: 1; }
+  18%  { transform: translate3d(-7%, 0, 0); opacity: .98; }
+  100% { transform: translate3d(-112%, 0, 0); opacity: .12; }
+}
+
+@keyframes khStagedQuestionArriveVisible {
+  0%   { transform: translate3d(112%, 0, 0); opacity: .12; }
+  78%  { transform: translate3d(-2%, 0, 0); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+@media (max-width: 700px) {
+  html body .exercise-page-shell .question-content-motion.question-text-leaving,
+  html body .exercise-page-shell .question-content-motion.question-text-entering {
+    animation-duration: 440ms !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body .exercise-page-shell .question-content-motion.question-text-success,
+  html body .exercise-page-shell .question-content-motion.question-text-leaving,
+  html body .exercise-page-shell .question-content-motion.question-text-entering {
+    animation: khStagedQuestionReducedFade 140ms linear both !important;
+  }
+  @keyframes khStagedQuestionReducedFade {
+    from { opacity: .55; }
+    to { opacity: 1; }
+  }
+}
+
+/* تلميحات صفحة البداية: لا يظهر التلميح قبل طلب الطالب. */
+.start-hint-control {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 6px;
+}
+
+.start-hint-request {
+  min-width: 150px;
+}
+
+.start-learning-refined .step-hint {
+  margin: 6px auto 14px;
+  max-width: 760px;
 }
