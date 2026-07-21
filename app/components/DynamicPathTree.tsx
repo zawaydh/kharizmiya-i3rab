@@ -1,17 +1,29 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PATHS_COPY } from "../../content/dialogueCopy";
 import { diagnosticHintText, firstLevelHintText } from "../../lib/hintText";
+
+type TreeAnswer = {
+  id: string;
+  text: string;
+  next: string;
+  nextByFact?: { fact: string; map: Record<string, string>; default?: string };
+  correct?: boolean;
+  eval?: { fact: string; equals?: any; anyOf?: any[]; notEquals?: any };
+  hint?: string;
+  why?: string;
+};
 
 type TreeNode = {
   id: string;
   type: string;
   text: string;
+  context?: string;
   teaching_note?: string;
   hint?: string;
   thinking?: { q: string; a: string }[];
-  answers?: { id: string; text: string; next: string; correct?: boolean; eval?: { fact: string; equals?: any; anyOf?: any[]; notEquals?: any }; hint?: string; why?: string }[];
+  answers?: TreeAnswer[];
 };
 
 type ExerciseTree = {
@@ -52,12 +64,14 @@ type HintBubble = {
   placement: "right" | "left" | "above" | "below";
 };
 
-const BOX_W = 250;
+const BOX_W = 280;
 const BOX_H = 112;
-const DIA_W = 250;
-const DIA_H = 158;
-const LEVEL_GAP = 220;
-const SIBLING_GAP = 48;
+const DIA_W = 320;
+const DIA_H = 220;
+const LEVEL_GAP = 270;
+const SIBLING_GAP = 56;
+const MIN_ZOOM = 0.4;
+const MAX_ZOOM = 1.6;
 
 function splitText(text?: string, max = 28) {
   if (!text) return [];
@@ -80,26 +94,25 @@ function splitText(text?: string, max = 28) {
 
 
 function shortPathAnswerLabel(text?: string) {
-  const raw = String(text || "").trim();
+  const raw = String(text || "").replace(/\s+/g, " ").trim();
   if (!raw) return "";
-  if (raw.startsWith("فعل:")) return "فعل";
-  if (raw.startsWith("اسم:")) return "اسم";
-  if (raw.startsWith("حرف:")) return "حرف";
-  if (raw.startsWith("نعم")) return "نعم";
-  if (raw.startsWith("لا")) return "لا";
-  if (raw.includes("أداة نصب") || raw.includes("ناصبة")) return "ناصب";
-  if (raw.includes("أداة جزم") || raw.includes("جازمة")) return "جازم";
-  if (raw.includes("صحيح الآخر")) return "صحيح";
-  if (raw.includes("معتل الآخر")) return "معتل";
-  if (raw.includes("واو الجماعة")) return "واو";
-  if (raw.includes("ألف الاثنين")) return "ألف";
-  if (raw.includes("ياء المخاطبة")) return "ياء";
-  if (raw.includes("نون النسوة")) return "نون النسوة";
-  if (raw.includes("نون التوكيد")) return "نون التوكيد";
-  if (raw.includes("مفرد")) return "مفرد";
-  if (raw.includes("مثنى")) return "مثنى";
-  if (raw.includes("جمع")) return raw.replace(/^.*?(جمع)/, "$1").slice(0, 18);
-  return raw.length > 12 ? raw.slice(0, 11) + "…" : raw;
+
+  const compact = raw
+    .replace(/^فعل:\s*حدث مقترن بزمن$/, "فعل")
+    .replace(/^اسم:\s*.*$/, "اسم")
+    .replace(/^حرف:\s*.*$/, "حرف")
+    .replace(/^اسم معرب ظاهر$/, "اسم معرب")
+    .replace(/^اسم مبني مستقل$/, "اسم مبني")
+    .replace(/^ضمير متصل بالحرف الناسخ$/, "ضمير متصل")
+    .replace(/^نعم،\s*/, "نعم: ")
+    .replace(/^لا،\s*/, "لا: ");
+
+  return compact;
+}
+
+function shortEdgeLabel(text?: string) {
+  const compact = shortPathAnswerLabel(text);
+  return compact.length > 34 ? `${compact.slice(0, 33).trimEnd()}…` : compact;
 }
 
 function displayNodeQuestion(node: TreeNode | null | undefined, example?: Example | null) {
@@ -108,10 +121,35 @@ function displayNodeQuestion(node: TreeNode | null | undefined, example?: Exampl
   const context = String((node as any)?.context || "").trim();
   const target = String(example?.target || "").trim();
   const quoted = target ? `«${target}»` : "الكلمة";
+  const nodeId = String(node?.id || "");
+  const facts = example?.facts || {};
+
   if (!raw) return target ? `ما الحكم المناسب لـ${quoted}؟` : "تابع السؤال المناسب لهذا المثال.";
 
-  let question = raw;
-  if (raw === "ماذا نتحقق الآن؟") {
+  let question = raw
+    .replace(/\s*اختر الإجابة الصحيحة مما (?:يلي|يأتي)[:：]?\s*$/, "")
+    .replace(/\s*اختر الإجابة المناسبة مما (?:يلي|يأتي)[:：]?\s*$/, "")
+    .replace(/\s*اختر المناسب[:：]?\s*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (nodeId === "inna_kaffa_gate") {
+    const particle = String(facts.particleLabel || "الحرف الناسخ");
+    question = particle === "إنما"
+      ? "هل في «إنما» ما الكافة التي أبطلت عمل إن؟"
+      : `هل اتصلت «ما» بـ«${particle}» فكفّته عن العمل؟`;
+  } else if (nodeId === "inna_compact_role") {
+    const particle = String(facts.particleLabel || "الحرف الناسخ");
+    question = `ما موقع ${quoted} بعد «${particle}»؟`;
+  } else if (nodeId === "kana_target") {
+    question = `ما وظيفة ${quoted} بعد الفعل الناسخ؟`;
+  } else if (nodeId === "kana_ism_start") {
+    question = `ما نوع ${quoted}؟`;
+  } else if (nodeId === "kana_khabar_entry") {
+    question = `ما صورة ${quoted} في الجملة؟`;
+  }
+
+  if (question === "ماذا نتحقق الآن؟") {
     if (hint.includes("العدد") || hint.includes("النوع")) question = `ما صورة ${quoted}؟`;
     else if (hint.includes("علامة")) question = `ما العلامة المناسبة لـ${quoted}؟`;
     else if (hint.includes("اسم معرب") || hint.includes("اسم مبني")) question = `ما نوع ${quoted}؟`;
@@ -125,40 +163,55 @@ function displayNodeQuestion(node: TreeNode | null | undefined, example?: Exampl
       [/ما نوع الكلمة[؟?]?/g, `ما نوع كلمة ${quoted}؟`],
       [/ما نوع هذه الكلمة[؟?]?/g, `ما نوع كلمة ${quoted}؟`],
       [/ما دور الكلمة المحددة في الجملة[؟?]?/g, `ما دور ${quoted} في الجملة؟`],
+      [/ما الدور المعنوي للكلمة المحددة في الجملة[؟?]?/g, `ما الدور المعنوي لـ${quoted} في الجملة؟`],
       [/ما السياق الذي وردت فيه الكلمة المحددة[؟?]?/g, `ما السياق الذي وردت فيه ${quoted}؟`],
       [/اختر الصورة المناسبة للكلمة المحددة[:：]?/g, `ما صورة ${quoted}؟`],
+      [/اختر علامة الرفع المناسبة للكلمة المحددة[:：]?/g, `ما علامة رفع ${quoted}؟`],
+      [/اختر علامة النصب المناسبة للكلمة المحددة[:：]?/g, `ما علامة نصب ${quoted}؟`],
       [/ما صورة الفعل[؟?]?/g, `ما صورة الفعل ${quoted}؟`],
       [/هل اتصل به ما يجعله مبني[ًًّاا]*[؟?]?/g, `هل اتصل بالفعل ${quoted} ما يجعله مبنيًّا؟`],
       [/هل سبق الفعلَ ناصبٌ أو جازم[؟?]?/g, `هل سبق ${quoted} ناصب أو جازم؟`],
       [/هل سبق الفعل ناصب أو جازم[؟?]?/g, `هل سبق ${quoted} ناصب أو جازم؟`],
       [/هل فعل الأمر صحيح الآخر أم معتل الآخر[؟?]?/g, `هل ${quoted} صحيح الآخر أم معتل الآخر؟`],
+      [/ما موقع الكلمة المحددة/g, `ما موقع ${quoted}`],
+      [/ما دور المحدد/g, `ما دور ${quoted}`],
     ];
     exact.forEach(([pattern, replacement]) => { question = question.replace(pattern, replacement); });
     question = question
       .replace(/الكلمة المحددة/g, quoted)
+      .replace(/الكلمة المطلوبة/g, quoted)
       .replace(/الفعل المحدد/g, `الفعل ${quoted}`)
-      .replace(/المحدد/g, quoted);
+      .replace(/المحدد/g, quoted)
+      .replace(/هذا الاسم المبني/g, `الاسم المبني ${quoted}`)
+      .replace(/هذا الاسم/g, quoted)
+      .replace(/هذا الجزء/g, quoted);
 
     if (!question.includes(target) && /[؟?]/.test(question)) {
-      question = `${quoted}: ${question}`;
+      question = `بالنظر إلى ${quoted}: ${question}`;
     }
   }
-  return question;
+  return question.replace(/[:：]\s*$/, "").trim();
 }
 
-function answerButtonLayout(node: PositionedNode, count: number, idx: number) {
-  const columns = Math.min(3, Math.max(1, count));
+function answerGridMetrics(labels: string[]) {
+  const count = Math.max(1, labels.length);
+  const columns = count === 1 ? 1 : 2;
+  const rows = Math.ceil(count / columns);
+  const gapX = 8;
+  const gapY = 7;
+  const btnH = 40;
+  const btnW = columns === 1 ? 250 : 142;
+  return { count, columns, rows, gapX, gapY, btnH, btnW };
+}
+
+function answerButtonLayout(node: PositionedNode, labels: string[], idx: number) {
+  const { count, columns, rows, gapX, gapY, btnH, btnW } = answerGridMetrics(labels);
   const row = Math.floor(idx / columns);
   const col = idx % columns;
-  const rows = Math.ceil(count / columns);
   const itemsInRow = Math.min(columns, count - row * columns);
-  const gapX = 6;
-  const gapY = 5;
-  const btnH = 22;
-  const btnW = count <= 2 ? 86 : 68;
   const rowWidth = itemsInRow * btnW + Math.max(0, itemsInRow - 1) * gapX;
   const startX = node.x + (node.w - rowWidth) / 2;
-  const firstY = node.y + node.h - (rows * btnH + Math.max(0, rows - 1) * gapY) - 11;
+  const firstY = node.y + node.h - (rows * btnH + Math.max(0, rows - 1) * gapY) - 14;
   return {
     bx: startX + col * (btnW + gapX),
     by: firstY + row * (btnH + gapY),
@@ -167,6 +220,19 @@ function answerButtonLayout(node: PositionedNode, count: number, idx: number) {
     rows,
     firstY,
   };
+}
+
+function questionNodeHeight(node: TreeNode) {
+  const labels = (node.answers || []).map((answer) => shortPathAnswerLabel(answer.text));
+  const { rows, btnH, gapY } = answerGridMetrics(labels);
+  const answerArea = rows * btnH + Math.max(0, rows - 1) * gapY;
+  return Math.max(DIA_H, 102 + answerArea);
+}
+
+function answerInstructionY(node: PositionedNode, labels: string[]) {
+  if (!labels.length) return node.y + node.h - 26;
+  const { firstY } = answerButtonLayout(node, labels, 0);
+  return Math.max(node.y + 48, firstY - 13);
 }
 
 function diamondPoints(x: number, y: number, w: number, h: number) {
@@ -196,6 +262,13 @@ function answerIsCorrect(answer: { correct?: boolean; eval?: { fact: string; equ
   return factValue === answer.eval.equals;
 }
 
+function resolveNextNodeId(answer: TreeAnswer | undefined, example: Example | null) {
+  if (!answer) return "";
+  if (!answer.nextByFact || !example) return answer.next;
+  const factValue = String(example.facts?.[answer.nextByFact.fact]);
+  return answer.nextByFact.map?.[factValue] || answer.nextByFact.default || answer.next;
+}
+
 function sourceMasdarHint(target = "المصدر المؤول") {
   return `توضيح مهم: المصدر المؤول ليس كلمة واحدة فقط؛ هو تركيب مثل (أن + فعل مضارع)، ونستطيع تأويله بمصدر صريح. مثال: (أن تنجح) = نجاحك. لذلك يعامل معاملة الاسم ويأخذ موقعًا إعرابيًا مثل: في محل رفع مبتدأ.`;
 }
@@ -203,16 +276,34 @@ function sourceMasdarHint(target = "المصدر المؤول") {
 function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
   const nodes = tree.nodes;
   const rootId = tree.startNodeId;
+  const pathEdges: { from: string; to: string; label?: string }[] = [];
+  const visibleNodeIds = new Set<string>();
+
+  if (example && nodes[rootId]) {
+    let currentId = rootId;
+    const trail = new Set<string>();
+    while (currentId && nodes[currentId] && !trail.has(currentId)) {
+      trail.add(currentId);
+      visibleNodeIds.add(currentId);
+      const currentNode = nodes[currentId];
+      if (!currentNode || currentNode.type === "result") break;
+      const correctAnswer = (currentNode.answers ?? []).find((answer) => answerIsCorrect(answer, example));
+      if (!correctAnswer) break;
+      const nextId = resolveNextNodeId(correctAnswer, example);
+      if (!nextId || !nodes[nextId] || nextId === currentId) break;
+      pathEdges.push({ from: currentId, to: nextId, label: correctAnswer.text });
+      currentId = nextId;
+    }
+  } else if (nodes[rootId]) {
+    visibleNodeIds.add(rootId);
+  }
+
   const childrenMap = new Map<string, string[]>();
-  Object.values(nodes).forEach((n) => {
-    const safeChildren = Array.from(
-      new Set(
-        (n.answers || [])
-          .filter((a) => a?.next && a.next !== n.id && nodes[a.next])
-          .map((a) => a.next)
-      )
-    );
-    childrenMap.set(n.id, safeChildren);
+  visibleNodeIds.forEach((id) => childrenMap.set(id, []));
+  pathEdges.forEach((edge) => {
+    const children = childrenMap.get(edge.from) || [];
+    if (!children.includes(edge.to)) children.push(edge.to);
+    childrenMap.set(edge.from, children);
   });
 
   const widths = new Map<string, number>();
@@ -243,7 +334,7 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
 
     const isQuestion = node.type === "question";
     const w = isQuestion ? DIA_W : BOX_W;
-    const h = isQuestion ? DIA_H : BOX_H;
+    const h = isQuestion ? questionNodeHeight(node) : BOX_H;
 
     placed.set(id, {
       id,
@@ -283,7 +374,6 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
 
   const all = [startNode, ...Array.from(placed.values())];
   const minX = Math.min(...all.map((n) => n.x));
-  const maxX = Math.max(...all.map((n) => n.x + n.w));
   const maxY = Math.max(...all.map((n) => n.y + n.h));
 
   all.forEach((n) => {
@@ -307,13 +397,10 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
     }
   }
 
-  const edges: { from: string; to: string; label?: string }[] = [{ from: startNode.id, to: rootId }];
-  Object.values(nodes).forEach((node) => {
-    (node.answers || []).forEach((answer) => {
-      if (!answer?.next || answer.next === node.id || !nodes[answer.next]) return;
-      edges.push({ from: node.id, to: answer.next, label: answer.text });
-    });
-  });
+  const edges: { from: string; to: string; label?: string }[] = [
+    { from: startNode.id, to: rootId },
+    ...pathEdges,
+  ];
 
   const finalMaxX = Math.max(...all.map((n) => n.x + n.w));
   const width = Math.max(finalMaxX + 80, 920);
@@ -326,18 +413,14 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [visitedNodes, setVisitedNodes] = useState<string[]>([]);
   const [visitedEdges, setVisitedEdges] = useState<string[]>([]);
-  const [message, setMessage] = useState(PATHS_COPY.emptyGuidance);
   const [showHint, setShowHint] = useState(false);
   const [zoom, setZoom] = useState(1);
-  // التلميح طبقة مستقلة فوق مساحة الرسم؛ لا يغيّر مواضع العقد أو الأسهم.
-  const [activeGuidance, setActiveGuidance] = useState<string | null>(null);
   const [hintBubble, setHintBubble] = useState<HintBubble | null>(null);
   const [currentExampleIndex, setCurrentExampleIndex] = useState(-1);
   const [finalNodeId, setFinalNodeId] = useState<string | null>(null);
   const [highlightedAnswerKey, setHighlightedAnswerKey] = useState<string | null>(null);
-  const [highlightedAnswerKind, setHighlightedAnswerKind] = useState<"correct" | "wrong" | "hint" | null>(null);
+  const [highlightedAnswerKind, setHighlightedAnswerKind] = useState<"correct" | "wrong" | null>(null);
   const [pathSteps, setPathSteps] = useState<string[]>([]);
-  const autoNextTimerRef = useRef(null as null | ReturnType<typeof setTimeout>);
 
   function cleanLearningText(text?: string, limit = 170) {
     const cleaned = (text || "")
@@ -474,60 +557,12 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     return map;
   }, [layout]);
 
-  useEffect(() => {
-    setVisitedNodes([]);
-    setVisitedEdges([]);
-    setActiveNodeId(null);
-    setShowHint(false);
-    setHintBubble(null);
-    setMessage(PATHS_COPY.emptyGuidance);
-    setActiveGuidance(null);
-    setCurrentExampleIndex(-1);
-    setFinalNodeId(null);
-    setHighlightedAnswerKey(null);
-    setHighlightedAnswerKind(null);
-    setZoom(1);
-    setPathSteps([]);
-    if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
-
-    const first = examples[0] || null;
-    if (first) {
-      setCurrentExampleIndex(0);
-      resetProgress(first);
-    }
-  }, [tree, examples]);
-
-  useEffect(() => {
-    if (!layout || !canvasScrollRef.current || activeNodeId || currentExampleIndex >= 0) return;
-    const el = canvasScrollRef.current;
-    const node = layoutNodeMap.get("__exercise__") || layoutNodeMap.get(tree.startNodeId);
-    requestAnimationFrame(() => {
-      if (!node) return;
-      el.dir = "ltr";
-      const left = Math.max(0, node.x * zoom - (el.clientWidth - node.w * zoom) / 2);
-      const top = Math.max(0, node.y * zoom - 18);
-      el.scrollTo({ left, top, behavior: "auto" });
-    });
-  }, [layout, zoom, activeNodeId, currentExampleIndex, layoutNodeMap, tree.startNodeId]);
-
-  useEffect(() => {
-    if (!example || activeNodeId !== tree.startNodeId) return;
-    const t = setTimeout(() => focusNode("__exercise__", 1.02), 180);
-    return () => clearTimeout(t);
-  }, [example?.id, activeNodeId, tree.startNodeId, layout]);
-
-  useEffect(() => {
-    return () => {
-      if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
-    };
-  }, []);
-
-  function focusNode(nodeId: string, targetZoom = 1.08) {
+  const focusNode = useCallback((nodeId: string, targetZoom = 1.06) => {
     if (!layout || !canvasScrollRef.current) return;
     const node = layoutNodeMap.get(nodeId);
     if (!node) return;
 
-    const nextZoom = Math.max(1, Math.min(1.18, targetZoom));
+    const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, targetZoom));
     setZoom(nextZoom);
 
     requestAnimationFrame(() => {
@@ -542,36 +577,43 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const top = Math.max(0, scaledTop - Math.max(28, (el.clientHeight - scaledH) * 0.32));
       el.scrollTo({ left, top, behavior: "smooth" });
     });
-  }
+  }, [layout, layoutNodeMap]);
 
-  function answerAnchorFor(nodeId: string, answerId: string) {
-    const node = layoutNodeMap.get(nodeId);
-    const treeNode = tree.nodes[nodeId];
-    if (!node || !treeNode?.answers) return null;
-
-    const idx = treeNode.answers.findIndex((a: any) => a.id === answerId);
-    if (idx < 0) return null;
-
-    const count = treeNode.answers.length;
-    const { bx, by, btnW, btnH } = answerButtonLayout(node, count, idx);
-    return { x: bx + btnW / 2, y: by + btnH / 2 };
-  }
-
-  function resetProgress(nextExample: Example | null) {
+  const resetProgress = useCallback((nextExample: Example | null) => {
     setExample(nextExample);
-    setVisitedNodes(["__exercise__", tree.startNodeId]);
-    setVisitedEdges([`__exercise__->${tree.startNodeId}`]);
-    setActiveNodeId(tree.startNodeId);
     setShowHint(false);
     setHintBubble(null);
-    setActiveGuidance(null);
     setHighlightedAnswerKey(null);
     setHighlightedAnswerKind(null);
     setFinalNodeId(null);
-    setMessage("ابدأ بالسؤال الظاهر داخل المسار.");
-    setActiveGuidance(null);
     setPathSteps([]);
-  }
+
+    if (!nextExample) {
+      setVisitedNodes([]);
+      setVisitedEdges([]);
+      setActiveNodeId(null);
+      return;
+    }
+
+    setVisitedNodes(["__exercise__", tree.startNodeId]);
+    setVisitedEdges([`__exercise__->${tree.startNodeId}`]);
+    setActiveNodeId(tree.startNodeId);
+  }, [tree.startNodeId]);
+
+  useEffect(() => {
+    const first = examples[0] || null;
+    setCurrentExampleIndex(first ? 0 : -1);
+    setZoom(1);
+    resetProgress(first);
+  }, [examples, resetProgress, tree]);
+
+  useEffect(() => {
+    if (!activeNodeId || !layout) return;
+    const targetId = activeNodeId === tree.startNodeId ? "__exercise__" : activeNodeId;
+    const targetZoom = activeNodeId === tree.startNodeId ? 1.02 : 1.06;
+    const timer = setTimeout(() => focusNode(targetId, targetZoom), 100);
+    return () => clearTimeout(timer);
+  }, [activeNodeId, focusNode, layout, tree.startNodeId]);
 
   function startExampleAt(index: number) {
     if (!examples.length) return;
@@ -579,7 +621,6 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setCurrentExampleIndex(safeIndex);
     const next = examples[safeIndex] || null;
     resetProgress(next);
-    setTimeout(() => focusNode("__exercise__", 1.02), 180);
   }
 
   function startNextExercise() {
@@ -848,7 +889,14 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     return teacherSequenceText(node, teacherPrefix + (node.hint || node.teaching_note || "راجع خصائص الكلمة ثم اختر الإجابة التي تطابق المثال."));
   }
 
-  function openHintBubble(nodeId: string, text: string) {
+  function closeHint() {
+    setShowHint(false);
+    setHintBubble(null);
+    setHighlightedAnswerKey(null);
+    setHighlightedAnswerKind(null);
+  }
+
+  function openHintBubble(nodeId: string, text: string, anchor?: { x: number; y: number }) {
     const scrollBox = canvasScrollRef.current;
     const node = layoutNodeMap.get(nodeId);
     if (!scrollBox || !node) {
@@ -858,10 +906,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
 
     const viewportW = scrollBox.clientWidth;
     const viewportH = scrollBox.clientHeight;
-    const nodeLeft = node.x * zoom - scrollBox.scrollLeft;
-    const nodeTop = node.y * zoom - scrollBox.scrollTop;
-    const nodeW = node.w * zoom;
-    const nodeH = node.h * zoom;
+    const nodeLeft = (anchor?.x ?? node.x) * zoom - scrollBox.scrollLeft;
+    const nodeTop = (anchor?.y ?? node.y) * zoom - scrollBox.scrollTop;
+    const nodeW = anchor ? 1 : node.w * zoom;
+    const nodeH = anchor ? 1 : node.h * zoom;
     const bubbleW = Math.min(300, Math.max(210, viewportW - 36));
     const bubbleH = 150;
     const gap = 16;
@@ -896,23 +944,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       ? firstLevelHintText(node.id, node.hint || node.teaching_note, example?.target, node.text)
       : "راجع الكلمة في المثال، ثم اختر الدليل المناسب.";
     setShowHint(true);
-    setMessage(hintText);
-    setActiveGuidance(hintText);
+    setHighlightedAnswerKey(null);
+    setHighlightedAnswerKind(null);
     openHintBubble(nodeId, hintText);
-
-    const correctAnswer = node?.answers?.find((a: any) => answerIsCorrect(a, example));
-    if (correctAnswer) {
-      const anchor = answerAnchorFor(nodeId, correctAnswer.id);
-      if (anchor) {
-        setHighlightedAnswerKey(`${nodeId}:${correctAnswer.id}`);
-        setHighlightedAnswerKind("hint");
-        setActiveGuidance(hintText);
-      }
-    }
-  }
-
-  function showBubbleBesideNode(nodeId: string, text: string, bubbleZoom = zoom) {
-    setActiveGuidance(cleanLearningText(text, 170));
   }
 
 
@@ -927,15 +961,13 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     if (!correct) {
       const hintText = diagnosticHintText(targetedHintForWrongAnswer(node, answer, example), example?.target);
       setShowHint(true);
-      setMessage(hintText);
-      setActiveGuidance(hintText);
       setHighlightedAnswerKey(`${nodeId}:${answerId}`);
       setHighlightedAnswerKind("wrong");
-      openHintBubble(nodeId, hintText);
+      openHintBubble(nodeId, hintText, anchor);
       return;
     }
 
-    const nextId = answer.next;
+    const nextId = resolveNextNodeId(answer, example);
     const nextNode = tree.nodes[nextId];
     setPathSteps((steps) => [...steps, `${node.text} ← ${answer.text}`]);
     setVisitedNodes((v) => [...v, nextId]);
@@ -944,30 +976,26 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setHighlightedAnswerKind("correct");
     setShowHint(false);
     setHintBubble(null);
-    setActiveGuidance(null);
 
     if (nextNode?.type === "result") {
       setActiveNodeId(nextId);
       setFinalNodeId(nextId);
-      const finalReason = nextNode.teaching_note || "اكتمل المسار ووصلتَ إلى الإعراب النهائي الصحيح.";
-      const targetWord = example?.target ? `كلمة: ${example.target}` : "الكلمة المطلوبة";
-      const finalText = `هكذا وصلنا لإعراب ${targetWord}: ${nextNode.text}. السبب: ${finalReason}`;
-      setMessage(finalText);
-      setActiveGuidance(null);
-      setTimeout(() => {
-        focusNode(nextId, 1.06);
-      }, 90);
-      if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
     } else {
       setFinalNodeId(null);
       setActiveNodeId(nextId);
-      const stepText = teacherSequenceText(nextNode, nextNode?.teaching_note || "أحسنت. تابع إلى العقدة التالية.");
-      setMessage(stepText);
-      setActiveGuidance(null);
-      setTimeout(() => {
-        focusNode(nextId, 1.03);
-      }, 90);
     }
+  }
+
+  function fitPathToViewport() {
+    const scrollBox = canvasScrollRef.current;
+    if (!scrollBox || !layout) return;
+    closeHint();
+    const fittedZoom = Math.max(
+      MIN_ZOOM,
+      Math.min(1, (scrollBox.clientWidth - 28) / Math.max(layout.width, 1))
+    );
+    setZoom(Number(fittedZoom.toFixed(2)));
+    requestAnimationFrame(() => scrollBox.scrollTo({ left: 0, top: 0, behavior: "smooth" }));
   }
 
   if (!layout) return null;
@@ -994,11 +1022,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
               onClick={() => {
                 if (!activeNodeId) return;
                 if (showHint) {
-                  setShowHint(false);
-                  setHintBubble(null);
-                  setActiveGuidance(null);
-                  setHighlightedAnswerKey(null);
-                  setHighlightedAnswerKind(null);
+                  closeHint();
                   return;
                 }
                 showHintNearAnswer(activeNodeId);
@@ -1010,11 +1034,29 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
           </div>
 
           <div className="paths-react-zoom-tools">
-            <button type="button" className="btn btn-soft btn-zoom" onClick={() => setZoom((z) => Math.max(1, +(z - 0.08).toFixed(2)))}>
+            <button
+              type="button"
+              className="btn btn-soft btn-zoom"
+              aria-label="تصغير المسار"
+              onClick={() => {
+                closeHint();
+                setZoom((z) => Math.max(MIN_ZOOM, +(z - 0.1).toFixed(2)));
+              }}
+            >
               {PATHS_COPY.zoomOut}
             </button>
-            
-            <button type="button" className="btn btn-soft btn-zoom" onClick={() => setZoom((z) => Math.min(2, +(z + 0.08).toFixed(2)))}>
+            <button type="button" className="btn btn-soft btn-fit" onClick={fitPathToViewport}>
+              ملاءمة
+            </button>
+            <button
+              type="button"
+              className="btn btn-soft btn-zoom"
+              aria-label="تكبير المسار"
+              onClick={() => {
+                closeHint();
+                setZoom((z) => Math.min(MAX_ZOOM, +(z + 0.1).toFixed(2)));
+              }}
+            >
               {PATHS_COPY.zoomIn}
             </button>
           </div>
@@ -1059,9 +1101,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                       markerEnd={active ? "url(#pathsArrowActive)" : "url(#pathsArrow)"}
                       style={{ filter: active ? "drop-shadow(0 0 9px rgba(52,211,153,.72)) drop-shadow(0 0 18px rgba(34,211,238,.26))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
                     />
-                    {edge.label ? (
+                    {active && edge.label ? (
                       <text x={midX} y={midY} textAnchor="middle" className="paths-react-edge-label">
-                        {shortPathAnswerLabel(edge.label)}
+                        {shortEdgeLabel(edge.label)}
                       </text>
                     ) : null}
                   </g>
@@ -1075,12 +1117,27 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 const isQuestion = n.kind === "question";
                 const isResult = n.kind === "result";
                 const isFinalResult = finalNodeId === n.id;
+                const revealed = isStart || visited || active;
+                const renderedNodeLines = !revealed
+                  ? [isResult ? "النتيجة النهائية" : "الخطوة التالية"]
+                  : isFinalResult && example?.facts?.finalI3rab
+                    ? splitText(String(example.facts.finalI3rab), 30)
+                    : n.textLines;
 
                 return (
                   <g
                     key={n.id}
-                    className={isStart ? "paths-react-start-clickable" : undefined}
+                    className={`paths-react-node ${isStart ? "paths-react-start-clickable" : ""} ${!revealed ? "is-locked" : ""}`}
+                    role={isStart ? "button" : undefined}
+                    tabIndex={isStart ? 0 : undefined}
+                    aria-label={isStart ? "ابدأ المثال الحالي" : undefined}
                     onClick={isStart ? () => startExampleAt(currentExampleIndex < 0 ? 0 : currentExampleIndex) : undefined}
+                    onKeyDown={isStart ? (event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        startExampleAt(currentExampleIndex < 0 ? 0 : currentExampleIndex);
+                      }
+                    } : undefined}
                     style={isStart ? { cursor: "pointer" } : undefined}
                   >
                     {isQuestion ? (
@@ -1106,11 +1163,11 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                       />
                     )}
 
-                    {n.textLines.map((line, i) => (
+                    {renderedNodeLines.map((line, i, renderedLines) => (
                       <text
                         key={`${n.id}-${i}`}
                         x={n.x + n.w / 2}
-                        y={n.y + n.h / 2 + (isQuestion ? -20 : 0) + (i - (n.textLines.length - 1) / 2) * 14}
+                        y={(isQuestion ? n.y + 54 : n.y + n.h / 2) + (i - (renderedLines.length - 1) / 2) * 16}
                         textAnchor="middle"
                         dominantBaseline="middle"
                         className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
@@ -1118,10 +1175,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                         {line}
                       </text>
                     ))}
-                    {isQuestion ? (
+                    {isQuestion && active ? (
                       <text
                         x={n.x + n.w / 2}
-                        y={n.y + n.h - ((Math.ceil((n.node?.answers?.length || 1) / 3) * 22) + Math.max(0, Math.ceil((n.node?.answers?.length || 1) / 3) - 1) * 5) - 22}
+                        y={answerInstructionY(n, (n.node?.answers || []).map((answer) => shortPathAnswerLabel(answer.text)))}
                         textAnchor="middle"
                         dominantBaseline="middle"
                         className="paths-react-question-instruction"
@@ -1133,14 +1190,36 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     {isQuestion && active && n.node?.answers ? (
                       <g>
                         {n.node.answers.map((answer, idx) => {
-                          const { bx, by, btnW, btnH } = answerButtonLayout(n, n.node!.answers!.length, idx);
-                          const hintCorrect = showHint && active && answerIsCorrect(answer, example);
+                          const labels = n.node!.answers!.map((item) => shortPathAnswerLabel(item.text));
+                          const { bx, by, btnW, btnH } = answerButtonLayout(n, labels, idx);
                           const answerHighlighted = highlightedAnswerKey === `${n.id}:${answer.id}`;
+                          const answerLines = splitText(shortPathAnswerLabel(answer.text), btnW > 200 ? 28 : 17).slice(0, 2);
                           return (
-                            <g key={answer.id} className={`paths-react-answer ${hintCorrect ? "paths-react-answer-correct" : ""} ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""} ${answerHighlighted && highlightedAnswerKind === "hint" ? "paths-react-answer-selected-hint" : ""}`} onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 })}>
+                            <g
+                              key={answer.id}
+                              className={`paths-react-answer ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""}`}
+                              role="button"
+                              tabIndex={0}
+                              aria-label={answer.text}
+                              onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 })}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault();
+                                  handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 });
+                                }
+                              }}
+                            >
                               <rect x={bx} y={by} width={btnW} height={btnH} rx={11} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" strokeWidth={0.9} />
                               <text x={bx + btnW / 2} y={by + btnH / 2} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
-                                {shortPathAnswerLabel(answer.text)}
+                                {answerLines.map((line, lineIndex) => (
+                                  <tspan
+                                    key={`${answer.id}-${lineIndex}`}
+                                    x={bx + btnW / 2}
+                                    dy={lineIndex === 0 ? (answerLines.length === 1 ? 0 : -7) : 14}
+                                  >
+                                    {line}
+                                  </tspan>
+                                ))}
                               </text>
                             </g>
                           );
@@ -1164,13 +1243,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
               <p>{hintBubble.text}</p>
               <button
                 type="button"
-                onClick={() => {
-                  setShowHint(false);
-                  setHintBubble(null);
-                  setActiveGuidance(null);
-                  setHighlightedAnswerKey(null);
-                  setHighlightedAnswerKind(null);
-                }}
+                onClick={closeHint}
               >
                 حسنًا
               </button>

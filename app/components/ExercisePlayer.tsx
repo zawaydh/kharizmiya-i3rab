@@ -2,72 +2,91 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { createInitialState } from "../../lib/exercise/state";
-import { chooseAnswer } from "../../lib/exercise/engine";
-import { getTopicProgress } from "../../lib/db";
+import { chooseAnswer, evaluateAnswer } from "../../lib/exercise/engine";
+import type {
+  ExerciseExample,
+  ExerciseTree,
+  Mode,
+  QuestionNode,
+} from "../../lib/exercise/model";
+import type { RunnerState } from "../../lib/exercise/runner";
+import {
+  buildEmptyCovered,
+  getExampleCoverageKeys,
+  resolveCoverageKeys,
+} from "../../lib/exercise/progress";
+import { buildRunnerState } from "../../lib/exercise/runner";
+import {
+  buildWrongFeedback,
+  deterministicPraise,
+  isHintAnswerOption,
+  resolveAnswerAttempt,
+  type AnswerFeedbackState,
+} from "../../lib/exercise/answerSession";
+import {
+  buildStageProgressPayload,
+  type ProgressSavePayload,
+  type StageCompletionUpdate,
+} from "../../lib/exercise/persistence";
 import { looksLikeProgrammingOption, toStudentArabicOption } from "../../lib/studentOptionText";
 import { diagnosticHintText, firstLevelHintText } from "../../lib/hintText";
+import {
+  coverageDisplayLabel,
+  enrichQuizPrompt,
+  exampleFinalLabel,
+  safeFinalLabel,
+  type QuizExampleLike,
+  type QuizSummary,
+} from "../../lib/exercise/quiz";
+import {
+  QuizQuestionView,
+  QuizSummaryView,
+  RemedialTrainingView,
+} from "./exercise/QuizExperienceViews";
+import { useQuizSession } from "./exercise/useQuizSession";
+import { useStageSession } from "./exercise/useStageSession";
+import {
+  extractTopicName,
+  firstLine,
+  getStageMeta,
+  i3rabTokensFromDraft,
+  shortStudentText,
+  stageLearningTitle,
+} from "./exercise/exercisePresentationText";
+import { renderSentence, renderSmartText } from "./exercise/ExerciseTextViews";
+import {
+  answerBtn,
+  box,
+  ghostBtn,
+  primaryNavBtn,
+  toastStyle,
+} from "./exercise/ExercisePlayerStyles";
+import {
+  ClickSuccessPop,
+  ExerciseHeroView,
+  GlobalExerciseProgress,
+  SMART_GLOSSARY,
+  SmartGlossaryPopover,
+  StageBottomNavigation,
+  StageCompletionBanner,
+} from "./exercise/ExerciseSharedViews";
 
-type Mode = "learn" | "practice" | "quiz";
-
-type SaveProgressFn = (payload: {
-  topicId: string;
-  level: number;
-  percent: number;
-  coverage?: string[];
-  practice_percent?: number;
-  practice_coverage?: string[];
-  learn_completed?: boolean;
-  practice_completed?: boolean;
-  quiz_passed?: boolean;
-  quiz_score?: number | null;
-  quiz_total?: number | null;
-}) => Promise<any> | any;
-
-type QuizAnswerRow = {
-  exampleId: string;
-  sentence?: string;
-  target?: string;
-  expectedCoverage: string;
-  expectedLabel: string;
-  actualCoverage: string | null;
-  actualLabel: string | null;
-  isCorrect: boolean;
-  whyCorrect?: string;
-  actualOptionReason?: string;
-};
-
-type FollowUpOption = { label: string; correct: boolean; feedback?: string };
-type FollowUp = { question: string; options: FollowUpOption[] };
-
-type QuizExampleLike = {
-  id: string;
-  sentence?: string;
-  target?: string;
-  prompt?: string;
-  options?: string[];
-  correctI3rab?: string;
-  whyCorrect?: string;
-  optionReasons?: Record<string, string>;
-  covers?: string[];
-  followUp?: FollowUp;
-  facts?: Record<string, any>;
-};
+type SaveProgressFn = (payload: ProgressSavePayload) => Promise<unknown> | unknown;
 
 type StepReviewState = {
   answerText: string;
   resultText: string;
   reason: string;
   summary: string;
-  nextState: any;
+  nextState: RunnerState;
   isFinal: boolean;
 };
 
 type Props = {
   title: string;
   mode: Mode;
-  tree: any;
-  examples: any[];
+  tree: ExerciseTree;
+  examples: ExerciseExample[];
   coverageKeysOrdered: string[];
   stepLabels?: Record<string, string>;
   quizCount?: number;
@@ -83,273 +102,8 @@ type Props = {
   };
 };
 
-const QUIZ_PASS_PERCENT = 80;
 const STAGED_QUESTION_EXIT_MS = 460;
 const STAGED_QUESTION_ENTER_MS = 480;
-
-function buildEmptyCovered(keys: string[] = []) {
-  const out: Record<string, boolean> = {};
-  keys.forEach((k) => {
-    out[k] = false;
-  });
-  return out;
-}
-
-function calcPercent(covered: Record<string, boolean> = {}, keys: string[] = []) {
-  const total = Math.max(1, keys.length);
-  const done = keys.filter((k) => covered[k]).length;
-  return Math.round((done / total) * 100);
-}
-
-function pickNextExampleIndex(
-  examples: any[],
-  orderedKeys: string[],
-  covered: Record<string, boolean>,
-  currentIndex: number
-) {
-  const uncoveredKeys = orderedKeys.filter((k) => !covered[k]);
-  if (!examples.length) return currentIndex;
-  if (!uncoveredKeys.length) return examples.length > 1 ? (currentIndex + 1) % examples.length : currentIndex;
-
-  // لا نرتب الأمثلة حسب أول عقدة فقط؛ نختار عشوائيًا من أي مثال يغطي عقدة غير منجزة،
-  // حتى يشعر الطالب أن الأمثلة تتنوع مع بقاء التغطية الحقيقية للعقد محفوظة.
-  const candidates = examples
-    .map((ex, idx) => ({ idx, keys: getExampleCoverageKeys(ex) }))
-    .filter((item) => item.idx !== currentIndex && item.keys.some((key) => uncoveredKeys.includes(key)));
-
-  const pool = candidates.length
-    ? candidates
-    : examples
-        .map((ex, idx) => ({ idx, keys: getExampleCoverageKeys(ex) }))
-        .filter((item) => item.idx !== currentIndex && item.keys.some((key) => uncoveredKeys.includes(key)));
-
-  if (!pool.length) {
-    if (examples.length <= 1) return currentIndex;
-    return (currentIndex + 1) % examples.length;
-  }
-  const picked = pool[Math.floor(Math.random() * pool.length)].idx;
-  if (picked === currentIndex && examples.length > 1) return (currentIndex + 1) % examples.length;
-  return picked;
-}
-
-function buildRunnerState(tree: any, mode: Mode, example: any) {
-  const treeStart = tree?.startNodeId;
-  const startNodeId = example?.facts?.hasKaffa ? "inna_kaffa_effect" : treeStart;
-  const base = createInitialState({
-    mode: mode === "practice" ? "practice" : "learn",
-    level: 2,
-    startNodeId,
-  });
-
-  return {
-    ...base,
-    currentExampleId: example?.id,
-    currentSentence: example?.sentence,
-    currentTarget: example?.target,
-    facts: example?.facts || {},
-    currentNodeId: startNodeId,
-  };
-}
-
-function renderSentence(sentence?: string, target?: string) {
-  if (!sentence) return null;
-  if (!target) return sentence;
-  let shownTarget = target;
-  let idx = sentence.indexOf(shownTarget);
-  if (idx < 0) {
-    const m = String(target).match(/\(([^)]+)\)/);
-    if (m?.[1] && sentence.includes(m[1])) {
-      shownTarget = m[1];
-      idx = sentence.indexOf(shownTarget);
-    }
-  }
-  if (idx < 0) return sentence;
-
-  return (
-    <>
-      {sentence.slice(0, idx)}
-      <span className="exercise-target-word">{shownTarget}</span>
-      {sentence.slice(idx + shownTarget.length)}
-    </>
-  );
-}
-
-function getStageMeta(mode: Mode) {
-  if (mode === "learn") {
-    return {
-      badge: "مدرّب تفكير نحوي موجّه",
-      subtitle: "الإعراب خطوات؛ كل خطوة تفتح مسارًا وتغلق آخر حتى تصل إلى الإعراب الكامل.",
-      nextLabel: "انتقل إلى تحدي المهارة →",
-      nextHrefPrefix: "/train/",
-    };
-  }
-  if (mode === "practice") {
-    return {
-      badge: "تحدي المهارة",
-      subtitle: "تدرّب بطريقة أخف وأكثر متعة، واجمع التعزيز قبل الاختبار.",
-      nextLabel: "اختبر نفسي وأحصل على شهادة →",
-      nextHrefPrefix: "/quiz/",
-    };
-  }
-  return {
-    badge: "اختبر نفسي",
-    subtitle: "اختبار نهائي بلا تلميحات؛ النجاح يفتح شهادة الإنجاز.",
-    nextLabel: "",
-    nextHrefPrefix: "",
-  };
-}
-
-
-function extractTopicName(title?: string) {
-  const raw = String(title || "").split("—")[0].trim();
-  return raw || "الموضوع";
-}
-
-function stageLearningTitle(stageBadge: string, title?: string) {
-  const topic = extractTopicName(title);
-  if (stageBadge === "اختبر نفسي") return `اختبر نفسي في ${topic}`;
-  if (stageBadge === "تحدي المهارة") return `تحدي المهارة في ${topic}`;
-  if (stageBadge === "مدرّب تفكير نحوي موجّه") return `مدرّب تفكير نحوي موجّه — ${topic}`;
-  return `تعلّم ${topic} خطوة بخطوة`;
-}
-
-function i3rabTokensFromDraft(draft: string) {
-  const clean = String(draft || "").trim();
-  if (!clean || clean.includes("ابدأ")) return [];
-  return clean.split(/\s+/).filter(Boolean);
-}
-
-function resultIdToCoverage(resultId?: string) {
-  switch (resultId) {
-    case "R_mubtada_sahih":
-      return "mubtada.sahih";
-    case "R_mubtada_moatal":
-      return "mubtada.moatal";
-    case "R_mubtada_5":
-      return "mubtada.five";
-    case "R_mubtada_muthanna":
-      return "mubtada.muthanna";
-    case "R_mubtada_jms":
-      return "mubtada.jms";
-    case "R_mubtada_jfs":
-      return "mubtada.jfs";
-    case "R_mubtada_jt":
-      return "mubtada.jt";
-    case "R_mubtada_damir":
-      return "mubtada.damir";
-    case "R_mubtada_ishara":
-      return "mubtada.ishara";
-    case "R_mubtada_mawsool":
-      return "mubtada.mawsool";
-    case "R_mubtada_istifham":
-      return "mubtada.istifham";
-    case "R_mubtada_shart":
-      return "mubtada.shart";
-    case "R_mubtada_kam_khabariyya":
-      return "mubtada.kam";
-    case "R_source_mubtada":
-      return "mubtada.masdar";
-    default:
-      return null;
-  }
-}
-
-function firstLine(text?: string) {
-  return String(text || "").split("\n")[0].trim();
-}
-
-function normalizeQuizAnswerLabel(text?: string | null) {
-  return firstLine(String(text || ""))
-    .replace(/[\u064B-\u0652\u0670]/g, "")
-    .replace(/[ـ]/g, "")
-    .replace(/[،؛:]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function isSameQuizAnswer(a?: string | null, b?: string | null) {
-  const aa = normalizeQuizAnswerLabel(a);
-  const bb = normalizeQuizAnswerLabel(b);
-  return Boolean(aa && bb && aa === bb);
-}
-
-function optionReasonForLabel(reasons: Record<string, string> | undefined, label?: string | null) {
-  if (!label || !reasons) return undefined;
-  if (reasons[label]) return reasons[label];
-  const match = Object.keys(reasons).find((key) => isSameQuizAnswer(key, label));
-  return match ? reasons[match] : undefined;
-}
-
-function exampleFinalLabel(example: any) {
-  // في الاختبار النهائي يجب اعتماد صياغة الإعراب النهائية نفسها، لا مفتاح التغطية العام.
-  // هذا يمنع أن تظهر الإجابة الصحيحة مثل: "التوكيد" بدل الإعراب الكامل.
-  return firstLine(example?.correctI3rab || example?.facts?.finalI3rab || "");
-}
-
-function shortStudentText(text?: string, fallback = "جرّب مرة أخرى.") {
-  const clean = firstLine(text).replace(/^💡\s*/, "").trim();
-  if (!clean) return fallback;
-  return clean.length > 72 ? `${clean.slice(0, 69)}...` : clean;
-}
-
-
-const SMART_GLOSSARY: Record<string, { title: string; body: string[] }> = {
-  "حروف العلة": { title: "حروف العلة", body: ["الألف، الواو، الياء.", "ننظر إليها عند آخر الكلمة لتحديد: تعذر، ثقل، أو حذف حرف العلة."] },
-  "الأسماء الخمسة": { title: "الأسماء الخمسة", body: ["أب، أخ، حم، فو، ذو بمعنى صاحب.", "تعرب بالحروف إذا كانت مفردة، مضافة، غير مضافة إلى ياء المتكلم.", "ترفع بالواو، وتنصب بالألف، وتجر بالياء."] },
-  "الأفعال الخمسة": { title: "الأفعال الخمسة", body: ["أفعال مضارعة اتصلت بألف الاثنين أو واو الجماعة أو ياء المخاطبة.", "أوزانها: يفعلان، تفعلان، يفعلون، تفعلون، تفعلين.", "ترفع بثبوت النون، وتنصب وتجزم بحذف النون."] },
-  "اسم منقوص": { title: "الاسم المنقوص", body: ["اسم معرب آخره ياء لازمة مكسور ما قبلها، مثل: القاضي، الساعي.", "تظهر الفتحة في النصب، وتقدر الضمة والكسرة في الرفع والجر."] },
-  "اسم مقصور": { title: "الاسم المقصور", body: ["اسم معرب آخره ألف لازمة، مثل: الفتى، العصا.", "تقدر عليه الحركات الثلاث للتعذر."] },
-  "واو الجماعة": { title: "واو الجماعة", body: ["ضمير متصل يدل على جماعة الذكور.", "يكون في محل رفع فاعل إذا اتصل بالفعل."] },
-  "ألف الاثنين": { title: "ألف الاثنين", body: ["ضمير متصل يدل على مثنى.", "يكون في محل رفع فاعل إذا اتصل بالفعل."] },
-  "ياء المخاطبة": { title: "ياء المخاطبة", body: ["ضمير متصل يدل على المخاطبة المؤنثة.", "مع المضارع والأمر تكون في محل رفع فاعل."] },
-  "نون النسوة": { title: "نون النسوة", body: ["ضمير متصل يدل على مجموعة مؤنثة.", "مثل: يكتبْنَ، يدرسْنَ، ينجحْنَ.", "إذا اتصلت بالفعل المضارع حسمت البناء مباشرة، فلا نفحص الرفع أو النصب أو الجزم."] },
-  "ضمير رفع متحرك": { title: "ضمير رفع متحرك", body: ["مثل: تُ، تَ، تِ، نا، تم، تما.", "إذا اتصل بالفعل الماضي بُني الفعل على السكون."] },
-  "ضمير متصل": { title: "الضمير المتصل", body: ["ضمير لا يستقل بنفسه ويتصل بكلمة قبله.", "قد يكون في محل رفع أو نصب أو جر بحسب موقعه."] },
-  "ضمير منفصل": { title: "الضمير المنفصل", body: ["ضمير يستقل في النطق والكتابة، مثل: أنا، أنت، هو.", "غالبًا يُعرب مبنيًا في محل رفع مبتدأ إذا بدأ به الكلام."] },
-  "شبه جملة": { title: "شبه الجملة", body: ["جار ومجرور أو ظرف.", "قد تأتي خبرًا إذا أتمت معنى المبتدأ."] },
-  "الجملة الاسمية": { title: "الجملة الاسمية", body: ["تبدأ غالبًا باسم وتتكون أساسًا من مبتدأ وخبر."] },
-  "الجملة الفعلية": { title: "الجملة الفعلية", body: ["تبدأ غالبًا بفعل، وتحتاج إلى فاعل، وقد تحتاج إلى مفعول به."] },
-  "أداة نصب": { title: "أداة النصب", body: ["من أدوات النصب: لن، أن، كي.", "إذا سبقت المضارع جعلته منصوبًا."] },
-  "أداة جزم": { title: "أداة الجزم", body: ["من أدوات الجزم: لم، لا الناهية، لام الأمر.", "إذا سبقت المضارع جعلته مجزومًا."] },
-  "مصدر مؤول": { title: "المصدر المؤول", body: ["تركيب مثل: أن + فعل مضارع.", "يؤوّل بمصدر صريح ويعامل معاملة الاسم."] },
-  "اسم إشارة": { title: "اسم الإشارة", body: ["مثل: هذا، هذه، هؤلاء.", "غالبًا مبني ويعرب في محل بحسب موقعه."] },
-  "اسم موصول": { title: "الاسم الموصول", body: ["مثل: الذي، التي، الذين.", "يحتاج صلة بعده ويعرب مبنيًا في محل بحسب موقعه."] },
-  "الفعل الماضي": { title: "الفعل الماضي", body: ["يدل على حدث وقع وانتهى قبل زمن الكلام.", "يميزه قبول تاء الفاعل أو تاء التأنيث غالبًا، وهو مبني دائمًا."] },
-  "الفعل المضارع": { title: "الفعل المضارع", body: ["يدل على الحاضر أو المستقبل.", "يبدأ غالبًا بأحد أحرف: أ، ن، ي، ت، ويتأثر بأدوات النصب والجزم."] },
-  "فعل الأمر": { title: "فعل الأمر", body: ["يدل على طلب حدوث الفعل.", "يبنى على ما يجزم به مضارعه: السكون، حذف حرف العلة، أو حذف النون."] },
-  "المبتدأ": { title: "المبتدأ", body: ["اسم مرفوع نبدأ به غالبًا لنتحدث عنه.", "قد يكون معربًا أو مبنيًا في محل رفع."] },
-  "الخبر": { title: "الخبر", body: ["يتمّم معنى المبتدأ ويخبر عنه.", "قد يكون مفردًا أو جملة أو شبه جملة."] },
-  "الفاعل": { title: "الفاعل", body: ["اسم يدل على من قام بالفعل أو اتصف به.", "حكمه الرفع، وقد يكون ظاهرًا أو ضميرًا مستترًا أو متصلًا."] },
-  "المفعول به": { title: "المفعول به", body: ["اسم وقع عليه فعل الفاعل.", "حكمه النصب، وقد يكون اسمًا ظاهرًا أو ضميرًا."] },
-  "كان وأخواتها": { title: "كان وأخواتها", body: ["تدخل على الجملة الاسمية.", "ترفع الاسم ويسمى اسمها، وتنصب الخبر ويسمى خبرها."] },
-  "إن وأخواتها": { title: "إن وأخواتها", body: ["تدخل على الجملة الاسمية.", "تنصب الاسم ويسمى اسمها، وترفع الخبر ويسمى خبرها."] },
-  "الاسم المعرب": { title: "الاسم المعرب", body: ["يتغير ضبط آخره أو علامته بتغير موقعه في الجملة.", "مثل: طالبٌ، طالبًا، طالبٍ."] },
-  "الاسم المبني": { title: "الاسم المبني", body: ["لا يتغير آخره بتغير موقعه.", "يعرب في محل رفع أو نصب أو جر حسب موقعه."] },
-  "الأسماء المبنية": { title: "الأسماء المبنية", body: ["مثل الضمائر، أسماء الإشارة، الأسماء الموصولة، أسماء الاستفهام والشرط.", "لا نقول مرفوع بالضمة، بل نقول: مبني في محل رفع/نصب/جر."] },
-  "علامة أصلية": { title: "العلامة الأصلية", body: ["الضمة للرفع، الفتحة للنصب، الكسرة للجر، السكون للجزم."] },
-  "علامة فرعية": { title: "العلامة الفرعية", body: ["مثل الواو والألف والياء وثبوت النون وحذف النون وحذف حرف العلة.", "تظهر في أبواب مخصوصة مثل المثنى والجمع والأسماء الخمسة والأفعال الخمسة."] },
-  "أدوات النصب": { title: "أدوات النصب", body: ["منها: لن، أن، كي.", "إذا دخلت على الفعل المضارع جعلته منصوبًا."] },
-  "أدوات الجزم": { title: "أدوات الجزم", body: ["منها: لم، لا الناهية، لام الأمر.", "إذا دخلت على الفعل المضارع جعلته مجزومًا."] },
-
-};
-
-function renderSmartText(text?: string, onTerm?: (term: string) => void) {
-  if (!text) return null;
-  const terms = Object.keys(SMART_GLOSSARY).sort((a, b) => b.length - a.length);
-  const pattern = new RegExp(`(?<![\\p{L}\\p{M}])(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})(?![\\p{L}\\p{M}])`, "gu");
-  const parts = String(text).split(pattern);
-  return parts.map((part, idx) => {
-    if (SMART_GLOSSARY[part]) {
-      return (
-        <button key={`${part}-${idx}`} type="button" className="smart-term" onClick={() => onTerm?.(part)}>
-          {part}
-        </button>
-      );
-    }
-    return <React.Fragment key={idx}>{part}</React.Fragment>;
-  });
-}
-
 
 function answerTextFor(tree: any, nodeId: string, answerId: string) {
   const n = tree?.nodes?.[nodeId];
@@ -663,7 +417,8 @@ function kanaSubjectFromSentence(sentence: string, target: string) {
   const words = clean.split(/\s+/).filter(Boolean);
   const nasikhWords = ["كان", "كانت", "كنت", "أصبح", "أصبحت", "صار", "أمسى", "بات", "ظل", "ليس", "ليست", "زال"];
   const idx = words.findIndex(w => nasikhWords.includes(w));
-  if (idx >= 0 && words[idx + 1] && kanaCleanWord(words[idx + 1]) !== targetClean) return words[idx + 1];
+  const nextWord = idx >= 0 ? words[idx + 1] : undefined;
+  if (nextWord && kanaCleanWord(nextWord) !== targetClean) return nextWord;
   if (words[0] && kanaCleanWord(words[0]) !== targetClean) return words[0];
   return "الاسم الذي تتحدث عنه الجملة";
 }
@@ -1443,18 +1198,6 @@ function isFiveVerbDecision(node: any) {
   return ["raf3_five", "nasb_five", "jazm_five"].includes(id) || text.includes("الأفعال الخمسة");
 }
 
-function isHintAnswerOption(answer: any) {
-  const text = String(answer?.text || "").trim();
-  return Boolean(
-    answer?.isHelp ||
-    answer?.id === "__help" ||
-    answer?.id === "help" ||
-    text === "لا أعلم" ||
-    text.includes("أحتاج تلميح") ||
-    text.includes("احتاج تلميح")
-  );
-}
-
 function withoutRepeatedChoiceInstruction(text: string) {
   return String(text || "")
     .replace(/\s*اختر الإجابة الصحيحة(?:\s+مما\s+(?:يلي|يأتي))?\s*[:：]?\s*$/, "")
@@ -1497,7 +1240,7 @@ function practiceQuestionShape(node: any, state: any): "match" | "drag" | "sort"
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 33 + key.charCodeAt(i)) >>> 0;
   const shapes: Array<"match" | "drag" | "sort" | "cards"> = ["match", "drag", "sort", "cards"];
-  return shapes[hash % shapes.length];
+  return shapes[hash % shapes.length] ?? "cards";
 }
 
 function practiceShapeTitle(shape: "match" | "drag" | "sort" | "cards") {
@@ -1655,7 +1398,7 @@ function answerEffectLabel(node: any, answer: any, state: any) {
   if (id === "imp_five") return yes && !no ? "مبني على حذف النون" : "ليس من هذا الاتصال";
   if (id === "imp_ending") return text.includes("معتل") ? "مبني على حذف حرف العلة" : "مبني على السكون";
 
-  // الأسماء وبقية المرحلة الأولى.
+  // الأسماء وبقية التعلّم الموجّه.
   if (text.includes("أداة ناصبة") || text.includes("أداة نصب")) return "منصوب";
   if (text.includes("أداة جازمة") || text.includes("أداة جزم")) return "مجزوم";
   if (text.includes("مرفوع")) return "مرفوع";
@@ -3464,347 +3207,6 @@ function teacherSuccessText(node: any, picked: any, state: any, piece?: string) 
   return piece ? `صحيح؛ هذه الخطوة أضافت إلى التفكير: ${piece}` : "صحيح؛ نكمل خطوة التفكير التالية.";
 }
 
-function thinkingStepsFor(tree: any) {
-  if (tree?.startNodeId === "present_nun_niswa") {
-    return ["أستبعد البناء", "أستخرج العامل", "أحدد الحالة", "أحدد العلامة", "أصل إلى النتيجة"];
-  }
-  return ["أفهم الكلمة", "أحدد الموقع", "أستخرج الحكم", "أحدد العلامة", "أصل إلى النتيجة"];
-}
-
-function activeThinkingStep(node: any, tree: any) {
-  const id = String(node?.id || "");
-  if (node?.type === "result") return 4;
-  if (tree?.startNodeId === "present_nun_niswa") {
-    if (id.includes("nun_niswa") || id.includes("nun_tawkid")) return 0;
-    if (id.includes("has_tool") || id.includes("tool_type")) return 1;
-    if (id.includes("raf3") || id.includes("nasb") || id.includes("jazm")) {
-      if (id.includes("ending") || id.includes("weak") || id.includes("five")) return 3;
-      return 2;
-    }
-    return 0;
-  }
-  return 0;
-}
-
-function ThinkingProcessStrip({ tree, node }: { tree: any; node: any }) {
-  const steps = thinkingStepsFor(tree);
-  const active = activeThinkingStep(node, tree);
-  return (
-    <div className="thinking-process-strip" aria-label="سلسلة التفكير">
-      <span className="thinking-process-title">سلسلة التفكير</span>
-      <div className="thinking-process-items">
-        {steps.map((label, idx) => (
-          <span key={label} className={`thinking-process-step ${idx < active ? "is-done" : ""} ${idx === active ? "is-active" : ""}`}>
-            <span className="thinking-process-num">{idx + 1}</span>
-            <span>{label}</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function thinkingTrailForResult(text?: string) {
-  const t = String(text || "");
-  if (!t) return [];
-  if (t.includes("فعل مضارع")) return ["عرفنا أنها فعل", "حددنا الزمن: مضارع", "فحصنا الأداة والاتصال", "وصلنا للحالة والعلامة"];
-  if (t.includes("فعل ماض")) return ["عرفنا أنها فعل", "حددنا الزمن: ماضٍ", "فحصنا الضمير المتصل", "حددنا علامة البناء"];
-  if (t.includes("فعل أمر")) return ["عرفنا أنه طلب", "حددنا أنه فعل أمر", "فحصنا الاتصال وآخر الفعل", "حددنا علامة البناء"];
-  if (t.includes("اسم إشارة") || t.includes("اسم موصول") || t.includes("ضمير") || t.includes("مبني")) return ["عرفنا موقع الكلمة", "ميزنا أنها اسم مبني", "حددنا نوع الاسم المبني", "أعربناه في محلّه"];
-  if (t.includes("مبتدأ") || t.includes("خبر") || t.includes("اسم كان") || t.includes("خبر كان") || t.includes("اسم إن") || t.includes("خبر إن")) return ["حددنا الموقع النحوي", "ميزنا نوع الاسم", "فحصنا العدد وآخر الكلمة", "اخترنا العلامة المناسبة"];
-  if (t.includes("فاعل")) return ["وجدنا الفعل", "سألنا: من قام بالفعل؟", "حددنا الفاعل", "اخترنا علامة الرفع"];
-  if (t.includes("مفعول")) return ["وجدنا الفعل والفاعل", "سألنا: على من وقع الفعل؟", "حددنا المفعول به", "اخترنا علامة النصب"];
-  return ["اتبعنا القرارات بالترتيب", "لم نقفز إلى النتيجة مباشرة"];
-}
-
-function quizExpectedCause(expected?: string | null, example?: QuizExampleLike | null) {
-  const e = String(expected || "");
-  const target = String(example?.target || "الكلمة المحددة");
-
-  if (e.includes("فعل أمر")) {
-    if (e.includes("نون النسوة")) return `اتصل «${target}» بنون النسوة؛ لذلك بُني فعل الأمر على السكون، ونون النسوة فاعل.`;
-    if (e.includes("نون التوكيد")) return `اتصل «${target}» بنون التوكيد؛ لذلك بُني فعل الأمر على الفتح.`;
-    if (e.includes("حذف النون")) {
-      if (e.includes("ألف الاثنين")) return `اتصل «${target}» بألف الاثنين، وهو من صيغ الأفعال الخمسة؛ لذلك بُني الأمر على حذف النون.`;
-      if (e.includes("واو الجماعة")) return `اتصل «${target}» بواو الجماعة، وهو من صيغ الأفعال الخمسة؛ لذلك بُني الأمر على حذف النون.`;
-      if (e.includes("ياء المخاطبة")) return `اتصل «${target}» بياء المخاطبة، وهو من صيغ الأفعال الخمسة؛ لذلك بُني الأمر على حذف النون.`;
-      return `اتصل «${target}» بما يجعله من صيغ الأفعال الخمسة؛ لذلك بُني على حذف النون.`;
-    }
-    if (e.includes("حذف حرف العلة")) {
-      const letter = e.includes("الألف") ? "الألف" : e.includes("الواو") ? "الواو" : e.includes("الياء") ? "الياء" : "حرف العلة";
-      return `آخر «${target}» حرف علة هو ${letter}، وفعل الأمر يُبنى على ما يُجزم به مضارعه؛ لذلك بُني على حذف حرف العلة.`;
-    }
-    if (e.includes("السكون")) return `«${target}» فعل أمر صحيح الآخر ولم يتصل به ما يغيّر بناءه؛ لذلك بُني على السكون.`;
-  }
-
-  if (e.includes("فعل ماض")) {
-    if (e.includes("واو الجماعة")) return `اتصل الفعل الماضي «${target}» بواو الجماعة؛ لذلك بُني على الضم، مع مراعاة التقدير إذا كان ناقصًا.`;
-    if (e.includes("ضمير رفع متحرك") || e.includes("تاء الفاعل") || e.includes("نا الفاعلين") || e.includes("نون النسوة")) return `اتصل الفعل الماضي «${target}» بضمير رفع متحرك؛ لذلك بُني على السكون.`;
-    if (e.includes("ألف الاثنين")) return `اتصل الفعل الماضي «${target}» بألف الاثنين؛ لذلك بقي مبنيًا على الفتح.`;
-    if (e.includes("الفتح المقدر")) return `«${target}» فعل ماضٍ ناقص، فبُنِي على فتح مقدر على حرف العلة أو على الحرف المحذوف.`;
-    if (e.includes("الفتح")) return `الفعل الماضي مبني دائمًا، ولم يتصل بـ«${target}» ما ينقله إلى السكون أو الضم؛ لذلك بُني على الفتح.`;
-  }
-
-  if (e.includes("فعل مضارع")) {
-    if (e.includes("مبني") && e.includes("نون النسوة")) return `اتصل «${target}» بنون النسوة؛ لذلك خرج من الإعراب وبُني على السكون.`;
-    if (e.includes("مبني") && e.includes("نون التوكيد")) return `اتصل «${target}» بنون التوكيد اتصالًا مباشرًا؛ لذلك بُني على الفتح.`;
-    if (e.includes("منصوب")) {
-      const tool = example?.facts?.toolWord ? `سبقته أداة النصب «${example.facts.toolWord}»` : "سبقه عامل نصب";
-      if (e.includes("حذف النون")) return `${tool}، وهو من الأفعال الخمسة؛ لذلك نُصب بحذف النون.`;
-      if (e.includes("فتحة مقدرة")) return `${tool}، وآخره لا تظهر عليه الفتحة؛ لذلك نُصب بفتحة مقدرة.`;
-      return `${tool}؛ لذلك صار منصوبًا، ثم حددنا علامته من صورة آخر الفعل.`;
-    }
-    if (e.includes("مجزوم")) {
-      const tool = example?.facts?.toolWord ? `سبقته أداة الجزم «${example.facts.toolWord}»` : "سبقه عامل جزم";
-      if (e.includes("حذف النون")) return `${tool}، وهو من الأفعال الخمسة؛ لذلك جُزم بحذف النون.`;
-      if (e.includes("حذف حرف العلة")) return `${tool}، وهو معتل الآخر؛ لذلك جُزم بحذف حرف العلة.`;
-      return `${tool}، وهو صحيح الآخر؛ لذلك جُزم بالسكون.`;
-    }
-    if (e.includes("مرفوع")) {
-      if (e.includes("ثبوت النون")) return `لم يسبق «${target}» ناصب ولا جازم، وهو من الأفعال الخمسة؛ لذلك رُفع بثبوت النون.`;
-      if (e.includes("مقدرة")) return `لم يسبق «${target}» ناصب ولا جازم، لكنه معتل الآخر؛ لذلك رُفع بضمة مقدرة.`;
-      return `لم يسبق «${target}» ناصب ولا جازم؛ لذلك بقي مرفوعًا بالضمة.`;
-    }
-  }
-
-  if (e.includes("مفعول به")) return `وقع الفعل على «${target}»، فهي مفعول به، والمفعول به منصوب؛ ثم نحدد علامة النصب من نوع الاسم.`;
-  if (e.includes("فاعل")) return `«${target}» هو من قام بالفعل أو اتصف به، فهو فاعل، والفاعل مرفوع؛ ثم نحدد علامة الرفع من نوع الاسم.`;
-  if (e.includes("مبتدأ")) return `بدأت الجملة الاسمية بالحديث عن «${target}»، فهو مبتدأ، والمبتدأ مرفوع.`;
-  if (e.includes("خبر")) return `«${target}» أتم المعنى عن الاسم قبله، فهو خبر، ثم نطبق حكم الباب وعلامته.`;
-  if (e.includes("توكيد")) return `أكد «${target}» ما قبله، فهو توكيد يتبع المؤكَّد في الحالة الإعرابية والعلامة المناسبة لنوعه.`;
-  if (e.includes("نعت")) return `وصف «${target}» الاسم قبله، فهو نعت يتبعه في الإعراب والتعريف والعدد والجنس.`;
-  if (e.includes("بدل")) return `جاء «${target}» مقصودًا بالحكم بعد اسم قبله، فهو بدل يتبع المبدل منه في الإعراب.`;
-  if (e.includes("معطوف")) return `ربط حرف العطف «${target}» بما قبله، فالمعطوف يتبع المعطوف عليه في الإعراب.`;
-  return "نحدد أولًا نوع الكلمة وموقعها، ثم الحكم، ثم العلامة المناسبة لصورتها.";
-}
-
-function explainDistractor(actual?: string | null, expected?: string | null, example?: QuizExampleLike | null) {
-  const a = String(actual || "");
-  const e = String(expected || "");
-  if (!a) return "لم تختر إجابة.";
-  if (isSameQuizAnswer(a, e)) return "صحيح؛ الاختيار يوافق مسار التفكير.";
-
-  const cause = quizExpectedCause(e, example);
-  const target = String(example?.target || "الكلمة المحددة");
-
-  if (e.includes("فعل أمر")) {
-    if (a.includes("معرب")) return `سبب الخطأ أنك عاملت «${target}» فعلًا معربًا، بينما فعل الأمر مبني دائمًا. ${cause}`;
-    if (!a.includes("فعل أمر")) return `سبب الخطأ أنك لم تثبت أن «${target}» فعل أمر يدل على الطلب. فعل الأمر مبني دائمًا. ${cause}`;
-    return `أصبت في تحديد فعل الأمر، لكن علامة البناء أو سببها لا يوافقان المثال. ${cause}`;
-  }
-
-  if (e.includes("فعل ماض")) {
-    if (a.includes("معرب")) return `سبب الخطأ أنك عاملت «${target}» فعلًا معربًا، بينما الفعل الماضي مبني دائمًا. ${cause}`;
-    if (!a.includes("فعل ماض")) return `سبب الخطأ في تحديد زمن الفعل؛ «${target}» فعل ماضٍ، والفعل الماضي مبني دائمًا. ${cause}`;
-    return `نوع الفعل صحيح، لكن علامة البناء أو الضمير المتصل في اختيارك لا يوافقان المثال. ${cause}`;
-  }
-
-  if (e.includes("فعل مضارع")) {
-    if (e.includes("مبني") && !a.includes("مبني")) return `سبب الخطأ أنك أعربت «${target}»، مع أن اتصاله هنا أخرجه إلى البناء. ${cause}`;
-    if (!e.includes("مبني") && a.includes("مبني")) return `سبب الخطأ أنك بنيت «${target}»، بينما المضارع هنا معرب؛ لم يتصل به ما يوجب البناء. ${cause}`;
-    if (a.includes("مرفوع") && !e.includes("مرفوع")) return `سبب الخطأ أنك اخترت الرفع قبل فحص العامل السابق. ${cause}`;
-    if (a.includes("منصوب") && !e.includes("منصوب")) return `سبب الخطأ أنك اخترت النصب، لكن العامل في الجملة لا ينصب الفعل. ${cause}`;
-    if (a.includes("مجزوم") && !e.includes("مجزوم")) return `سبب الخطأ أنك اخترت الجزم، لكن العامل في الجملة لا يجزم الفعل. ${cause}`;
-    return `الحالة أو العلامة في اختيارك لا تطابق عامل الفعل وصورته. ${cause}`;
-  }
-
-  const roles = ["مبتدأ", "خبر", "فاعل", "مفعول به", "اسم كان", "خبر كان", "اسم إن", "خبر إن", "نعت", "معطوف", "توكيد", "بدل"];
-  const expectedRole = roles.find((role) => e.includes(role));
-  const actualRole = roles.find((role) => a.includes(role));
-  if (expectedRole && actualRole && expectedRole !== actualRole) return `سبب الخطأ في الوظيفة النحوية: اخترت «${actualRole}»، بينما علاقة «${target}» في الجملة تجعلها «${expectedRole}». ${cause}`;
-
-  if (e.includes("مبني") && !a.includes("مبني")) return `سبب الخطأ أنك أعربت اسمًا مبنيًا؛ الاسم المبني لا تتغير حركة آخره، بل يُعرب في محل بحسب موقعه. ${cause}`;
-  if (!e.includes("مبني") && a.includes("مبني")) return `سبب الخطأ أنك بنيت كلمة معربة؛ هذه الكلمة تتغير علامتها بحسب موقعها. ${cause}`;
-
-  const cases = ["مرفوع", "منصوب", "مجرور", "مجزوم"];
-  const expectedCase = cases.find((item) => e.includes(item));
-  const actualCase = cases.find((item) => a.includes(item));
-  if (expectedCase && actualCase && expectedCase !== actualCase) return `سبب الخطأ في الحالة الإعرابية: اخترت «${actualCase}»، والصواب «${expectedCase}» لأن الموقع أو العامل يفرض ذلك. ${cause}`;
-
-  const marks = ["الضمة", "الفتحة", "الكسرة", "السكون", "الواو", "الألف", "الياء", "ثبوت النون", "حذف النون", "حذف حرف العلة"];
-  const expectedMark = marks.find((item) => e.includes(item));
-  const actualMark = marks.find((item) => a.includes(item));
-  if (expectedMark && actualMark && expectedMark !== actualMark) return `سبب الخطأ في العلامة: اخترت «${actualMark}»، بينما نوع الكلمة وحالتها يقتضيان «${expectedMark}». ${cause}`;
-
-  return `أحد قرارات اختيارك لا يوافق المثال. ${cause}`;
-}
-
-function explainCorrectQuizAnswer(expected?: string | null, example?: QuizExampleLike | null) {
-  const e = String(expected || "");
-  const target = String(example?.target || "الكلمة المحددة");
-  const cause = quizExpectedCause(e, example);
-  if (!e) return cause;
-  return `نبدأ من «${target}»: ${cause} لذلك تكون الإجابة الصحيحة: ${firstLine(e)}`;
-}
-
-function enrichQuizPrompt(prompt?: string) {
-  const p = String(prompt || "اختر الإعراب النهائي بعد إكمال مسار التفكير.");
-  if (p.includes("الخطوة") || p.includes("القرار")) return p;
-  return p.replace("ما الإعراب الصحيح", "بعد تتبّع القرارات، ما الإعراب الصحيح");
-}
-
-function stableShuffle<T>(items: T[], seed: string) {
-  const arr = [...items];
-  let h = 2166136261;
-  for (let i = 0; i < seed.length; i += 1) {
-    h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    h ^= h << 13;
-    h ^= h >>> 17;
-    h ^= h << 5;
-    const j = Math.abs(h) % (i + 1);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-
-type ThinkingTool = { key: string; label: string; icon: string };
-
-function toolsForTopic(tree: any, title?: string): ThinkingTool[] {
-  const start = String(tree?.startNodeId || "");
-  const t = String(title || "");
-  if (start.includes("present")) {
-    return [
-      { key: "built", label: "المبني", icon: "ث" },
-      { key: "mu3rab", label: "المعرب", icon: "ع" },
-      { key: "agent", label: "العامل", icon: "أ" },
-      { key: "nasb", label: "النصب", icon: "ن" },
-      { key: "jazm", label: "الجزم", icon: "ج" },
-      { key: "five", label: "الأفعال الخمسة", icon: "٥" },
-    ];
-  }
-  if (start.includes("past")) {
-    return [
-      { key: "built", label: "مبني دائمًا", icon: "ث" },
-      { key: "pronoun", label: "الضمير", icon: "ض" },
-      { key: "waw", label: "واو الجماعة", icon: "و" },
-      { key: "sukoon", label: "السكون", icon: "س" },
-      { key: "fatha", label: "الفتح", icon: "ف" },
-    ];
-  }
-  if (start.includes("imp")) {
-    return [
-      { key: "built", label: "مبني دائمًا", icon: "ث" },
-      { key: "tawkid", label: "نون التوكيد", icon: "ن" },
-      { key: "attached", label: "الاتصال", icon: "ص" },
-      { key: "weak", label: "حذف العلة", icon: "ع" },
-      { key: "noon", label: "حذف النون", icon: "ح" },
-      { key: "sukoon", label: "السكون", icon: "س" },
-    ];
-  }
-  if (start.includes("tawabi") || t.includes("النعت") || t.includes("العطف") || t.includes("التوكيد") || t.includes("البدل") || t.includes("التوابع")) {
-    return [
-      { key: "entry", label: "هل هي تابعة؟", icon: "؟" },
-      { key: "relation", label: "العلاقة", icon: "ر" },
-      { key: "term", label: "النوع", icon: "ن" },
-      { key: "matbu3", label: "المتبوع", icon: "ت" },
-      { key: "case", label: "الحالة", icon: "ح" },
-      { key: "sign", label: "العلامة", icon: "ع" },
-    ];
-  }
-  if (t.includes("المبتدأ") || t.includes("الخبر") || start.includes("mubtada") || start.includes("khabar") || start.includes("nominal")) {
-    return [
-      { key: "mu3rab", label: "المعرب", icon: "ع" },
-      { key: "builtNoun", label: "الأسماء المبنية", icon: "م" },
-      { key: "damir", label: "الضمير", icon: "ض" },
-      { key: "ishara", label: "الإشارة", icon: "ش" },
-      { key: "mawsool", label: "الموصول", icon: "ص" },
-      { key: "masdar", label: "المصدر المؤول", icon: "مـ" },
-    ];
-  }
-  if (t.includes("كان")) {
-    return [
-      { key: "agent", label: "الناسخ", icon: "ن" },
-      { key: "ism", label: "اسم كان", icon: "ا" },
-      { key: "khabar", label: "خبر كان", icon: "خ" },
-      { key: "raf3", label: "الرفع", icon: "ر" },
-      { key: "nasb", label: "النصب", icon: "ن" },
-    ];
-  }
-  if (t.includes("إن")) {
-    return [
-      { key: "agent", label: "الناسخ", icon: "ن" },
-      { key: "ism", label: "اسم إن", icon: "ا" },
-      { key: "khabar", label: "خبر إن", icon: "خ" },
-      { key: "nasb", label: "النصب", icon: "ن" },
-      { key: "raf3", label: "الرفع", icon: "ر" },
-    ];
-  }
-  return [
-    { key: "word", label: "الكلمة", icon: "ك" },
-    { key: "site", label: "الموقع", icon: "م" },
-    { key: "rule", label: "الحكم", icon: "ح" },
-    { key: "sign", label: "العلامة", icon: "ع" },
-  ];
-}
-
-function activeToolForNode(node: any, tree: any, title?: string) {
-  const id = String(node?.id || "");
-  const text = String(node?.text || "");
-  const start = String(tree?.startNodeId || "");
-  if (start.includes("present")) {
-    if (id.includes("nun")) return "built";
-    if (id.includes("has_tool") || id.includes("tool_type")) return "agent";
-    if (id.includes("nasb")) return "nasb";
-    if (id.includes("jazm")) return "jazm";
-    if (id.includes("five")) return "five";
-    return "mu3rab";
-  }
-  if (start.includes("past")) {
-    if (id.includes("pronoun") || id.includes("sukoon_type")) return "pronoun";
-    if (id.includes("waw")) return "waw";
-    if (id.includes("sukoon")) return "sukoon";
-    if (id.includes("alif") || id.includes("fatha")) return "fatha";
-    return "built";
-  }
-  if (start.includes("imp")) {
-    if (id.includes("tawkid")) return "tawkid";
-    if (id.includes("attached") || id.includes("connection")) return "attached";
-    if (id.includes("ending") || id.includes("weak")) return "weak";
-    if (text.includes("حذف النون")) return "noon";
-    return "built";
-  }
-  if (start.includes("tawabi")) {
-    if (id === "tawabi_entry") return "entry";
-    if (id === "tawabi_relation") return "relation";
-    if (id === "tawabi_term") return "term";
-    if (id === "tawabi_tawkid_kind") return "term";
-    if (id === "tawabi_follow_source") return "matbu3";
-    if (id === "tawabi_case" || id === "tawabi_form" || id === "tawabi_shape") return "case";
-    if (id === "tawabi_mark" || id.startsWith("R_tawabi_")) return "sign";
-    return "relation";
-  }
-  if (text.includes("مصدر مؤول")) return "masdar";
-  if (text.includes("اسم إشارة")) return "ishara";
-  if (text.includes("اسم موصول")) return "mawsool";
-  if (text.includes("ضمير")) return "damir";
-  if (text.includes("مبني")) return "builtNoun";
-  if (text.includes("معرب")) return "mu3rab";
-  if (text.includes("اسم كان") || text.includes("اسم إن")) return "ism";
-  if (text.includes("خبر")) return "khabar";
-  if (text.includes("نصب")) return "nasb";
-  if (text.includes("رفع")) return "raf3";
-  return toolsForTopic(tree, title)[0]?.key;
-}
-
-function ThinkingToolsRail({ tree, node, title }: { tree: any; node: any; title?: string }) {
-  const tools = toolsForTopic(tree, title);
-  const active = activeToolForNode(node, tree, title);
-  return (
-    <nav className="thinking-tools-rail" aria-label="أدوات التفكير في هذا الموضوع">
-      {tools.map((tool) => (
-        <span key={tool.key} className={`thinking-tool-chip ${tool.key === active ? "is-active" : ""}`} title={tool.label}>
-          <span className="thinking-tool-icon">{tool.icon}</span>
-          <span className="thinking-tool-label">{tool.label}</span>
-        </span>
-      ))}
-    </nav>
-  );
-}
-
 function builtNounSmartHint(target = "الكلمة الهدف", role = "في محلها الإعرابي") {
   return `هل ${target} ضمير أو اسم إشارة أو اسم موصول؟ الاسم المبني يُعرب في محلّه.`;
 }
@@ -3828,252 +3230,6 @@ function builtNounTypeHintByValue(value?: string) {
   }
 }
 
-function buildBalancedQuizOptions(example: QuizExampleLike | undefined, seed: string, cursor: number) {
-  const opts = Array.isArray(example?.options) ? [...(example?.options || [])] : [];
-  const correct = example?.correctI3rab || "";
-  if (!opts.length || !correct) return opts;
-
-  const unique = Array.from(new Set(opts));
-  const shuffled = stableShuffle(unique, seed);
-  const correctIndex = shuffled.indexOf(correct);
-  if (correctIndex < 0) return shuffled;
-
-  shuffled.splice(correctIndex, 1);
-
-  // توزيع موضع الإجابة الصحيحة؛ لا تبقى في الخيار الأول ولا في نفس المكان دائمًا.
-  // يظهر الخيار الأول أحيانًا فقط حتى لا تتكون قاعدة مضادة عند الطالبة.
-  const targetPositions = [1, 2, 3, 1, 2, 3, 0];
-  const target = Math.min(targetPositions[cursor % targetPositions.length], shuffled.length);
-  shuffled.splice(target, 0, correct);
-  return shuffled;
-}
-
-function i3rabHead(label?: string | null) {
-  const line = firstLine(label || "");
-  const idx = line.indexOf(":");
-  if (idx <= 0) return "";
-  return line.slice(0, idx).trim();
-}
-
-function quizTargetHead(example?: QuizExampleLike | null) {
-  return i3rabHead(example?.correctI3rab || example?.facts?.finalI3rab || "") || String(example?.target || "").trim();
-}
-
-function localizeQuizOptionToExample(option: string, example?: QuizExampleLike | null) {
-  const line = toStudentArabicOption(firstLine(option));
-  const idx = line.indexOf(":");
-  const head = quizTargetHead(example);
-  if (idx <= 0 || !head) return line;
-  return toStudentArabicOption(`${head}${line.slice(idx)}`);
-}
-
-function localQuizExpectedLabel(label: string, example?: QuizExampleLike | null) {
-  return localizeQuizOptionToExample(label, example);
-}
-
-function swapOne(text: string, pairs: Array<[string, string]>) {
-  for (const [from, to] of pairs) {
-    if (text.includes(from)) return text.replace(from, to);
-  }
-  return "";
-}
-
-function fallbackCloseQuizDistractors(correct: string) {
-  const out: string[] = [];
-  const push = (x?: string) => {
-    const value = firstLine(x || "");
-    if (value && value !== correct && !out.includes(value)) out.push(value);
-  };
-
-  push(swapOne(correct, [["توكيد لفظي", "توكيد معنوي"], ["توكيد معنوي", "توكيد لفظي"], ["نعت", "بدل"], ["بدل", "نعت"], ["معطوف", "توكيد معنوي"], ["فاعل", "مفعول به"], ["مفعول به", "فاعل"], ["مبتدأ", "خبر"], ["خبر", "مبتدأ"]]));
-  push(swapOne(correct, [["مرفوع", "منصوب"], ["منصوب", "مجرور"], ["مجرور", "مرفوع"], ["مجزوم", "مرفوع"], ["مبني", "معرب"]]));
-  push(swapOne(correct, [["الضمة", "الفتحة"], ["الفتحة", "الكسرة"], ["الكسرة", "الضمة"], ["الياء", "الألف"], ["الألف", "الياء"], ["الواو", "الياء"], ["السكون", "الفتحة"]]));
-
-  return out;
-}
-
-function buildCloseQuizOptions(example: QuizExampleLike | undefined, seed: string, cursor: number) {
-  const raw = buildBalancedQuizOptions(example, seed, cursor);
-  const correct = localQuizExpectedLabel(example?.correctI3rab || example?.facts?.finalI3rab || "", example);
-  if (!correct) return raw.map((option) => localizeQuizOptionToExample(option, example));
-
-  const localized = Array.from(new Set(raw.map((option) => localizeQuizOptionToExample(option, example)).filter(Boolean)));
-  const distractors = localized.filter((option) => !isSameQuizAnswer(option, correct));
-  fallbackCloseQuizDistractors(correct).forEach((option) => {
-    if (!distractors.some((x) => isSameQuizAnswer(x, option))) distractors.push(option);
-  });
-
-  const orderedDistractors = stableShuffle(distractors, `${seed}-distractors`).slice(0, 3);
-  const targetPositions = [1, 2, 3, 1, 2, 3, 0];
-  const finalOptions = [...orderedDistractors];
-  const target = Math.min(targetPositions[cursor % targetPositions.length], finalOptions.length);
-  finalOptions.splice(target, 0, correct);
-  return finalOptions.slice(0, 4);
-}
-
-
-function buildRemedialTeacherExplanation(example?: QuizExampleLike | null, expectedLabel = "") {
-  if (!example) return "نبدأ من موقع الكلمة في الجملة، ثم نحدد وظيفتها أو نوع الفعل، وبعد ذلك نصل إلى الحكم والعلامة الصحيحة.";
-
-  const target = String(example.target || "الكلمة المحددة").replace(/[()]/g, "");
-  const facts = example.facts || {};
-  const label = expectedLabel || example.correctI3rab || facts.finalI3rab || "الإجابة الصحيحة";
-  const startId = String(facts.startNodeId || "");
-
-  if (facts.presentBase || startId.includes("imperative") || label.includes("فعل أمر")) {
-    const attached = facts.attached;
-    if (attached === "nun_niswa") return `نبدأ بـ«${target}»: هو فعل أمر اتصلت به نون النسوة. اتصال نون النسوة يجعل فعل الأمر مبنيًا على السكون، لذلك نصل إلى: ${label}.`;
-    if (["alif", "waw", "yaa"].includes(attached)) return `نبدأ بـ«${target}»: هو فعل أمر اتصل بضمير من ضمائر الأفعال الخمسة. عند الأمر نحذف النون، لذلك نصل إلى: ${label}.`;
-    if (facts.ending === "weak") {
-      const presentBase = facts.presentBase ? `نرده إلى مضارعه «${facts.presentBase}»` : "نرده إلى مضارعه";
-      const weak = facts.weakLetter === "alif" ? "الألف" : facts.weakLetter === "waw" ? "الواو" : facts.weakLetter === "ya" ? "الياء" : "حرف العلة";
-      return `نبدأ بـ«${target}»: هو فعل أمر لم يتصل به ضمير. ${presentBase} فنجد أن آخر أصله ${weak}، وقد حُذف في صيغة الأمر؛ لذلك نصل إلى: ${label}.`;
-    }
-    return `نبدأ بـ«${target}»: هو فعل أمر لم يتصل به شيء، وآخره صحيح؛ لذلك يكون مبنيًا على السكون، ونصل إلى: ${label}.`;
-  }
-
-  if (startId.includes("present") || label.includes("فعل مضارع") || Object.prototype.hasOwnProperty.call(facts, "hasTool")) {
-    const tool = facts.toolWord || facts.tool;
-    const toolText = facts.hasTool && tool ? `سبقته أداة «${tool}»` : "لم تسبقه أداة نصب أو جزم";
-    const shape = facts.shape === "five" ? "وهو من الأفعال الخمسة" : facts.ending === "weak" ? "وهو معتل الآخر" : "وهو صحيح الآخر";
-    return `نبدأ بـ«${target}»: هو فعل مضارع. ${toolText}، ${shape}. نجمع هذين القرارين لنحدد حالته وعلامته، فنصل إلى: ${label}.`;
-  }
-
-  if (startId.includes("past") || label.includes("فعل ماض")) {
-    const attached = facts.attached;
-    const attachedText = attached === "waw" ? "اتصلت به واو الجماعة" : attached === "nun_niswa" ? "اتصلت به نون النسوة" : attached === "taa_fael" || attached === "na" ? "اتصل به ضمير رفع متحرك" : attached === "alif" ? "اتصلت به ألف الاثنين" : attached === "taa_tanith" ? "اتصلت به تاء التأنيث الساكنة" : "لم يتصل بآخره ما يغيّر بناءه";
-    return `نبدأ بـ«${target}»: هو فعل ماضٍ، ثم نفحص ما اتصل بآخره. ${attachedText}؛ ومن هذا الاتصال نحدد علامة البناء ونصل إلى: ${label}.`;
-  }
-
-  if (label.includes("فاعل")) return `نبحث عمّن قام بالفعل في الجملة؛ فنجد أن «${target}» هو القائم به، لذلك وظيفته فاعل، والفاعل مرفوع دائمًا. ثم ننظر إلى صورة الكلمة لتحديد علامة الرفع، فنصل إلى: ${label}.`;
-  if (label.includes("مفعول به")) return `نبحث عمّا وقع عليه الفعل؛ فنجد أن «${target}» وقع عليه الحدث، لذلك وظيفته مفعول به، والمفعول به منصوب دائمًا. ثم ننظر إلى نوع الكلمة لتحديد علامة النصب، فنصل إلى: ${label}.`;
-  if (label.includes("مبتدأ")) return `نبدأ بالجملة الاسمية ونحدد الاسم الذي بدأ به الحديث؛ وهو «${target}»، لذلك هو مبتدأ مرفوع. ثم ننظر إلى نوعه لتحديد علامة الرفع، فنصل إلى: ${label}.`;
-  if (label.includes("خبر")) return `بعد تحديد المبتدأ أو الاسم الناسخ، نسأل: ما المعلومة التي أتمت المعنى؟ الجواب هو «${target}»، لذلك نحدد نوع الخبر وحكمه ثم علامته، فنصل إلى: ${label}.`;
-  if (label.includes("نعت")) return `نربط «${target}» بالاسم الذي قبله؛ فهو يصفه، لذلك هو نعت. والنعت يتبع منعوته في الإعراب، ثم نحدد العلامة من صورة الكلمة، فنصل إلى: ${label}.`;
-  if (label.includes("توكيد")) return `نلاحظ أن «${target}» أعاد اللفظ أو قوّى معنى الاسم قبله، لذلك هو توكيد. والتوكيد يتبع المؤكَّد في الإعراب، فننقل حكمه ثم نحدد العلامة، ونصل إلى: ${label}.`;
-  if (label.includes("بدل")) return `نلاحظ أن «${target}» هو المقصود بالحكم بعد اسم قبله، لذلك هو بدل. والبدل يتبع المبدل منه في الإعراب، ثم نحدد العلامة من صورة الكلمة، فنصل إلى: ${label}.`;
-  if (label.includes("معطوف")) return `نحدد الاسم قبل حرف العطف، ثم نجد أن «${target}» شاركه في الحكم، لذلك هو معطوف يتبع المعطوف عليه في الإعراب، فنصل إلى: ${label}.`;
-
-  return example.whyCorrect || `نبدأ بموقع «${target}» في الجملة، ثم نحدد وظيفته أو نوعه، وبعد ذلك نثبت الحكم والعلامة حتى نصل إلى: ${label}.`;
-}
-
-function buildRemedialQueueFromMistakes(rows: QuizAnswerRow[], sourceExamples: QuizExampleLike[]) {
-  const wrongRows = rows.filter((row) => !row.isCorrect);
-  const queue: QuizExampleLike[] = [];
-  const used = new Set<string>();
-
-  wrongRows.forEach((row, idx) => {
-    const sameSkill = sourceExamples.filter((ex) => getExampleCoverageKeys(ex).includes(row.expectedCoverage));
-    const preferred = sameSkill.find((ex) => String(ex.id) !== String(row.exampleId)) || sameSkill[0] || sourceExamples.find((ex) => String(ex.id) === String(row.exampleId));
-    if (!preferred) return;
-    const key = `${row.expectedCoverage}-${preferred.id}-${idx}`;
-    if (used.has(key)) return;
-    used.add(key);
-    queue.push({
-      ...preferred,
-      id: `remedial-${row.exampleId}-${idx}-${preferred.id}`,
-      prompt: "لنحل مثالًا جديدًا من موضع الخطأ نفسه.",
-      facts: {
-        ...(preferred.facts || {}),
-        remedialOrigin: {
-          sentence: row.sentence,
-          target: row.target,
-          actualLabel: row.actualLabel,
-          expectedLabel: row.expectedLabel,
-          expectedCoverage: row.expectedCoverage,
-        },
-      },
-    });
-  });
-
-  return queue.slice(0, 8);
-}
-
-function normalizeCoverageKey(key?: string | null) {
-  if (!key) return null;
-  return resultIdToCoverage(key) || key;
-}
-
-function uniqueCoverageKeys(keys: any[] = []) {
-  return Array.from(
-    new Set(
-      keys
-        .map((key) => normalizeCoverageKey(typeof key === "string" ? key : null))
-        .filter(Boolean) as string[]
-    )
-  );
-}
-
-function getResultCoverageKeys(tree: any, resultNodeId?: string | null) {
-  if (!resultNodeId) return [];
-  const node = tree?.nodes?.[resultNodeId];
-  if (!node || node.type !== "result") return [];
-  return uniqueCoverageKeys([node.coverage, resultNodeId]);
-}
-
-function getExampleCoverageKeys(example: any) {
-  return uniqueCoverageKeys(Array.isArray(example?.covers) ? example.covers : []);
-}
-
-function resolveCoverageKeys(params: {
-  tree: any;
-  example: any;
-  currentNodeId?: string | null;
-  requiredKeys: string[];
-}) {
-  const { tree, example, currentNodeId, requiredKeys } = params;
-  const required = new Set(requiredKeys);
-  const fromResult = getResultCoverageKeys(tree, currentNodeId).filter((key) => required.has(key));
-  const fromExample = getExampleCoverageKeys(example).filter((key) => required.has(key));
-  return uniqueCoverageKeys([...fromResult, ...fromExample]).filter((key) => required.has(key));
-}
-
-function findResultLabelByCoverage(tree: any, coverage?: string) {
-  if (!coverage) return "";
-  const nodes = Object.values(tree?.nodes || {}) as any[];
-  const match = nodes.find((n) => n?.type === "result" && (n?.coverage === coverage || resultIdToCoverage(n?.id) === coverage));
-  return firstLine(match?.text);
-}
-
-function coverageDisplayLabel(key?: string | null) {
-  const k = String(key || "");
-  const labels: Record<string, string> = {
-    "tawabi.naat": "النعت",
-    "tawabi.atf": "العطف",
-    "tawabi.tawkid": "التوكيد",
-    "tawabi.tawkid_lafzi": "التوكيد اللفظي",
-    "tawabi.tawkid_manawi": "التوكيد المعنوي",
-    "tawabi.badal": "البدل",
-    "tawabi.raf3": "الرفع",
-    "tawabi.nasb": "النصب",
-    "tawabi.jarr": "الجر",
-    "tawabi.singular": "المفرد",
-    "tawabi.dual": "المثنى",
-    "tawabi.jms": "جمع مذكر سالم",
-    "tawabi.jfs": "جمع مؤنث سالم",
-    "tawabi.jt": "جمع تكسير",
-    "tawabi.five": "الأسماء الخمسة",
-    "tawabi.sentence": "الجملة",
-    "tawabi.shibh": "شبه الجملة",
-    "tawabi.damma": "الضمة",
-    "tawabi.fatha": "الفتحة",
-    "tawabi.kasra": "الكسرة",
-    "tawabi.alif": "الألف",
-    "tawabi.yaa": "الياء",
-    "tawabi.waw": "الواو",
-  };
-  if (labels[k]) return labels[k];
-  return toStudentArabicOption(k, "التصنيف النحوي المناسب");
-}
-
-function safeFinalLabel(tree: any, example: any, fallbackCoverage?: string) {
-  const fromExample = exampleFinalLabel(example);
-  if (fromExample && !looksLikeProgrammingOption(fromExample)) return toStudentArabicOption(fromExample);
-  const fromResult = findResultLabelByCoverage(tree, fallbackCoverage);
-  if (fromResult && !looksLikeProgrammingOption(fromResult)) return toStudentArabicOption(fromResult);
-  return coverageDisplayLabel(fallbackCoverage);
-}
-
 export default function ExercisePlayer({
   title,
   mode,
@@ -4088,24 +3244,8 @@ export default function ExercisePlayer({
 }: Props) {
   const stageMeta = getStageMeta(mode);
   const router = useRouter();
-  const [covered, setCovered] = React.useState<Record<string, boolean>>(buildEmptyCovered(coverageKeysOrdered));
-  const [exampleIndex, setExampleIndex] = React.useState(0);
-  const [feedback, setFeedback] = React.useState<{ wrongId?: string; correctId?: string; hint?: string } | null>(null);
-  const [selectedQuizOption, setSelectedQuizOption] = React.useState<string | null>(null);
-  const [quizLocked, setQuizLocked] = React.useState(false);
-  const [quizOrder, setQuizOrder] = React.useState<number[]>([]);
-  const [quizCursor, setQuizCursor] = React.useState(0);
-  const [quizAnswers, setQuizAnswers] = React.useState<QuizAnswerRow[]>([]);
-  const [remedialActive, setRemedialActive] = React.useState(false);
-  const [remedialQueue, setRemedialQueue] = React.useState<QuizExampleLike[]>([]);
-  const [remedialCursor, setRemedialCursor] = React.useState(0);
-  const [remedialSelected, setRemedialSelected] = React.useState<string | null>(null);
-  const [remedialChecked, setRemedialChecked] = React.useState(false);
-  const [remedialResults, setRemedialResults] = React.useState<QuizAnswerRow[]>([]);
-  const [learnReady, setLearnReady] = React.useState(false);
-  const [practiceReady, setPracticeReady] = React.useState(false);
+  const [feedback, setFeedback] = React.useState<AnswerFeedbackState | null>(null);
   const [toast, setToast] = React.useState("");
-  const [mounted, setMounted] = React.useState(false);
   const [followUpChoice, setFollowUpChoice] = React.useState<string | null>(null);
   const [activeGlossary, setActiveGlossary] = React.useState<string | null>(null);
   const [dialogBubble, setDialogBubble] = React.useState<{ tone: "success" | "hint" | "celebrate"; text: string } | null>(null);
@@ -4121,7 +3261,11 @@ export default function ExercisePlayer({
   const [stepReview, setStepReview] = React.useState<StepReviewState | null>(null);
   const [practiceCorrectionMode, setPracticeCorrectionMode] = React.useState(false);
   const [practiceRetryReady, setPracticeRetryReady] = React.useState(false);
-  const [practiceWrongPanel, setPracticeWrongPanel] = React.useState<{ wrongLabel: string; steps: string[]; nextState: any } | null>(null);
+  const [practiceWrongPanel, setPracticeWrongPanel] = React.useState<{
+    wrongLabel: string;
+    steps: string[];
+    nextState: RunnerState;
+  } | null>(null);
   const workAreaRef = React.useRef<HTMLElement | null>(null);
   const activeCardRef = React.useRef<HTMLDivElement | null>(null);
   const feedbackAreaRef = React.useRef<HTMLDivElement | null>(null);
@@ -4130,11 +3274,67 @@ export default function ExercisePlayer({
   const correctAdvanceTimerRef = React.useRef<number | null>(null);
   const answerAdvanceLockRef = React.useRef(false);
   const exampleNavLockRef = React.useRef(false);
-  const quizFinalizeLockRef = React.useRef(false);
   const stepReviewLockRef = React.useRef(false);
   const practiceNextLockRef = React.useRef(false);
-  const recentExampleIdsRef = React.useRef<string[]>([]);
-  const usedExampleIdsRef = React.useRef<string[]>([]);
+
+  const stageSession = useStageSession({
+    mode,
+    tree,
+    examples,
+    orderedKeys: coverageKeysOrdered,
+    topicId,
+    level,
+    onSaveProgress,
+  });
+
+  const {
+    covered,
+    exampleIndex,
+    learnReady,
+    practiceReady,
+    metrics: stageMetrics,
+  } = stageSession;
+
+  const persistQuizSummary = React.useCallback(async (summary: QuizSummary) => {
+    if (!topicId || !onSaveProgress) return;
+    const payload = buildStageProgressPayload({
+      mode: "quiz",
+      topicId,
+      level,
+      covered: buildEmptyCovered(coverageKeysOrdered),
+      coverageKeys: coverageKeysOrdered,
+      extra: {
+        quiz_passed: summary.passed,
+        quiz_score: summary.score,
+        quiz_total: summary.answeredRows.length,
+      },
+    });
+    await onSaveProgress(payload);
+  }, [coverageKeysOrdered, level, onSaveProgress, topicId]);
+
+  const quizSession = useQuizSession({
+    mode,
+    tree,
+    examples: examples as QuizExampleLike[],
+    quizCount,
+    topicId,
+    onComplete: persistQuizSummary,
+  });
+
+  const {
+    order: quizOrder,
+    cursor: quizCursor,
+    selected: selectedQuizOption,
+    remedialActive,
+    remedialQueue,
+    remedialCursor,
+    remedialSelected,
+    remedialChecked,
+    remedialExample,
+    remedialOptions,
+    remedialExpectedLabel,
+    remedialIsCheckedCorrect,
+  } = quizSession;
 
 
   React.useEffect(() => {
@@ -4162,14 +3362,13 @@ export default function ExercisePlayer({
     if (height > 0) setQuestionMotionHeight(height);
   }
 
-  const currentIdx = mode === "quiz" ? quizOrder[quizCursor] ?? 0 : exampleIndex;
+  const currentIdx = mode === "quiz" ? quizSession.currentIndex : exampleIndex;
   const example = examples[currentIdx];
   const [state, setState] = React.useState<any>(() => buildRunnerState(tree, mode, example));
 
   React.useEffect(() => {
     answerAdvanceLockRef.current = false;
     exampleNavLockRef.current = false;
-    quizFinalizeLockRef.current = false;
     stepReviewLockRef.current = false;
     practiceNextLockRef.current = false;
   }, [mode, exampleIndex, quizCursor, state?.currentNodeId]);
@@ -4177,15 +3376,6 @@ export default function ExercisePlayer({
   React.useEffect(() => {
     setPracticeWrongPanel(null);
   }, [exampleIndex, state?.currentTarget]);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  React.useEffect(() => {
-    recentExampleIdsRef.current = [];
-    usedExampleIdsRef.current = [];
-  }, [topicId, level, mode]);
 
   React.useEffect(() => {
     if (!toast) return undefined;
@@ -4199,8 +3389,6 @@ export default function ExercisePlayer({
     if (!example) return;
     setState(buildRunnerState(tree, mode, example));
     setFeedback(null);
-    setSelectedQuizOption(null);
-    setQuizLocked(false);
     setFollowUpChoice(null);
     setActiveGlossary(null);
     setDialogBubble(null);
@@ -4215,107 +3403,24 @@ export default function ExercisePlayer({
     bringWorkAreaIntoView("soft");
   }, [tree, mode, example]);
 
-  React.useEffect(() => {
-    if (mode !== "quiz") return;
-    const count = Math.min(quizCount, examples.length);
-    setQuizOrder(examples.map((_, i) => i).slice(0, count));
-    setQuizCursor(0);
-    setQuizAnswers([]);
-  }, [mode, examples, quizCount]);
-
-  React.useEffect(() => {
-    let active = true;
-
-    async function loadProgress() {
-      const empty = buildEmptyCovered(coverageKeysOrdered);
-      if (!mounted || !topicId || !level) {
-        if (!active) return;
-        setCovered(empty);
-        return;
-      }
-
-      try {
-        const row = await getTopicProgress(topicId, level);
-        if (!active) return;
-
-        if (mode === "learn") {
-          const next = { ...empty };
-          (row?.coverage || []).forEach((k: string) => {
-            if (k in next) next[k] = true;
-          });
-          setCovered(next);
-          setExampleIndex(pickNextExampleIndex(examples, coverageKeysOrdered, next, 0));
-        } else if (mode === "practice") {
-          const next = { ...empty };
-          (row?.practice_coverage || []).forEach((k: string) => {
-            if (k in next) next[k] = true;
-          });
-          setCovered(next);
-          setExampleIndex(pickNextExampleIndex(examples, coverageKeysOrdered, next, 0));
-        } else {
-          setCovered(empty);
-        }
-
-        setLearnReady(Boolean(row?.learn_completed));
-        setPracticeReady(Boolean(row?.practice_completed));
-      } catch {
-        if (!active) return;
-        setCovered(empty);
-        setLearnReady(false);
-        setPracticeReady(false);
-      }
-    }
-
-    loadProgress();
-    return () => {
-      active = false;
-    };
-  }, [mounted, topicId, level, mode, examples, coverageKeysOrdered]);
-
   const node = tree?.nodes?.[state.currentNodeId];
   const thinkingNode = normalizeThinkingNode(node, state);
-  const totalCount = coverageKeysOrdered.length;
-  const rawDoneCount = coverageKeysOrdered.filter((k) => covered[k]).length;
-  const doneCount = Math.min(rawDoneCount, totalCount);
-  const coveredPercent = calcPercent(covered, coverageKeysOrdered);
-  const isDone = coveredPercent >= 100;
-  const nextStageReady = mode === "learn" ? learnReady || coveredPercent >= 100 : mode === "practice" ? practiceReady || coveredPercent >= 100 : false;
-  const stepLabel = coverageKeysOrdered.find((k) => !covered[k]) || "مكتمل";
-  const quizFinished = mode === "quiz" && quizOrder.length > 0 && quizCursor >= quizOrder.length;
-  const answeredQuizRows = quizAnswers.filter(Boolean);
-  const quizScore = answeredQuizRows.filter((a) => a.isCorrect).length;
-  const quizPercent = answeredQuizRows.length ? Math.round((quizScore / answeredQuizRows.length) * 100) : 0;
-  const wrongQuizRows = answeredQuizRows.filter((a) => !a.isCorrect);
-  const canDownloadCertificate = quizFinished && quizPercent >= QUIZ_PASS_PERCENT;
-  const canStartRemedial = quizFinished && wrongQuizRows.length > 0;
-  const quizOptions = React.useMemo(() => {
-    return buildCloseQuizOptions(
-      example as QuizExampleLike,
-      `${topicId || "topic"}-${(example as QuizExampleLike)?.id || currentIdx}-${quizCursor}`,
-      quizCursor
-    );
-  }, [example, currentIdx, quizCursor, topicId]);
-
-  const remedialExample = remedialQueue[remedialCursor];
-  const remedialOptions = React.useMemo(() => {
-    if (!remedialExample) return [];
-    return buildCloseQuizOptions(
-      remedialExample,
-      `${topicId || "topic"}-remedial-${remedialExample.id}-${remedialCursor}`,
-      remedialCursor
-    );
-  }, [remedialExample, remedialCursor, topicId]);
-  const remedialExpectedLabel = remedialExample
-    ? localQuizExpectedLabel(safeFinalLabel(tree, remedialExample, getExampleCoverageKeys(remedialExample)[0] || ""), remedialExample)
-    : "";
-  const remedialIsCheckedCorrect = remedialChecked && isSameQuizAnswer(remedialSelected, remedialExpectedLabel);
-
-  React.useEffect(() => {
-    if (mode !== "quiz") return;
-    const existing = quizAnswers[quizCursor];
-    setSelectedQuizOption(existing?.actualLabel || null);
-    setQuizLocked(Boolean(existing?.actualLabel));
-  }, [mode, quizCursor, quizAnswers]);
+  const {
+    totalCount,
+    doneCount,
+    percent: coveredPercent,
+    isDone,
+    nextStageReady,
+    nextCoverageKey: stepLabel,
+  } = stageMetrics;
+  const quizFinished = quizSession.finished;
+  const quizSummary = quizSession.summary;
+  const answeredQuizRows = quizSummary.answeredRows;
+  const quizScore = quizSummary.score;
+  const quizPercent = quizSummary.percent;
+  const canDownloadCertificate = quizSession.canDownloadCertificate;
+  const canStartRemedial = quizSession.canStartRemedial;
+  const quizOptions = quizSession.options;
 
   const visibleResultPieces = buildVisibleResultDraft(tree, state, thinkingNode, droppedChoice);
   const completedStepCards = buildVisibleResultDraft(tree, state, thinkingNode, null);
@@ -4338,9 +3443,6 @@ export default function ExercisePlayer({
     ? (thinkingNode?.answers || []).filter((answer: any) => !isHintAnswerOption(answer))
     : [];
   const resultCoverageKeys = node?.type === "result" ? resolveCoverageKeys({ tree, example, currentNodeId: state?.currentNodeId, requiredKeys: coverageKeysOrdered }) : [];
-  const currentExampleKeyForStage = String(examples[currentIdx]?.id || currentIdx);
-  const usedWithCurrent = new Set([...(usedExampleIdsRef.current || []), currentExampleKeyForStage]);
-  const allExamplesSeenInStage = mode !== "quiz" && examples.length > 0 && usedWithCurrent.size >= examples.length;
   const resultWouldCompleteStage = mode !== "quiz" && node?.type === "result" && (coverageKeysOrdered.length > 0 && coverageKeysOrdered.every((key) => covered[key] || resultCoverageKeys.includes(key)));
   // لا نعرض بطاقة انتهاء المرحلة قبل أن يرى الطالب نتيجة المثال الأخير.
   // تظهر نتيجة الإعراب أولًا، ثم ينقله الزر بعدها إلى المرحلة التالية.
@@ -4385,116 +3487,7 @@ export default function ExercisePlayer({
     setFollowUpChoice(label);
   }
 
-  async function persist(nextCovered: Record<string, boolean>, extra: any = {}) {
-    if (!topicId || !onSaveProgress) return;
-    const percent = calcPercent(nextCovered, coverageKeysOrdered);
-    const coverage = coverageKeysOrdered.filter((k) => nextCovered[k]);
-
-    // مهم جدًا: لا نرسل percent = 0 في التدريب أو المرحلة النهائية؛ لأن ذلك يمسح نسبة المرحلة الأولى.
-    // نرسل فقط الحقل الخاص بالمرحلة الحالية، وبذلك يبقى النظام القديم محفوظًا ويصبح coverage حقيقيًا.
-    const payload: any = {
-      topicId,
-      level,
-      learn_completed: mode === "learn" ? percent >= 100 : extra.learn_completed,
-      practice_completed: mode === "practice" ? percent >= 100 : extra.practice_completed,
-      quiz_passed: extra.quiz_passed,
-      quiz_score: extra.quiz_score,
-      quiz_total: extra.quiz_total,
-    };
-
-    if (mode === "learn") {
-      payload.percent = percent;
-      payload.coverage = coverage;
-    }
-
-    if (mode === "practice") {
-      payload.practice_percent = percent;
-      payload.practice_coverage = coverage;
-    }
-
-    await onSaveProgress(payload);
-  }
-
-  function markCurrentCovered() {
-    const next = { ...covered };
-    const keys = resolveCoverageKeys({
-      tree,
-      example,
-      currentNodeId: state?.currentNodeId,
-      requiredKeys: coverageKeysOrdered,
-    });
-
-    keys.forEach((k: string) => {
-      next[k] = true;
-    });
-
-    if (!keys.length && tree?.nodes?.[state?.currentNodeId]?.type === "result") {
-      setToast("وصلتِ للنتيجة، لكن هذا المسار لا يملك مفتاح تغطية بعد");
-    }
-
-    setCovered(next);
-    return next;
-  }
-
-  async function goNextExample() {
-    if (exampleNavLockRef.current) return;
-    exampleNavLockRef.current = true;
-    const releaseNavLock = () => { window.setTimeout(() => { exampleNavLockRef.current = false; }, 350); };
-    const nextCovered = markCurrentCovered();
-    const percent = calcPercent(nextCovered, coverageKeysOrdered);
-
-    try {
-      await persist(nextCovered, {
-        learn_completed: mode === "learn" ? percent >= 100 : undefined,
-        practice_completed: mode === "practice" ? percent >= 100 : undefined,
-      });
-      if (mode === "learn" && percent >= 100) setLearnReady(true);
-      if (mode === "practice" && percent >= 100) setPracticeReady(true);
-    } catch {
-      setToast("تعذر حفظ التقدم الآن");
-    }
-
-    const currentExampleId = String(examples[currentIdx]?.id || currentIdx);
-    const recent = recentExampleIdsRef.current.filter(Boolean);
-    const used = new Set([...(usedExampleIdsRef.current || []), currentExampleId]);
-    usedExampleIdsRef.current = Array.from(used);
-
-    if (percent >= 100) {
-      if (mode === "learn") setLearnReady(true);
-      if (mode === "practice") setPracticeReady(true);
-      if (stageMeta.nextHrefPrefix && topicId) {
-        router.push(`${stageMeta.nextHrefPrefix}${topicId}`);
-        return;
-      }
-    }
-
-    const uncoveredKeys = coverageKeysOrdered.filter((k) => !nextCovered[k]);
-    const unseenCandidates = examples
-      .map((ex, idx) => ({ idx, id: String(ex?.id || idx), keys: getExampleCoverageKeys(ex) }))
-      .filter((item) => item.idx !== currentIdx && !used.has(item.id));
-
-    let nextIndex: number | null = null;
-    if (!unseenCandidates.length) {
-      // لا نغلق المرحلة لمجرد انتهاء الأمثلة؛ معيار الإغلاق هو اكتمال مفاتيح التغطية.
-      // إن بقي مفتاح غير منجز نسمح بتكرار موجّه لمثال يغطيه بدل الوقوف عند عدّاد خاطئ.
-      const fallback = examples
-        .map((ex, idx) => ({ idx, id: String(ex?.id || idx), keys: getExampleCoverageKeys(ex) }))
-        .find((item) => item.idx !== currentIdx && item.keys.some((key) => uncoveredKeys.includes(key)));
-      if (!fallback) {
-        setToast("لم يبق مثال جديد يغطي مهارة غير منجزة");
-        releaseNavLock();
-        return;
-      }
-      nextIndex = fallback.idx;
-    } else {
-      const coverageCandidate = unseenCandidates.find((item) =>
-        !uncoveredKeys.length || item.keys.some((key) => uncoveredKeys.includes(key))
-      );
-      nextIndex = (coverageCandidate || unseenCandidates[0]).idx;
-    }
-
-    recentExampleIdsRef.current = [...recent.slice(-5), currentExampleId];
-    setExampleIndex(nextIndex);
+  function resetStageVisualState(nextIndex: number) {
     setFeedback(null);
     setDropOver(false);
     setDroppedChoice(null);
@@ -4507,47 +3500,72 @@ export default function ExercisePlayer({
     setPendingStageComplete(false);
     setState(buildRunnerState(tree, mode, examples[nextIndex]));
     bringWorkAreaIntoView("center", 120);
-    releaseNavLock();
   }
 
+  async function goNextExample() {
+    if (exampleNavLockRef.current) return;
+    exampleNavLockRef.current = true;
+    const releaseNavLock = () => { window.setTimeout(() => { exampleNavLockRef.current = false; }, 350); };
+
+    const result = await stageSession.advance({
+      currentIndex: currentIdx,
+      example,
+      currentNodeId: state?.currentNodeId,
+    });
+
+    if (result.saveFailed) {
+      setToast("تعذر حفظ التقدم الآن");
+    } else if (result.missingCoverage) {
+      setToast("وصلتِ للنتيجة، لكن هذا المسار لا يملك مفتاح تغطية بعد");
+    }
+
+    if (result.status === "stage-complete") {
+      if (stageMeta.nextHrefPrefix && topicId) {
+        router.push(`${stageMeta.nextHrefPrefix}${topicId}`);
+        return;
+      }
+      releaseNavLock();
+      return;
+    }
+
+    if (result.status === "blocked") {
+      setToast("لم يبق مثال جديد يغطي مهارة غير منجزة");
+      releaseNavLock();
+      return;
+    }
+
+    if (result.status === "next") {
+      resetStageVisualState(result.nextIndex);
+    }
+    releaseNavLock();
+  }
 
   async function completeCurrentAndGoNextStage() {
     if (exampleNavLockRef.current) return;
     exampleNavLockRef.current = true;
     const releaseNavLock = () => { window.setTimeout(() => { exampleNavLockRef.current = false; }, 350); };
-    const nextCovered = markCurrentCovered();
-    const percent = calcPercent(nextCovered, coverageKeysOrdered);
 
-    try {
-      await persist(nextCovered, {
-        learn_completed: mode === "learn" ? true : undefined,
-        practice_completed: mode === "practice" ? true : undefined,
-      });
-      if (mode === "learn") setLearnReady(true);
-      if (mode === "practice") setPracticeReady(true);
-    } catch {
+    const result = await stageSession.advance({
+      currentIndex: currentIdx,
+      example,
+      currentNodeId: state?.currentNodeId,
+      forceComplete: true,
+    });
+
+    if (result.status === "save-failed") {
       setToast("تمت المرحلة، لكن تعذر حفظ التقدم الآن");
       releaseNavLock();
       return;
     }
 
-    const currentExampleId = String(examples[currentIdx]?.id || currentIdx);
-    const used = new Set([...(usedExampleIdsRef.current || []), currentExampleId]);
-    usedExampleIdsRef.current = Array.from(used);
+    if (result.missingCoverage) {
+      setToast("وصلتِ للنتيجة، لكن هذا المسار لا يملك مفتاح تغطية بعد");
+    }
 
-    if (percent < 100) {
-      const unseen = examples
-        .map((ex, idx) => ({ idx, id: String(ex?.id || idx), keys: getExampleCoverageKeys(ex) }))
-        .filter((item) => item.idx !== currentIdx && !used.has(item.id));
-      const uncoveredKeys = coverageKeysOrdered.filter((k) => !nextCovered[k]);
-      const chosen = unseen.find((item) => !uncoveredKeys.length || item.keys.some((key) => uncoveredKeys.includes(key))) || unseen[0];
-      if (chosen) {
-        setExampleIndex(chosen.idx);
-        setStepReview(null);
-        setState(buildRunnerState(tree, mode, examples[chosen.idx]));
-        releaseNavLock();
-        return;
-      }
+    if (result.status === "next") {
+      resetStageVisualState(result.nextIndex);
+      releaseNavLock();
+      return;
     }
 
     if (stageMeta.nextHrefPrefix && topicId) {
@@ -4558,9 +3576,7 @@ export default function ExercisePlayer({
   }
 
   function resetTraining() {
-    const empty = buildEmptyCovered(coverageKeysOrdered);
-    setCovered(empty);
-    setExampleIndex(0);
+    stageSession.reset();
     setFeedback(null);
     setDropOver(false);
     setDroppedChoice(null);
@@ -4571,20 +3587,9 @@ export default function ExercisePlayer({
     setPendingStageComplete(false);
     setState(buildRunnerState(tree, mode, examples[0]));
     bringWorkAreaIntoView("center", 120);
-    if (mode === "learn") setLearnReady(false);
-    if (mode === "practice") setPracticeReady(false);
   }
 
-  function isAnswerCorrect(answer: any) {
-    if (!answer) return false;
-    if (answer.eval) {
-      const factValue = state.facts?.[answer.eval.fact];
-      if (Array.isArray(answer.eval.anyOf)) return answer.eval.anyOf.includes(factValue);
-      if (Object.prototype.hasOwnProperty.call(answer.eval, "notEquals")) return factValue !== answer.eval.notEquals;
-      return factValue === answer.eval.equals;
-    }
-    return Boolean(answer.correct);
-  }
+
 
   function handleLearnDrop(answerId: string, label: string) {
     if (mode !== "learn") return;
@@ -4615,35 +3620,7 @@ export default function ExercisePlayer({
     } catch {}
   }
 
-  function microPraiseText(node: any, answer: any, state: any) {
-    const phrases = mode === "practice" ? [
-      "نجمة جديدة ✓ اختيار موفق.",
-      "أحسنت، اقتربت من الكأس.",
-      "رائع، ثبّت مهارة جديدة.",
-      "ممتاز، التحدي يسير بقوة.",
-      "إجابة دقيقة، نربح خطوة في التحدي.",
-      "جميل، فهمك صار أوضح.",
-      "أداء قوي، أكمل الجولة.",
-      "أحسنت، هذه نقطة إتقان.",
-      "اختيار ذكي، نكمل التحدي.",
-      "ممتاز جدًا، نجمة في المسار."
-    ] : [
-      "أحسنت، خطوة ثابتة.",
-      "ممتاز، واصل بنفس التركيز.",
-      "اختيار موفق، نكمل.",
-      "رائع، اقتربنا من الإعراب.",
-      "تمام، بنيت خطوة صحيحة.",
-      "جميل، هذا تفكير نحوي دقيق.",
-      "صحيح، ننتقل للخطوة التالية.",
-      "أداء جميل، استمر.",
-      "إجابة دقيقة، نثبتها في المسار.",
-      "ممتاز جدًا، خطوة أقرب للنتيجة."
-    ];
-    const key = `${node?.id || ""}:${answer?.id || ""}:${state?.currentTarget || ""}`;
-    let hash = 0;
-    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-    return phrases[hash % phrases.length];
-  }
+
 
   function challengeGuidanceText() {
     if (mode !== "practice") return "";
@@ -4737,13 +3714,21 @@ export default function ExercisePlayer({
   function handlePick(answerId: string) {
     if (!node || node.type !== "question" || mode === "quiz" || cardPhase !== "idle" || stepReview || answerAdvanceLockRef.current) return;
 
-    const activeNode = thinkingNode || node;
-    const activeTree = { ...tree, nodes: { ...(tree?.nodes || {}), [String(state.currentNodeId)]: activeNode } };
-    const picked = activeNode.answers.find((a: any) => a.id === answerId);
-    const pickedText = String(picked?.text || "").trim();
-    const correctAnswer = activeNode.answers.find((a: any) => isAnswerCorrect(a));
+    const activeNode = (thinkingNode || node) as QuestionNode;
+    const activeTree = {
+      ...tree,
+      nodes: { ...(tree?.nodes || {}), [String(state.currentNodeId)]: activeNode },
+    } as ExerciseTree;
+    const attempt = resolveAnswerAttempt({
+      tree: activeTree,
+      node: activeNode,
+      state,
+      answerId,
+    });
 
-    if (picked?.isHelp || picked?.id === "__help" || pickedText === "لا أعلم") {
+    if (attempt.kind === "missing") return;
+
+    if (attempt.kind === "help") {
       const rawHint = studentHintText(activeNode, null, state) || activeNode?.hint || "فكّر في السؤال الحالي فقط.";
       const smartHint = firstLevelHintText(activeNode?.id, String(rawHint), state?.currentTarget, activeNode?.text);
       const visibleHint = mode === "practice"
@@ -4756,9 +3741,8 @@ export default function ExercisePlayer({
       return;
     }
 
-    const ok = isAnswerCorrect(picked);
-
-    if (!ok) {
+    const picked = attempt.picked;
+    if (attempt.kind === "wrong") {
       const isBuiltTypeNode = String(node?.id || "").includes("built_type") || String(node?.id || "").includes("mabniType");
       const expectedBuiltType = state.facts?.mabniType;
       const smartHint = isBuiltTypeNode
@@ -4772,23 +3756,32 @@ export default function ExercisePlayer({
 
 عد للسؤال وانقر على الإجابة الصحيحة لنكمل الإعراب.` });
       setDroppedChoice(null);
-      if (mode === "practice") {
-        setFeedback({ wrongId: answerId, hint: smartHint });
-      } else {
-        setFeedback({ wrongId: answerId, correctId: correctAnswer?.id, hint: smartHint });
-      }
+      setFeedback(buildWrongFeedback({
+        mode: mode === "practice" ? "practice" : "learn",
+        answerId,
+        correctAnswerId: attempt.correctAnswer?.id,
+        hint: smartHint,
+      }));
+      return;
+    }
+
+    if (attempt.blocked) {
+      setToast("تعذر الانتقال إلى الخطوة التالية في هذا المسار");
       return;
     }
 
     answerAdvanceLockRef.current = true;
-    const res = chooseAnswer({ state, tree: activeTree, answerId } as any);
     const piece = normalizeBuildPiece(picked?.text || "", node?.id || "");
-    const msg = teacherSuccessText(thinkingNode, picked, state, piece);
     const effectLabel = answerEffectLabel(thinkingNode, picked, state);
     const resultText = effectLabel || piece || String(picked?.text || "صحيح");
-    const nextNode = tree?.nodes?.[res.nextState?.currentNodeId];
+    const nextNode = tree?.nodes?.[attempt.nextNodeId];
 
-    setSuccessNudge(microPraiseText(thinkingNode, picked, state));
+    setSuccessNudge(deterministicPraise({
+      mode: mode === "practice" ? "practice" : "learn",
+      nodeId: thinkingNode?.id,
+      answerId: picked?.id,
+      target: state?.currentTarget,
+    }));
     setDialogBubble(null);
     setDroppedChoice((prev) => prev ? { text: prev.text || resultText, tone: "ok" } : { text: resultText, tone: "ok" });
     playSoftStepSound(nextNode?.type === "result" ? "final" : "step");
@@ -4821,7 +3814,7 @@ export default function ExercisePlayer({
           }, STAGED_QUESTION_ENTER_MS);
           return;
         }
-        setState(res.nextState);
+        setState(attempt.nextState);
         setDroppedChoice(null);
         setDialogBubble(null);
         setMicroCelebrateAnswerId(null);
@@ -4838,149 +3831,57 @@ export default function ExercisePlayer({
     }, successHold);
   }
 
+
   async function finalizeQuizExample() {
-    if (quizFinalizeLockRef.current) return;
-    if (!selectedQuizOption) {
+    const result = await quizSession.finalizeCurrent();
+    if (result.status === "missing-selection") {
       setToast("اختر إجابة أولًا");
-      return;
+    } else if (result.status === "missing-example") {
+      setToast("تعذر تحميل سؤال الاختبار النهائي");
+    } else if (result.status === "save-failed") {
+      setToast("تعذر حفظ نتيجة الاختبار النهائي الآن");
     }
-    quizFinalizeLockRef.current = true;
-    const quizExample = example as QuizExampleLike;
-    const expectedCoverage = getExampleCoverageKeys(quizExample)[0] || "";
-    const expectedLabel = localQuizExpectedLabel(safeFinalLabel(tree, quizExample, expectedCoverage), quizExample);
-    const actualLabel = selectedQuizOption;
-    const answerIsCorrect = isSameQuizAnswer(actualLabel, expectedLabel);
-    const row: QuizAnswerRow = {
-      exampleId: quizExample?.id || String(quizCursor),
-      sentence: quizExample?.sentence,
-      target: quizExample?.target,
-      expectedCoverage,
-      expectedLabel,
-      actualCoverage: answerIsCorrect ? expectedCoverage : null,
-      actualLabel,
-      isCorrect: answerIsCorrect,
-      whyCorrect: explainCorrectQuizAnswer(expectedLabel, quizExample),
-      actualOptionReason: actualLabel ? (explainDistractor(actualLabel, expectedLabel, quizExample) || optionReasonForLabel(quizExample?.optionReasons, actualLabel)) : undefined,
-    };
-
-    const nextAnswers = [...quizAnswers];
-    nextAnswers[quizCursor] = row;
-    setQuizAnswers(nextAnswers);
-
-    const nextCursor = quizCursor + 1;
-    if (nextCursor >= quizOrder.length) {
-      setQuizCursor(nextCursor);
-      const answeredRows = nextAnswers.filter(Boolean);
-      const nextPercent = answeredRows.length ? Math.round((answeredRows.filter((a) => a.isCorrect).length / answeredRows.length) * 100) : 0;
-      try {
-        await persist(buildEmptyCovered(coverageKeysOrdered), {
-          quiz_passed: nextPercent >= QUIZ_PASS_PERCENT,
-          quiz_score: answeredRows.filter((a) => a.isCorrect).length,
-          quiz_total: answeredRows.length,
-        });
-      } catch {
-        setToast("تعذر حفظ نتيجة المرحلة النهائية الآن");
-      }
-      window.setTimeout(() => { quizFinalizeLockRef.current = false; }, 250);
-      return;
-    }
-
-    setQuizCursor(nextCursor);
-    window.setTimeout(() => { quizFinalizeLockRef.current = false; }, 250);
   }
 
   function previousQuizQuestion() {
-    setQuizCursor((c) => Math.max(0, c - 1));
+    quizSession.previousQuestion();
   }
 
   function restartQuiz() {
-    setQuizCursor(0);
-    setQuizAnswers([]);
-    setSelectedQuizOption(null);
-    setQuizLocked(false);
-    setRemedialActive(false);
-    setRemedialQueue([]);
-    setRemedialCursor(0);
-    setRemedialSelected(null);
-    setRemedialChecked(false);
-    setRemedialResults([]);
-    quizFinalizeLockRef.current = false;
+    quizSession.restart();
   }
 
   function startRemedialTraining() {
-    const queue = buildRemedialQueueFromMistakes(answeredQuizRows, examples as QuizExampleLike[]);
-    if (!queue.length) {
+    if (!quizSession.startRemedial()) {
       setToast("لا توجد أخطاء واضحة لتوليد تدريب علاجي منها");
       return;
     }
-    setRemedialQueue(queue);
-    setRemedialCursor(0);
-    setRemedialSelected(null);
-    setRemedialChecked(false);
-    setRemedialResults([]);
-    setRemedialActive(true);
     bringWorkAreaIntoView("center", 80);
   }
 
-  function checkRemedialAnswer() {
-    if (!remedialExample) return;
-    if (!remedialSelected) {
+  function goNextRemedial() {
+    const result = quizSession.nextRemedial();
+    if (result === "missing-selection") {
       setToast("اختر إجابة أولًا");
       return;
     }
-    const expectedCoverage = getExampleCoverageKeys(remedialExample)[0] || "";
-    const expectedLabel = localQuizExpectedLabel(safeFinalLabel(tree, remedialExample, expectedCoverage), remedialExample);
-    const isCorrect = isSameQuizAnswer(remedialSelected, expectedLabel);
-    const row: QuizAnswerRow = {
-      exampleId: remedialExample.id,
-      sentence: remedialExample.sentence,
-      target: remedialExample.target,
-      expectedCoverage,
-      expectedLabel,
-      actualCoverage: isCorrect ? expectedCoverage : null,
-      actualLabel: remedialSelected,
-      isCorrect,
-      whyCorrect: remedialExample.whyCorrect || "راجع المسار: نبدأ بالوظيفة أو العلاقة، ثم الحالة، ثم العلامة.",
-      actualOptionReason: isCorrect ? "صحيح؛ عالجت موضع الضعف في هذا المثال." : explainDistractor(remedialSelected, expectedLabel),
-    };
-    setRemedialResults((prev) => {
-      const next = [...prev];
-      next[remedialCursor] = row;
-      return next;
-    });
-    setRemedialChecked(true);
-  }
-
-  function goNextRemedial() {
-    if (!remedialChecked) {
-      checkRemedialAnswer();
-      return;
-    }
-    if (remedialCursor + 1 >= remedialQueue.length) {
-      setRemedialActive(false);
+    if (result === "completed") {
       setToast("انتهى التدريب العلاجي السريع");
       bringWorkAreaIntoView("center", 80);
       return;
     }
-    setRemedialCursor((c) => c + 1);
-    setRemedialSelected(null);
-    setRemedialChecked(false);
-    bringWorkAreaIntoView("center", 80);
+    if (result === "advanced") {
+      bringWorkAreaIntoView("center", 80);
+    }
   }
 
-  const topicName = extractTopicName(title);
   const stageTitle = stageLearningTitle(stageMeta.badge, title);
-  const exampleProgressTotal = mode === "quiz" ? (quizOrder.length || quizCount || 1) : Math.max(1, coverageKeysOrdered.length || 1);
-  const exampleProgressDone = mode === "quiz" ? Math.min(quizCursor, exampleProgressTotal) : Math.min(doneCount, exampleProgressTotal);
-  const exampleProgressPercent = mode === "quiz"
-    ? Math.min(100, Math.max(0, Math.round(((quizFinished ? exampleProgressTotal : quizCursor) / Math.max(1, exampleProgressTotal)) * 100)))
-    : Math.min(100, Math.max(0, Math.round((exampleProgressDone / Math.max(1, exampleProgressTotal)) * 100)));
   const i3rabDraft = buildI3rabDraft(tree, state, state.currentTarget);
   const i3rabTokens = i3rabTokensFromDraft(i3rabDraft);
   const isPracticeMode = mode === "practice";
   const practiceExpectedCoverage = isPracticeMode ? (getExampleCoverageKeys(example)[0] || "") : "";
   const practiceExpectedLabel = isPracticeMode
-    ? safeFinalLabel(tree, example, practiceExpectedCoverage)
+    ? safeFinalLabel(tree, example as QuizExampleLike | undefined, practiceExpectedCoverage)
     : "";
   const practiceDirectOptions = React.useMemo(() => {
     if (!isPracticeMode || !practiceExpectedLabel) return [];
@@ -5000,7 +3901,8 @@ export default function ExercisePlayer({
     const distractors: string[] = [];
     while (unique.length && distractors.length < 2) {
       const idx = hash % unique.length;
-      distractors.push(unique.splice(idx, 1)[0]);
+      const [distractor] = unique.splice(idx, 1);
+      if (distractor) distractors.push(distractor);
       hash = (hash * 1664525 + 1013904223) >>> 0;
     }
     const options = [practiceExpectedLabel, ...distractors];
@@ -5141,237 +4043,68 @@ export default function ExercisePlayer({
 
   return (
     <div className={`exercise-page-shell ${isPracticeMode ? "practice-game-shell" : ""}`}>
-      {clickCheck ? <span key={clickCheck.id} className="click-success-pop" style={{ left: clickCheck.x, top: clickCheck.y }} aria-hidden="true">✓</span> : null}
-      <section className="exercise-hero-card card card-glow">
-        <div className="exercise-hero-main">
-          <span className="exercise-badge stage-learning-badge">{stageTitle}</span>
-          {mode !== "quiz" && (
-            <div className="exercise-meta-inline">
-              <span className="pill pill-accent">المنجَز: {doneCount} / {totalCount}</span>
-              <span className="pill">نتابع: {stepLabels?.[stepLabel] || coverageDisplayLabel(stepLabel)}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="exercise-hero-side">
-          <div className="exercise-progress-panel">
-            <div className="exercise-progress-head">
-              <span>{mode === "quiz" ? "تقدّم المرحلة النهائية" : "نسبة الإنجاز"}</span>
-              <strong>
-                {mode === "quiz"
-                  ? `${Math.min(quizCursor + 1, quizOrder.length || quizCount)} / ${quizOrder.length || quizCount}`
-                  : `${coveredPercent}%`}
-              </strong>
-            </div>
-            <div className="exercise-progress-track">
-              <div
-                className="exercise-progress-fill"
-                style={{
-                  width:
-                    mode === "quiz"
-                      ? `${quizFinished ? 100 : quizOrder.length ? Math.max(8, Math.round(((quizCursor + 1) / quizOrder.length) * 100)) : 0}%`
-                      : `${coveredPercent}%`,
-                }}
-              />
-            </div>
-
-          </div>
-        </div>
-      </section>
+      <ClickSuccessPop point={clickCheck} />
+      <ExerciseHeroView
+        stageTitle={stageTitle}
+        mode={mode}
+        doneCount={doneCount}
+        totalCount={totalCount}
+        nextStepLabel={stepLabels?.[stepLabel] || coverageDisplayLabel(stepLabel)}
+        coveredPercent={coveredPercent}
+        quizCursor={quizCursor}
+        quizTotal={quizOrder.length}
+        quizCount={quizCount}
+        quizFinished={quizFinished}
+      />
 
 
-      {mode !== "quiz" && isDone && node?.type === "result" && (
-        <section className="exercise-complete-banner final-only-complete-banner">
-          <div>
-            <strong>{mode === "learn" ? "اكتملت رحلة التعلّم" : "اكتمل تحدي المهارة"}</strong>
-            <p>{mode === "learn" ? "انتقل الآن إلى تحدي المهارة لتثبيت فهمك بطريقة ممتعة." : "أصبحت جاهزًا لاختبار نفسك والحصول على شهادة الإنجاز."}</p>
-          </div>
-          <button onClick={resetTraining} style={ghostBtn}>
-            {mode === "learn" ? "إعادة التعلّم" : "إعادة التحدي"}
-          </button>
-        </section>
-      )}
+      {mode !== "quiz" && isDone && node?.type === "result" ? (
+        <StageCompletionBanner mode={mode} onReset={resetTraining} />
+      ) : null}
 
       {mode === "quiz" && remedialActive ? (
-        <section className="exercise-panel remedial-stage" style={box}>
-          <div className="remedial-stage-head">
-            <div>
-              <span>عالج ضعفي</span>
-              <h2>نفهم موضع الخطأ ثم نحل مثالًا جديدًا</h2>
-              <p>مثال {Math.min(remedialCursor + 1, remedialQueue.length)} من {remedialQueue.length}</p>
-            </div>
-            <button type="button" onClick={() => setRemedialActive(false)} style={ghostBtn}>العودة للنتيجة</button>
-          </div>
-
-          {remedialExample ? (
-            <>
-              {remedialExample.facts?.remedialOrigin ? (
-                <div className="remedial-origin-card">
-                  <span>موضع الضعف الذي نعالجه</span>
-                  <p>{renderSentence(remedialExample.facts.remedialOrigin.sentence, remedialExample.facts.remedialOrigin.target)}</p>
-                  <div><strong>اختيارك السابق:</strong> {toStudentArabicOption(remedialExample.facts.remedialOrigin.actualLabel || "لم تُسجَّل إجابة")}</div>
-                </div>
-              ) : null}
-
-              <section className="remedial-example-card">
-                <span className="remedial-example-label">مثال جديد من المهارة نفسها</span>
-                <div className="exercise-sentence">{renderSentence(remedialExample.sentence, remedialExample.target)}</div>
-                <p>اختر الإعراب الصحيح للكلمة المحددة.</p>
-              </section>
-
-              <div className="quiz-form-card-options remedial-options">
-                {remedialOptions.map((option, idx) => {
-                  const selected = remedialSelected === option;
-                  const isCorrect = remedialChecked && isSameQuizAnswer(option, remedialExpectedLabel);
-                  const isWrong = remedialChecked && selected && !isCorrect;
-                  return (
-                    <button
-                      key={`${option}-${idx}`}
-                      onClick={() => {
-                        if (remedialChecked) return;
-                        setRemedialSelected(option);
-                      }}
-                      className={`exercise-answer-btn quiz-form-option ${selected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""}`}
-                      style={{
-                        ...answerBtn,
-                        background: isCorrect ? "rgba(34,197,94,.18)" : isWrong ? "rgba(251,146,60,.18)" : selected ? "rgba(47,158,158,.22)" : "rgba(255,255,255,.05)",
-                        borderColor: isCorrect ? "rgba(34,197,94,.65)" : isWrong ? "rgba(251,146,60,.65)" : selected ? "#2f9e9e" : "rgba(255,255,255,.14)",
-                      }}
-                    >
-                      <span className="quiz-option-dot">{idx + 1}</span>
-                      <span>{toStudentArabicOption(option)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {remedialChecked ? (
-                <div className={`remedial-teacher-card ${remedialIsCheckedCorrect ? "is-correct" : "is-wrong"}`}>
-                  <div className="remedial-teacher-title">{remedialIsCheckedCorrect ? "أحسنت، ثبتت المهارة" : "لنحلها معًا"}</div>
-                  {!remedialIsCheckedCorrect ? (
-                    <p className="remedial-choice-reason"><strong>لماذا لم يناسب اختيارك؟</strong> {explainDistractor(remedialSelected, remedialExpectedLabel)}</p>
-                  ) : null}
-                  <p><strong>شرح خطوات الحل:</strong> {buildRemedialTeacherExplanation(remedialExample, remedialExpectedLabel)}</p>
-                  <div className="remedial-final-answer"><strong>الإجابة الصحيحة:</strong> {remedialExpectedLabel}</div>
-                </div>
-              ) : null}
-
-              <div className="quiz-form-actions remedial-actions">
-                <button type="button" onClick={() => { setRemedialSelected(null); setRemedialChecked(false); }} style={ghostBtn}>إعادة المحاولة</button>
-                <button type="button" onClick={goNextRemedial} style={primaryNavBtn} disabled={!remedialSelected}>
-                  {remedialChecked ? (remedialCursor + 1 >= remedialQueue.length ? "إنهاء العلاج" : "مثال جديد من موضع الضعف") : "تحقق من الإجابة"}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="exercise-practice-warning">لا توجد أمثلة علاجية جاهزة الآن.</div>
-          )}
-        </section>
+        <RemedialTrainingView
+          example={remedialExample}
+          options={remedialOptions}
+          cursor={remedialCursor}
+          total={remedialQueue.length}
+          selected={remedialSelected}
+          checked={remedialChecked}
+          expectedLabel={remedialExpectedLabel}
+          isCheckedCorrect={remedialIsCheckedCorrect}
+          renderSentence={renderSentence}
+          onBack={quizSession.closeRemedial}
+          onSelect={quizSession.setRemedialSelected}
+          onRetry={quizSession.retryRemedial}
+          onNext={goNextRemedial}
+        />
       ) : quizFinished ? (
-        <section className="exercise-panel exercise-quiz-summary" style={box}>
-          <div className="exercise-summary-head">
-            <div>
-              <div className="exercise-summary-kicker">النتيجة النهائية</div>
-              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>انتهت المرحلة النهائية</div>
-              <div style={{ opacity: 0.9 }}>نتيجتك: {quizScore} / {answeredQuizRows.length} ({quizPercent}%)</div>
-            </div>
-            <div className={`exercise-result-pill ${quizPercent >= QUIZ_PASS_PERCENT ? "is-pass" : "is-fail"}`}>
-              {quizPercent >= QUIZ_PASS_PERCENT ? "نجاح" : "بحاجة إلى إعادة"}
-            </div>
-          </div>
-
-          <div style={{ marginBottom: 12, opacity: 0.85 }}>معيار النجاح: {QUIZ_PASS_PERCENT}% أو أكثر</div>
-          <div className="quiz-form-actions" style={{ marginBottom: 16, justifyContent: "flex-start", flexWrap: "wrap" }}>
-            {canDownloadCertificate ? (
-              <a href={`/certificate?topicId=${topicId}&level=${level}`} style={{ ...primaryNavBtn, display: "inline-flex", textDecoration: "none" }}>
-                تحميل الشهادة
-              </a>
-            ) : (
-              <button type="button" style={{ ...primaryNavBtn, opacity: 0.45, cursor: "not-allowed" }} disabled>
-                تحميل الشهادة
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={startRemedialTraining}
-              style={{ ...primaryNavBtn, background: canStartRemedial ? undefined : "rgba(255,255,255,.12)", opacity: canStartRemedial ? 1 : 0.48, cursor: canStartRemedial ? "pointer" : "not-allowed" }}
-              disabled={!canStartRemedial}
-            >
-              عالج ضعفي
-            </button>
-            <a
-              href={`/texts/${topicId}`}
-              style={{ ...primaryNavBtn, display: "inline-flex", textDecoration: "none", background: "linear-gradient(135deg,#7c3aed,#4f46e5)" }}
-            >
-              لعبة النصوص
-            </a>
-          </div>
-          {!canDownloadCertificate ? (
-            <div className="exercise-practice-warning" style={{ marginBottom: 16 }}>الشهادة لا تُتاح إلا بعد النجاح بنسبة 80% فأكثر.</div>
-          ) : null}
-          {!canStartRemedial && quizFinished ? (
-            <div className="exercise-practice-warning" style={{ marginBottom: 16 }}>لا توجد أخطاء ظاهرة لبناء تدريب علاجي منها.</div>
-          ) : null}
-
-          <div style={{ display: "grid", gap: 10 }}>
-            {answeredQuizRows.map((a, idx) => (
-              <div key={a.exampleId} className={`exercise-review-card ${a.isCorrect ? "is-correct" : "is-wrong"}`} style={{ padding: 12, border: "1px solid rgba(255,255,255,.12)", borderRadius: 16, background: a.isCorrect ? "rgba(34,197,94,.12)" : "rgba(251,146,60,.12)" }}>
-                <div style={{ fontWeight: 800, marginBottom: 6 }}>السؤال {idx + 1}: {a.isCorrect ? "✅ صحيح" : "❌ خطأ"}</div>
-                <div style={{ marginBottom: 6 }}>الجملة: <span style={{ fontSize: 18 }}>{renderSentence(a.sentence, a.target)}</span></div>
-                <div style={{ marginBottom: 4 }}><strong>إجابتك:</strong> {a.actualLabel || "لم يختر إجابة"}</div>
-                <div style={{ marginBottom: 4 }}><strong>الإجابة الصحيحة:</strong> {a.expectedLabel || coverageDisplayLabel(a.expectedCoverage)}</div>
-                {!a.isCorrect && a.actualOptionReason && <div style={{ marginTop: 6, color: "#ffd5a8", lineHeight: 1.8 }}><strong>سبب خطأ اختيارك:</strong> {a.actualOptionReason}</div>}
-                {!a.isCorrect && a.whyCorrect && <div style={{ marginTop: 6, color: "#b8ffd4", lineHeight: 1.8 }}><strong>كيف نصل إلى الصواب:</strong> {a.whyCorrect}</div>}
-              </div>
-            ))}
-          </div>
-
-          <button onClick={restartQuiz} style={ghostBtn}>إعادة المرحلة النهائية</button>
-        </section>
+        <QuizSummaryView
+          score={quizScore}
+          percent={quizPercent}
+          answers={answeredQuizRows}
+          canDownloadCertificate={canDownloadCertificate}
+          canStartRemedial={canStartRemedial}
+          certificateHref={`/certificate?topicId=${topicId}&level=${level}`}
+          textsHref={`/texts/${topicId}`}
+          renderSentence={renderSentence}
+          onStartRemedial={startRemedialTraining}
+          onRestart={restartQuiz}
+        />
       ) : mode === "quiz" ? (
-        <>
-          <section className="exercise-panel exercise-sentence-panel" style={box}>
-            <div style={{ opacity: 0.6, marginBottom: 6 }}>السؤال {quizCursor + 1} من {quizOrder.length}</div>
-            <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
-            <div className="exercise-sentence">{renderSentence((example as QuizExampleLike)?.sentence, (example as QuizExampleLike)?.target)}</div>
-            <div className="quiz-question-with-instruction" style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>
-              {withoutRepeatedChoiceInstruction(enrichQuizPrompt((example as QuizExampleLike)?.prompt))}
-              <span className="question-choice-prompt"> اختر الإجابة الصحيحة مما يأتي:</span>
-            </div>
-          </section>
-
-          <section className="exercise-panel" style={box}>
-            <div className="quiz-form-card-options">
-              {quizOptions.map((option, idx) => (
-                <button
-                  key={`${option}-${idx}`}
-                  onClick={() => {
-                    setSelectedQuizOption(option);
-                    setQuizLocked(true);
-                  }}
-                  className={`exercise-answer-btn quiz-form-option ${selectedQuizOption === option ? "is-selected" : ""}`}
-                  style={{
-                    ...answerBtn,
-                    background: selectedQuizOption === option ? "rgba(47,158,158,.22)" : "rgba(255,255,255,.05)",
-                    borderColor: selectedQuizOption === option ? "#2f9e9e" : "rgba(255,255,255,.14)",
-                  }}
-                >
-                  <span className="quiz-option-dot">{idx + 1}</span>
-                  <span>{toStudentArabicOption(option)}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="quiz-form-actions">
-              <button onClick={previousQuizQuestion} style={ghostBtn} disabled={quizCursor <= 0}>السابق</button>
-              <button onClick={restartQuiz} style={ghostBtn}>إعادة</button>
-              <button onClick={finalizeQuizExample} style={primaryNavBtn} disabled={!selectedQuizOption}>
-                {quizCursor + 1 >= quizOrder.length ? "تسليم المرحلة النهائية" : "التالي"}
-              </button>
-            </div>
-
-          </section>
-        </>
+        <QuizQuestionView
+          cursor={quizCursor}
+          total={quizOrder.length}
+          example={example as QuizExampleLike}
+          prompt={withoutRepeatedChoiceInstruction(enrichQuizPrompt((example as QuizExampleLike)?.prompt))}
+          options={quizOptions}
+          selected={selectedQuizOption}
+          renderSentence={renderSentence}
+          onSelect={quizSession.setSelected}
+          onPrevious={previousQuizQuestion}
+          onRestart={restartQuiz}
+          onNext={finalizeQuizExample}
+        />
       ) : (
         <>
           <div className="thinking-layout start-style-layout">
@@ -5545,7 +4278,7 @@ export default function ExercisePlayer({
                                   e.dataTransfer.setData("text/plain", String(a.text || ""));
                                 }}
                                 onClick={(e) => {
-                                  if (isAnswerCorrect(a)) {
+                                  if (evaluateAnswer(a, state.facts || {})) {
                                     const id = Date.now();
                                     setClickCheck({ x: e.clientX, y: e.clientY, id });
                                     window.setTimeout(() => setClickCheck((current) => current?.id === id ? null : current), 760);
@@ -5654,8 +4387,8 @@ export default function ExercisePlayer({
               <>
               {pendingStageComplete ? (
                 <div className="stage-focus-next-panel stage-complete-only" aria-live="polite">
-                  <strong>{mode === "learn" ? "انتهت رحلة التعلّم" : "انتهى تحدي المهارة"}</strong>
-                  <span>{mode === "learn" ? "أنهيت مهارات هذا المستوى، والزر التالي ينقلك إلى تحدي المهارة." : "أنهيت التحدي، والزر التالي ينقلك إلى اختبار النفس والشهادة."}</span>
+                  <strong>{mode === "learn" ? "اكتمل التعلّم الموجّه" : "اكتمل التدريب"}</strong>
+                  <span>{mode === "learn" ? "أنهيت مهارات هذا المستوى، والزر التالي ينقلك إلى التدريب." : "أنهيت التدريب، والزر التالي ينقلك إلى الاختبار النهائي."}</span>
                   <button
                     onClick={completeCurrentAndGoNextStage}
                     className="next-example-glow stage-focus-next-btn"
@@ -5668,7 +4401,7 @@ export default function ExercisePlayer({
               ) : (
               <div ref={activeCardRef} className="clean-result-block algorithm-step-card algorithm-final-card pro-final-focus">
                 <div className="final-achievement-mark" aria-hidden="true">{isPracticeMode ? "🏆" : "✓"}</div>
-                <div className="clean-final-label">{isPracticeMode ? "فزت بجولة من تحدي المهارة" : "أحسنت! هذه ثمرة المسار"}</div>
+                <div className="clean-final-label">{isPracticeMode ? "أكملت جولة من التدريب" : "أحسنت! هذه ثمرة المسار"}</div>
                 {isPresentBuiltResult(tree, thinkingNode) ? (
                   <div className="built-closure-note" role="note">{presentBuiltClosureNote(thinkingNode)}</div>
                 ) : null}
@@ -5747,112 +4480,33 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
 
           </div>
 
-          {isDone ? <div className="exercise-bottom-nav stage-locked-next" style={navNextWrap}>
-            <button
-                style={{ ...primaryNavBtn, opacity: nextStageReady ? 1 : 0.48, cursor: nextStageReady ? "pointer" : "not-allowed" }}
-                className="stage-next-button"
-                disabled={!nextStageReady}
-                onClick={() => {
-                  if (!nextStageReady) {
-                    setToast(mode === "learn" ? "أكمل رحلة التعلّم أولًا" : "أكمل تحدي المهارة أولًا");
-                    return;
-                  }
-                  router.push(`${stageMeta.nextHrefPrefix}${topicId}`);
-                }}
-              >
-                {stageMeta.nextLabel}
-              </button>
-          </div> : null}
+          <StageBottomNavigation
+            visible={isDone}
+            ready={nextStageReady}
+            label={stageMeta.nextLabel}
+            onClick={() => {
+              if (!nextStageReady) {
+                setToast(mode === "learn" ? "أكمل التعلّم الموجّه أولًا" : "أكمل التدريب أولًا");
+                return;
+              }
+              router.push(`${stageMeta.nextHrefPrefix}${topicId}`);
+            }}
+          />
         </>
       )}
 
-      <div className="global-example-progress-wrap global-example-progress-bottom" aria-label="تقدم المرحلة">
-        <div className="global-example-progress-topline">
-          <span>{mode === "quiz" ? "تقدّم الاختبار" : "تقدّم المرحلة"}</span>
-          <strong>{mode === "quiz" ? `${Math.min(quizCursor + 1, exampleProgressTotal)} من ${exampleProgressTotal}` : `${exampleProgressDone} من ${exampleProgressTotal}`}</strong>
-        </div>
-        <div className="global-example-progress-track" aria-hidden="true">
-          <i style={{ width: `${Math.max(mode === "quiz" && !quizFinished ? 4 : 0, exampleProgressPercent)}%` }} />
-        </div>
-      </div>
+      <GlobalExerciseProgress
+        mode={mode}
+        coveredDone={doneCount}
+        coverageTotal={coverageKeysOrdered.length}
+        quizCursor={quizCursor}
+        quizTotal={quizOrder.length}
+        quizCount={quizCount}
+        quizFinished={quizFinished}
+      />
 
-      {activeGlossary && SMART_GLOSSARY[activeGlossary] ? (
-        <div className="smart-popover" role="dialog" aria-label={SMART_GLOSSARY[activeGlossary].title}>
-          <button type="button" className="smart-popover-close" onClick={() => setActiveGlossary(null)}>×</button>
-          <strong>{SMART_GLOSSARY[activeGlossary].title}</strong>
-          <ul>
-            {SMART_GLOSSARY[activeGlossary].body.map((line) => <li key={line}>{line}</li>)}
-          </ul>
-        </div>
-      ) : null}
+      <SmartGlossaryPopover term={activeGlossary} onClose={() => setActiveGlossary(null)} />
       {toast ? <div style={toastStyle}>{toast}</div> : null}
     </div>
   );
 }
-
-const box: React.CSSProperties = {
-  padding: 16,
-  border: "1px solid rgba(255,255,255,.12)",
-  borderRadius: 18,
-  marginBottom: 16,
-  background: "linear-gradient(180deg, rgba(15,23,42,.88), rgba(15,23,42,.72))",
-  color: "#eef4ff",
-  boxShadow: "0 16px 40px rgba(0,0,0,.18)",
-};
-
-const answerBtn: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  marginBottom: 8,
-  padding: 12,
-  borderRadius: 14,
-  border: "1px solid rgba(255,255,255,.14)",
-  textAlign: "right",
-  cursor: "pointer",
-  background: "rgba(255,255,255,.05)",
-  color: "#eef4ff",
-  fontWeight: 800,
-};
-
-const ghostBtn: React.CSSProperties = {
-  marginTop: 12,
-  padding: "10px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(255,255,255,.18)",
-  cursor: "pointer",
-  background: "rgba(255,255,255,.06)",
-  color: "#eef4ff",
-  fontWeight: 800,
-};
-
-const navNextWrap: React.CSSProperties = {
-  marginTop: 24,
-  display: "flex",
-  justifyContent: "center",
-};
-
-const primaryNavBtn: React.CSSProperties = {
-  padding: "14px 22px",
-  borderRadius: 14,
-  border: "none",
-  cursor: "pointer",
-  fontWeight: 900,
-  fontSize: 16,
-  color: "#04111d",
-  background: "linear-gradient(135deg,#22c55e,#67e8f9)",
-  boxShadow: "0 10px 30px rgba(0,0,0,.12)",
-};
-
-const toastStyle: React.CSSProperties = {
-  position: "fixed",
-  bottom: 20,
-  left: "50%",
-  transform: "translateX(-50%)",
-  background: "#0f172a",
-  color: "#fff",
-  padding: "10px 16px",
-  borderRadius: 12,
-  zIndex: 999,
-  fontWeight: 800,
-  boxShadow: "0 10px 30px rgba(0,0,0,.25)",
-};

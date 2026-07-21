@@ -201,7 +201,7 @@ export default function I3rabInOurSpeechGame() {
                   تابع إلى جولة جديدة
                 </button>
                 <a href="/learn/start" className="btn btn-soft">
-                  ابدأ التعلّم المنظّم
+                  ابدأ التعلّم الموجّه
                 </a>
                 <button type="button" className="btn btn-soft" onClick={restart}>
                   أعد هذه الجولة

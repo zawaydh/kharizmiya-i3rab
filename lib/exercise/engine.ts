@@ -1,72 +1,70 @@
-// src/lib/exercise/engine.ts
-
+import type {
+  ExerciseAction,
+  ExerciseAnswer,
+  ExerciseTree,
+  Facts,
+  Flags,
+} from "./model";
 import type { ExerciseState } from "./state";
 
-export type Action =
-  | { type: "flag.set"; key: string }
-  | { type: "flag.unset"; key: string };
-
-export type AnswerOption = {
-  id: string; // مثل "a", "b"
-  text: string;
-  next: string; // id للعقدة التالية
-  nextByFact?: { fact: string; map: Record<string, string>; default?: string };
-  correct?: boolean; // مهم لـ learn/practice/quiz
-  eval?: { fact: string; equals?: any; anyOf?: any[]; notEquals?: any };
-  hint?: string;
-  actions?: Action[];
-};
-
-export type Node =
-  | {
-      id: string;
-      type: "question";
-      text: string;
-      hint?: string; // تلميح يظهر حسب mode
-      answers: AnswerOption[];
-      requires?: string[]; // flags يجب أن تكون true
-    }
-  | {
-      id: string;
-      type: "result";
-      text: string;
-      requires?: string[];
-    };
-
-export type ExerciseTree = {
-  startNodeId: string;
-  nodes: Record<string, Node>;
+export type AnswerFeedback = {
+  isCorrect: boolean;
+  showHint: boolean;
+  revealCorrectness: boolean;
 };
 
 export function requirementsMet(
   requires: string[] | undefined,
-  flags: Record<string, boolean>
+  flags: Flags
 ): boolean {
   if (!requires || requires.length === 0) return true;
-  return requires.every((k) => flags[k] === true);
+  return requires.every((key) => flags[key] === true);
+}
+
+export function evaluateAnswer(answer: ExerciseAnswer, facts: Facts): boolean {
+  if (!answer.eval) return answer.correct === true;
+
+  const factValue = facts[answer.eval.fact];
+  if (Array.isArray(answer.eval.anyOf)) {
+    return answer.eval.anyOf.includes(factValue);
+  }
+  if (Object.prototype.hasOwnProperty.call(answer.eval, "notEquals")) {
+    return factValue !== answer.eval.notEquals;
+  }
+  return factValue === answer.eval.equals;
+}
+
+export function resolveAnswerNext(answer: ExerciseAnswer, facts: Facts): string {
+  if (!answer.nextByFact) return answer.next;
+  return (
+    answer.nextByFact.map[String(facts[answer.nextByFact.fact])] ||
+    answer.nextByFact.default ||
+    answer.next
+  );
+}
+
+export function applyActionsToFlags(
+  flags: Flags,
+  actions: ExerciseAction[] | undefined
+): Flags {
+  if (!actions?.length) return flags;
+  const nextFlags = { ...flags };
+  for (const action of actions) {
+    nextFlags[action.key] = action.type === "flag.set";
+  }
+  return nextFlags;
 }
 
 export function applyActions(
   state: ExerciseState,
-  actions: Action[] | undefined
+  actions: ExerciseAction[] | undefined
 ): ExerciseState {
-  if (!actions || actions.length === 0) return state;
-
-  const nextFlags = { ...state.flags };
-  for (const a of actions) {
-    if (a.type === "flag.set") nextFlags[a.key] = true;
-    if (a.type === "flag.unset") nextFlags[a.key] = false;
-  }
-  return { ...state, flags: nextFlags };
+  const nextFlags = applyActionsToFlags(state.flags, actions);
+  return nextFlags === state.flags ? state : { ...state, flags: nextFlags };
 }
 
 /**
- * الخطوة الأساسية عند اختيار إجابة:
- * - يسجل الإجابة
- * - يزيد attemptCount
- * - (حسب mode) يقرر هل يبقى في السؤال أو ينتقل
- * - يطبق actions
- * - يفحص requires للعقدة التالية لمنع القفز
+ * ينفذ اختيارًا واحدًا مع الحفاظ على اختلاف سلوك التعلّم والتدريب والاختبار.
  */
 export function chooseAnswer(params: {
   state: ExerciseState;
@@ -75,11 +73,7 @@ export function chooseAnswer(params: {
 }): {
   nextState: ExerciseState;
   blocked?: boolean;
-  feedback?: {
-    isCorrect: boolean;
-    showHint: boolean;
-    revealCorrectness: boolean;
-  };
+  feedback?: AnswerFeedback;
 } {
   const { state, tree, answerId } = params;
   const node = tree.nodes[state.currentNodeId];
@@ -88,29 +82,18 @@ export function chooseAnswer(params: {
     return { nextState: state, blocked: true };
   }
 
-  const picked = node.answers.find((a) => a.id === answerId);
+  const picked = node.answers.find((answer) => answer.id === answerId);
   if (!picked) return { nextState: state, blocked: true };
 
   const attemptCount = {
     ...state.attemptCount,
     [node.id]: (state.attemptCount[node.id] ?? 0) + 1,
   };
-
   const answers = { ...state.answers, [node.id]: picked.id };
-  const factValue = picked.eval ? state.facts?.[picked.eval.fact] : undefined;
-  const isCorrect = picked.eval
-    ? Array.isArray(picked.eval.anyOf)
-      ? picked.eval.anyOf.includes(factValue)
-      : Object.prototype.hasOwnProperty.call(picked.eval, "notEquals")
-        ? factValue !== picked.eval.notEquals
-        : factValue === picked.eval.equals
-    : picked.correct === true;
+  const isCorrect = evaluateAnswer(picked, state.facts);
 
-  // تحديث correctNodeIds (مفيد لـ quiz summary)
   const correctNodeIds = { ...state.correctNodeIds };
-  if (state.mode === "quiz") {
-    correctNodeIds[node.id] = isCorrect;
-  }
+  if (state.mode === "quiz") correctNodeIds[node.id] = isCorrect;
 
   let nextState: ExerciseState = {
     ...state,
@@ -119,52 +102,28 @@ export function chooseAnswer(params: {
     correctNodeIds,
   };
 
-  // Learn: بعد أول محاولة نكشف الصحيح/الخطأ + التلميح، لكن نسمح بالمتابعة
-  // Practice: إذا خطأ -> ابق في نفس السؤال
-  // Quiz: لا تلميح أثناء الحل، نسمح بالمتابعة دائماً
-  const revealCorrectness = state.mode !== "quiz";
-  const showHint =
-    state.mode === "learn"
-      ? true // بعد المحاولة (بما فيها الأولى) نسمح بإظهار hint + تلوين
-      : state.mode === "practice"
-        ? true // يظهر بعد المحاولة
-        : false;
+  const feedback: AnswerFeedback = {
+    isCorrect,
+    revealCorrectness: state.mode !== "quiz",
+    showHint: state.mode !== "quiz",
+  };
 
   if (state.mode === "practice" && !isCorrect) {
-    // يظل في نفس العقدة، لكن نطبق actions؟ عادة لا نطبق actions على الخطأ
-    // هنا: لا نطبق actions إلا لو كانت الإجابة صحيحة
-    return {
-      nextState,
-      feedback: { isCorrect, showHint, revealCorrectness },
-    };
+    return { nextState, feedback };
   }
 
-  // إذا صحيحة (أو learn/quiz حيث نسمح بالمتابعة) نطبق actions
-  if (isCorrect) {
-    nextState = applyActions(nextState, picked.actions);
-  }
+  if (isCorrect) nextState = applyActions(nextState, picked.actions);
 
-  // فحص requires للعقدة التالية، مع دعم توجيه بسيط حسب معلومة المثال عند الحاجة
-  const dynamicNext = picked.nextByFact
-    ? picked.nextByFact.map?.[String(state.facts?.[picked.nextByFact.fact])] || picked.nextByFact.default || picked.next
-    : picked.next;
-  const nextNode = tree.nodes[dynamicNext];
+  const nextNodeId = resolveAnswerNext(picked, state.facts);
+  const nextNode = tree.nodes[nextNodeId];
   if (!nextNode) return { nextState, blocked: true };
 
-  const ok = requirementsMet(nextNode.requires, nextState.flags);
-  if (!ok) {
-    return {
-      nextState,
-      blocked: true,
-      feedback: { isCorrect, showHint, revealCorrectness },
-    };
+  if (!requirementsMet(nextNode.requires, nextState.flags)) {
+    return { nextState, blocked: true, feedback };
   }
 
-  // الانتقال
-  nextState = { ...nextState, currentNodeId: nextNode.id };
-
   return {
-    nextState,
-    feedback: { isCorrect, showHint, revealCorrectness },
+    nextState: { ...nextState, currentNodeId: nextNode.id },
+    feedback,
   };
 }

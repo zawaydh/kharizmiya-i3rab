@@ -1,14 +1,14 @@
 export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
 
 export const cleanInnaTree: ExerciseTree = {
-  "startNodeId": "inna_compact_role",
+  "startNodeId": "inna_kaffa_gate",
   "nodes": {
 
     "inna_kaffa_gate": {
       "id": "inna_kaffa_gate",
       "type": "question",
       "context": "قبل مسار إن وأخواتها نتحقق: هل اتصلت (ما) بالحرف الناسخ، مثل: إنما؟ لأن ما الكافة تكف الحرف عن العمل.",
-      "text": "هل اتصلت (ما) بالحرف الناسخ فكفّته عن العمل؟",
+      "text": "هل اتصلت «ما» بالحرف الناسخ فكفّته عن العمل؟",
       "hint": "إذا رأيت تركيبًا مثل: إنما، فانتبه: (ما) هنا كافة، أي تمنع إن من نصب الاسم ورفع الخبر. لذلك نُعرب ما بعدها كجملة اسمية عادية.",
       "answers": [
         {
@@ -54,7 +54,7 @@ export const cleanInnaTree: ExerciseTree = {
       "id": "inna_kaffa_base_role",
       "type": "question",
       "context": "بعد كفّ الحرف عن العمل، نُعرب الجملة بعده كجملة اسمية عادية.",
-      "text": "ما موقع الكلمة المحددة في الجملة بعد إنما؟",
+      "text": "ما موقع الكلمة المحددة بعد «إنما»؟",
       "hint": "اسأل كما في الجملة الاسمية: من الذي نتحدث عنه؟ فهو المبتدأ. وما المعلومة عنه؟ فهي الخبر. لا تقل اسم إن هنا لأن ما الكافة أبطلت عمل إن.",
       "answers": [
         {
@@ -73,7 +73,7 @@ export const cleanInnaTree: ExerciseTree = {
         },
         {
           "id": "c",
-          "text": "اسم إن",
+          "text": "اسم الحرف الناسخ",
           "next": "R_inna_kaffa_mubtada",
           "eval": { "fact": "kaffaTargetRole", "equals": "ism_inna" },
           "hint": "لا نقول اسم إن هنا؛ لأن ما الكافة كفّت إن عن العمل، فصار ما بعدها يعرب كجملة اسمية عادية."
@@ -127,19 +127,19 @@ export const cleanInnaTree: ExerciseTree = {
       "id": "inna_compact_role",
       "type": "question",
       "context": "نحدد موقع الكلمة المطلوبة بعد دخول الحرف الناسخ.",
-      "text": "الحرف الناسخ يفيد معنى خاصًا، ويدخل على الجملة الاسمية؛ فيجعل المبتدأ اسمه منصوبًا، والخبر خبره مرفوعًا. الكلمة المطلوبة: هل هي اسم الحرف الناسخ أم خبره؟",
+      "text": "ما موقع الكلمة المحددة بعد الحرف الناسخ؟",
       "hint": "لا نحتاج إعادة بناء الجملة كلها. انظر إلى أصل الجملة الاسمية المختصر: من الاسم الذي نتحدث عنه؟ هذا يصير اسم الحرف الناسخ. وما المعلومة عنه؟ هذه تصير خبره. إن تقدمت شبه الجملة مثل: في البيت، فهي خبر مقدم.",
       "answers": [
         {
           "id": "a",
-          "text": "اسم إن",
+          "text": "اسم الحرف الناسخ",
           "next": "inna_ism_start",
           "eval": { "fact": "targetRole", "equals": "ism" },
           "hint": "اختر هذا إذا كانت الكلمة المحددة هي المبتدأ الأصلي أو الضمير الذي صار اسم الحرف الناسخ بعد دخوله."
         },
         {
           "id": "b",
-          "text": "خبر إن",
+          "text": "خبر الحرف الناسخ",
           "next": "inna_khabar_kind",
           "eval": { "fact": "targetRole", "equals": "khabar" },
           "hint": "اختر هذا إذا كانت الكلمة المحددة هي المعلومة التي أتمت المعنى عن اسم الحرف الناسخ. وقد يكون الخبر مفردًا أو جملة أو شبه جملة."
@@ -215,14 +215,14 @@ export const cleanInnaTree: ExerciseTree = {
       "answers": [
         {
           "id": "a",
-          "text": "اسم إن",
+          "text": "اسم الحرف الناسخ",
           "next": "inna_ism_start",
           "eval": { "fact": "targetRole", "equals": "ism" },
           "hint": "صحيح؛ المبتدأ بعد دخول إن وأخواتها يسمى اسم إن ويكون منصوبًا أو في محل نصب."
         },
         {
           "id": "b",
-          "text": "خبر إن",
+          "text": "خبر الحرف الناسخ",
           "next": "inna_ism_start",
           "eval": { "fact": "targetRole", "equals": "khabar" },
           "hint": "خبر إن هو الجزء الذي أتم المعنى عن اسمها، أما المبتدأ الأصلي فيصير اسم إن."
@@ -238,14 +238,14 @@ export const cleanInnaTree: ExerciseTree = {
       "answers": [
         {
           "id": "a",
-          "text": "اسم إن",
+          "text": "اسم الحرف الناسخ",
           "next": "inna_khabar_kind",
           "eval": { "fact": "targetRole", "equals": "ism" },
           "hint": "اسم إن هو المبتدأ الأصلي بعد دخول الناسخ، أما الخبر الأصلي فيبقى خبرًا لإن."
         },
         {
           "id": "b",
-          "text": "خبر إن",
+          "text": "خبر الحرف الناسخ",
           "next": "inna_khabar_kind",
           "eval": { "fact": "targetRole", "equals": "khabar" },
           "hint": "صحيح؛ الخبر الأصلي بعد دخول إن يسمى خبر إن ويبقى مرفوعًا أو في محل رفع."
@@ -279,7 +279,7 @@ export const cleanInnaTree: ExerciseTree = {
       "id": "inna_target",
       "type": "question",
       "context": "نبدأ من الكلمة المحددة لا من تعريف الباب. ننظر: هل هي الاسم الذي أخبرنا عنه بعد الحرف الناسخ، أم هي الخبر الذي أتم المعنى؟",
-      "text": "ما المدخل الصحيح لإعراب المحدد؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما وظيفة الكلمة المحددة بعد الحرف الناسخ؟",
       "hint": "اسأل من داخل المثال: بعد إن أو إحدى أخواتها، ما الشيء الذي صار الحديث عنه؟ وما الجزء الذي أتم المعنى عنه؟ إن وأخواتها تنصب الاسم وترفع الخبر، لكن لا نختار العلامة قبل معرفة الموقع.",
       "answers": [
         {
@@ -313,7 +313,7 @@ export const cleanInnaTree: ExerciseTree = {
       "answers": [
         {
           "id": "a",
-          "text": "اسم معرب ظاهر",
+          "text": "اسم معرب",
           "next": "inna_ism_number",
           "eval": {
             "fact": "nounKind",
@@ -323,7 +323,7 @@ export const cleanInnaTree: ExerciseTree = {
         },
         {
           "id": "b",
-          "text": "ضمير متصل بالحرف الناسخ",
+          "text": "ضمير متصل",
           "next": "R_inna_ism_connected_damir",
           "eval": {
             "fact": "nounKind",
@@ -333,7 +333,7 @@ export const cleanInnaTree: ExerciseTree = {
         },
         {
           "id": "c",
-          "text": "اسم مبني مستقل",
+          "text": "اسم مبني",
           "next": "inna_ism_built",
           "eval": {
             "fact": "nounKind",

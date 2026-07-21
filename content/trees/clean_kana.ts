@@ -6,42 +6,28 @@ export const cleanKanaTree: ExerciseTree = {
     "kana_target": {
       "id": "kana_target",
       "type": "question",
-      "context": "في كان وأخواتها لا نبدأ باسم كان أو خبر كان مباشرة. نبدأ بالسؤال الذي يكشف العلاقة أو أوضح مدخل في المثال، ثم نصل إلى الوظيفة، ثم أثر الفعل الناسخ.",
-      "text": "ما المدخل الصحيح لإعراب المحدد؟ اختر الإجابة الصحيحة مما يلي:",
-      "hint": "لا تبحث عن تعريف محفوظ؛ ابدأ من المثال نفسه: صاحب معنى الناسخ، أو ما أتم المعنى، أو ضمير مستتر يفهم من السياق." ,
+      "context": "نبدأ من وظيفة الكلمة في الجملة بعد دخول الفعل الناسخ، ثم نحدد صورتها وحكمها الإعرابي.",
+      "text": "ما وظيفة الكلمة المحددة بعد الفعل الناسخ؟",
+      "hint": "اسأل: عمّن أو عمّا تتحدث الجملة بعد دخول الفعل الناسخ؟ فهذا اسم الناسخ. وما المعلومة التي أتمت المعنى عنه؟ فهذا خبره. وقد يكون اسم الناسخ ضميرًا مستترًا يفهم من السياق.",
       "answers": [
         {
           "id": "a",
-          "text": "هو الذي كان/أصبح/صار في معنى الجملة",
+          "text": "اسم الفعل الناسخ",
           "next": "kana_ism_start",
           "eval": { "fact": "targetRole", "equals": "ism" }
         },
         {
           "id": "b",
-          "text": "هو الجزء الذي أتم المعنى بعد ذلك الاسم",
+          "text": "خبر الفعل الناسخ",
           "next": "kana_khabar_entry",
           "eval": { "fact": "targetRole", "equals": "khabar" }
         },
         {
           "id": "c",
-          "text": "اسم الفعل الناسخ غير ظاهر، ونفهمه من السياق",
+          "text": "اسم مستتر للفعل الناسخ",
           "next": "kana_hidden_ism_semantic",
           "eval": { "fact": "targetRole", "equals": "hidden_ism" },
-          "hint": "ابدأ بصاحب المعنى أولاً: من الذي ما زال يعمل؟ ستجد أنه المزارع. لكن في الإعراب اسم ما زال لا يظهر بعد الفعل، بل نقدّره ضميرًا مستترًا يعود على المزارع."
-        },
-        {
-          "id": "d",
-          "text": "هو فاعل لما قبله",
-          "next": "kana_target",
-          "correct": false,
-          "hint": "الفاعل يرتبط بفعل يدل على حدث قام به صاحبه. أما كان وأخواتها فهي أفعال ناسخة؛ فانظر في هذا المثال: هل المحدد اسم الناسخ، أم الجزء الذي أتم المعنى بعده، أم أن اسم الناسخ ضمير مستتر؟"
-        },
-        {
-          "id": "e",
-          "text": "هو صفة تابعة لما قبلها",
-          "next": "kana_target",
-          "correct": false,
-          "hint": "الصفة تتبع الموصوف في التعريف والتنكير والتذكير والتأنيث والعدد والإعراب. في باب كان وأخواتها نبحث عن أثر فعل ناسخ: اسم هو الذي كان أو أصبح، وخبر أتم المعنى بعده."
+          "hint": "اختر هذا إذا لم يظهر بعد الفعل الناسخ اسم صريح، وكان معناه يعود على اسم متقدم في الجملة."
         }
       ]
     },
@@ -51,7 +37,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_hidden_ism_semantic",
       "type": "question",
       "context": "نبدأ من المعنى قبل المصطلح: نبحث أولًا عمّن عاد إليه معنى الفعل الناسخ في الجملة.",
-      "text": "من صاحب المعنى في الجملة؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "من صاحب معنى الفعل الناسخ في الجملة؟",
       "hint": "اسأل من الذي ما زال أو أصبح أو ظل؟ ستجد الاسم المتقدم في الجملة، ثم ننتقل بعد ذلك إلى ما الذي يشغل موقع اسم الناسخ في الإعراب.",
       "answers": [
         { "id": "a", "text": "الاسم الظاهر المتقدم في الجملة", "next": "kana_hidden_ism_site", "correct": true },
@@ -73,7 +59,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_hidden_ism_estimate",
       "type": "question",
       "context": "بما أن اسم الناسخ غير ظاهر بعد الفعل، نقدره بضمير يعود على صاحب المعنى.",
-      "text": "ما تقدير الضمير المستتر هنا؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما تقدير اسم الفعل الناسخ المستتر؟",
       "hint": "إذا كان الاسم المتقدم مذكرًا فالغالب أن تقديره (هو)، وإذا كان مؤنثًا فتقديره (هي).",
       "answers": [
         { "id": "a", "text": "هو", "next": "R_kana_ism_hidden_damir", "eval": { "fact": "hiddenPronoun", "equals": "هو" }, "hint": "اختر (هو) إذا كان الضمير يعود على اسم مذكر مثل المزارع أو مهند." },
@@ -85,7 +71,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_ism_start",
       "type": "question",
       "context": "بما أننا عرفنا أن المحدد هو الاسم الذي كان/أصبح/صار في معنى الجملة، نحدد طبيعته قبل الإعراب النهائي.",
-      "text": "ما طبيعة الاسم الذي وصلنا إليه؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما نوع الكلمة المحددة؟",
       "hint": "الاسم المعرب يتغير آخره بحسب الموقع، والاسم المبني يلزم صورة واحدة مثل الضمائر وأسماء الإشارة والموصولات. وانتبه: المصدر المؤول تركيب من حرف مصدري وفعل مثل: أن تنجح = نجاحك، وأن تتجاهل الناس = تجاهل الناس.",
       "answers": [
         { "id": "a", "text": "اسم معرب", "next": "kana_ism_number", "eval": { "fact": "nounKind", "equals": "mu3rab" } },
@@ -112,7 +98,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_ism_number",
       "type": "question",
       "context": "عرفنا أن الاسم معرب، فنفحص صورته قبل العلامة.",
-      "text": "ما صورة هذا الاسم؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما صورة الاسم المحدد؟",
       "hint": "افحص صورة الاسم: هل هو مفرد عادي، أم مثنى، أم جمع، أم من الأسماء الخمسة؟ انتبه: بعض الكلمات مثل (أبوك/أخوك/حموك/ذو) تدل على واحد، لكنها تُصنَّف هنا ضمن الأسماء الخمسة إذا كانت مضافة إلى غير ياء المتكلم؛ لأن علامتها بالحروف لا بالضمة.",
       "answers": [
         { "id": "a", "text": "مفرد", "next": "kana_ism_ending", "eval": { "fact": "number", "equals": "singular" }, "hint": "المفرد يدل على واحد لا على مثنى ولا جمع. افحص الكلمة المطلوبة نفسها: هل تدل على واحد، أم على اثنين، أم على جمع؟" },
@@ -127,11 +113,11 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_ism_ending",
       "type": "question",
       "context": "بعد تحديد صورة الاسم ننظر إلى الحرف الأصلي الأخير، لا إلى التنوين أو الضمائر المتصلة.",
-      "text": "ما حالة آخر الاسم بعد فصل الضمائر والعلامات الزائدة؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما حالة آخر الاسم المحدد بعد فصل الضمائر؟",
       "hint": "قبل الحكم على آخر الكلمة اسأل: هل الحرف الأخير من أصل الاسم أم ضمير متصل؟ مثل: طموحي = طموح + ياء المتكلم؛ فالاسم صحيح الآخر والياء ضمير.",
       "answers": [
         { "id": "a", "text": "صحيح الآخر", "next": "R_kana_ism_visible", "eval": { "fact": "ending", "equals": "sahih" } },
-        { "id": "b", "text": "صحيح الآخر متصل بياء المتكلم", "next": "R_kana_ism_attached_ya", "eval": { "fact": "ending", "equals": "attached_ya" }, "hint": "مثل: طموحي = طموح + ياء المتكلم. كلمة (طموح) صحيحة الآخر، والياء ضمير متصل في محل جر مضاف إليه، وليست حرف علة من أصل الكلمة." },
+        { "id": "b", "text": "متصل بياء المتكلم", "next": "R_kana_ism_attached_ya", "eval": { "fact": "ending", "equals": "attached_ya" }, "hint": "مثل: طموحي = طموح + ياء المتكلم. كلمة (طموح) صحيحة الآخر، والياء ضمير متصل في محل جر مضاف إليه، وليست حرف علة من أصل الكلمة." },
         { "id": "c", "text": "معتل الآخر", "next": "R_kana_ism_estimated", "eval": { "fact": "ending", "equals": "moatal" } }
       ]
     },
@@ -140,20 +126,20 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_khabar_entry",
       "type": "question",
       "context": "عرفنا من العلاقة أن المحدد أتم المعنى بعد اسم الفعل الناسخ. الآن نحدد صورته من المثال نفسه قبل أن نذكر أثر الناسخ.",
-      "text": "ما صورة هذا الجزء في الجملة؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما صورة خبر الفعل الناسخ؟",
       "hint": "بعد أن عرفنا أنه أتم معنى الجملة نحدد صورته: اسم أو فعل مرتبط بزمن أو جملة أو شبه جملة. والمفرد النحوي قد يأتي معه نعت أو مضاف إليه أو تابع ما دام ليس جملة ولا شبه جملة.",
       "answers": [
-        { "id": "a", "text": "اسم أو تركيب يؤول باسم", "next": "kana_khabar_single_start", "eval": { "fact": "khabarKind", "equals": "single" }, "hint": "مثل: نشيطًا، بخارًا، أو مصدر مؤول مثل: أن أتميز = تميزي." },
-        { "id": "b", "text": "فعل يدل على حدث مقترن بزمن", "next": "kana_khabar_verbal_gate", "eval": { "fact": "sentenceType", "equals": "verbal" }, "hint": "مثل: يقرأ، يعمل؛ فهي أفعال مضارعة تدل على حدث وزمن." },
-        { "id": "c", "text": "جملة تبدأ باسم", "next": "R_kana_khabar_nominal_sentence", "eval": { "fact": "sentenceType", "equals": "nominal" }, "hint": "الجملة الاسمية داخل الخبر تبدأ باسم، مثل: أخلاقه حسنة." },
-        { "id": "d", "text": "شبه جملة: جار ومجرور أو ظرف", "next": "kana_khabar_shibh_type", "eval": { "fact": "khabarKind", "equals": "shibh" }, "hint": "شبه الجملة تكون جارًا ومجرورًا مثل: في الحقيبة، أو ظرفًا مثل: عند المدير." }
+        { "id": "a", "text": "خبر مفرد", "next": "kana_khabar_single_start", "eval": { "fact": "khabarKind", "equals": "single" }, "hint": "الخبر المفرد هو ما ليس جملة ولا شبه جملة، وقد يكون كلمة أو تركيبًا يؤول باسم." },
+        { "id": "b", "text": "جملة فعلية", "next": "kana_khabar_verbal_gate", "eval": { "fact": "sentenceType", "equals": "verbal" }, "hint": "تبدأ الجملة الفعلية بفعل، ويكون معها فاعل ظاهر أو مستتر." },
+        { "id": "c", "text": "جملة اسمية", "next": "R_kana_khabar_nominal_sentence", "eval": { "fact": "sentenceType", "equals": "nominal" }, "hint": "تبدأ الجملة الاسمية باسم، مثل: أخلاقه حسنة." },
+        { "id": "d", "text": "شبه جملة", "next": "kana_khabar_shibh_type", "eval": { "fact": "khabarKind", "equals": "shibh" }, "hint": "شبه الجملة يكون جارًا ومجرورًا أو ظرفًا." }
       ]
     },
     "kana_khabar_nominal_starter": {
       "id": "kana_khabar_nominal_starter",
       "type": "question",
       "context": "بعد أن عرفنا أن الخبر تركيب من أكثر من كلمة، نلاحظ بدايته دون إعادة سؤال العلاقة.",
-      "text": "هل يبدأ هذا التركيب باسم أم بفعل؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "هل يبدأ تركيب الخبر باسم أم بفعل؟",
       "hint": "انظر إلى أول كلمة في التركيب المحدد نفسه؛ إذا بدأ باسم فهو جملة اسمية، وإذا بدأ بفعل فهو جملة فعلية.",
       "answers": [
         { "id": "a", "text": "يبدأ باسم", "next": "R_kana_khabar_nominal_sentence", "correct": true },
@@ -165,7 +151,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_khabar_verbal_gate",
       "type": "question",
       "context": "عرفنا أن المحدد فعل، ونفحص الآن هل أتم المعنى بعد اسم الناسخ.",
-      "text": "هل أتم هذا الفعل مع فاعله معنى الجملة؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "هل أتم الفعل مع فاعله معنى الجملة؟",
       "hint": "الفعل مع فاعله يكون جملة فعلية. فإذا أتمت هذه الجملة المعنى بعد اسم الناسخ كانت في محل نصب خبرًا له." ,
       "answers": [
         { "id": "a", "text": "نعم", "next": "R_kana_khabar_verbal_sentence", "correct": true },
@@ -176,11 +162,11 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_khabar_shibh_type",
       "type": "question",
       "context": "عرفنا أن المحدد أتم المعنى بتركيب ليس اسمًا مفردًا ولا فعلًا؛ إنه شبه جملة.",
-      "text": "ما نوع شبه الجملة؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما نوع شبه الجملة المحددة؟",
       "hint": "إذا بدأ التركيب بحرف جر مثل: في، من، على؛ فهو جار ومجرور. وإذا كان ظرف مكان أو زمان مثل: عند، فوق، أمام؛ فهو شبه جملة ظرفية.",
       "answers": [
-        { "id": "a", "text": "جار ومجرور", "next": "R_kana_khabar_jar", "eval": { "fact": "shibhType", "equals": "jar" } },
-        { "id": "b", "text": "ظرف", "next": "R_kana_khabar_zarf", "eval": { "fact": "shibhType", "equals": "zarf" } }
+        { "id": "a", "text": "جار ومجرور", "next": "kana_khabar_shibh_position_jar", "eval": { "fact": "shibhType", "equals": "jar" } },
+        { "id": "b", "text": "ظرف", "next": "kana_khabar_shibh_position_zarf", "eval": { "fact": "shibhType", "equals": "zarf" } }
       ]
     },
     "kana_khabar_single_start": {
@@ -214,7 +200,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_khabar_single_number",
       "type": "question",
       "context": "عرفنا أنه اسم معرب أتم المعنى بعد اسم الفعل الناسخ، فنحدد صورته قبل اختيار علامة النصب.",
-      "text": "ما صورة هذا الاسم؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما صورة الاسم المحدد؟",
       "hint": "المفرد يدل على واحد، والمثنى على اثنين، وجمع المذكر السالم غالبًا ينتهي بـ(ين) أو (ون)، وجمع المؤنث السالم ينتهي بـ(ات)، وجمع التكسير تتغير صورة مفرده.",
       "answers": [
         { "id": "a", "text": "مفرد", "next": "kana_khabar_single_ending", "eval": { "fact": "number", "equals": "singular" }, "hint": "المفرد هنا كلمة واحدة من حيث الصورة، مثل: نشيطًا، بخارًا، معتدلًا." },
@@ -244,7 +230,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_connected_pronoun_i3rab",
       "type": "question",
       "context": "عرفنا صاحب المعنى. الآن نحدد الكلمة التي شغلت موقع اسم الفعل الناسخ في الإعراب.",
-      "text": "ما الذي شغل موقع اسم الفعل الناسخ في الإعراب؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما الذي شغل موقع اسم الفعل الناسخ؟",
       "hint": "اسأل: من صاحب معنى الفعل الناسخ؟ ثم حدد أين دل عليه داخل الفعل: أفي اسم ظاهر بعده أم في ضمير متصل؟",
       "answers": [
         { "id": "a", "text": "الضمير المتصل بالفعل الناسخ", "next": "R_kana_ism_damir", "correct": true },
@@ -255,7 +241,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_damir_name",
       "type": "question",
       "context": "عرفنا أن التاء تدل على المتكلم. الآن نسمي ما يدل على متكلم أو مخاطب أو غائب.",
-      "text": "ما الاسم الذي يدل على متكلم أو مخاطب أو غائب؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما نوع الاسم الدال على متكلم أو مخاطب أو غائب؟",
       "hint": "انظر إلى التاء في المثال: هل تدل على متكلم أم مخاطب أم غائب؟ ما اسم هذا النوع من الأسماء؟",
       "answers": [
         { "id": "a", "text": "ضمير", "next": "kana_damir_connected", "correct": true },
@@ -267,7 +253,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_damir_connected",
       "type": "question",
       "context": "عرفنا أنها ضمير. الآن ننظر: هل اتصلت بما قبلها أم انفصلت عنه؟",
-      "text": "هل التاء اتصلت بالفعل الناسخ أم جاءت منفصلة؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "هل التاء متصلة بالفعل الناسخ أم منفصلة؟",
       "hint": "في (كنتُ) التاء ملتصقة بالفعل، لذلك هي ضمير متصل.",
       "answers": [
         { "id": "a", "text": "اتصلت بالفعل الناسخ", "next": "kana_damir_site", "correct": true },
@@ -278,7 +264,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_damir_site",
       "type": "question",
       "context": "عرفنا أنها ضمير متصل. الآن نحدد موقعها في باب كان.",
-      "text": "ما موقع هذا الضمير بعد الفعل الناسخ؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما موقع الضمير بعد الفعل الناسخ؟",
       "hint": "اسأل: من الذي كان مطمئنًا؟ التاء تدل على المتكلم، فهي التي كان هو صاحب المعنى في الجملة.",
       "answers": [
         { "id": "a", "text": "اسم الفعل الناسخ", "next": "R_kana_ism_damir", "correct": true },
@@ -289,7 +275,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_attached_ya_origin",
       "type": "question",
       "context": "عرفنا أن (طموحي) صاحب معنى أصبح. الآن نفحص الياء في آخر الكلمة.",
-      "text": "هل الياء من أصل كلمة (طموح) أم تدل على صاحب الطموح؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "هل الياء أصلية أم ياء متكلم؟",
       "hint": "طموحي = طموح + ياء المتكلم. الياء ليست من أصل الكلمة.",
       "answers": [
         { "id": "a", "text": "تدل على صاحب الطموح", "next": "kana_attached_ya_pronoun", "correct": true },
@@ -300,7 +286,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_attached_ya_pronoun",
       "type": "question",
       "context": "عرفنا أن الياء تدل على صاحب الطموح، وهي هنا تدل على المتكلم.",
-      "text": "ما نوع الياء هنا؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما نوع الياء المتصلة بالاسم؟",
       "hint": "ما دل على متكلم أو مخاطب أو غائب يسمى ضميرًا، ولأنه اتصل بالاسم فهو ضمير متصل.",
       "answers": [
         { "id": "a", "text": "ضمير متصل", "next": "R_kana_ism_attached_ya", "correct": true },
@@ -311,7 +297,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_masdar_source_gate",
       "type": "question",
       "context": "عرفنا أن التركيب أتم المعنى عن اسم الناسخ. الآن نكتشف طبيعته.",
-      "text": "هل سبق الفعل حرف مصدري مثل (أن)؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "هل سبق الفعل حرف مصدري مثل «أن»؟",
       "hint": "في (أن أتميز) جاءت (أن) قبل الفعل، وهذا يجعل التركيب يؤول باسم.",
       "answers": [
         { "id": "a", "text": "نعم", "next": "kana_masdar_name", "correct": true },
@@ -322,7 +308,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_masdar_name",
       "type": "question",
       "context": "عرفنا أن التركيب بدأ بحرف مصدري وفعل، ويمكن تأويله باسم: أن أتميز = تميزي.",
-      "text": "ماذا يسمى هذا التركيب؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ماذا يسمى تركيب الحرف المصدري مع الفعل؟",
       "hint": "المصدر المؤول تركيب من حرف مصدري وفعل ويؤول باسم.",
       "answers": [
         { "id": "a", "text": "مصدر مؤول", "next": "kana_masdar_site", "correct": true },
@@ -334,7 +320,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_masdar_site",
       "type": "question",
       "context": "عرفنا أنه مصدر مؤول. الآن نحدد موقعه بعد أن أتم المعنى عن اسم الناسخ.",
-      "text": "ما موقع المصدر المؤول في الجملة؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما موقع المصدر المؤول في الجملة؟",
       "hint": "في (أصبح طموحي أن أتميز)، المصدر المؤول أتم المعنى عن طموحي.",
       "answers": [
         { "id": "a", "text": "خبر الفعل الناسخ", "next": "R_kana_khabar_single_masdar", "correct": true },
@@ -345,7 +331,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_verbal_name",
       "type": "question",
       "context": "عرفنا أن المحدد يدل على حدث وزمن.",
-      "text": "ماذا نسمي ما دل على حدث مقترن بزمن؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ماذا نسمي الكلمة الدالة على حدث وزمن؟",
       "hint": "الاسم لا يدل على حدث وزمن، والحرف لا يظهر معناه كاملًا إلا مع غيره.",
       "answers": [
         { "id": "a", "text": "فعل", "next": "kana_verbal_complete", "correct": true },
@@ -357,7 +343,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_verbal_complete",
       "type": "question",
       "context": "عرفنا أنه فعل. الآن نرى هل أتم المعنى عن اسم الناسخ.",
-      "text": "هل أتم الفعل مع فاعله المعنى بعد اسم الفعل الناسخ؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "هل أتم الفعل مع فاعله المعنى بعد اسم الناسخ؟",
       "hint": "في مثل: كان الطالب يقرأ؛ (يقرأ) مع فاعله المستتر أخبرنا عما كان عليه الطالب.",
       "answers": [
         { "id": "a", "text": "نعم", "next": "kana_verbal_sentence_kind", "correct": true },
@@ -368,7 +354,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_verbal_sentence_kind",
       "type": "question",
       "context": "عرفنا أن الفعل مع فاعله أتم المعنى.",
-      "text": "ما صورة هذا الجزء؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما صورة خبر الفعل الناسخ؟",
       "hint": "الفعل مع فاعله يسمى جملة فعلية.",
       "answers": [
         { "id": "a", "text": "جملة فعلية", "next": "R_kana_khabar_verbal_sentence", "correct": true },
@@ -380,7 +366,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_shibh_meaning",
       "type": "question",
       "context": "عرفنا أن المحدد شبه جملة. الآن نرى وظيفته في المعنى.",
-      "text": "هل أتمت شبه الجملة المعنى عن اسم الفعل الناسخ؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "هل أتمت شبه الجملة المعنى عن اسم الناسخ؟",
       "hint": "اسأل: أين كان الكتاب؟ أو أين ما زال العامل؟ الجواب بشبه الجملة يتم المعنى.",
       "answers": [
         { "id": "a", "text": "نعم", "next": "kana_shibh_result_gate", "correct": true },
@@ -391,7 +377,7 @@ export const cleanKanaTree: ExerciseTree = {
       "id": "kana_shibh_result_gate",
       "type": "question",
       "context": "عرفنا أنها أتمت المعنى عن اسم الناسخ.",
-      "text": "ما موقع شبه الجملة هنا؟ اختر الإجابة الصحيحة مما يلي:",
+      "text": "ما موقع شبه الجملة؟",
       "hint": "ما أتم المعنى بعد اسم الفعل الناسخ يكون خبرًا له.",
       "answers": [
         { "id": "a", "text": "خبر الفعل الناسخ", "next": "kana_khabar_shibh_type", "correct": true },
@@ -403,8 +389,8 @@ export const cleanKanaTree: ExerciseTree = {
     "R_kana_ism_hidden_damir": { "id": "R_kana_ism_hidden_damir", "type": "result", "coverage": "kana_ism.hidden_damir", "text": "اسم الفعل الناسخ ضمير مستتر يعود على الاسم السابق في الجملة. مثال: المزارعُ ما زالَ يعملُ؛ اسم (ما زال) ضمير مستتر تقديره هو يعود على (المزارع)." },
     "R_kana_ism_visible": { "id": "R_kana_ism_visible", "type": "result", "coverage": "kana_ism.visible", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الضمة الظاهرة على آخره." },
     "R_kana_ism_estimated": { "id": "R_kana_ism_estimated", "type": "result", "coverage": "kana_ism.estimated", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الضمة المقدرة على الألف في آخره، منع من ظهورها التعذر." },
-    "R_kana_ism_dual": { "id": "R_kana_ism_dual", "type": "result", "coverage": "kana_ism.dual", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الألف لأنه مثنى." },
-    "R_kana_ism_jms": { "id": "R_kana_ism_jms", "type": "result", "coverage": "kana_ism.jms", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم." },
+    "R_kana_ism_dual": { "id": "R_kana_ism_dual", "type": "result", "coverage": "kana_ism.dual", "text": "اسم الفعل الناسخ مرفوع، وهو مثنى، وعلامة رفعه الألف." },
+    "R_kana_ism_jms": { "id": "R_kana_ism_jms", "type": "result", "coverage": "kana_ism.jms", "text": "اسم الفعل الناسخ مرفوع، وهو جمع مذكر سالم، وعلامة رفعه الواو." },
     "R_kana_ism_jfs": { "id": "R_kana_ism_jfs", "type": "result", "coverage": "kana_ism.jfs", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الضمة الظاهرة على آخره لأنه جمع مؤنث سالم." },
     "R_kana_ism_five": { "id": "R_kana_ism_five", "type": "result", "coverage": "kana_ism.five", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة. وقد تحققت شروط الإعراب بالحروف: مفرد، مضاف، غير مضاف إلى ياء المتكلم." },
     "R_kana_ism_damir": { "id": "R_kana_ism_damir", "type": "result", "coverage": "kana_ism.damir", "text": "ضمير متصل مبني في محل رفع اسم الفعل الناسخ. وإذا سبق الفعل الناسخ اسم ظاهر يعود عليه الضمير، فالمعنى يعود إلى الاسم الظاهر، أما الموقع الإعرابي فيشغله الضمير المتصل." },
@@ -417,8 +403,8 @@ export const cleanKanaTree: ExerciseTree = {
 
     "R_kana_khabar_single_visible": { "id": "R_kana_khabar_single_visible", "type": "result", "coverage": "kana_khabar_single.visible", "text": "خبر الفعل الناسخ منصوب وعلامة نصبه الفتحة الظاهرة على آخره." },
     "R_kana_khabar_single_estimated": { "id": "R_kana_khabar_single_estimated", "type": "result", "coverage": "kana_khabar_single.estimated", "text": "خبر الفعل الناسخ منصوب وعلامة نصبه الفتحة المقدرة على آخره." },
-    "R_kana_khabar_single_dual": { "id": "R_kana_khabar_single_dual", "type": "result", "coverage": "kana_khabar_single.dual", "text": "خبر الفعل الناسخ منصوب وعلامة نصبه الياء لأنه مثنى." },
-    "R_kana_khabar_single_jms": { "id": "R_kana_khabar_single_jms", "type": "result", "coverage": "kana_khabar_single.jms", "text": "خبر الفعل الناسخ منصوب وعلامة نصبه الياء لأنه جمع مذكر سالم." },
+    "R_kana_khabar_single_dual": { "id": "R_kana_khabar_single_dual", "type": "result", "coverage": "kana_khabar_single.dual", "text": "خبر الفعل الناسخ منصوب، وهو مثنى، وعلامة نصبه الياء." },
+    "R_kana_khabar_single_jms": { "id": "R_kana_khabar_single_jms", "type": "result", "coverage": "kana_khabar_single.jms", "text": "خبر الفعل الناسخ منصوب، وهو جمع مذكر سالم، وعلامة نصبه الياء." },
     "R_kana_khabar_single_jfs": { "id": "R_kana_khabar_single_jfs", "type": "result", "coverage": "kana_khabar_single.jfs", "text": "خبر الفعل الناسخ منصوب وعلامة نصبه الكسرة نيابة عن الفتحة لأنه جمع مؤنث سالم." },
     "R_kana_khabar_single_five": { "id": "R_kana_khabar_single_five", "type": "result", "coverage": "kana_khabar_single.five", "text": "خبر الفعل الناسخ منصوب وعلامة نصبه الألف لأنه من الأسماء الخمسة." },
     "R_kana_khabar_single_damir": { "id": "R_kana_khabar_single_damir", "type": "result", "coverage": "kana_khabar_single.damir", "text": "ضمير مبني في محل نصب خبر الفعل الناسخ بحسب صورته في الجملة." },
@@ -440,7 +426,7 @@ export const cleanKanaTree: ExerciseTree = {
       "hint": "إذا تقدم شبه الجملة بعد الفعل الناسخ وجاءت بعدها نكرة، فشبه الجملة خبر مقدم، والاسم النكرة يكون اسم كان مؤخرًا.",
       "answers": [
         { "id": "a", "text": "نعم، تقدم على اسم نكرة", "next": "R_kana_khabar_jar_advanced", "eval": { "fact": "shibhPosition", "equals": "advanced" } },
-        { "id": "b", "text": "لا، جاء بعد اسم الناسخ", "next": "R_kana_khabar_jar", "eval": { "fact": "shibhPosition", "equals": "normal" }, "hint": "لو جاء بعد اسم الناسخ لوجدنا اسمًا ظاهرًا قبل شبه الجملة. أما هنا فقد بدأ بعد الناسخ بشبه الجملة، ثم جاءت النكرة بعدها." }
+        { "id": "b", "text": "لا، جاء بعد اسم الناسخ", "next": "R_kana_khabar_jar", "eval": { "fact": "shibhPosition", "notEquals": "advanced" }, "hint": "لو جاء بعد اسم الناسخ لوجدنا اسمًا ظاهرًا قبل شبه الجملة. أما هنا فقد بدأ بعد الناسخ بشبه الجملة، ثم جاءت النكرة بعدها." }
       ]
     },
     "kana_khabar_shibh_position_zarf": {
@@ -451,7 +437,7 @@ export const cleanKanaTree: ExerciseTree = {
       "hint": "إذا تقدم الظرف بعد الفعل الناسخ وجاءت بعده نكرة، فالظرف خبر مقدم، والاسم النكرة يكون اسم الفعل الناسخ مؤخرًا.",
       "answers": [
         { "id": "a", "text": "نعم، تقدم على اسم نكرة", "next": "R_kana_khabar_zarf_advanced", "eval": { "fact": "shibhPosition", "equals": "advanced" } },
-        { "id": "b", "text": "لا، جاء بعد اسم الناسخ", "next": "R_kana_khabar_zarf", "eval": { "fact": "shibhPosition", "equals": "normal" }, "hint": "لو جاء بعد اسم الناسخ لوجدنا اسمًا ظاهرًا قبل الظرف. أما هنا فقد تقدم الظرف وجاءت النكرة بعده." }
+        { "id": "b", "text": "لا، جاء بعد اسم الناسخ", "next": "R_kana_khabar_zarf", "eval": { "fact": "shibhPosition", "notEquals": "advanced" }, "hint": "لو جاء بعد اسم الناسخ لوجدنا اسمًا ظاهرًا قبل الظرف. أما هنا فقد تقدم الظرف وجاءت النكرة بعده." }
       ]
     },
     "R_kana_khabar_jar_advanced": { "id": "R_kana_khabar_jar_advanced", "type": "result", "coverage": "kana_khabar.jar_advanced", "text": "في البيت: شبه جملة من الجار والمجرور في محل نصب خبر كان مقدم. رجلٌ: اسم كان مؤخر مرفوع." },

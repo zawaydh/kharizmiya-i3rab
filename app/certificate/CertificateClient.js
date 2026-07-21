@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { getTopicProgress } from "../../lib/db";
 import { supabase } from "../../lib/supabaseClient";
 import { getTopicByCode } from "../../lib/topics";
+import { getQuizPercent, isCertificateEligible } from "../../lib/certificateEligibility";
 
 export default function CertificateClient() {
   const searchParams = useSearchParams();
@@ -30,15 +31,8 @@ export default function CertificateClient() {
           data: { user },
         } = await supabase.auth.getUser();
 
-        const percent =
-          row?.quiz_total && row.quiz_total > 0
-            ? Math.round((Number(row.quiz_score || 0) / Number(row.quiz_total)) * 100)
-            : 0;
-
-        const ok =
-          (!!row?.learn_completed || Number(row?.percent) >= 100) &&
-          (!!row?.practice_completed || Number(row?.practice_percent) >= 100) &&
-          (!!row?.quiz_passed || percent >= 80);
+        const percent = getQuizPercent(row);
+        const ok = isCertificateEligible(row);
 
         setAllowed(ok);
 

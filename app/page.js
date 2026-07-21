@@ -1,12 +1,14 @@
 "use client";
 
+import Image from "next/image";
+
 export default function HomePage() {
   return (
     <div className="landing-page home-clean-page">
       <section className="card home-clean-hero home-balanced-hero">
         <div className="home-brand-column">
           <div className="home-clean-mark" aria-hidden="true">
-            <img src="/brand-icon.svg" alt="" />
+            <Image src="/brand-icon.svg" alt="" width={190} height={190} priority />
           </div>
           <div className="home-clean-kicker">مدرّب تفكير نحوي موجّه</div>
         </div>
@@ -16,7 +18,7 @@ export default function HomePage() {
           <p className="home-entry-lead">ابدأ بتجربة قصيرة ترى فيها أثر الموقع الإعرابي في صورة الكلمة، ثم انتقل إلى التعلّم المنظّم.</p>
           <div className="home-entry-actions">
             <a href="/i3rab-in-our-speech" className="btn home-game-primary">جرّب الإعراب في كلامنا</a>
-            <a href="/learn/start" className="btn home-learning-secondary">ابدأ التعلّم المنظّم</a>
+            <a href="/learn/start" className="btn home-learning-secondary">ابدأ التعلّم الموجّه</a>
           </div>
         </div>
       </section>
@@ -30,15 +32,15 @@ export default function HomePage() {
         <div className="home-clean-stages">
           <article className="home-clean-stage">
             <span>1</span>
-            <div><h3>تعلّم</h3><p>اكتشف مسار الحل خطوة خطوة.</p></div>
+            <div><h3>التعلّم الموجّه</h3><p>اكتشف مسار الحل خطوة خطوة.</p></div>
           </article>
           <article className="home-clean-stage">
             <span>2</span>
-            <div><h3>تدرّب</h3><p>طبّق ما فهمته في أمثلة أسرع.</p></div>
+            <div><h3>التدريب</h3><p>طبّق ما فهمته في أمثلة أسرع.</p></div>
           </article>
           <article className="home-clean-stage">
             <span>3</span>
-            <div><h3>اختبر نفسي</h3><p>حل باستقلال وأثبت إتقانك.</p></div>
+            <div><h3>الاختبار النهائي</h3><p>حل باستقلال وأثبت إتقانك.</p></div>
           </article>
         </div>
 

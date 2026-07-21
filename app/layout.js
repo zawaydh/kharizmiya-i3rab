@@ -20,7 +20,6 @@ export const metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
   themeColor: "#06101C",
 };
@@ -28,7 +27,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
-      <body>
+      <body className="platform-body">
         <Suspense fallback={null}>
           <Navbar />
         </Suspense>

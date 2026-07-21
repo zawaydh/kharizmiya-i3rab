@@ -20,10 +20,10 @@ export default function QuizTopicPage({ params }: { params: { topicCode: string 
   }
 
   return (
-    <AuthLockGate title="سجّل الدخول للاختبار" text="سجّل الدخول حتى تُحفظ نتيجتك.">
+    <AuthLockGate title="سجّل الدخول للاختبار النهائي" text="سجّل الدخول حتى تُحفظ نتيجتك.">
     <StageAccessGate topicCode={topic.code} level={topic.level ?? 2} require="quiz">
     <ExercisePlayer
-      title={`اختبر نفسي — ${topic.name_ar}`}
+      title={`الاختبار النهائي — ${topic.name_ar}`}
       mode="quiz"
       tree={topic.tree}
       examples={topic.quizExamples}

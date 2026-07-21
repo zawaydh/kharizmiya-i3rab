@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getMyProgress } from "../../lib/db";
-import { getTopicRoutes, getTopicByCode } from "../../lib/topics";
+import { getTopicRoutes, getTopicByCode, hasVisualPath } from "../../lib/topics";
 import { supabase } from "../../lib/supabaseClient";
 import AuthLockGate from "../components/AuthLockGate";
+import { getQuizPercent, isCertificateEligible } from "../../lib/certificateEligibility";
 
 export default function DashboardPage() {
   const [rows, setRows] = useState([]);
@@ -64,7 +65,10 @@ export default function DashboardPage() {
           <div className="dashboard-hero-copy">
             <div className="section-kicker">لوحة التقدم</div>
             <h1 className="h1">{userName ? `مرحبًا يا ${userName}` : "تابع تقدّمك"}</h1>
-            <p className="p">هنا تظهر حالة <strong>المرحلة الأولى</strong> و<strong>المرحلة الثانية</strong> و<strong>المرحلة النهائية</strong> لكل موضوع بشكل واضح ومنظّم.</p>
+            <p className="p">
+              تابع إنجازك في <strong>التعلّم الموجّه</strong> و<strong>التدريب</strong> و<strong>الاختبار النهائي</strong>
+              لكل موضوع، واعرف أين توقفت وما الخطوة التالية.
+            </p>
           </div>
           <div className="dashboard-hero-actions">
             <a href="/topics" className="btn btn-primary">اذهب إلى الموضوعات</a>
@@ -73,34 +77,38 @@ export default function DashboardPage() {
         </section>
 
         <section className="dashboard-summary-grid">
-          <StatCard value={summary.totalTopics} label="موضوعات محفوظة" />
-          <StatCard value={summary.completedLearn} label="مكتمل المرحلة الأولى" />
-          <StatCard value={summary.completedPractice} label="مكتمل المرحلة الثانية" />
-          <StatCard value={summary.passedQuiz} label="اختبارات ناجحة" />
-          <ProgressStatCard value={summary.avgLearnPercent} label="متوسط المرحلة الأولى" />
-          <ProgressStatCard value={summary.avgPracticePercent} label="متوسط المرحلة الثانية" />
+          <StatCard value={summary.totalTopics} label="موضوعات بدأت بها" />
+          <StatCard value={summary.completedLearn} label="أتممت التعلّم الموجّه" />
+          <StatCard value={summary.completedPractice} label="أتممت التدريب" />
+          <StatCard value={summary.passedQuiz} label="اختبارات نهائية مجتازة" />
+          <ProgressStatCard value={summary.avgLearnPercent} label="متوسط تقدّم التعلّم الموجّه" />
+          <ProgressStatCard value={summary.avgPracticePercent} label="متوسط تقدّم التدريب" />
         </section>
 
         <section className="card dashboard-list-card">
           <div className="dashboard-list-head">
-            <h2>تفصيل المسارات</h2>
-            <span className="pill">{rows.length} سجل</span>
+            <div>
+              <h2>تفاصيل التقدم في الموضوعات</h2>
+              <p className="dashboard-list-description">تعرض كل بطاقة تقدمك التفصيلي والخطوات المتاحة داخل الموضوع.</p>
+            </div>
+            <span className="pill">{rows.length} {rows.length === 1 ? "موضوع" : "موضوعات"}</span>
           </div>
 
           {loading && <div className="dashboard-empty-state">جارٍ تحميل البيانات...</div>}
           {!loading && error && <div className="dashboard-message dashboard-message-error">{error}</div>}
-          {!loading && !error && rows.length === 0 && <div className="dashboard-empty-state">لا يوجد تقدم محفوظ بعد. ابدأ من صفحة المرحلة الأولى ثم ارجع إلى هنا.</div>}
+          {!loading && !error && rows.length === 0 && <div className="dashboard-empty-state">لا يوجد تقدم محفوظ بعد. ابدأ من صفحة التعلّم الموجّه ثم ارجع إلى هنا.</div>}
 
           {!loading && !error && rows.length > 0 && (
             <div className="dashboard-topic-grid">
               {rows.map((row) => {
                 const learnPercent = Number(row.percent) || 0;
                 const practicePercent = Number(row.practice_percent) || 0;
-                const quizPercent = row.quiz_total && row.quiz_total > 0 ? Math.round((Number(row.quiz_score || 0) / Number(row.quiz_total)) * 100) : 0;
+                const quizPercent = getQuizPercent(row);
                 const topicCode = row.topic_code || row.topic_id || "موضوع";
                 const routes = getTopicRoutes(topicCode);
                 const topicMeta = getTopicByCode(topicCode);
-                const certificateAllowed = !!row.learn_completed && !!row.practice_completed && quizPercent >= 80;
+                const visualPathAvailable = hasVisualPath(topicCode);
+                const certificateAllowed = isCertificateEligible(row);
                 const requiredKeys = topicMeta?.coverageKeysOrdered || [];
                 const learnCoveredCount = Array.isArray(row.coverage) ? row.coverage.filter((k) => requiredKeys.includes(k)).length : 0;
                 const practiceCoveredCount = Array.isArray(row.practice_coverage) ? row.practice_coverage.filter((k) => requiredKeys.includes(k)).length : 0;
@@ -113,28 +121,57 @@ export default function DashboardPage() {
                         <h3>{topicMeta?.name_ar || topicCode}</h3>
                         <p>المستوى {row.level} • آخر تحديث: {formatDate(row.updated_at)}</p>
                       </div>
-                      <span className="pill pill-accent">{quizPercent ? `${quizPercent}%` : "—"}</span>
+                      <span className={`pill ${quizPercent ? "pill-accent" : "pill-muted"}`}>
+                        {quizPercent ? `نتيجة الاختبار: ${quizPercent}%` : "لم يبدأ الاختبار"}
+                      </span>
                     </div>
 
                     <div className="dashboard-bars">
-                      <ProgressLine title={`المرحلة الأولى${requiredCount ? ` (${learnCoveredCount}/${requiredCount} فروع)` : ""}`} value={learnPercent} />
-                      <ProgressLine title={`المرحلة الثانية${requiredCount ? ` (${practiceCoveredCount}/${requiredCount} فروع)` : ""}`} value={practicePercent} />
-                      <ProgressLine title="المرحلة النهائية" value={quizPercent} />
+                      <ProgressLine title={`التعلّم الموجّه${requiredCount ? ` (${learnCoveredCount}/${requiredCount} فروع)` : ""}`} value={learnPercent} />
+                      <ProgressLine title={`التدريب${requiredCount ? ` (${practiceCoveredCount}/${requiredCount} فروع)` : ""}`} value={practicePercent} />
+                      <ProgressLine title="الاختبار النهائي" value={quizPercent} />
                     </div>
 
                     <div className="dashboard-chip-row">
-                      <StatusPill ok={!!row.learn_completed} text="المرحلة الأولى" />
-                      <StatusPill ok={!!row.practice_completed} text="المرحلة الثانية" />
-                      <StatusPill ok={!!row.quiz_passed} text="اختبار" />
+                      <StatusPill ok={!!row.learn_completed} text="التعلّم الموجّه" />
+                      <StatusPill ok={!!row.practice_completed} text="التدريب" />
+                      <StatusPill ok={!!row.quiz_passed} text="الاختبار النهائي" />
                     </div>
 
+                    {!visualPathAvailable ? (
+                      <div className="dashboard-visual-path-notice" role="note">
+                        <strong>لا يوجد مسار بصري لهذا الموضوع</strong>
+                        <span>المسارات البصرية مخصّصة للجملة الاسمية والجملة الفعلية، ويمكنك إكمال هذا الموضوع عبر مراحله الثلاث.</span>
+                      </div>
+                    ) : null}
+
                     <div className="dashboard-action-row">
-                      <a href={routes.paths} className="btn btn-primary">المسارات</a>
-                      <a href={routes.learn} className="btn btn-soft">المرحلة الأولى</a>
-                      <a href={routes.practice} className={`btn btn-soft ${!row.learn_completed ? "is-disabled-link" : ""}`}>المرحلة الثانية</a>
-                      <a href={routes.quiz} className={`btn btn-soft ${!row.practice_completed ? "is-disabled-link" : ""}`}>المرحلة النهائية</a>
-                      <a href={row.quiz_total ? routes.texts : "#"} className={`btn btn-soft ${!row.quiz_total ? "is-disabled-link" : ""}`}>لعبة النصوص</a>
-                      <a href={certificateAllowed ? `/certificate?topicId=${topicCode}&level=${row.level}` : "#"} className={`btn btn-soft ${!certificateAllowed ? "is-disabled-link" : ""}`}>الشهادة</a>
+                      {visualPathAvailable ? <a href={routes.paths} className="btn btn-primary">المسار البصري</a> : null}
+                      <a href={routes.learn} className={visualPathAvailable ? "btn btn-soft" : "btn btn-primary"}>التعلّم الموجّه</a>
+                      <a
+                        href={row.learn_completed ? routes.practice : "#"}
+                        title={!row.learn_completed ? "أكمل التعلّم الموجّه أولًا لفتح التدريب" : undefined}
+                        aria-disabled={!row.learn_completed}
+                        className={`btn btn-soft ${!row.learn_completed ? "is-disabled-link" : ""}`}
+                      >التدريب</a>
+                      <a
+                        href={row.practice_completed ? routes.quiz : "#"}
+                        title={!row.practice_completed ? "أكمل التدريب أولًا لفتح الاختبار النهائي" : undefined}
+                        aria-disabled={!row.practice_completed}
+                        className={`btn btn-soft ${!row.practice_completed ? "is-disabled-link" : ""}`}
+                      >الاختبار النهائي</a>
+                      <a
+                        href={row.quiz_total ? routes.texts : "#"}
+                        title={!row.quiz_total ? "ابدأ الاختبار النهائي أولًا لفتح لعبة النصوص" : undefined}
+                        aria-disabled={!row.quiz_total}
+                        className={`btn btn-soft ${!row.quiz_total ? "is-disabled-link" : ""}`}
+                      >لعبة النصوص</a>
+                      <a
+                        href={certificateAllowed ? `/certificate?topicId=${topicCode}&level=${row.level}` : "#"}
+                        title={!certificateAllowed ? "أكمل التعلّم الموجّه والتدريب واجتز الاختبار النهائي لفتح الشهادة" : undefined}
+                        aria-disabled={!certificateAllowed}
+                        className={`btn btn-soft ${!certificateAllowed ? "is-disabled-link" : ""}`}
+                      >الشهادة</a>
                     </div>
                   </article>
                 );

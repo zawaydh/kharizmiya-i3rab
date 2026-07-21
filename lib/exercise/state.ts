@@ -1,4 +1,4 @@
-export type Mode = "learn" | "practice" | "quiz";
+import type { Facts, Flags, Mode } from "./model";
 
 export type ExerciseState = {
   mode: Mode;
@@ -6,9 +6,12 @@ export type ExerciseState = {
   currentNodeId: string;
   answers: Record<string, string>;
   attemptCount: Record<string, number>;
-  flags: Record<string, boolean>;
+  flags: Flags;
   correctNodeIds: Record<string, boolean>;
-  facts?: Record<string, any>;
+  facts: Facts;
+  currentExampleId?: string | number;
+  currentSentence?: string;
+  currentTarget?: string;
 };
 
 export function createInitialState(params: {

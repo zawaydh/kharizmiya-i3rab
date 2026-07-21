@@ -3,7 +3,7 @@
     "id": "present-five-verbs",
     "topic": "الفعل المضارع",
     "nextHref": "/learn/present-verb",
-    "nextLabel": "أكمل المرحلة الأولى: الفعل المضارع",
+    "nextLabel": "أكمل التعلّم الموجّه: الفعل المضارع",
     "sentence": "المهندسون لم يأتوا صباحًا.",
     "target": "يأتوا",
     "steps": [
@@ -65,7 +65,7 @@
     "id": "mubtada-built",
     "topic": "المبتدأ",
     "nextHref": "/learn/nominal-advanced",
-    "nextLabel": "أكمل المرحلة الأولى: المبتدأ",
+    "nextLabel": "أكمل التعلّم الموجّه: المبتدأ",
     "sentence": "هذا طالبٌ مجتهدٌ.",
     "target": "هذا",
     "steps": [
@@ -114,7 +114,7 @@
     "id": "attached-pronoun",
     "topic": "الضمائر المتصلة",
     "nextHref": "/learn/attached-pronouns",
-    "nextLabel": "أكمل المرحلة الأولى: الضمائر",
+    "nextLabel": "أكمل التعلّم الموجّه: الضمائر",
     "sentence": "كتبتُ الدرسَ.",
     "target": "تُ",
     "steps": [
@@ -151,7 +151,7 @@
     "id": "mafool",
     "topic": "المفعول به",
     "nextHref": "/learn/mafool-bih",
-    "nextLabel": "أكمل المرحلة الأولى: المفعول به",
+    "nextLabel": "أكمل التعلّم الموجّه: المفعول به",
     "sentence": "قرأ الطالبُ الكتابَ.",
     "target": "الكتابَ",
     "steps": [
@@ -201,7 +201,7 @@
     "id": "first-word-key",
     "topic": "مفتاح الكلمة الأولى",
     "nextHref": "/learn/first-word-key",
-    "nextLabel": "أكمل المرحلة الأولى: مفتاح الكلمة الأولى",
+    "nextLabel": "أكمل التعلّم الموجّه: مفتاح الكلمة الأولى",
     "sentence": "الطالبُ يقرأُ الدرسَ.",
     "target": "الطالبُ",
     "steps": [
@@ -238,7 +238,7 @@
     "id": "past-verb",
     "topic": "الفعل الماضي",
     "nextHref": "/learn/past-verb",
-    "nextLabel": "أكمل المرحلة الأولى: الفعل الماضي",
+    "nextLabel": "أكمل التعلّم الموجّه: الفعل الماضي",
     "sentence": "سافرَ المعلمُ مبكرًا.",
     "target": "سافرَ",
     "steps": [
@@ -288,7 +288,7 @@
     "id": "imperative",
     "topic": "فعل الأمر",
     "nextHref": "/learn/imperative-verb",
-    "nextLabel": "أكمل المرحلة الأولى: فعل الأمر",
+    "nextLabel": "أكمل التعلّم الموجّه: فعل الأمر",
     "sentence": "اكتبْ واجبكَ.",
     "target": "اكتبْ",
     "steps": [
@@ -337,7 +337,7 @@
     "id": "fael",
     "topic": "الفاعل",
     "nextHref": "/learn/fael",
-    "nextLabel": "أكمل المرحلة الأولى: الفاعل",
+    "nextLabel": "أكمل التعلّم الموجّه: الفاعل",
     "sentence": "شرحَ المعلمُ الدرسَ.",
     "target": "المعلمُ",
     "steps": [
@@ -387,7 +387,7 @@
     "id": "khabar",
     "topic": "الخبر",
     "nextHref": "/learn/khabar",
-    "nextLabel": "أكمل المرحلة الأولى: الخبر",
+    "nextLabel": "أكمل التعلّم الموجّه: الخبر",
     "sentence": "الحديقةُ جميلةٌ.",
     "target": "جميلةٌ",
     "steps": [
@@ -437,7 +437,7 @@
     "id": "kana",
     "topic": "كان وأخواتها",
     "nextHref": "/learn/kana-wa-akhawatuha",
-    "nextLabel": "أكمل المرحلة الأولى: كان وأخواتها",
+    "nextLabel": "أكمل التعلّم الموجّه: كان وأخواتها",
     "sentence": "كانَ الجوُّ لطيفًا.",
     "target": "لطيفًا",
     "steps": [
@@ -463,7 +463,7 @@
     "id": "inna",
     "topic": "إن وأخواتها",
     "nextHref": "/learn/inna-wa-akhawatuha",
-    "nextLabel": "أكمل المرحلة الأولى: إن وأخواتها",
+    "nextLabel": "أكمل التعلّم الموجّه: إن وأخواتها",
     "sentence": "إنَّ الطالبَ مجتهدٌ.",
     "target": "الطالبَ",
     "steps": [
@@ -489,7 +489,7 @@
     "id": "manqous",
     "topic": "الاسم المنقوص",
     "nextHref": "/learn/ism-manqous",
-    "nextLabel": "أكمل المرحلة الأولى: الاسم المنقوص",
+    "nextLabel": "أكمل التعلّم الموجّه: الاسم المنقوص",
     "sentence": "جاءَ القاضي.",
     "target": "القاضي",
     "steps": [

@@ -6,11 +6,13 @@ import { useAuthUser } from "./useAuthUser";
 export default function AuthLockGate({
   title = "تحتاج إلى تسجيل الدخول",
   text = "سجّل الدخول أولًا.",
+  nextHref = null,
   children,
 }) {
   const { isAuthenticated, isLoading } = useAuthUser();
   const pathname = usePathname();
-  const loginHref = `/auth?next=${encodeURIComponent(pathname || "/topics")}`;
+  const destination = nextHref || pathname || "/topics";
+  const loginHref = `/auth?next=${encodeURIComponent(destination)}`;
 
   if (isLoading) {
     return <div className="card auth-lock-card">جارٍ التحقق من الحساب...</div>;

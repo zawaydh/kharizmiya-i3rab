@@ -13,9 +13,9 @@ export default function LearnTopicPage({ params }: { params: { topicCode: string
   }
 
   return (
-    <AuthLockGate title="سجّل الدخول لتبدأ التعلّم" text="سجّل الدخول حتى تُحفظ مهاراتك خطوة بخطوة.">
+    <AuthLockGate title="سجّل الدخول لتبدأ التعلّم الموجّه" text="سجّل الدخول حتى تُحفظ مهاراتك خطوة بخطوة.">
     <ExercisePlayer
-      title={`${topic.name_ar} — تعلّم خطوة بخطوة`}
+      title={`${topic.name_ar} — التعلّم الموجّه`}
       mode="learn"
       tree={topic.tree}
       examples={topic.examples}

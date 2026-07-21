@@ -32,6 +32,23 @@ function SmartText({ text, onTerm }) {
   );
 }
 
+
+function HighlightedSentence({ sentence, target }) {
+  const source = String(sentence || "");
+  const wanted = String(target || "");
+  const targetIndex = wanted ? source.indexOf(wanted) : -1;
+
+  if (targetIndex < 0) return <span>{source}</span>;
+
+  return (
+    <>
+      <span>{source.slice(0, targetIndex)}</span>
+      <mark>{wanted}</mark>
+      <span>{source.slice(targetIndex + wanted.length)}</span>
+    </>
+  );
+}
+
 function shuffle(arr) {
   // Deterministic order prevents Next hydration mismatch between server and client.
   return [...arr];
@@ -123,7 +140,7 @@ export default function InteractiveLearning({ examples = [] }) {
 
   const example = examples[exampleIndex] || examples[0];
   const step = example?.steps?.[stepIndex];
-  const choices = useMemo(() => shuffle(step?.choices || []), [exampleIndex, stepIndex]);
+  const choices = useMemo(() => shuffle(step?.choices || []), [step?.choices]);
   const done = example && stepIndex >= example.steps.length;
   const progress = example ? Math.round((Math.min(stepIndex, example.steps.length) / example.steps.length) * 100) : 0;
   const visualProgress = example ? Math.round((Math.min(stepIndex + 1, example.steps.length) / example.steps.length) * 100) : 0;
@@ -141,7 +158,7 @@ export default function InteractiveLearning({ examples = [] }) {
     }
   }, [feedback]);
 
-  if (!example) return <main className="interactive-shell">لا توجد أمثلة بعد.</main>;
+  if (!example) return <div className="interactive-shell">لا توجد أمثلة بعد.</div>;
 
   function resetExample() {
     setStepIndex(0);
@@ -184,16 +201,18 @@ export default function InteractiveLearning({ examples = [] }) {
   }
 
   return (
-    <main className="interactive-shell start-learning-refined" dir="rtl">
+    <div className="interactive-shell start-learning-refined" dir="rtl">
       <section className="interactive-card addictive-learning-card">
-        <header className="interactive-topline clean-learning-topline">
+        <header className="interactive-topline clean-learning-topline start-page-header">
           <div className="start-coach-copy">
-            <strong>مدرّب تفكير نحوي موجّه</strong>
+            <span className="start-page-eyebrow">تجربة تمهيدية قصيرة</span>
+            <strong>ابنِ الإعراب خطوة خطوة</strong>
             <span>{example.topic}</span>
           </div>
-          <button onClick={nextExample} className="soft-mini-btn">مثال جديد</button>
+          <button onClick={nextExample} className="soft-mini-btn start-new-example-btn">مثال جديد</button>
         </header>
 
+        <p className="start-page-intro">اقرأ الجملة، وحدد دور الكلمة المطلوبة، ثم اختر إجابة واحدة في كل خطوة.</p>
 
         <section className="learning-focus-box">
           <div className="start-sticky-progress" aria-label="تقدم صفحة البداية">
@@ -203,42 +222,28 @@ export default function InteractiveLearning({ examples = [] }) {
             </div>
             <div className="start-sticky-progress-bar"><i style={{ width: `${done ? 100 : Math.max(7, visualProgress)}%` }} /></div>
           </div>
-          <div className="sentence-task-card refined-sentence-task-card start-target-only-card">
-            <div className="target-task-row">
-              <span>المطلوب إعراب</span>
-              <mark>{example.target}</mark>
+          <section className="start-example-card" aria-label="الجملة المطلوب تحليلها">
+            <span className="start-example-label">اقرأ الجملة</span>
+            <p className="start-example-sentence">
+              <HighlightedSentence sentence={example.sentence} target={example.target} />
+            </p>
+            <div className="start-target-row">
+              <span>الكلمة المطلوبة</span>
+              <strong>{example.target}</strong>
             </div>
-          </div>
+          </section>
 
           {!done ? (
             <div className="compact-step-zone refined-step-zone">
-              <div className="start-progress-row" aria-label="تقدّم المثال">
-                <span>الخطوة {stepIndex + 1} من {example.steps.length}</span>
-                <div className="start-progress-track"><i style={{ width: `${Math.max(8, visualProgress)}%` }} /></div>
-                <span>{visualProgress}%</span>
-              </div>
-
-              <h1>
+              <section className="start-question-card" aria-labelledby="start-current-question">
                 <span className="step-lead">{getStepLead(stepIndex, step)}</span>
-                <SmartText text={refinedQuestion(example, step, stepIndex)} onTerm={setActiveTerm} />
-              </h1>
-              <div className="start-hint-control">
-                <button
-                  type="button"
-                  className="soft-mini-btn start-hint-request"
-                  onClick={() => setShowHint((value) => !value)}
-                  aria-expanded={showHint}
-                >
-                  {showHint ? "إخفاء التلميح" : "أحتاج تلميحًا"}
-                </button>
-              </div>
-              {showHint ? (
-                <p className="step-hint" role="status">
-                  <SmartText text={refinedHint(example, step, stepIndex)} onTerm={setActiveTerm} />
-                </p>
-              ) : null}
+                <h1 id="start-current-question">
+                  <SmartText text={refinedQuestion(example, step, stepIndex)} onTerm={setActiveTerm} />
+                </h1>
+                <p className="start-choice-instruction">اختر إجابة واحدة:</p>
+              </section>
 
-              <div className="drag-choices compact-choices">
+              <div className="drag-choices compact-choices" role="group" aria-labelledby="start-current-question">
                 {choices.map((choice) => (
                   <button
                     key={choice}
@@ -251,9 +256,26 @@ export default function InteractiveLearning({ examples = [] }) {
                 ))}
               </div>
 
-              <div className="click-guidance-note refined-click-guidance-note" aria-live="polite">
-                <span>{currentBuild ? `آخر خطوة: ${currentBuild}` : "انقر على الإجابة الصحيحة للانتقال إلى الخطوة التالية."}</span>
+              <div className="start-help-row">
+                <button
+                  type="button"
+                  className="soft-mini-btn start-hint-request"
+                  onClick={() => setShowHint((value) => !value)}
+                  aria-expanded={showHint}
+                >
+                  {showHint ? "إخفاء التلميح" : "أحتاج تلميحًا"}
+                </button>
+                <span className="start-last-step" aria-live="polite">
+                  {currentBuild ? `آخر قرار: ${currentBuild}` : "ستظهر قراراتك في المسار أسفل الصفحة."}
+                </span>
               </div>
+
+              {showHint ? (
+                <div className="step-hint start-visible-hint" role="status">
+                  <strong>تلميح</strong>
+                  <p><SmartText text={refinedHint(example, step, stepIndex)} onTerm={setActiveTerm} /></p>
+                </div>
+              ) : null}
 
               {feedback ? (
                 <div ref={feedbackRef} className={`feedback-pop inline-feedback ${feedback.type === "ok" ? "ok" : "bad"}`}>
@@ -261,9 +283,11 @@ export default function InteractiveLearning({ examples = [] }) {
                 </div>
               ) : null}
 
-              <div className="step-meta-row meta-under-choices">
-                <span className="streak-pill">إنجاز متتالٍ: {streak}</span>
-              </div>
+              {streak > 0 ? (
+                <div className="step-meta-row meta-under-choices">
+                  <span className="streak-pill">إنجاز متتالٍ: {streak}</span>
+                </div>
+              ) : null}
             </div>
           ) : (
             <section className="result-card addictive-result-card start-finish-card">
@@ -313,6 +337,6 @@ export default function InteractiveLearning({ examples = [] }) {
           </div>
         ) : null}
       </section>
-    </main>
+    </div>
   );
 }

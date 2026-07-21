@@ -5,6 +5,7 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import TopicDropdown from "./TopicDropdown";
 import { useAuthUser } from "./useAuthUser";
 import { supabase } from "../../lib/supabaseClient";
+import Image from "next/image";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -59,14 +60,14 @@ export default function Navbar() {
     <header ref={headerRef} className="platform-navbar">
       <div className="platform-navbar-inner">
         <a href="/" className="platform-navbar-brand" aria-label="منصة خوارزمية الإعراب">
-          <img src="/brand-icon.svg" alt="" />
+          <Image src="/brand-icon.svg" alt="" width={42} height={42} priority />
           <span>منصة خوارزمية الإعراب</span>
         </a>
 
         <nav className="platform-navbar-links" aria-label="التنقل الرئيسي">
           <a href="/" className={pathname === "/" ? "is-active" : ""}>الرئيسية</a>
           <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="الموضوعات" locked={locked} />
-          <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="المسارات" locked={locked} mode="paths" />
+          <TopicDropdown compact currentCode={currentTopicCode} buttonLabel="المسارات البصرية" locked={locked} mode="paths" />
           <a href={protectedHref("/dashboard")} className={pathname === "/dashboard" ? "is-active" : ""}>لوحتي</a>
         </nav>
 
@@ -93,7 +94,7 @@ export default function Navbar() {
         <nav className={`platform-navbar-mobile ${open ? "is-open" : ""}`} aria-label="التنقل على الهاتف">
           <a href="/" onClick={closeMenu}>الرئيسية</a>
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={closeMenu} />
-          <TopicDropdown currentCode={currentTopicCode} buttonLabel="المسارات" className="mobile-topic-dropdown" locked={locked} mode="paths" onNavigate={closeMenu} />
+          <TopicDropdown currentCode={currentTopicCode} buttonLabel="المسارات البصرية" className="mobile-topic-dropdown" locked={locked} mode="paths" onNavigate={closeMenu} />
           <a href={protectedHref("/dashboard")} onClick={closeMenu}>لوحتي</a>
           {isAuthenticated ? (
             <button type="button" onClick={logout}>تسجيل الخروج</button>

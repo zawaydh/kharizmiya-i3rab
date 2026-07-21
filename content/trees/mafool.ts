@@ -76,12 +76,13 @@ export const mafoolTree: ExerciseTree = {
       id: "mafool_form",
       type: "question",
       context: "لكي نحدد هل نعرب المفعول به منصوبًا بعلامة نصب أم في محل نصب، نحدد صورته.",
-      text: "اختر الصورة المناسبة للكلمة المحددة:",
+      text: "ما صورة الكلمة المحددة؟",
       hint: "انظر إلى الكلمة المحددة نفسها: الاسم الظاهر المعرب نكمل معه إلى علامة النصب. أما الاسم المبني والضمير المتصل فنقول: في محل نصب مفعول به. وأما المصدر المؤول فليس اسمًا مبنيًا؛ بل نقول: مصدر مؤول في محل نصب مفعول به.",
       answers: [
         { id: "visible", text: "اسم ظاهر معرب", next: "mafool_mu3rab_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم الظاهر المعرب كلمة مستقلة تظهر عليها علامة نصب أو علامة نيابة، مثل: الواجبَ والطالبينِ والمعلمينَ." },
-        { id: "mabni", text: "اسم مبني", next: "mafool_mabni_type", eval: { fact: "roleKind", anyOf: ["mabni", "connected"] }, hint: "الأسماء المبنية تشمل أسماء الإشارة والأسماء الموصولة والضمائر المتصلة. المبني لا تظهر عليه علامة نصب، بل يكون في محل نصب مفعول به." },
-        { id: "masdar", text: "مصدر مؤول", next: "R_mafool_masdar", eval: { fact: "roleKind", equals: "masdar" }, hint: "المصدر المؤول ليس اسمًا مبنيًا؛ بل تركيب يؤول بمصدر في معنى اسم، مثل: أن تنجحَ = نجاحَك، وما فعلتَ = فعلَك." },
+        { id: "mabni", text: "اسم مبني", next: "mafool_mabni_type", eval: { fact: "roleKind", equals: "mabni" }, hint: "الاسم المبني مثل اسم الإشارة والاسم الموصول، ولا تظهر عليه علامة نصب، بل يكون في محل نصب مفعول به." },
+        { id: "connected", text: "ضمير متصل", next: "R_mafool_connected", eval: { fact: "roleKind", equals: "connected" }, hint: "الضمير المتصل من الأسماء المبنية، ويكون في محل نصب مفعول به إذا وقع عليه الفعل." },
+        { id: "masdar", text: "مصدر مؤول", next: "R_mafool_masdar", eval: { fact: "roleKind", equals: "masdar" }, hint: "المصدر المؤول تركيب يؤول بمصدر في معنى اسم، مثل: أن تنجحَ = نجاحَك، وما فعلتَ = فعلَك." },
       ]
     },
 
@@ -105,12 +106,12 @@ export const mafoolTree: ExerciseTree = {
       id: "mafool_nasb_mark",
       type: "question",
       context: "بما أن المفعول به منصوب وقد عرفنا صورته، نختار علامة نصبه.",
-      text: "اختر علامة النصب المناسبة للكلمة المحددة:",
+      text: "ما علامة نصب الكلمة المحددة؟",
       hint: "اختر علامة النصب من صورة الكلمة نفسها: الفتحة للمفرد وجمع التكسير، والياء للمثنى وجمع المذكر السالم، والكسرة لجمع المؤنث السالم، والألف للأسماء الخمسة.",
       answers: [
         { id: "fatha", text: "الفتحة الظاهرة", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "fatha" }, hint: "الفتحة تناسب المفرد العادي وجمع التكسير إذا ظهرت الحركة على آخر الكلمة." },
         { id: "yaa", text: "الياء", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "yaa" }, hint: "الياء علامة نصب المثنى وجمع المذكر السالم، مثل: الطالبينِ والمعلمينَ." },
-        { id: "kasra", text: "الكسرة", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "kasra" }, hint: "الكسرة تنوب عن الفتحة في نصب جمع المؤنث السالم، مثل: الطالباتِ." },
+        { id: "kasra", text: "الكسرة نيابةً عن الفتحة", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "kasra" }, hint: "الكسرة تنوب عن الفتحة في نصب جمع المؤنث السالم، مثل: الطالباتِ." },
         { id: "alif", text: "الألف", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "alif" }, hint: "الألف علامة نصب الأسماء الخمسة إذا استوفت شروطها: مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
       ]
     },

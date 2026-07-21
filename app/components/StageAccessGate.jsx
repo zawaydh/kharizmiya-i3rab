@@ -5,10 +5,10 @@ import { getTopicProgress } from "../../lib/db";
 import { useAuthUser } from "./useAuthUser";
 
 const DEFAULT_TEXT = {
-  practice: "أكمل المرحلة الأولى أولًا، ثم افتح المرحلة الثانية.",
-  quiz: "أكمل المرحلة الأولى والمرحلة الثانية أولًا، ثم افتح المرحلة النهائية.",
-  certificate: "الشهادة تظهر بعد إكمال المرحلة الأولى والمرحلة الثانية والنجاح في المرحلة النهائية.",
-  texts: "تفتح لعبة النصوص بعد إنهاء الاختبار مرة واحدة على الأقل.",
+  practice: "أكمل التعلّم الموجّه أولًا، ثم افتح التدريب.",
+  quiz: "أكمل التعلّم الموجّه والتدريب أولًا، ثم افتح الاختبار النهائي.",
+  certificate: "الشهادة تظهر بعد إكمال التعلّم الموجّه والتدريب والنجاح في الاختبار النهائي.",
+  texts: "تفتح لعبة النصوص بعد إنهاء الاختبار النهائي مرة واحدة على الأقل.",
 };
 
 export default function StageAccessGate({ topicCode, level = 2, require = "learn", children }) {
@@ -70,11 +70,11 @@ export default function StageAccessGate({ topicCode, level = 2, require = "learn
   return (
     <section className="student-flow-gate card card-glow" dir="rtl">
       <span className="mini-kicker">خطوة ناقصة</span>
-      <h1>{DEFAULT_TEXT[require] || "أكمل المرحلة السابقة أولًا."}</h1>
+      <h1>{DEFAULT_TEXT[require] || "أكمل الخطوة السابقة أولًا."}</h1>
       <div className="student-flow-gate-actions">
-        {require === "practice" ? <a className="btn btn-primary" href={nextLearn}>اذهب إلى المرحلة الأولى</a> : null}
-        {require === "quiz" || require === "certificate" ? <a className="btn btn-primary" href={nextPractice}>اذهب إلى المرحلة الثانية</a> : null}
-        {require === "texts" ? <a className="btn btn-primary" href={nextQuiz}>اذهب إلى اختبر نفسي</a> : null}
+        {require === "practice" ? <a className="btn btn-primary" href={nextLearn}>اذهب إلى التعلّم الموجّه</a> : null}
+        {require === "quiz" || require === "certificate" ? <a className="btn btn-primary" href={nextPractice}>اذهب إلى التدريب</a> : null}
+        {require === "texts" ? <a className="btn btn-primary" href={nextQuiz}>اذهب إلى الاختبار النهائي</a> : null}
         <a className="btn btn-soft" href="/dashboard">لوحتي</a>
       </div>
     </section>

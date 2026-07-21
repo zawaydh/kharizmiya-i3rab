@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getTopicByCode, getTopicRoutes } from "../../lib/topics";
+import { getTopicByCode, getTopicRoutes, hasVisualPath } from "../../lib/topics";
 
 const TOPIC_TREE = [
   {
@@ -73,7 +73,7 @@ function actionItemsForTopic(topicCode, mode = "learning", topicLabel = "الم�
   if (!topic || !topic.isReady) return [];
   const routes = getTopicRoutes(topic.code);
   if (mode === "paths") {
-    return [{ label: "المسار البصري", href: routes.paths }];
+    return hasVisualPath(topic.code) ? [{ label: "المسار البصري", href: routes.paths }] : [];
   }
   // لا نضيف زر "ابدأ" داخل القائمة؛ اسم الموضوع نفسه ينقل للصفحة حتى تقل الزحمة.
   return [{ label: topicLabel, href: routes.learn }];
