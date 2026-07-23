@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
 @import "./styles/00-foundation.css";
 @import "./styles/10-shell-auth-exercise.css";
 @import "./styles/20-navigation-paths.css";
@@ -8,3 +9,5 @@
 @import "./styles/70-pages-games-dashboard.css";
 @import "./styles/80-typography-responsive.css";
 @import "./styles/90-formal-theme.css";
+
+@import "./styles/95-classic-readable.css";

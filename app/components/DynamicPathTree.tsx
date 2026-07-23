@@ -539,20 +539,23 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     const node = layoutNodeMap.get(nodeId);
     if (!node) return;
 
-    const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, targetZoom));
+    const el = canvasScrollRef.current;
+    const mobileFitZoom = Math.max(MIN_ZOOM, (el.clientWidth - 28) / Math.max(node.w, 1));
+    const requestedZoom = el.clientWidth <= 760 ? Math.min(targetZoom, mobileFitZoom) : targetZoom;
+    const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, requestedZoom));
     setZoom(nextZoom);
 
     requestAnimationFrame(() => {
-      const el = canvasScrollRef.current;
-      if (!el) return;
-      el.dir = "ltr";
+      const scrollElement = canvasScrollRef.current;
+      if (!scrollElement) return;
+      scrollElement.dir = "ltr";
       const scaledLeft = node.x * nextZoom;
       const scaledTop = node.y * nextZoom;
       const scaledW = node.w * nextZoom;
       const scaledH = node.h * nextZoom;
-      const left = Math.max(0, scaledLeft - (el.clientWidth - scaledW) / 2);
-      const top = Math.max(0, scaledTop - Math.max(28, (el.clientHeight - scaledH) * 0.32));
-      el.scrollTo({ left, top, behavior: "smooth" });
+      const left = Math.max(0, scaledLeft - (scrollElement.clientWidth - scaledW) / 2);
+      const top = Math.max(0, scaledTop - Math.max(28, (scrollElement.clientHeight - scaledH) * 0.30));
+      scrollElement.scrollTo({ left, top, behavior: "smooth" });
     });
   }, [layout, layoutNodeMap]);
 
@@ -1055,10 +1058,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
             >
               <defs>
                 <marker id="pathsArrow" markerWidth="6" markerHeight="6" refX="5.4" refY="3" orient="auto">
-                  <path d="M0,0 L6,3 L0,6 Z" fill="rgba(70,96,116,.62)" />
+                  <path d="M0,0 L6,3 L0,6 Z" fill="rgba(37,99,235,.62)" />
                 </marker>
                 <marker id="pathsArrowActive" markerWidth="7" markerHeight="7" refX="6.2" refY="3.5" orient="auto">
-                  <path d="M0,0 L7,3.5 L0,7 Z" fill="#187f78" />
+                  <path d="M0,0 L7,3.5 L0,7 Z" fill="#16a34a" />
                 </marker>
               </defs>
 
@@ -1075,8 +1078,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                   <g key={`${edge.from}-${edge.to}-${edgeIndex}`}>
                     <path
                       d={pathD(start, end)}
+                      className={`paths-react-edge ${active ? "is-active" : ""}`}
                       fill="none"
-                      stroke={active ? "#187f78" : "rgba(70,96,116,.42)"}
+                      stroke={active ? "#16a34a" : "rgba(37,99,235,.42)"}
                       strokeWidth={active ? 2.05 : 1.1}
                       markerEnd={active ? "url(#pathsArrowActive)" : "url(#pathsArrow)"}
                       style={{ transition: "stroke .2s ease, stroke-width .2s ease" }}
@@ -1109,7 +1113,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 return (
                   <g
                     key={n.id}
-                    className={`paths-react-node ${isStart ? "paths-react-start-clickable" : ""} ${active ? "is-active" : ""} ${visited ? "is-visited" : ""}`}
+                    className={`paths-react-node ${isStart ? "is-start paths-react-start-clickable" : ""} ${isQuestion ? "is-question" : ""} ${isResult ? "is-result" : ""} ${active ? "is-active" : ""} ${visited ? "is-visited" : ""}`}
                     role={isStart ? "button" : undefined}
                     tabIndex={isStart ? 0 : undefined}
                     aria-label={isStart ? "ابدأ المثال الحالي" : undefined}

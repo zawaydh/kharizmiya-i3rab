@@ -14,3 +14,5 @@ The files are imported in numeric order from `app/globals.css`. The order is int
 - `90-formal-theme.css`: final formal educational visual system.
 
 New visual changes should normally be placed in the relevant module. Avoid adding another global override section unless a cross-platform token genuinely belongs in `90-formal-theme.css`.
+
+- `95-classic-readable.css`: restores the clear Cairo-based academic reading style and the light topic/exercise surfaces inspired by the earlier prototypes.

@@ -15,6 +15,7 @@ const expectedModules = [
   "70-pages-games-dashboard.css",
   "80-typography-responsive.css",
   "90-formal-theme.css",
+  "95-classic-readable.css",
 ];
 
 describe("CSS architecture", () => {
