@@ -1,7 +1,8 @@
-export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
+export type ExerciseTree = { startNodeId: string; practiceStartNodeId?: string; nodes: Record<string, any> };
 
 export const attachedPronounsTree: ExerciseTree = {
   "startNodeId": "pronoun_relation_gate",
+  "practiceStartNodeId": "pronoun_position",
   "nodes": {
     "pronoun_relation_gate": {
       "id": "pronoun_relation_gate",
@@ -10,7 +11,7 @@ export const attachedPronounsTree: ExerciseTree = {
       "text": "كيف نبدأ إعراب الضمير المتصل أو المنفصل؟",
       "hint": "ضع اسمًا ظاهرًا مكان الضمير، ثم حدد الموقع الذي شغله الاسم البديل في الجملة.",
       "answers": [
-        { "id": "a", "text": "أحدد علاقته وموقعه: رفع أم نصب أم جر", "next": "pronoun_step_1", "correct": true },
+        { "id": "a", "text": "أحدد علاقته وموقعه: رفع أم نصب أم جر", "next": "pronoun_position", "correct": true },
         { "id": "b", "text": "أبحث عن حركة آخره فقط", "next": "pronoun_relation_gate", "correct": false, "hint": "الضمائر مبنية؛ لذلك الأهم هو المحل الإعرابي لا الحركة الظاهرة." },
         { "id": "c", "text": "أعدّه دائمًا فاعلًا", "next": "pronoun_relation_gate", "correct": false, "hint": "الضمير قد يكون في محل رفع أو نصب أو جر بحسب علاقته في الجملة." }
       ]

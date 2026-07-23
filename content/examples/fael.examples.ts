@@ -59,7 +59,7 @@ export const faelExamples: Example[] = [
   },
   {
     id: "fa-04",
-    sentence: "رتبتِ الطالباتُ الصفَّ.",
+    sentence: "رتَّبتِ الطالباتُ الصفَّ.",
     target: "الطالباتُ",
     facts: { ...verbal, roleKind: "visible", shape: "jfs", raf3Mark: "damma", finalI3rab: `الطالباتُ: فاعل مرفوع، وعلامة رفعه الضمة الظاهرة على آخره.
 والعامل في رفعه الفعل الوارد في الجملة: رتبتِ.

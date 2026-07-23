@@ -133,7 +133,6 @@ export default function InteractiveLearning({ examples = [] }) {
   const [board, setBoard] = useState([]);
   const [feedback, setFeedback] = useState(null);
   const [locked, setLocked] = useState(false);
-  const [streak, setStreak] = useState(0);
   const [activeTerm, setActiveTerm] = useState(null);
   const [showHint, setShowHint] = useState(false);
   const feedbackRef = useRef(null);
@@ -144,7 +143,6 @@ export default function InteractiveLearning({ examples = [] }) {
   const done = example && stepIndex >= example.steps.length;
   const progress = example ? Math.round((Math.min(stepIndex, example.steps.length) / example.steps.length) * 100) : 0;
   const visualProgress = example ? Math.round((Math.min(stepIndex + 1, example.steps.length) / example.steps.length) * 100) : 0;
-  const currentBuild = board.length ? board[board.length - 1] : "";
 
   useEffect(() => {
     setShowHint(false);
@@ -165,7 +163,6 @@ export default function InteractiveLearning({ examples = [] }) {
     setBoard([]);
     setFeedback(null);
     setLocked(false);
-    setStreak(0);
     setActiveTerm(null);
     setShowHint(false);
   }
@@ -176,7 +173,6 @@ export default function InteractiveLearning({ examples = [] }) {
     setBoard([]);
     setFeedback(null);
     setLocked(false);
-    setStreak(0);
     setActiveTerm(null);
     setShowHint(false);
   }
@@ -186,7 +182,6 @@ export default function InteractiveLearning({ examples = [] }) {
     if (value === step.answer) {
       setLocked(true);
       setShowHint(false);
-      setStreak((s) => s + 1);
       setFeedback({ type: "ok", text: step.reward || "أحسنت؛ أغلقت هذا القرار وفتحت الخطوة التالية في مسار الإعراب." });
       setBoard((prev) => [...prev, step.boardText || value]);
       setTimeout(() => {
@@ -195,8 +190,7 @@ export default function InteractiveLearning({ examples = [] }) {
         setLocked(false);
       }, 1100);
     } else {
-      setStreak(0);
-      setFeedback({ type: "bad", text: wrongFeedbackFor(value, step, example, stepIndex) });
+        setFeedback({ type: "bad", text: wrongFeedbackFor(value, step, example, stepIndex) });
     }
   }
 
@@ -265,9 +259,6 @@ export default function InteractiveLearning({ examples = [] }) {
                 >
                   {showHint ? "إخفاء التلميح" : "أحتاج تلميحًا"}
                 </button>
-                <span className="start-last-step" aria-live="polite">
-                  {currentBuild ? `آخر قرار: ${currentBuild}` : "ستظهر قراراتك في المسار أسفل الصفحة."}
-                </span>
               </div>
 
               {showHint ? (
@@ -283,11 +274,6 @@ export default function InteractiveLearning({ examples = [] }) {
                 </div>
               ) : null}
 
-              {streak > 0 ? (
-                <div className="step-meta-row meta-under-choices">
-                  <span className="streak-pill">إنجاز متتالٍ: {streak}</span>
-                </div>
-              ) : null}
             </div>
           ) : (
             <section className="result-card addictive-result-card start-finish-card">

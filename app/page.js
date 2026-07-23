@@ -20,6 +20,7 @@ export default function HomePage() {
             <a href="/i3rab-in-our-speech" className="btn home-game-primary">جرّب الإعراب في كلامنا</a>
             <a href="/learn/start" className="btn home-learning-secondary">ابدأ التعلّم الموجّه</a>
           </div>
+          <p className="home-registration-note">التسجيل مخصّص لحفظ تقدم الطالب وتمييز مرحلته الحالية في التعلّم والتدريب والاختبار.</p>
         </div>
       </section>
 

@@ -99,36 +99,36 @@ export const pastVerbExamples: Example[] = [
   },
   {
     id: "pv-10",
-    sentence: "الفائزان حضرا الحفلَ.",
+    sentence: "الفائزانِ حضرا الحفلَ.",
     target: "حضرا",
     facts: { ...baseFacts, hasAttached: true, connectorKind: "raf3", raf3BuildGroup: "alif", raf3Type: "alif", weakEnding: "none", weakDeleted: false, basePastHuwa: "حضر", deletedLetter: "none" },
     covers: ["past.fatha_alif"]
   },
   {
     id: "pv-11",
-    sentence: "الصديقان سعيا إلى الخير.",
+    sentence: "الصديقانِ سعيا إلى الخير.",
     target: "سعيا",
     facts: { ...baseFacts, hasAttached: true, connectorKind: "raf3", raf3BuildGroup: "alif", raf3Type: "alif", weakEnding: "none", weakDeleted: false, weakOrigin: true, basePastHuwa: "سعى", deletedLetter: "none" },
     covers: ["past.fatha_alif_weak"]
   },
   {
     id: "pv-12",
-    sentence: "المسافرون رجعوا مساءً.",
+    sentence: "المسافرونَ رجعوا مساءً.",
     target: "رجعوا",
     facts: { ...baseFacts, hasAttached: true, connectorKind: "raf3", raf3BuildGroup: "waw", raf3Type: "waw", weakEnding: "none", weakDeleted: false, basePastHuwa: "رجع", deletedLetter: "none" },
     covers: ["past.damma_waw"]
   },
   {
     id: "pv-13",
-    sentence: "مضَوا في الطريق.",
-    target: "مضَوا",
+    sentence: "مَضَوْا في الطريق.",
+    target: "مَضَوْا",
     facts: { ...baseFacts, hasAttached: true, connectorKind: "raf3", raf3BuildGroup: "waw", raf3Type: "waw", weakEnding: "none", weakDeleted: true, basePastHuwa: "مضى", deletedLetter: "alif" },
     covers: ["past.weak_waw_alif"]
   },
   {
     id: "pv-14",
-    sentence: "بقُوا في البيت.",
-    target: "بقُوا",
+    sentence: "بَقُوا في البيت.",
+    target: "بَقُوا",
     facts: { ...baseFacts, hasAttached: true, connectorKind: "raf3", raf3BuildGroup: "waw", raf3Type: "waw", weakEnding: "none", weakDeleted: true, basePastHuwa: "بقي", deletedLetter: "yaa" },
     covers: ["past.weak_waw_yaa"]
   }
@@ -147,8 +147,8 @@ const resultByCover: Record<string, string> = {
   "past.fatha_alif": "حضرا: فعل ماضٍ مبني على الفتح لاتصاله بألف الاثنين. وألف الاثنين: ضمير متصل مبني في محل رفع فاعل",
   "past.fatha_alif_weak": "سعيا: فعل ماضٍ مبني على الفتح لاتصاله بألف الاثنين. وألف الاثنين: ضمير متصل مبني في محل رفع فاعل. وأصل الفعل: سعى",
   "past.damma_waw": "رجعوا: فعل ماضٍ مبني على الضم لاتصاله بواو الجماعة. وواو الجماعة: ضمير متصل مبني في محل رفع فاعل. والألف: ألف فارقة لا محل لها من الإعراب",
-  "past.weak_waw_alif": "مضَوا: فعل ماضٍ مبني على الضم المقدر على الألف المحذوفة لاتصاله بواو الجماعة. وواو الجماعة: ضمير متصل مبني في محل رفع فاعل. والألف: ألف فارقة لا محل لها من الإعراب",
-  "past.weak_waw_yaa": "بقُوا: فعل ماضٍ مبني على الضم المقدر على الياء المحذوفة لاتصاله بواو الجماعة. وواو الجماعة: ضمير متصل مبني في محل رفع فاعل. والألف: ألف فارقة لا محل لها من الإعراب"
+  "past.weak_waw_alif": "مَضَوْا: فعل ماضٍ مبني على الضم المقدر على الألف المحذوفة لاتصاله بواو الجماعة. وواو الجماعة: ضمير متصل مبني في محل رفع فاعل. والألف: ألف فارقة لا محل لها من الإعراب",
+  "past.weak_waw_yaa": "بَقُوا: فعل ماضٍ مبني على الضم المقدر على الياء المحذوفة لاتصاله بواو الجماعة. وواو الجماعة: ضمير متصل مبني في محل رفع فاعل. والألف: ألف فارقة لا محل لها من الإعراب"
 };
 
 const optionsBase = Object.values(resultByCover);

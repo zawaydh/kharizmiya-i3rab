@@ -79,8 +79,8 @@ export const imperativeVerbExamples: Example[] = [
   },
   {
     id: "im-fath-tawkid",
-    sentence: "اكتبنَّ الدرسَ.",
-    target: "اكتبنَّ",
+    sentence: "اكتبَنَّ الدرسَ.",
+    target: "اكتبَنَّ",
     facts: { ...base, attached: "tawkid", ending: "sahih" },
     covers: ["imperative.fath_tawkid"],
   },

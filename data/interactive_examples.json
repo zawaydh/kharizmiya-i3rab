@@ -4,7 +4,7 @@
     "topic": "الفعل المضارع",
     "nextHref": "/learn/present-verb",
     "nextLabel": "أكمل التعلّم الموجّه: الفعل المضارع",
-    "sentence": "المهندسون لم يأتوا صباحًا.",
+    "sentence": "المهندسونَ لم يأتوا صباحًا.",
     "target": "يأتوا",
     "steps": [
       {
@@ -152,7 +152,7 @@
     "topic": "المفعول به",
     "nextHref": "/learn/mafool-bih",
     "nextLabel": "أكمل التعلّم الموجّه: المفعول به",
-    "sentence": "قرأ الطالبُ الكتابَ.",
+    "sentence": "قرأَ الطالبُ الكتابَ.",
     "target": "الكتابَ",
     "steps": [
       {
@@ -289,7 +289,7 @@
     "topic": "فعل الأمر",
     "nextHref": "/learn/imperative-verb",
     "nextLabel": "أكمل التعلّم الموجّه: فعل الأمر",
-    "sentence": "اكتبْ واجبكَ.",
+    "sentence": "اكتبْ واجبَكَ.",
     "target": "اكتبْ",
     "steps": [
       {

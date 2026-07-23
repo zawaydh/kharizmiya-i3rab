@@ -1,4 +1,4 @@
-export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
+export type ExerciseTree = { startNodeId: string; practiceStartNodeId?: string; nodes: Record<string, any> };
 
 
 export const tawabiTree: ExerciseTree = {
@@ -87,10 +87,10 @@ export const tawabiTree: ExerciseTree = {
       text: "ما الاسم النحوي لهذه العلاقة؟",
       hint: "النعت يصف، والمعطوف يأتي بعد حرف عطف، والتوكيد يثبت المعنى أو ينفي الشك، والبدل يفسر المقصود من الاسم السابق.",
       answers: [
-        { id: "naat", text: "نعت", next: "tawabi_follow_source", eval: { fact: "tawabiTerm", equals: "naat" }, hint: "النعت تابع يصف منعوته. وقد يكون مفردًا، أو جملة فيها رابط، أو شبه جملة متعلقًا بتقدير مثل: كائن أو موجود." },
-        { id: "atf", text: "معطوف", next: "tawabi_follow_source", eval: { fact: "tawabiTerm", equals: "atf" }, hint: "المعطوف تابع يقع بعد حرف عطف ويشارك المعطوف عليه في الحكم والإعراب." },
+        { id: "naat", text: "نعت", next: "tawabi_case", eval: { fact: "tawabiTerm", equals: "naat" }, hint: "النعت تابع يصف منعوته. وقد يكون مفردًا، أو جملة فيها رابط، أو شبه جملة متعلقًا بتقدير مثل: كائن أو موجود." },
+        { id: "atf", text: "معطوف", next: "tawabi_case", eval: { fact: "tawabiTerm", equals: "atf" }, hint: "المعطوف تابع يقع بعد حرف عطف ويشارك المعطوف عليه في الحكم والإعراب." },
         { id: "tawkid", text: "توكيد", next: "tawabi_tawkid_kind", eval: { fact: "tawabiTerm", equals: "tawkid" }, hint: "التوكيد لا يضيف صفة جديدة، بل يرسّخ المعنى أو يرفع احتمال المجاز أو النقص. بعد اكتشافه نحدد: هل كان التوكيد بتكرار اللفظ أم بأحد ألفاظ التوكيد المعنوي؟" },
-        { id: "badal", text: "بدل", next: "tawabi_follow_source", eval: { fact: "tawabiTerm", equals: "badal" }, hint: "البدل يزيل الغموض عن المبدل منه. قد يكون مطابقًا، أو بعضًا من كل، أو اشتمالًا." },
+        { id: "badal", text: "بدل", next: "tawabi_case", eval: { fact: "tawabiTerm", equals: "badal" }, hint: "البدل يزيل الغموض عن المبدل منه. قد يكون مطابقًا، أو بعضًا من كل، أو اشتمالًا." },
       ]
     },
 
@@ -104,14 +104,14 @@ export const tawabiTree: ExerciseTree = {
         {
           id: "lafzi",
           text: "أعادت تكرار اللفظ نفسه، وهذا توكيد لفظي",
-          next: "tawabi_follow_source",
+          next: "tawabi_case",
           eval: { fact: "tawkidKind", equals: "lafzi" },
           hint: "التوكيد اللفظي يكون بتكرار اللفظ نفسه أو ما في معناه، مثل: الصدقُ الصدقُ منجاةٌ."
         },
         {
           id: "manawi",
           text: "جاءت بأحد ألفاظ التوكيد المعنوي مثل: نفس، عين، كل، جميع، كلا، كلتا",
-          next: "tawabi_follow_source",
+          next: "tawabi_case",
           eval: { fact: "tawkidKind", equals: "manawi" },
           hint: "التوكيد المعنوي يكون بألفاظ مخصوصة، ويحتاج غالبًا ضميرًا يعود على المؤكَّد، مثل: نفسُه، كلُّهم، جميعُهم."
         },
@@ -214,4 +214,31 @@ export const tawabiTree: ExerciseTree = {
     R_tawabi_sentence: { id: "R_tawabi_sentence", type: "result", coverage: "tawabi.sentence", text: "جملة في محل إعراب تابع لما قبلها." },
     R_tawabi_shibh: { id: "R_tawabi_shibh", type: "result", coverage: "tawabi.shibh", text: "شبه جملة في محل إعراب تابع لما قبلها." }
   }
+};
+
+
+// في الموضوعات المنفصلة يعرف الطالب الباب من عنوان الصفحة؛ لذلك لا نعيد
+// أسئلة اكتشاف الباب والمصطلح في كل مثال. يبقى المسار الكامل في التدريب المختلط.
+export const tawabiNaatTree: ExerciseTree = {
+  ...tawabiTree,
+  startNodeId: "tawabi_case",
+  practiceStartNodeId: "tawabi_case",
+};
+
+export const tawabiAtfTree: ExerciseTree = {
+  ...tawabiTree,
+  startNodeId: "tawabi_case",
+  practiceStartNodeId: "tawabi_case",
+};
+
+export const tawabiTawkidTree: ExerciseTree = {
+  ...tawabiTree,
+  startNodeId: "tawabi_tawkid_kind",
+  practiceStartNodeId: "tawabi_tawkid_kind",
+};
+
+export const tawabiBadalTree: ExerciseTree = {
+  ...tawabiTree,
+  startNodeId: "tawabi_case",
+  practiceStartNodeId: "tawabi_case",
 };

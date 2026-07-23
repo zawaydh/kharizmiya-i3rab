@@ -57,6 +57,8 @@ export type ExerciseNode = QuestionNode | ResultNode;
 
 export type ExerciseTree = {
   startNodeId: string;
+  learnStartNodeId?: string;
+  practiceStartNodeId?: string;
   nodes: Record<string, ExerciseNode>;
   [key: string]: unknown;
 };

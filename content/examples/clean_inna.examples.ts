@@ -32,7 +32,7 @@ export const cleanInnaCoverageKeysOrdered = [
 export const cleanInnaExamples: Example[] = [
   {
     "id": "in-01",
-    "sentence": "إن الطالبَ نشيطٌ.",
+    "sentence": "إنَّ الطالبَ نشيطٌ.",
     "target": "الطالبَ",
     "facts": {
       "targetRole": "ism",
@@ -41,7 +41,7 @@ export const cleanInnaExamples: Example[] = [
       "ending": "sahih",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "الطالب.",
       "meaningPredicate": "نشيط.",
@@ -56,7 +56,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-02",
-    "sentence": "لعل الفتى حاضرٌ.",
+    "sentence": "لعلَّ الفتى حاضرٌ.",
     "target": "الفتى",
     "facts": {
       "targetRole": "ism",
@@ -80,7 +80,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-03",
-    "sentence": "علمتُ أنَّ القاضيَ عادلٌ.",
+    "sentence": "علمتُ أنَّ القاضيَ عادلٌ.",
     "target": "القاضيَ",
     "facts": {
       "targetRole": "ism",
@@ -89,7 +89,7 @@ export const cleanInnaExamples: Example[] = [
       "ending": "manqous",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته أنَّ؟",
-      "particleLabel": "أنَّ",
+      "particleLabel": "أنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "القاضي.",
       "meaningPredicate": "عادل.",
@@ -104,7 +104,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-04",
-    "sentence": "علمتُ أنَّ الطالبينِ حاضرانِ.",
+    "sentence": "علمتُ أنَّ الطالبينِ حاضرانِ.",
     "target": "الطالبينِ",
     "facts": {
       "targetRole": "ism",
@@ -112,7 +112,7 @@ export const cleanInnaExamples: Example[] = [
       "number": "dual",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته أنَّ؟",
-      "particleLabel": "أنَّ",
+      "particleLabel": "أنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "الطالبان.",
       "meaningPredicate": "حاضران.",
@@ -127,7 +127,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-05",
-    "sentence": "لعل المعلمينَ مخلصون.",
+    "sentence": "لعلَّ المعلمينَ مخلصونَ.",
     "target": "المعلمينَ",
     "facts": {
       "targetRole": "ism",
@@ -137,9 +137,9 @@ export const cleanInnaExamples: Example[] = [
       "semanticQuestion": "ما الشيء المرجو؟",
       "particleLabel": "لعل",
       "particleMeaning": "tarajji",
-      "meaningSubject": "المعلمون.",
-      "meaningPredicate": "مخلصون.",
-      "meaningJudgment": "المعلمون مخلصون.",
+      "meaningSubject": "المعلمونَ.",
+      "meaningPredicate": "مخلصونَ.",
+      "meaningJudgment": "المعلمونَ مخلصونَ.",
       "baseStart": "ism",
       "baseFirstRole": "mubtada",
       "nasikhEffect": "mubtada_to_ism"
@@ -150,7 +150,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-06",
-    "sentence": "ليت الطالباتِ مجتهداتٌ.",
+    "sentence": "ليتَ الطالباتِ مجتهداتٌ.",
     "target": "الطالباتِ",
     "facts": {
       "targetRole": "ism",
@@ -173,15 +173,15 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-07",
-    "sentence": "إن أباك كريمٌ.",
-    "target": "أباك",
+    "sentence": "إنَّ أباكَ كريمٌ.",
+    "target": "أباكَ",
     "facts": {
       "targetRole": "ism",
       "nounKind": "mu3rab",
       "number": "five",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "أبوك.",
       "meaningPredicate": "كريم.",
@@ -196,7 +196,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-08",
-    "sentence": "لعلهم فائزون.",
+    "sentence": "لعلَّهم فائزونَ.",
     "target": "هم",
     "facts": {
       "targetRole": "ism",
@@ -206,8 +206,8 @@ export const cleanInnaExamples: Example[] = [
       "particleLabel": "لعل",
       "particleMeaning": "tarajji",
       "meaningSubject": "هم.",
-      "meaningPredicate": "فائزون.",
-      "meaningJudgment": "هم فائزون.",
+      "meaningPredicate": "فائزونَ.",
+      "meaningJudgment": "هم فائزونَ.",
       "baseStart": "ism",
       "baseFirstRole": "mubtada",
       "nasikhEffect": "mubtada_to_ism"
@@ -218,7 +218,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-09",
-    "sentence": "كأن هذا جبلٌ.",
+    "sentence": "كأنَّ هذا جبلٌ.",
     "target": "هذا",
     "facts": {
       "targetRole": "ism",
@@ -241,7 +241,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-10",
-    "sentence": "الكلام كثيرٌ لكنَّ الذي صدقَ محبوبٌ.",
+    "sentence": "الكلامُ كثيرٌ لكنَّ الذي صدقَ محبوبٌ.",
     "target": "الذي",
     "facts": {
       "targetRole": "ism",
@@ -264,7 +264,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-11",
-    "sentence": "علمتُ أنَّ الطالبَ نشيطٌ.",
+    "sentence": "علمتُ أنَّ الطالبَ نشيطٌ.",
     "target": "نشيطٌ",
     "facts": {
       "targetRole": "khabar",
@@ -274,7 +274,7 @@ export const cleanInnaExamples: Example[] = [
       "ending": "sahih",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته أنَّ؟",
-      "particleLabel": "أنَّ",
+      "particleLabel": "أنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "الطالب.",
       "meaningPredicate": "نشيط.",
@@ -289,7 +289,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-12",
-    "sentence": "ليت الهدفَ أسمى.",
+    "sentence": "ليتَ الهدفَ أسمى.",
     "target": "أسمى",
     "facts": {
       "targetRole": "khabar",
@@ -314,7 +314,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-13",
-    "sentence": "إن القاضيَ راضٍ.",
+    "sentence": "إنَّ القاضيَ راضٍ.",
     "target": "راضٍ",
     "facts": {
       "targetRole": "khabar",
@@ -324,7 +324,7 @@ export const cleanInnaExamples: Example[] = [
       "ending": "manqous",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "القاضي.",
       "meaningPredicate": "راضٍ.",
@@ -339,7 +339,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-14",
-    "sentence": "لعل الطالبينِ حاضرانِ.",
+    "sentence": "لعلَّ الطالبينِ حاضرانِ.",
     "target": "حاضرانِ",
     "facts": {
       "targetRole": "khabar",
@@ -363,8 +363,8 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-15",
-    "sentence": "إن المعلمينَ مخلصون.",
-    "target": "مخلصون",
+    "sentence": "إنَّ المعلمينَ مخلصونَ.",
+    "target": "مخلصونَ",
     "facts": {
       "targetRole": "khabar",
       "khabarKind": "single",
@@ -372,11 +372,11 @@ export const cleanInnaExamples: Example[] = [
       "number": "jms",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
-      "meaningSubject": "المعلمون.",
-      "meaningPredicate": "مخلصون.",
-      "meaningJudgment": "المعلمون مخلصون.",
+      "meaningSubject": "المعلمونَ.",
+      "meaningPredicate": "مخلصونَ.",
+      "meaningJudgment": "المعلمونَ مخلصونَ.",
       "baseStart": "ism",
       "baseFirstRole": "mubtada",
       "nasikhEffect": "mubtada_to_ism"
@@ -387,7 +387,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-16",
-    "sentence": "ليت الطالباتِ مجتهداتٌ.",
+    "sentence": "ليتَ الطالباتِ مجتهداتٌ.",
     "target": "مجتهداتٌ",
     "facts": {
       "targetRole": "khabar",
@@ -411,7 +411,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-17",
-    "sentence": "إن أباك ذو فضلٍ.",
+    "sentence": "إنَّ أباكَ ذو فضلٍ.",
     "target": "ذو",
     "facts": {
       "targetRole": "khabar",
@@ -420,7 +420,7 @@ export const cleanInnaExamples: Example[] = [
       "number": "five",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "أبوك.",
       "meaningPredicate": "ذو فضل.",
@@ -435,7 +435,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-18",
-    "sentence": "العمل كثيرٌ لكنَّ المسؤولَ أنتَ.",
+    "sentence": "العملُ كثيرٌ لكنَّ المسؤولَ أنتَ.",
     "target": "أنتَ",
     "facts": {
       "targetRole": "khabar",
@@ -459,7 +459,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-19",
-    "sentence": "كأن الحلَّ هذا.",
+    "sentence": "كأنَّ الحلَّ هذا.",
     "target": "هذا",
     "facts": {
       "targetRole": "khabar",
@@ -483,7 +483,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-20",
-    "sentence": "إن الفائزَ مَن صبرَ.",
+    "sentence": "إنَّ الفائزَ مَن صبرَ.",
     "target": "مَن",
     "facts": {
       "targetRole": "khabar",
@@ -492,7 +492,7 @@ export const cleanInnaExamples: Example[] = [
       "mabniType": "mawsool",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "الفائز.",
       "meaningPredicate": "من صبر.",
@@ -507,7 +507,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-21",
-    "sentence": "إن هدفَك أن تنجحَ.",
+    "sentence": "إنَّ هدفَكَ أن تنجحَ.",
     "target": "أن تنجحَ",
     "facts": {
       "targetRole": "khabar",
@@ -515,7 +515,7 @@ export const cleanInnaExamples: Example[] = [
       "nounKind": "masdar",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "هدفك.",
       "meaningPredicate": "أن تنجح.",
@@ -530,7 +530,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-22",
-    "sentence": "ليت الطالبَ يقرأُ.",
+    "sentence": "ليتَ الطالبَ يقرأُ.",
     "target": "يقرأُ",
     "facts": {
       "targetRole": "khabar",
@@ -553,7 +553,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-23",
-    "sentence": "إن الطالبَ أخلاقُه حسنةٌ.",
+    "sentence": "إنَّ الطالبَ أخلاقُه حسنةٌ.",
     "target": "أخلاقُه حسنةٌ",
     "facts": {
       "targetRole": "khabar",
@@ -561,7 +561,7 @@ export const cleanInnaExamples: Example[] = [
       "sentenceType": "nominal",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "الطالب.",
       "meaningPredicate": "أخلاقه حسنة.",
@@ -576,7 +576,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-24",
-    "sentence": "لعل الكتابَ في الحقيبةِ.",
+    "sentence": "لعلَّ الكتابَ في الحقيبةِ.",
     "target": "في الحقيبةِ",
     "facts": {
       "targetRole": "khabar",
@@ -600,7 +600,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-25",
-    "sentence": "ليت اللقاءَ غدًا.",
+    "sentence": "ليتَ اللقاءَ غدًا.",
     "target": "غدًا",
     "facts": {
       "targetRole": "khabar",
@@ -624,7 +624,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-26",
-    "sentence": "إن في البيتِ رجلًا.",
+    "sentence": "إنَّ في البيتِ رجلًا.",
     "target": "في البيتِ",
     "facts": {
       "targetRole": "khabar",
@@ -633,7 +633,7 @@ export const cleanInnaExamples: Example[] = [
       "shibhPosition": "advanced",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "رجل.",
       "meaningPredicate": "في البيت.",
@@ -648,7 +648,7 @@ export const cleanInnaExamples: Example[] = [
   },
   {
     "id": "in-27",
-    "sentence": "إن عندنا ضيفًا.",
+    "sentence": "إنَّ عندنا ضيفًا.",
     "target": "عندنا",
     "facts": {
       "targetRole": "khabar",
@@ -657,7 +657,7 @@ export const cleanInnaExamples: Example[] = [
       "shibhPosition": "advanced",
       "semanticAnswer": "judgment",
       "semanticQuestion": "ما الذي أكّدته إنَّ؟",
-      "particleLabel": "إنَّ",
+      "particleLabel": "إنَّ",
       "particleMeaning": "tawkid",
       "meaningSubject": "ضيف.",
       "meaningPredicate": "عندنا.",
@@ -673,8 +673,8 @@ export const cleanInnaExamples: Example[] = [
 
   ,{
     "id": "in-28",
-    "sentence": "إنما المؤمنون إخوةٌ.",
-    "target": "المؤمنون",
+    "sentence": "إنَّما المؤمنونَ إخوةٌ.",
+    "target": "المؤمنونَ",
     "facts": {
       "hasKaffa": true,
       "kaffaTargetRole": "mubtada",
@@ -683,9 +683,9 @@ export const cleanInnaExamples: Example[] = [
       "semanticQuestion": "ماذا فعلت ما الكافة في إنما؟",
       "particleLabel": "إنما",
       "particleMeaning": "kaffa",
-      "meaningSubject": "المؤمنون.",
+      "meaningSubject": "المؤمنونَ.",
       "meaningPredicate": "إخوة.",
-      "meaningJudgment": "المؤمنون إخوة.",
+      "meaningJudgment": "المؤمنونَ إخوةٌ.",
       "baseStart": "ism",
       "baseFirstRole": "mubtada"
     },
@@ -697,7 +697,7 @@ export const cleanInnaExamples: Example[] = [
 export const cleanInnaQuizExamples = [
   {
     "id": "in-01",
-    "sentence": "إن الطالبَ نشيطٌ.",
+    "sentence": "إنَّ الطالبَ نشيطٌ.",
     "target": "الطالبَ",
     "facts": {
       "targetRole": "ism",
@@ -726,7 +726,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-02",
-    "sentence": "لعل الفتى حاضرٌ.",
+    "sentence": "لعلَّ الفتى حاضرٌ.",
     "target": "الفتى",
     "facts": {
       "targetRole": "ism",
@@ -755,7 +755,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-03",
-    "sentence": "علمتُ أنَّ القاضيَ عادلٌ.",
+    "sentence": "علمتُ أنَّ القاضيَ عادلٌ.",
     "target": "القاضيَ",
     "facts": {
       "targetRole": "ism",
@@ -784,7 +784,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-04",
-    "sentence": "علمتُ أنَّ الطالبينِ حاضرانِ.",
+    "sentence": "علمتُ أنَّ الطالبينِ حاضرانِ.",
     "target": "الطالبينِ",
     "facts": {
       "targetRole": "ism",
@@ -812,7 +812,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-05",
-    "sentence": "إن المعلمينَ مخلصون.",
+    "sentence": "إنَّ المعلمينَ مخلصونَ.",
     "target": "المعلمينَ",
     "facts": {
       "targetRole": "ism",
@@ -868,8 +868,8 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-07",
-    "sentence": "إن أباك كريمٌ.",
-    "target": "أباك",
+    "sentence": "إنَّ أباكَ كريمٌ.",
+    "target": "أباكَ",
     "facts": {
       "targetRole": "ism",
       "nounKind": "mu3rab",
@@ -878,7 +878,7 @@ export const cleanInnaQuizExamples = [
     "covers": [
       "inna_ism.five"
     ],
-    "prompt": "بعد اتباع خطوات التفكير، ما الإعراب النهائي لـ«أباك»؟",
+    "prompt": "بعد اتباع خطوات التفكير، ما الإعراب النهائي لـ«أباكَ»؟",
     "options": [
       "خبر إن مرفوع وعلامة رفعه الضمة الظاهرة على آخره",
       "اسم إن منصوب وعلامة نصبه الألف لأنه من الأسماء الخمسة",
@@ -886,17 +886,17 @@ export const cleanInnaQuizExamples = [
       "اسم إن منصوب وعلامة نصبه الياء لأنه جمع مذكر سالم"
     ],
     "correctI3rab": "اسم إن منصوب وعلامة نصبه الألف لأنه من الأسماء الخمسة",
-    "whyCorrect": "«أباك»: نحدد أولًا أهي اسم الحرف الناسخ أم خبره، ثم نحدد صورتها، وبعد ذلك نختار العلامة أو المحل الإعرابي.",
+    "whyCorrect": "«أباكَ»: نحدد أولًا أهي اسم الحرف الناسخ أم خبره، ثم نحدد صورتها، وبعد ذلك نختار العلامة أو المحل الإعرابي.",
     "optionReasons": {
-      "خبر إن مرفوع وعلامة رفعه الضمة الظاهرة على آخره": "خطأ؛ جعلتَ «أباك» خبرًا، لكنه الاسم الذي وقع بعد الحرف الناسخ؛ اسم إن وأخواتها منصوب. ثم نطابق علامة النصب مع صورة الكلمة.",
-      "اسم إن منصوب وعلامة نصبه الألف لأنه من الأسماء الخمسة": "صحيح؛ «أباك» اسم إن منصوب وعلامة نصبه الألف لأنه من الأسماء الخمسة.",
-      "اسم إن منصوب وعلامة نصبه الفتحة الظاهرة على آخره": "خطأ؛ الوظيفة الإعرابية صحيحة، لكن علامة الإعراب أو صورة «أباك» لا توافق المثال. راجع آخر الكلمة: أهي مفرد، مثنى، جمعًا، مقصورة أم منقوصة؟",
-      "اسم إن منصوب وعلامة نصبه الياء لأنه جمع مذكر سالم": "خطأ؛ الوظيفة الإعرابية قريبة، لكنك عاملتَ «أباك» معاملة جمع المذكر السالم، والصحيح أنه من الأسماء الخمسة؛ لذلك تختلف العلامة."
+      "خبر إن مرفوع وعلامة رفعه الضمة الظاهرة على آخره": "خطأ؛ جعلتَ «أباكَ» خبرًا، لكنه الاسم الذي وقع بعد الحرف الناسخ؛ اسم إن وأخواتها منصوب. ثم نطابق علامة النصب مع صورة الكلمة.",
+      "اسم إن منصوب وعلامة نصبه الألف لأنه من الأسماء الخمسة": "صحيح؛ «أباكَ» اسم إن منصوب وعلامة نصبه الألف لأنه من الأسماء الخمسة.",
+      "اسم إن منصوب وعلامة نصبه الفتحة الظاهرة على آخره": "خطأ؛ الوظيفة الإعرابية صحيحة، لكن علامة الإعراب أو صورة «أباكَ» لا توافق المثال. راجع آخر الكلمة: أهي مفرد، مثنى، جمعًا، مقصورة أم منقوصة؟",
+      "اسم إن منصوب وعلامة نصبه الياء لأنه جمع مذكر سالم": "خطأ؛ الوظيفة الإعرابية قريبة، لكنك عاملتَ «أباكَ» معاملة جمع المذكر السالم، والصحيح أنه من الأسماء الخمسة؛ لذلك تختلف العلامة."
     }
   },
   {
     "id": "in-08",
-    "sentence": "لعلهم فائزون.",
+    "sentence": "لعلَّهم فائزونَ.",
     "target": "هم",
     "facts": {
       "targetRole": "ism",
@@ -979,7 +979,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-11",
-    "sentence": "إن الطالبَ نشيطٌ.",
+    "sentence": "إنَّ الطالبَ نشيطٌ.",
     "target": "نشيطٌ",
     "facts": {
       "targetRole": "khabar",
@@ -1039,7 +1039,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-13",
-    "sentence": "إن القاضيَ راضٍ.",
+    "sentence": "إنَّ القاضيَ راضٍ.",
     "target": "راضٍ",
     "facts": {
       "targetRole": "khabar",
@@ -1098,8 +1098,8 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-15",
-    "sentence": "إن المعلمينَ مخلصون.",
-    "target": "مخلصون",
+    "sentence": "إنَّ المعلمينَ مخلصونَ.",
+    "target": "مخلصونَ",
     "facts": {
       "targetRole": "khabar",
       "khabarKind": "single",
@@ -1109,7 +1109,7 @@ export const cleanInnaQuizExamples = [
     "covers": [
       "inna_khabar_single.jms"
     ],
-    "prompt": "بعد اتباع خطوات التفكير، ما الإعراب النهائي لـ«مخلصون»؟",
+    "prompt": "بعد اتباع خطوات التفكير، ما الإعراب النهائي لـ«مخلصونَ»؟",
     "options": [
       "خبر إن مرفوع وعلامة رفعه الضمة الظاهرة على آخره",
       "خبر إن مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم",
@@ -1117,12 +1117,12 @@ export const cleanInnaQuizExamples = [
       "اسم إن منصوب وعلامة نصبه الياء لأنه جمع مذكر سالم"
     ],
     "correctI3rab": "خبر إن مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم",
-    "whyCorrect": "«مخلصون»: نحدد أولًا أهي اسم الحرف الناسخ أم خبره، ثم نحدد صورتها، وبعد ذلك نختار العلامة أو المحل الإعرابي.",
+    "whyCorrect": "«مخلصونَ»: نحدد أولًا أهي اسم الحرف الناسخ أم خبره، ثم نحدد صورتها، وبعد ذلك نختار العلامة أو المحل الإعرابي.",
     "optionReasons": {
-      "خبر إن مرفوع وعلامة رفعه الضمة الظاهرة على آخره": "خطأ؛ الوظيفة الإعرابية صحيحة، لكن علامة الإعراب أو صورة «مخلصون» لا توافق المثال. راجع آخر الكلمة: أهي مفرد، مثنى، جمعًا، مقصورة أم منقوصة؟",
-      "خبر إن مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم": "صحيح؛ «مخلصون» خبر إن مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم.",
-      "اسم إن منصوب وعلامة نصبه الفتحة الظاهرة على آخره": "خطأ؛ جعلتَ «مخلصون» اسم الحرف الناسخ، لكنه المعلومة المسندة إلى الاسم؛ فهو خبر مرفوع، ثم نحدد علامة الرفع من صورته.",
-      "اسم إن منصوب وعلامة نصبه الياء لأنه جمع مذكر سالم": "خطأ؛ جعلتَ «مخلصون» اسم الحرف الناسخ، لكنه المعلومة المسندة إلى الاسم؛ فهو خبر مرفوع، ثم نحدد علامة الرفع من صورته."
+      "خبر إن مرفوع وعلامة رفعه الضمة الظاهرة على آخره": "خطأ؛ الوظيفة الإعرابية صحيحة، لكن علامة الإعراب أو صورة «مخلصونَ» لا توافق المثال. راجع آخر الكلمة: أهي مفرد، مثنى، جمعًا، مقصورة أم منقوصة؟",
+      "خبر إن مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم": "صحيح؛ «مخلصونَ» خبر إن مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم.",
+      "اسم إن منصوب وعلامة نصبه الفتحة الظاهرة على آخره": "خطأ؛ جعلتَ «مخلصونَ» اسم الحرف الناسخ، لكنه المعلومة المسندة إلى الاسم؛ فهو خبر مرفوع، ثم نحدد علامة الرفع من صورته.",
+      "اسم إن منصوب وعلامة نصبه الياء لأنه جمع مذكر سالم": "خطأ؛ جعلتَ «مخلصونَ» اسم الحرف الناسخ، لكنه المعلومة المسندة إلى الاسم؛ فهو خبر مرفوع، ثم نحدد علامة الرفع من صورته."
     }
   },
   {
@@ -1156,7 +1156,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-17",
-    "sentence": "إن أباك ذو فضلٍ.",
+    "sentence": "إنَّ أباكَ ذو فضلٍ.",
     "target": "ذو",
     "facts": {
       "targetRole": "khabar",
@@ -1243,7 +1243,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-20",
-    "sentence": "إن الفائزَ مَن صبرَ.",
+    "sentence": "إنَّ الفائزَ مَن صبرَ.",
     "target": "مَن",
     "facts": {
       "targetRole": "khabar",
@@ -1272,7 +1272,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-21",
-    "sentence": "إن هدفَك أن تنجحَ.",
+    "sentence": "إنَّ هدفَكَ أن تنجحَ.",
     "target": "أن تنجحَ",
     "facts": {
       "targetRole": "khabar",
@@ -1328,7 +1328,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-23",
-    "sentence": "إن الطالبَ أخلاقُه حسنةٌ.",
+    "sentence": "إنَّ الطالبَ أخلاقُه حسنةٌ.",
     "target": "أخلاقُه حسنةٌ",
     "facts": {
       "targetRole": "khabar",
@@ -1414,7 +1414,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-26",
-    "sentence": "إن في البيتِ رجلًا.",
+    "sentence": "إنَّ في البيتِ رجلًا.",
     "target": "في البيتِ",
     "facts": {
       "targetRole": "khabar",
@@ -1443,7 +1443,7 @@ export const cleanInnaQuizExamples = [
   },
   {
     "id": "in-27",
-    "sentence": "إن عندنا ضيفًا.",
+    "sentence": "إنَّ عندنا ضيفًا.",
     "target": "عندنا",
     "facts": {
       "targetRole": "khabar",

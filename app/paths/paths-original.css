@@ -376,3 +376,80 @@
     transition: none;
   }
 }
+
+/* استعادة المسار بوصفه خريطة مفاهيمية كاملة */
+.paths-direct-workspace .paths-react-map-intro {
+  max-width: 780px;
+  margin: 8px 0 0;
+  color: #507086;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.8;
+}
+.paths-direct-workspace .paths-react-node { opacity: 1; filter: none; }
+.paths-direct-workspace .paths-react-node:not(.is-active):not(.is-visited) { opacity: .82; }
+.paths-direct-workspace .paths-react-edge-label { opacity: .78; }
+.paths-direct-workspace .paths-react-edge-label.is-active {
+  fill: #047857;
+  opacity: 1;
+  font-size: 14px;
+}
+@media (max-width: 760px) {
+  .paths-direct-workspace .paths-react-map-intro { font-size: 13px; }
+  .paths-direct-workspace .btn-fit { flex: 1 1 170px; }
+  .paths-direct-workspace .paths-react-canvas-scroll { touch-action: pan-x pan-y; }
+}
+
+/* Formal, low-color concept-map skin */
+.paths-direct-workspace .paths-react-card{
+  background:#102235!important;
+  border:1px solid #294055!important;
+  box-shadow:none!important;
+  border-radius:16px!important;
+}
+.paths-direct-workspace .paths-react-board-wrap{
+  background:#f3f6f8!important;
+  border:1px solid #cbd5dd!important;
+  box-shadow:none!important;
+  border-radius:16px!important;
+}
+.paths-direct-workspace .paths-react-canvas-shell{
+  background-color:#f8fafb!important;
+  background-image:linear-gradient(rgba(70,96,116,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(70,96,116,.035) 1px,transparent 1px)!important;
+  border-color:#cbd5dd!important;
+  border-radius:14px!important;
+}
+.paths-direct-workspace .paths-react-edge-label{
+  fill:#496276!important;
+  stroke:#f8fafb!important;
+  opacity:1!important;
+}
+.paths-direct-workspace .paths-react-edge-label.is-active{
+  fill:#187f78!important;
+}
+.paths-direct-workspace .paths-react-question-text,
+.paths-direct-workspace .paths-react-box-text,
+.paths-direct-workspace .paths-react-answer-text{
+  fill:#172635!important;
+}
+.paths-direct-workspace .paths-react-question-instruction{
+  fill:#187f78!important;
+}
+.paths-direct-workspace .paths-react-answer:hover rect,
+.paths-direct-workspace .paths-react-answer:focus-visible rect{
+  fill:#eef5f3!important;
+  stroke:#187f78!important;
+  filter:none!important;
+  transform:none!important;
+}
+.paths-direct-workspace .paths-hint-bubble{
+  background:#fff!important;
+  color:#172635!important;
+  border-color:#b7c4cf!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.12)!important;
+}
+.paths-direct-workspace .paths-hint-bubble button{
+  background:#e9f3f1!important;
+  color:#155f5a!important;
+  border-color:#b6d8d4!important;
+}

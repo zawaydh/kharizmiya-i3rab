@@ -163,8 +163,8 @@ export const tawabiExamples: Example[] = [
   },
   {
     id: "tw-04",
-    sentence: "حضرَ خالدٌ وعليٌ.",
-    target: "عليٌ",
+    sentence: "حضرَ خالدٌ وعليٌّ.",
+    target: "عليٌّ",
     facts: {
       ...base,
       relationKind: "coordination",
@@ -175,15 +175,15 @@ export const tawabiExamples: Example[] = [
       mark: "damma",
       matbu3: "خالدٌ",
       matbu3Role: "فاعل مرفوع",
-      relationReason: "لأن الواو ربطت عليًا بخالد، فشارك خالدًا في حكم الحضور.",
-      finalI3rab: makeFinal("عليٌ", "atf", "raf3", "damma", "خالدٌ", "فاعل مرفوع", "لأن الواو جعلت عليًا مشاركًا لخالد في حكم الحضور.", "singular", "الواو: حرف عطف لا محل له من الإعراب.")
+      relationReason: "لأن الواو ربطت عليًّا بخالد، فشارك خالدًا في حكم الحضور.",
+      finalI3rab: makeFinal("عليٌّ", "atf", "raf3", "damma", "خالدٌ", "فاعل مرفوع", "لأن الواو جعلت عليًّا مشاركًا لخالد في حكم الحضور.", "singular", "الواو: حرف عطف لا محل له من الإعراب.")
     },
     covers: ["tawabi.atf", "tawabi.raf3", "tawabi.singular", "tawabi.damma"]
   },
   {
     id: "tw-05",
-    sentence: "رأيتُ خالدًا وعليًا.",
-    target: "عليًا",
+    sentence: "رأيتُ خالدًا وعليًّا.",
+    target: "عليًّا",
     facts: {
       ...base,
       relationKind: "coordination",
@@ -194,15 +194,15 @@ export const tawabiExamples: Example[] = [
       mark: "fatha",
       matbu3: "خالدًا",
       matbu3Role: "مفعول به منصوب",
-      relationReason: "لأن عليًا جاء بعد الواو وشارك خالدًا في وقوع الرؤية عليه.",
-      finalI3rab: makeFinal("عليًا", "atf", "nasb", "fatha", "خالدًا", "مفعول به منصوب", "لأنه شارك خالدًا في وقوع فعل الرؤية عليه بسبب الواو.", "singular", "الواو: حرف عطف لا محل له من الإعراب.")
+      relationReason: "لأن عليًّا جاء بعد الواو وشارك خالدًا في وقوع الرؤية عليه.",
+      finalI3rab: makeFinal("عليًّا", "atf", "nasb", "fatha", "خالدًا", "مفعول به منصوب", "لأنه شارك خالدًا في وقوع فعل الرؤية عليه بسبب الواو.", "singular", "الواو: حرف عطف لا محل له من الإعراب.")
     },
     covers: ["tawabi.atf", "tawabi.nasb", "tawabi.singular", "tawabi.fatha"]
   },
   {
     id: "tw-06",
-    sentence: "سلمتُ على خالدٍ وعليٍ.",
-    target: "عليٍ",
+    sentence: "سلَّمتُ على خالدٍ وعليٍّ.",
+    target: "عليٍّ",
     facts: {
       ...base,
       relationKind: "coordination",
@@ -213,8 +213,8 @@ export const tawabiExamples: Example[] = [
       mark: "kasra",
       matbu3: "خالدٍ",
       matbu3Role: "اسم مجرور بعلى",
-      relationReason: "لأن عليًا جاء بعد الواو وشارك خالدًا في التعلق بحرف الجر.",
-      finalI3rab: makeFinal("عليٍ", "atf", "jarr", "kasra", "خالدٍ", "اسم مجرور بعلى", "لأنه شارك خالدًا في التعلّق بحرف الجر بسبب الواو.", "singular", "الواو: حرف عطف لا محل له من الإعراب.")
+      relationReason: "لأن عليًّا جاء بعد الواو وشارك خالدًا في التعلق بحرف الجر.",
+      finalI3rab: makeFinal("عليٍّ", "atf", "jarr", "kasra", "خالدٍ", "اسم مجرور بعلى", "لأنه شارك خالدًا في التعلّق بحرف الجر بسبب الواو.", "singular", "الواو: حرف عطف لا محل له من الإعراب.")
     },
     covers: ["tawabi.atf", "tawabi.jarr", "tawabi.singular", "tawabi.kasra"]
   },
@@ -277,7 +277,7 @@ export const tawabiExamples: Example[] = [
   },
   {
     id: "tw-09-lf-raf3",
-    sentence: "الصدق الصدقُ منجاةٌ.",
+    sentence: "الصدقُ الصدقُ منجاةٌ.",
     target: "الصدقُ",
     facts: {
       ...base,
@@ -296,7 +296,7 @@ export const tawabiExamples: Example[] = [
   },
   {
     id: "tw-09-lf-nasb",
-    sentence: "كرّمتُ الطالب الطالبَ.",
+    sentence: "كرّمتُ الطالبَ الطالبَ.",
     target: "الطالبَ",
     facts: {
       ...base,
@@ -315,7 +315,7 @@ export const tawabiExamples: Example[] = [
   },
   {
     id: "tw-09-lf-jarr",
-    sentence: "مررتُ بالطالب الطالبِ.",
+    sentence: "مررتُ بالطالبِ الطالبِ.",
     target: "الطالبِ",
     facts: {
       ...base,
@@ -372,7 +372,7 @@ export const tawabiExamples: Example[] = [
   },
   {
     id: "tw-12",
-    sentence: "سلمتُ على أخيكَ خالدٍ.",
+    sentence: "سلَّمتُ على أخيكَ خالدٍ.",
     target: "خالدٍ",
     facts: {
       ...base,
@@ -385,7 +385,7 @@ export const tawabiExamples: Example[] = [
       matbu3: "أخيكَ",
       matbu3Role: "اسم مجرور بعلى",
       relationReason: "لأن خالدًا يوضح من الأخ المقصود، ويصح أن نقول: سلمتُ على خالدٍ.",
-      finalI3rab: makeFinal("خالدٍ", "badal", "jarr", "kasra", "أخيكَ", "اسم مجرور بعلى", "لأن خالدًا يوضح الأخ المقصود، ويمكن أن نقول: سلمتُ على خالدٍ.", "singular", "نوع البدل: بدل مطابق.")
+      finalI3rab: makeFinal("خالدٍ", "badal", "jarr", "kasra", "أخيكَ", "اسم مجرور بعلى", "لأن خالدًا يوضح الأخ المقصود، ويمكن أن نقول: سلَّمتُ على خالدٍ.", "singular", "نوع البدل: بدل مطابق.")
     },
     covers: ["tawabi.badal", "tawabi.jarr", "tawabi.singular", "tawabi.kasra"]
   },
@@ -631,6 +631,235 @@ export const tawabiExamples: Example[] = [
     },
     covers: ["tawabi.atf", "tawabi.raf3", "tawabi.singular", "tawabi.damma"]
   }
+  ,{
+    id: "tw-26",
+    sentence: "زرتُ عمّانَ ثمَّ العقبةَ.",
+    target: "العقبةَ",
+    facts: {
+      ...base,
+      relationKind: "coordination",
+      tawabiTerm: "atf",
+      connector: "ثمَّ",
+      case: "nasb",
+      shape: "singular",
+      mark: "fatha",
+      matbu3: "عمّانَ",
+      matbu3Role: "مفعول به منصوب",
+      relationReason: "لأن ثمَّ عطفت العقبة على عمّان، ودلت على الترتيب مع التراخي.",
+      finalI3rab: makeFinal("العقبةَ", "atf", "nasb", "fatha", "عمّانَ", "مفعول به منصوب", "لأن العقبة شاركت عمّان في وقوع الزيارة عليها بواسطة ثمَّ.", "singular", "ثمَّ: حرف عطف يفيد الترتيب مع التراخي.")
+    },
+    covers: ["tawabi.atf", "tawabi.nasb", "tawabi.singular", "tawabi.fatha"]
+  },
+  {
+    id: "tw-27",
+    sentence: "استفسرتُ من المعلمِ أو المديرِ.",
+    target: "المديرِ",
+    facts: {
+      ...base,
+      relationKind: "coordination",
+      tawabiTerm: "atf",
+      connector: "أو",
+      case: "jarr",
+      shape: "singular",
+      mark: "kasra",
+      matbu3: "المعلمِ",
+      matbu3Role: "اسم مجرور بمن",
+      relationReason: "لأن أو عطفت المدير على المعلم، فشاركَه في الجر بحرف الجر.",
+      finalI3rab: makeFinal("المديرِ", "atf", "jarr", "kasra", "المعلمِ", "اسم مجرور بمن", "لأن المدير معطوف على المعلم بحرف أو، فتبعه في الجر.", "singular", "أو: حرف عطف لا محل له من الإعراب.")
+    },
+    covers: ["tawabi.atf", "tawabi.jarr", "tawabi.singular", "tawabi.kasra"]
+  },
+  {
+    id: "tw-28",
+    sentence: "حضرَ الطالبانِ والمعلمانِ.",
+    target: "المعلمانِ",
+    facts: {
+      ...base,
+      relationKind: "coordination",
+      tawabiTerm: "atf",
+      connector: "الواو",
+      case: "raf3",
+      shape: "dual",
+      mark: "alif",
+      matbu3: "الطالبانِ",
+      matbu3Role: "فاعل مرفوع بالألف لأنه مثنى",
+      relationReason: "لأن الواو عطفت المعلمين على الطالبين، فشاركاهما في حكم الحضور.",
+      finalI3rab: makeFinal("المعلمانِ", "atf", "raf3", "alif", "الطالبانِ", "فاعل مرفوع بالألف لأنه مثنى", "لأن المعلمين شاركا الطالبين في حكم الحضور بواسطة الواو.", "dual", "الواو: حرف عطف لا محل له من الإعراب.")
+    },
+    covers: ["tawabi.atf", "tawabi.raf3", "tawabi.dual", "tawabi.alif"]
+  },
+  {
+    id: "tw-29",
+    sentence: "نجحَ الفريقُ كلُّهُ.",
+    target: "كلُّهُ",
+    facts: {
+      ...base,
+      relationKind: "emphasis",
+      tawabiTerm: "tawkid",
+      tawkidKind: "manawi",
+      case: "raf3",
+      shape: "singular",
+      mark: "damma",
+      matbu3: "الفريقُ",
+      matbu3Role: "فاعل مرفوع",
+      relationReason: "لأن كلَّه أكدت شمول النجاح لجميع أفراد الفريق، ولم تضف وصفًا جديدًا.",
+      finalI3rab: makeTawkidFinal("كلُّهُ", "manawi", "raf3", "damma", "الفريقُ", "فاعل مرفوع", "لأن كلَّه أكدت أن النجاح شمل الفريق كاملًا.", "singular", "الهاء: ضمير متصل مبني في محل جر مضاف إليه يعود على المؤكَّد.")
+    },
+    covers: ["tawabi.tawkid", "tawabi.tawkid_manawi", "tawabi.raf3", "tawabi.singular", "tawabi.damma"]
+  },
+  {
+    id: "tw-30",
+    sentence: "حضرَ الطالبانِ كلاهما.",
+    target: "كلاهما",
+    facts: {
+      ...base,
+      relationKind: "emphasis",
+      tawabiTerm: "tawkid",
+      tawkidKind: "manawi",
+      case: "raf3",
+      shape: "dual",
+      mark: "alif",
+      matbu3: "الطالبانِ",
+      matbu3Role: "فاعل مرفوع بالألف لأنه مثنى",
+      relationReason: "لأن كلاهما أكدت حضور الطالبين معًا، واتصلت بضمير يعود عليهما.",
+      finalI3rab: makeTawkidFinal("كلاهما", "manawi", "raf3", "alif", "الطالبانِ", "فاعل مرفوع بالألف لأنه مثنى", "لأن كلاهما أكدت شمول الحضور للطالبين.", "dual", "كلا ملحقة بالمثنى إذا أضيفت إلى ضمير، وهنا مرفوعة بالألف.")
+    },
+    covers: ["tawabi.tawkid", "tawabi.tawkid_manawi", "tawabi.raf3", "tawabi.dual", "tawabi.alif"]
+  },
+  {
+    id: "tw-31",
+    sentence: "سلّمتُ على الطالبتينِ كلتيهما.",
+    target: "كلتيهما",
+    facts: {
+      ...base,
+      relationKind: "emphasis",
+      tawabiTerm: "tawkid",
+      tawkidKind: "manawi",
+      case: "jarr",
+      shape: "dual",
+      mark: "yaa",
+      matbu3: "الطالبتينِ",
+      matbu3Role: "اسم مجرور بعلى وعلامة جره الياء لأنه مثنى",
+      relationReason: "لأن كلتيهما أكدت أن السلام وقع على الطالبتين معًا.",
+      finalI3rab: makeTawkidFinal("كلتيهما", "manawi", "jarr", "yaa", "الطالبتينِ", "اسم مجرور بعلى وعلامة جره الياء لأنه مثنى", "لأن كلتيهما أكدت شمول السلام للطالبتين.", "dual", "كلتا ملحقة بالمثنى إذا أضيفت إلى ضمير، وهنا مجرورة بالياء.")
+    },
+    covers: ["tawabi.tawkid", "tawabi.tawkid_manawi", "tawabi.jarr", "tawabi.dual", "tawabi.yaa"]
+  },
+  {
+    id: "tw-32",
+    sentence: "حضرَ المعلمُ سامرٌ.",
+    target: "سامرٌ",
+    facts: {
+      ...base,
+      relationKind: "substitution",
+      tawabiTerm: "badal",
+      badalKind: "مطابق",
+      case: "raf3",
+      shape: "singular",
+      mark: "damma",
+      matbu3: "المعلمُ",
+      matbu3Role: "فاعل مرفوع",
+      relationReason: "لأن سامرًا هو المعلم المقصود نفسه، ويصح أن نقول: حضرَ سامرٌ.",
+      finalI3rab: makeFinal("سامرٌ", "badal", "raf3", "damma", "المعلمُ", "فاعل مرفوع", "لأن سامرًا يوضح المعلم المقصود ويمكن أن يحل محله.", "singular", "نوع البدل: بدل مطابق.")
+    },
+    covers: ["tawabi.badal", "tawabi.raf3", "tawabi.singular", "tawabi.damma"]
+  },
+  {
+    id: "tw-33",
+    sentence: "أكلتُ الرغيفَ نصفَهُ.",
+    target: "نصفَهُ",
+    facts: {
+      ...base,
+      relationKind: "substitution",
+      tawabiTerm: "badal",
+      badalKind: "بعض من كل",
+      case: "nasb",
+      shape: "singular",
+      mark: "fatha",
+      matbu3: "الرغيفَ",
+      matbu3Role: "مفعول به منصوب",
+      relationReason: "لأن النصف جزء حقيقي من الرغيف، والهاء تعود على المبدل منه.",
+      finalI3rab: makeFinal("نصفَهُ", "badal", "nasb", "fatha", "الرغيفَ", "مفعول به منصوب", "لأن النصف جزء من الرغيف، وفيه ضمير يعود على المبدل منه.", "singular", "نوع البدل: بدل بعض من كل. الهاء: ضمير متصل مبني في محل جر مضاف إليه.")
+    },
+    covers: ["tawabi.badal", "tawabi.nasb", "tawabi.singular", "tawabi.fatha"]
+  },
+  {
+    id: "tw-34",
+    sentence: "قرأتُ الكتابَ صفحاتِهِ.",
+    target: "صفحاتِهِ",
+    facts: {
+      ...base,
+      relationKind: "substitution",
+      tawabiTerm: "badal",
+      badalKind: "بعض من كل",
+      case: "nasb",
+      shape: "jfs",
+      mark: "kasra",
+      matbu3: "الكتابَ",
+      matbu3Role: "مفعول به منصوب",
+      relationReason: "لأن الصفحات أجزاء حقيقية من الكتاب، والهاء تعود على المبدل منه.",
+      finalI3rab: makeFinal("صفحاتِهِ", "badal", "nasb", "kasra", "الكتابَ", "مفعول به منصوب", "لأن الصفحات جزء من الكتاب، وفيها ضمير يعود عليه.", "jfs", "نوع البدل: بدل بعض من كل. الهاء: ضمير متصل مبني في محل جر مضاف إليه.")
+    },
+    covers: ["tawabi.badal", "tawabi.nasb", "tawabi.jfs", "tawabi.kasra"]
+  },
+  {
+    id: "tw-35",
+    sentence: "أعجبني الشاعرُ أسلوبُهُ.",
+    target: "أسلوبُهُ",
+    facts: {
+      ...base,
+      relationKind: "substitution",
+      tawabiTerm: "badal",
+      badalKind: "اشتمال",
+      case: "raf3",
+      shape: "singular",
+      mark: "damma",
+      matbu3: "الشاعرُ",
+      matbu3Role: "فاعل مرفوع",
+      relationReason: "لأن الأسلوب معنى يشتمل عليه الشاعر وليس جزءًا ماديًا منه، والهاء تعود عليه.",
+      finalI3rab: makeFinal("أسلوبُهُ", "badal", "raf3", "damma", "الشاعرُ", "فاعل مرفوع", "لأن الأسلوب معنى من معاني الشاعر، وفيه ضمير يعود على المبدل منه.", "singular", "نوع البدل: بدل اشتمال.")
+    },
+    covers: ["tawabi.badal", "tawabi.raf3", "tawabi.singular", "tawabi.damma"]
+  },
+  {
+    id: "tw-36",
+    sentence: "أحببتُ المدينةَ هواءَها.",
+    target: "هواءَها",
+    facts: {
+      ...base,
+      relationKind: "substitution",
+      tawabiTerm: "badal",
+      badalKind: "اشتمال",
+      case: "nasb",
+      shape: "singular",
+      mark: "fatha",
+      matbu3: "المدينةَ",
+      matbu3Role: "مفعول به منصوب",
+      relationReason: "لأن الهواء معنى تشتمل عليه المدينة وليس جزءًا محددًا منها، والضمير يعود عليها.",
+      finalI3rab: makeFinal("هواءَها", "badal", "nasb", "fatha", "المدينةَ", "مفعول به منصوب", "لأن الهواء مما تشتمل عليه المدينة، وفيه ضمير يعود على المبدل منه.", "singular", "نوع البدل: بدل اشتمال.")
+    },
+    covers: ["tawabi.badal", "tawabi.nasb", "tawabi.singular", "tawabi.fatha"]
+  },
+  {
+    id: "tw-37",
+    sentence: "استفدتُ من الكتابِ أفكارِهِ.",
+    target: "أفكارِهِ",
+    facts: {
+      ...base,
+      relationKind: "substitution",
+      tawabiTerm: "badal",
+      badalKind: "اشتمال",
+      case: "jarr",
+      shape: "jt",
+      mark: "kasra",
+      matbu3: "الكتابِ",
+      matbu3Role: "اسم مجرور بمن",
+      relationReason: "لأن الأفكار معانٍ يشتمل عليها الكتاب، والهاء تعود على المبدل منه.",
+      finalI3rab: makeFinal("أفكارِهِ", "badal", "jarr", "kasra", "الكتابِ", "اسم مجرور بمن", "لأن الأفكار مما يشتمل عليه الكتاب، وفيها ضمير يعود عليه.", "jt", "نوع البدل: بدل اشتمال.")
+    },
+    covers: ["tawabi.badal", "tawabi.jarr", "tawabi.jt", "tawabi.kasra"]
+  }
+
 ];
 
 const resultByCover: Record<string, string> = Object.fromEntries(tawabiExamples.map((ex) => [ex.id, ex.facts.finalI3rab.split("\n")[0]]));

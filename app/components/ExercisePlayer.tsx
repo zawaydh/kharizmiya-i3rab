@@ -30,6 +30,7 @@ import {
 } from "../../lib/exercise/persistence";
 import { looksLikeProgrammingOption, toStudentArabicOption } from "../../lib/studentOptionText";
 import { diagnosticHintText, firstLevelHintText } from "../../lib/hintText";
+import { diagnosticFeedbackForChoice } from "../../lib/exercise/diagnosticFeedback";
 import {
   coverageDisplayLabel,
   enrichQuizPrompt,
@@ -2565,22 +2566,22 @@ function studentHintText(node: any, picked?: any, state?: any) {
     }
 
     if (id === "past_waw_weak") {
-      const shown = baseHuwa ? `${targetPast} ← هو ${baseHuwa}` : `مضَوا ← هو مضى، بقُوا ← هو بقي`;
+      const shown = baseHuwa ? `${targetPast} ← هو ${baseHuwa}` : `مَضَوْا ← هو مضى، بَقُوا ← هو بقي`;
       return `أسند الفعل إلى الضمير هو في الماضي ثم قارن: ${shown}. إذا كان أصل الفعل ينتهي بألف أو واو أو ياء، وهذا الحرف غير ظاهر أمامك، فهو حرف علة محذوف وتكون حركة البناء مقدرة عليه. لا ترجع إلى المضارع.${reminder}`;
     }
 
     if (id === "past_weak_base_waw") {
-      if (pickedText.includes("يبقى")) return `هذا مضارع. نحن نحلل فعلًا ماضيًا، فنقول في بقُوا: هو بقي، لا هو يبقى.${reminder}`;
-      if (facts.basePastHuwa === "بقي" && pickedText.includes("مضى")) return `هذا يصلح لمثال مضَوا، أما بقُوا فنردها إلى الماضي مع هو: هو بقي.${reminder}`;
-      if (facts.basePastHuwa === "مضى" && pickedText.includes("بقي")) return `هذا يصلح لمثال بقُوا، أما مضَوا فنردها إلى الماضي مع هو: هو مضى.${reminder}`;
-      return `ضع هو قبل الفعل في الماضي: مضَوا ← هو مضى، بقُوا ← هو بقي. لا تستعمل المضارع.${reminder}`;
+      if (pickedText.includes("يبقى")) return `هذا مضارع. نحن نحلل فعلًا ماضيًا، فنقول في بَقُوا: هو بقي، لا هو يبقى.${reminder}`;
+      if (facts.basePastHuwa === "بقي" && pickedText.includes("مضى")) return `هذا يصلح لمثال مَضَوْا، أما بَقُوا فنردها إلى الماضي مع هو: هو بقي.${reminder}`;
+      if (facts.basePastHuwa === "مضى" && pickedText.includes("بقي")) return `هذا يصلح لمثال بَقُوا، أما مَضَوْا فنردها إلى الماضي مع هو: هو مضى.${reminder}`;
+      return `ضع هو قبل الفعل في الماضي: مَضَوْا ← هو مضى، بَقُوا ← هو بقي. لا تستعمل المضارع.${reminder}`;
     }
 
     if (id === "past_deleted_letter_waw") {
-      if (facts.deletedLetter === "yaa" && pickedText.includes("الألف")) return `بقُوا ← هو بقي. آخر الأصل ياء، إذن المحذوف ياء. لا تنخدع بالمضارع يبقى؛ نحن نرجع إلى الماضي مع هو.${reminder}`;
-      if (facts.deletedLetter === "alif" && pickedText.includes("الياء")) return `مضَوا ← هو مضى. آخر الأصل ألف، إذن المحذوف ألف.${reminder}`;
+      if (facts.deletedLetter === "yaa" && pickedText.includes("الألف")) return `بَقُوا ← هو بقي. آخر الأصل ياء، إذن المحذوف ياء. لا تنخدع بالمضارع يبقى؛ نحن نرجع إلى الماضي مع هو.${reminder}`;
+      if (facts.deletedLetter === "alif" && pickedText.includes("الياء")) return `مَضَوْا ← هو مضى. آخر الأصل ألف، إذن المحذوف ألف.${reminder}`;
       if (pickedText.includes("الواو")) return `الواو هنا واو الجماعة، ضمير متصل، وليست حرف العلة المحذوف. الحرف المحذوف نعرفه من صورة الماضي مع هو.${reminder}`;
-      const shown = baseHuwa ? `${targetPast} ← هو ${baseHuwa}` : `مضَوا ← هو مضى، بقُوا ← هو بقي`;
+      const shown = baseHuwa ? `${targetPast} ← هو ${baseHuwa}` : `مَضَوْا ← هو مضى، بَقُوا ← هو بقي`;
       return `قارن بالإسناد إلى هو في الماضي: ${shown}. الحرف الأخير في الأصل إذا اختفى قبل واو الجماعة فهو الحرف المحذوف.${reminder}`;
     }
   }
@@ -2702,7 +2703,7 @@ function studentHintText(node: any, picked?: any, state?: any) {
     if (id === "imperative_attached_kind") {
       const baseHuwa = String(facts.presentBase || "يكتب");
       if (pickedText.includes("نون النسوة") && facts.attached !== "niswa") return `نون النسوة ضمير يدل على جماعة الإناث مثل: اكتبْنَ، وتجعل الفعل مبنيًا على السكون. في (${targetNow}) ليست هذه النون هي المتصل الصحيح.`;
-      if (pickedText.includes("نون التوكيد") && facts.attached !== "tawkid") return `نون التوكيد تؤكد الفعل وتقوّي معناه، ولا تدل على مؤنث، مثل: اكتبنَّ. إذا لم تكن النون للتوكيد في (${targetNow}) فلا نختارها.`;
+      if (pickedText.includes("نون التوكيد") && facts.attached !== "tawkid") return `نون التوكيد تؤكد الفعل وتقوّي معناه، ولا تدل على مؤنث، مثل: اكتبَنَّ. إذا لم تكن النون للتوكيد في (${targetNow}) فلا نختارها.`;
       if ((pickedText.includes("ألف الاثنين") || pickedText.includes("واو الجماعة") || pickedText.includes("ياء المخاطبة")) && !["alif2", "waw", "yaa"].includes(String(facts.attached || ""))) return `ألف الاثنين وواو الجماعة وياء المخاطبة ضمائر مخاطبة، وعلامة البناء معها حذف النون. أسند (${targetNow}) إلى: هو ${baseHuwa} ثم حدد الزائد بعد أصل الفعل.`;
       return `أسند (${targetNow}) إلى المضارع مع الضمير هو: هو ${baseHuwa}. ما الزائد بعد أصل الفعل: نون نسوة، نون توكيد، أم ضمير مخاطبة؟`;
     }
@@ -2991,7 +2992,7 @@ function studentHintText(node: any, picked?: any, state?: any) {
 
     if (id === "inna_factor_gate") {
       if (pickedText.includes("ترفع الاسم")) return "هذا أثر كان وأخواتها. أما إن وأخواتها فتنصب الاسم ويسمى اسم إن، وترفع الخبر ويسمى خبر إن.";
-      if (pickedText.includes("لا تؤثر")) return "إن وأخواتها حروف ناسخة؛ دخولها يغير الحكم الإعرابي: نقول الطالبُ نشيطٌ، ثم إن الطالبَ نشيطٌ.";
+      if (pickedText.includes("لا تؤثر")) return "إن وأخواتها حروف ناسخة؛ دخولها يغير الحكم الإعرابي: نقول الطالبُ نشيطٌ، ثم إنَّ الطالبَ نشيطٌ.";
     }
     if (id === "inna_target") {
       if (pickedText.includes("كان")) return `هذا باب إن وأخواتها لا باب كان. في جملة ${sentence} الحرف الناسخ ${innaParticleName(state)} ينصب اسمه ويرفع خبره. عد إلى السؤال واختر الموقع بعد دخول الحرف الناسخ.`;
@@ -3745,9 +3746,16 @@ export default function ExercisePlayer({
     if (attempt.kind === "wrong") {
       const isBuiltTypeNode = String(node?.id || "").includes("built_type") || String(node?.id || "").includes("mabniType");
       const expectedBuiltType = state.facts?.mabniType;
+      const targetedDiagnostic = diagnosticFeedbackForChoice({
+        nodeId: thinkingNode?.id,
+        pickedText: picked?.text,
+        facts: state?.facts,
+        target: state?.currentTarget,
+        sentence: state?.currentSentence,
+      });
       const smartHint = isBuiltTypeNode
         ? builtNounTypeHintByValue(expectedBuiltType)
-        : studentHintText(thinkingNode, picked, state);
+        : targetedDiagnostic || studentHintText(thinkingNode, picked, state);
       const cleanedDiagnosticHint = diagnosticHintText(String(smartHint || "فكّر في السؤال الحالي فقط."), state?.currentTarget);
       const visibleHint = isPracticeMode
         ? practiceTeacherHint(cleanedDiagnosticHint, state?.currentTarget)

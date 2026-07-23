@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PATHS_COPY } from "../../content/dialogueCopy";
 import { diagnosticHintText, firstLevelHintText } from "../../lib/hintText";
+import { buildConceptMapGraph } from "../../lib/paths/conceptMapGraph";
 
 type TreeAnswer = {
   id: string;
@@ -276,62 +277,39 @@ function sourceMasdarHint(target = "المصدر المؤول") {
 function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
   const nodes = tree.nodes;
   const rootId = tree.startNodeId;
-  const pathEdges: { from: string; to: string; label?: string }[] = [];
-  const visibleNodeIds = new Set<string>();
 
-  if (example && nodes[rootId]) {
-    let currentId = rootId;
-    const trail = new Set<string>();
-    while (currentId && nodes[currentId] && !trail.has(currentId)) {
-      trail.add(currentId);
-      visibleNodeIds.add(currentId);
-      const currentNode = nodes[currentId];
-      if (!currentNode || currentNode.type === "result") break;
-      const correctAnswer = (currentNode.answers ?? []).find((answer) => answerIsCorrect(answer, example));
-      if (!correctAnswer) break;
-      const nextId = resolveNextNodeId(correctAnswer, example);
-      if (!nextId || !nodes[nextId] || nextId === currentId) break;
-      pathEdges.push({ from: currentId, to: nextId, label: correctAnswer.text });
-      currentId = nextId;
-    }
-  } else if (nodes[rootId]) {
-    visibleNodeIds.add(rootId);
-  }
-
-  const childrenMap = new Map<string, string[]>();
-  visibleNodeIds.forEach((id) => childrenMap.set(id, []));
-  pathEdges.forEach((edge) => {
-    const children = childrenMap.get(edge.from) || [];
-    if (!children.includes(edge.to)) children.push(edge.to);
-    childrenMap.set(edge.from, children);
-  });
+  // الخريطة المفاهيمية تعرض جميع الفروع الممكنة، لا المسار الصحيح للمثال فقط.
+  // يبقى مسار الطالب مميزًا بالألوان أثناء الحل، بينما تظل بقية المفاهيم ظاهرة.
+  const conceptMap = buildConceptMapGraph(tree);
+  const childrenMap = conceptMap.childrenMap;
 
   const widths = new Map<string, number>();
   function measure(id: string, trail = new Set<string>()): number {
     if (widths.has(id)) return widths.get(id)!;
     if (trail.has(id)) return 1;
     trail.add(id);
-    const kids = (childrenMap.get(id) || []).filter((childId) => childId !== id && nodes[childId]);
-    if (!kids.length) {
+    const children = (childrenMap.get(id) || []).filter((childId) => childId !== id && nodes[childId]);
+    if (!children.length) {
       widths.set(id, 1);
       return 1;
     }
-    const sum = kids.map((childId) => measure(childId, new Set(trail))).reduce((a, b) => a + b, 0);
-    widths.set(id, sum || 1);
-    return sum || 1;
+    const total = children
+      .map((childId) => measure(childId, new Set(trail)))
+      .reduce((sum, value) => sum + value, 0);
+    widths.set(id, total || 1);
+    return total || 1;
   }
   measure(rootId);
 
   const placed = new Map<string, PositionedNode>();
-
   function place(id: string, depth: number, leftUnit: number) {
     const node = nodes[id];
     if (!node || placed.has(id)) return;
+
     const widthUnits = widths.get(id) || 1;
     const centerUnit = leftUnit + widthUnits / 2;
     const x = centerUnit * (BOX_W + SIBLING_GAP);
     const y = depth * LEVEL_GAP;
-
     const isQuestion = node.type === "question";
     const w = isQuestion ? DIA_W : BOX_W;
     const h = isQuestion ? questionNodeHeight(node) : BOX_H;
@@ -373,36 +351,35 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
   };
 
   const all = [startNode, ...Array.from(placed.values())];
-  const minX = Math.min(...all.map((n) => n.x));
-  const maxY = Math.max(...all.map((n) => n.y + n.h));
+  const minX = Math.min(...all.map((node) => node.x));
+  const maxY = Math.max(...all.map((node) => node.y + node.h));
 
-  all.forEach((n) => {
-    n.x = n.x - minX + 60;
+  all.forEach((node) => {
+    node.x = node.x - minX + 60;
   });
 
-  // اجعل مربع البداية ظاهرًا ومفهومًا عند فتح الصفحة، بدل أن يبدأ الطالب وسط مساحة بيضاء.
-  const visibleStart = all.find((n) => n.id === startNode.id);
+  const visibleStart = all.find((node) => node.id === startNode.id);
   if (visibleStart) {
     const targetStartX = 380;
     const delta = targetStartX - visibleStart.x;
-    all.forEach((n) => {
-      n.x += delta;
+    all.forEach((node) => {
+      node.x += delta;
     });
-    const minAfter = Math.min(...all.map((n) => n.x));
+    const minAfter = Math.min(...all.map((node) => node.x));
     if (minAfter < 40) {
       const correction = 40 - minAfter;
-      all.forEach((n) => {
-        n.x += correction;
+      all.forEach((node) => {
+        node.x += correction;
       });
     }
   }
 
   const edges: { from: string; to: string; label?: string }[] = [
     { from: startNode.id, to: rootId },
-    ...pathEdges,
+    ...conceptMap.edges,
   ];
 
-  const finalMaxX = Math.max(...all.map((n) => n.x + n.w));
+  const finalMaxX = Math.max(...all.map((node) => node.x + node.w));
   const width = Math.max(finalMaxX + 80, 920);
   const height = maxY + 130;
   return { nodes: all, edges, width, height };
@@ -1004,9 +981,12 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     <section className="card paths-react-card">
       <div className="paths-react-head">
         <div>
-          <div className="section-kicker">شجرة تفاعلية</div>
+          <div className="section-kicker">خريطة مفاهيمية تفاعلية</div>
           <h1 className="h1">{title}</h1>
           {subtitle ? <p className="p">{subtitle}</p> : null}
+          <p className="paths-react-map-intro">
+            تظهر جميع المفاهيم والفروع في خريطة واحدة، ويضيء المسار الذي تبنيه أثناء الإجابة.
+          </p>
         </div>
       </div>
 
@@ -1046,7 +1026,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
               {PATHS_COPY.zoomOut}
             </button>
             <button type="button" className="btn btn-soft btn-fit" onClick={fitPathToViewport}>
-              ملاءمة
+              عرض الخريطة كاملة
             </button>
             <button
               type="button"
@@ -1075,14 +1055,14 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
             >
               <defs>
                 <marker id="pathsArrow" markerWidth="6" markerHeight="6" refX="5.4" refY="3" orient="auto">
-                  <path d="M0,0 L6,3 L0,6 Z" fill="rgba(20,184,166,.58)" />
+                  <path d="M0,0 L6,3 L0,6 Z" fill="rgba(70,96,116,.62)" />
                 </marker>
                 <marker id="pathsArrowActive" markerWidth="7" markerHeight="7" refX="6.2" refY="3.5" orient="auto">
-                  <path d="M0,0 L7,3.5 L0,7 Z" fill="rgba(52,211,153,.96)" />
+                  <path d="M0,0 L7,3.5 L0,7 Z" fill="#187f78" />
                 </marker>
               </defs>
 
-              {layout.edges.map((edge) => {
+              {layout.edges.map((edge, edgeIndex) => {
                 const from = layoutNodeMap.get(edge.from);
                 const to = layoutNodeMap.get(edge.to);
                 if (!from || !to) return null;
@@ -1092,17 +1072,22 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 const midX = (start.x + end.x) / 2;
                 const midY = (start.y + end.y) / 2 - 10;
                 return (
-                  <g key={`${edge.from}-${edge.to}`}>
+                  <g key={`${edge.from}-${edge.to}-${edgeIndex}`}>
                     <path
                       d={pathD(start, end)}
                       fill="none"
-                      stroke={active ? "rgba(20,184,166,.98)" : "rgba(20,184,166,.38)"}
+                      stroke={active ? "#187f78" : "rgba(70,96,116,.42)"}
                       strokeWidth={active ? 2.05 : 1.1}
                       markerEnd={active ? "url(#pathsArrowActive)" : "url(#pathsArrow)"}
-                      style={{ filter: active ? "drop-shadow(0 0 9px rgba(52,211,153,.72)) drop-shadow(0 0 18px rgba(34,211,238,.26))" : undefined, transition: "stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
+                      style={{ transition: "stroke .2s ease, stroke-width .2s ease" }}
                     />
-                    {active && edge.label ? (
-                      <text x={midX} y={midY} textAnchor="middle" className="paths-react-edge-label">
+                    {edge.label ? (
+                      <text
+                        x={midX}
+                        y={midY}
+                        textAnchor="middle"
+                        className={`paths-react-edge-label ${active ? "is-active" : ""}`}
+                      >
                         {shortEdgeLabel(edge.label)}
                       </text>
                     ) : null}
@@ -1117,17 +1102,14 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 const isQuestion = n.kind === "question";
                 const isResult = n.kind === "result";
                 const isFinalResult = finalNodeId === n.id;
-                const revealed = isStart || visited || active;
-                const renderedNodeLines = !revealed
-                  ? [isResult ? "النتيجة النهائية" : "الخطوة التالية"]
-                  : isFinalResult && example?.facts?.finalI3rab
-                    ? splitText(String(example.facts.finalI3rab), 30)
-                    : n.textLines;
+                const renderedNodeLines = isFinalResult && example?.facts?.finalI3rab
+                  ? splitText(String(example.facts.finalI3rab), 30)
+                  : n.textLines;
 
                 return (
                   <g
                     key={n.id}
-                    className={`paths-react-node ${isStart ? "paths-react-start-clickable" : ""} ${!revealed ? "is-locked" : ""}`}
+                    className={`paths-react-node ${isStart ? "paths-react-start-clickable" : ""} ${active ? "is-active" : ""} ${visited ? "is-visited" : ""}`}
                     role={isStart ? "button" : undefined}
                     tabIndex={isStart ? 0 : undefined}
                     aria-label={isStart ? "ابدأ المثال الحالي" : undefined}
@@ -1143,10 +1125,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     {isQuestion ? (
                       <polygon
                         points={diamondPoints(n.x, n.y, n.w, n.h)}
-                        fill={active ? "#fff3b0" : visited ? "#fff8cf" : "#fffdf0"}
-                        stroke={active ? "rgba(20,184,166,.98)" : visited ? "rgba(20,184,166,.72)" : "rgba(20,184,166,.42)"}
+                        fill={active ? "#fff2c7" : visited ? "#eef5f3" : "#ffffff"}
+                        stroke={active ? "#187f78" : visited ? "rgba(24,127,120,.62)" : "rgba(70,96,116,.35)"}
                         strokeWidth={active ? 1.9 : 1.05}
-                        style={{ filter: active ? "drop-shadow(0 0 11px rgba(20,184,166,.48)) drop-shadow(0 0 20px rgba(250,204,21,.16))" : visited ? "drop-shadow(0 0 5px rgba(20,184,166,.16))" : undefined, transition: "fill .2s ease, stroke .2s ease, stroke-width .2s ease, filter .2s ease" }}
+                        style={{ transition: "fill .2s ease, stroke .2s ease, stroke-width .2s ease" }}
                       />
                     ) : (
                       <rect
@@ -1155,11 +1137,11 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                         width={n.w}
                         height={n.h}
                         rx={18}
-                        fill={isStart ? "#fff3b0" : isResult ? "#fff3b0" : "#dcfce7"}
-                        stroke={isResult ? "rgba(20,184,166,.82)" : "rgba(20,184,166,.72)"}
+                        fill={isStart ? "#e9f3f1" : isResult ? "#e9f3f1" : "#f4f7f8"}
+                        stroke={isResult ? "#187f78" : "rgba(70,96,116,.48)"}
                         strokeWidth={1.05}
                         className={`${isStart && !example ? "paths-react-start-pulse" : ""} ${isFinalResult ? "paths-react-result-pulse" : ""}`}
-                        style={{ filter: isFinalResult ? "drop-shadow(0 0 16px rgba(52,211,153,.75))" : visited ? "drop-shadow(0 0 8px rgba(52,211,153,.18))" : undefined, transition: "stroke .2s ease, filter .2s ease" }}
+                        style={{ transition: "stroke .2s ease" }}
                       />
                     )}
 
@@ -1209,7 +1191,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                                 }
                               }}
                             >
-                              <rect x={bx} y={by} width={btnW} height={btnH} rx={11} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" strokeWidth={0.9} />
+                              <rect x={bx} y={by} width={btnW} height={btnH} rx={11} fill="#f8fafc" stroke="rgba(70,96,116,.36)" strokeWidth={0.9} />
                               <text x={bx + btnW / 2} y={by + btnH / 2} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
                                 {answerLines.map((line, lineIndex) => (
                                   <tspan

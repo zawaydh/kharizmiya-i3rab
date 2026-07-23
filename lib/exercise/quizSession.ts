@@ -2,6 +2,7 @@ import type { QuizAnswerRow, QuizExampleLike } from "./quiz";
 
 export type QuizSessionState = {
   order: number[];
+  seed: number;
   cursor: number;
   answers: QuizAnswerRow[];
   selected: string | null;
@@ -14,7 +15,7 @@ export type QuizSessionState = {
 };
 
 export type QuizSessionAction =
-  | { type: "reset"; exampleCount: number; quizCount: number }
+  | { type: "reset"; exampleCount: number; quizCount: number; seed?: number }
   | { type: "select"; option: string | null }
   | { type: "record-answer"; row: QuizAnswerRow }
   | { type: "previous" }
@@ -25,16 +26,33 @@ export type QuizSessionAction =
   | { type: "retry-remedial" }
   | { type: "next-remedial" };
 
-export function buildQuizOrder(exampleCount: number, quizCount: number) {
+export function buildQuizOrder(exampleCount: number, quizCount: number, seed = 0) {
   const safeExampleCount = Math.max(0, Math.floor(exampleCount));
   const safeQuizCount = Math.max(0, Math.floor(quizCount));
   const count = Math.min(safeExampleCount, safeQuizCount);
-  return Array.from({ length: count }, (_, index) => index);
+  if (!count) return [];
+
+  const order = Array.from({ length: safeExampleCount }, (_, index) => index);
+  let state = (Math.floor(seed) >>> 0) || 0x9e3779b9;
+  const nextRandom = () => {
+    state ^= state << 13;
+    state ^= state >>> 17;
+    state ^= state << 5;
+    return (state >>> 0) / 0x100000000;
+  };
+
+  for (let i = order.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(nextRandom() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
+
+  return order.slice(0, count);
 }
 
-export function createQuizSessionState(exampleCount: number, quizCount: number): QuizSessionState {
+export function createQuizSessionState(exampleCount: number, quizCount: number, seed = 0): QuizSessionState {
   return {
-    order: buildQuizOrder(exampleCount, quizCount),
+    order: buildQuizOrder(exampleCount, quizCount, seed),
+    seed,
     cursor: 0,
     answers: [],
     selected: null,
@@ -50,7 +68,7 @@ export function createQuizSessionState(exampleCount: number, quizCount: number):
 export function quizSessionReducer(state: QuizSessionState, action: QuizSessionAction): QuizSessionState {
   switch (action.type) {
     case "reset":
-      return createQuizSessionState(action.exampleCount, action.quizCount);
+      return createQuizSessionState(action.exampleCount, action.quizCount, action.seed ?? state.seed);
     case "select":
       return { ...state, selected: action.option };
     case "record-answer": {

@@ -44,7 +44,7 @@ export const presentVerbTree: ExerciseTree = {
       hint: "انظر إلى آخر الفعل: هل اتصلت به نون النسوة أو نون التوكيد؟" ,
       answers: [
         { id: "a", text: "نون النسوة", next: "R_present_binaa_niswa", eval: { fact: "buildConnection", equals: "niswa" }, hint: "نون النسوة تكون لجماعة الإناث مثل: يساعدْنَ، وتبني المضارع على السكون." },
-        { id: "b", text: "نون التوكيد", next: "R_present_binaa_tawkid", eval: { fact: "buildConnection", equals: "tawkid" }, hint: "نون التوكيد تأتي لتأكيد الفعل مثل: أذاكرنَّ، وتبني المضارع على الفتح." },
+        { id: "b", text: "نون التوكيد", next: "R_present_binaa_tawkid", eval: { fact: "buildConnection", equals: "tawkid" }, hint: "نون التوكيد تأتي لتأكيد الفعل مثل: أذاكرَنَّ، وتبني المضارع على الفتح." },
         { id: "c", text: "لم يتصل به ما يبنيه", next: "present_tool_presence", eval: { fact: "buildConnection", equals: "none" }, hint: "إذا لم تتصل بالفعل نون النسوة ولا نون التوكيد، بقي الفعل المضارع معربًا." },
       ],
     },

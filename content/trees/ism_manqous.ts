@@ -1,7 +1,8 @@
-export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
+export type ExerciseTree = { startNodeId: string; practiceStartNodeId?: string; nodes: Record<string, any> };
 
 export const ismManqousTree: ExerciseTree = {
   "startNodeId": "manqous_relation_gate",
+  "practiceStartNodeId": "manqous_case",
   "nodes": {
     "manqous_relation_gate": {
       "id": "manqous_relation_gate",
@@ -10,7 +11,7 @@ export const ismManqousTree: ExerciseTree = {
       "text": "ما أول خطوة صحيحة في الاسم المنقوص؟",
       "hint": "الموقع الإعرابي أولًا؛ لأن النصب تظهر فيه الفتحة، أما الرفع والجر فتقدر العلامة غالبًا للثقل، وقد تحذف الياء في بعض الصور.",
       "answers": [
-        { "id": "a", "text": "أحدد موقعه الإعرابي أولًا، ثم أفحص صورة الياء", "next": "manqous_step_1", "correct": true },
+        { "id": "a", "text": "أحدد موقعه الإعرابي أولًا، ثم أفحص صورة الياء", "next": "manqous_identity", "correct": true },
         { "id": "b", "text": "أحكم عليه من وجود الياء فقط", "next": "manqous_relation_gate", "correct": false, "hint": "وجود الياء أو حذفها لا يكفي وحده؛ نحتاج الموقع الإعرابي أولًا." },
         { "id": "c", "text": "أبحث عن زمن الفعل", "next": "manqous_relation_gate", "correct": false, "hint": "الاسم المنقوص اسم، وليس فعلًا؛ لذلك لا نسأل عن الزمن." }
       ]

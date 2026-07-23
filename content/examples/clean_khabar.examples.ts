@@ -63,8 +63,8 @@ export const cleanKhabarExamples: Example[] = [
   },
   {
     id: 'kh-04',
-    sentence: 'المعلمون مخلصون.',
-    target: 'مخلصون',
+    sentence: 'المعلمونَ مخلصونَ.',
+    target: 'مخلصونَ',
     facts: {
     "khabarKind": "single",
     "nounKind": "mu3rab",
@@ -181,8 +181,8 @@ export const cleanKhabarExamples: Example[] = [
   },
   {
     id: 'kh-10',
-    sentence: 'هدفي أن تنجح.',
-    target: 'أن تنجح',
+    sentence: 'هدفي أن تنجحَ.',
+    target: 'أن تنجحَ',
     facts: {
     "khabarKind": "single",
     "nounKind": "masdar"
@@ -457,8 +457,8 @@ export const cleanKhabarQuizExamples = [
 },
 {
   "id": "kh-04",
-  "sentence": "المعلمون مخلصون.",
-  "target": "مخلصون",
+  "sentence": "المعلمونَ مخلصونَ.",
+  "target": "مخلصونَ",
   "facts": {
     "khabarKind": "single",
     "nounKind": "mu3rab",
@@ -625,8 +625,8 @@ export const cleanKhabarQuizExamples = [
 },
 {
   "id": "kh-10",
-  "sentence": "هدفي أن تنجح.",
-  "target": "أن تنجح",
+  "sentence": "هدفي أن تنجحَ.",
+  "target": "أن تنجحَ",
   "facts": {
     "khabarKind": "single",
     "nounKind": "masdar"

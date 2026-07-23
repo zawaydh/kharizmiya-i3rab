@@ -1,0 +1,168 @@
+/* 90 Formal Theme. Imported in numeric cascade order. */
+
+:root{--formal-bg:#081624;
+  --formal-bg-2:#0b1b2b;
+  --formal-panel:#102235;
+  --formal-panel-soft:#15293c;
+  --formal-border:#294055;
+  --formal-text:#f2f5f8;
+  --formal-muted:#b7c4d0;
+  --formal-accent:#187f78;
+  --formal-accent-hover:#126c66;
+  --formal-accent-soft:#e9f3f1;
+  --formal-reading:#ffffff;
+  --formal-reading-soft:#f5f7f9;
+  --formal-ink:#172635;
+  --formal-gold:#e5c55f;
+  --formal-warning:#fff4d6;
+  --formal-success:#eaf5f1;}
+
+html,body{background:var(--formal-bg)!important;}
+
+body.platform-body{background:var(--formal-bg)!important;
+  color:var(--formal-text)!important;}
+
+.platform-navbar{background:#071421!important;
+  backdrop-filter:none!important;
+  border-bottom:1px solid var(--formal-border)!important;
+  box-shadow:none!important;}
+
+.card,.home-clean-hero,.home-clean-journey,.dashboard-hero-modern,.dashboard-list-card,.dashboard-stat-card,.dashboard-topic-card,.topic-branch-card,.topics-branch-hero,.auth-modern-hero,.auth-modern-card,.auth-lock-card,.clean-thinking-card,.clean-question-block,.exercise-panel,.learning-focus-box,.i3rab-board,.addictive-board,.compact-build-board{background:var(--formal-panel)!important;
+  border:1px solid var(--formal-border)!important;
+  box-shadow:none!important;
+  border-radius:16px!important;}
+
+.home-clean-hero,.home-clean-journey,.dashboard-hero-modern,.dashboard-list-card,.auth-modern-hero{background:var(--formal-panel)!important;}
+
+.home-clean-mark,.card-glow,.btn-workbar-glow,.stage-learning-badge,.paths-react-start-pulse,.paths-react-result-pulse{box-shadow:none!important;
+  filter:none!important;
+  animation:none!important;}
+
+.home-clean-kicker,.section-kicker,.start-page-eyebrow,.start-example-label,.step-lead,.start-target-row span{color:#8fc1bc!important;}
+
+h1,h2,h3,h4,.h1,.start-coach-copy strong,.dashboard-topic-card h3,.topic-branch-card h2{color:var(--formal-text)!important;
+  text-shadow:none!important;
+  font-weight:800!important;}
+
+.p,.home-entry-lead,.home-clean-stage p,.home-clean-after-grid span,.dashboard-list-description,.dashboard-topic-head p,.paths-react-map-intro,.auth-modern-copy .p{color:var(--formal-muted)!important;}
+
+.btn,.soft-mini-btn,.home-game-primary,.home-learning-secondary,.topic-branch-learn{background:transparent!important;
+  color:var(--formal-text)!important;
+  border:1px solid #496176!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+  transform:none!important;}
+
+.btn:hover,.btn:focus-visible,.soft-mini-btn:hover,.soft-mini-btn:focus-visible,.home-game-primary:hover,.home-learning-secondary:hover,.topic-branch-learn:hover{background:var(--formal-panel-soft)!important;
+  border-color:#698196!important;
+  transform:none!important;}
+
+.btn-primary,.home-game-primary,.topic-branch-learn,.auth-submit-btn{background:var(--formal-accent)!important;
+  color:#fff!important;
+  border-color:var(--formal-accent)!important;}
+
+.btn-primary:hover,.btn-primary:focus-visible,.home-game-primary:hover,.topic-branch-learn:hover,.auth-submit-btn:hover{background:var(--formal-accent-hover)!important;
+  border-color:var(--formal-accent-hover)!important;}
+
+.home-learning-secondary,.btn-soft,.start-hint-request,.start-new-example-btn{background:transparent!important;
+  color:var(--formal-text)!important;
+  border-color:#496176!important;}
+
+.home-registration-note{margin:14px 0 0!important;
+  color:var(--formal-muted)!important;
+  font-size:14px!important;
+  line-height:1.8!important;}
+
+.home-clean-stage,.home-clean-after-grid article,.auth-benefit-card,.dashboard-stat-card,.dashboard-topic-card,.topic-branch-card{background:var(--formal-panel-soft)!important;
+  border:1px solid var(--formal-border)!important;
+  box-shadow:none!important;
+  border-radius:14px!important;}
+
+.home-clean-stage>span,.pill-accent{background:var(--formal-accent-soft)!important;
+  color:#155f5a!important;
+  border-color:#b6d8d4!important;
+  box-shadow:none!important;}
+
+.pill,.badge,.pill-muted{background:transparent!important;
+  color:var(--formal-muted)!important;
+  border-color:#496176!important;}
+
+.dashboard-progress-track,.board-progress,.start-sticky-progress-bar{background:#d9e0e6!important;}
+
+.dashboard-progress-fill,.board-progress span,.start-sticky-progress-bar i{background:var(--formal-accent)!important;
+  box-shadow:none!important;}
+
+.start-example-card,.exercise-page-shell .algorithm-step-card,.start-sticky-progress{background:var(--formal-reading)!important;
+  color:var(--formal-ink)!important;
+  border:1px solid #d5dde4!important;
+  box-shadow:none!important;
+  border-radius:14px!important;}
+
+.start-question-card,.compact-step-zone,.refined-step-zone{background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;}
+
+.start-question-card h1,.clean-question-block h1,.exercise-page-shell .clean-question-title{color:var(--formal-text)!important;}
+
+.start-example-sentence,.exercise-page-shell .exercise-sentence{color:var(--formal-ink)!important;
+  font-weight:700!important;}
+
+mark,.start-example-sentence mark,.exercise-target-word{background:var(--formal-gold)!important;
+  color:#222b34!important;
+  border:0!important;
+  box-shadow:none!important;}
+
+.drag-choice,.exercise-answer-btn,.quiz-form-option,.start-learning-refined .drag-choice:not(.is-correct):not(.is-wrong){background:var(--formal-reading)!important;
+  color:var(--formal-ink)!important;
+  border:1px solid #c7d1da!important;
+  border-radius:12px!important;
+  box-shadow:none!important;}
+
+.drag-choice:hover,.drag-choice:focus-visible,.exercise-answer-btn:hover,.exercise-answer-btn:focus-visible,.quiz-form-option:hover,.quiz-form-option:focus-visible{background:var(--formal-reading-soft)!important;
+  border-color:var(--formal-accent)!important;
+  transform:none!important;}
+
+.step-hint,.start-visible-hint,.feedback-pop.bad,.feedback-pop.inline-feedback.bad{background:var(--formal-warning)!important;
+  color:#44350f!important;
+  border:1px solid #dfc479!important;
+  box-shadow:none!important;}
+
+.feedback-pop.ok,.feedback-pop.inline-feedback.ok,.auth-note-success{background:var(--formal-success)!important;
+  color:#15443f!important;
+  border:1px solid #a9d0ca!important;
+  box-shadow:none!important;}
+
+.auth-purpose-note,.auth-note-box,.dashboard-visual-path-notice{background:#12283a!important;
+  border:1px solid var(--formal-border)!important;
+  color:var(--formal-text)!important;
+  box-shadow:none!important;}
+
+.auth-purpose-note p,.dashboard-visual-path-notice span{color:var(--formal-muted)!important;}
+
+.input{background:#fff!important;
+  color:var(--formal-ink)!important;
+  border:1px solid #c7d1da!important;
+  border-radius:10px!important;
+  box-shadow:none!important;}
+
+.input:focus{border-color:var(--formal-accent)!important;
+  box-shadow:0 0 0 3px rgba(24,127,120,.12)!important;}
+
+.term-info-btn,.smart-term::after{background:#557084!important;
+  border:0!important;
+  box-shadow:none!important;}
+
+.smart-popover,.smart-popover.start-smart-popover{background:#fff!important;
+  color:var(--formal-ink)!important;
+  border:1px solid #c7d1da!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.14)!important;}
+
+.smart-popover strong,.smart-popover li{color:var(--formal-ink)!important;}
+
+@media (max-width:700px){.term-info-btn{width:16px!important;
+    height:16px!important;
+    min-width:16px!important;
+    font-size:9px!important;
+    opacity:.72!important;}
+.home-registration-note{font-size:13px!important;}
+.home-clean-stage,.home-clean-after-grid article,.dashboard-stat-card,.dashboard-topic-card,.topic-branch-card{border-radius:12px!important;}}

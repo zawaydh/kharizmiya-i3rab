@@ -54,7 +54,7 @@ export const imperativeVerbTree: ExerciseTree = {
       hint: "حدّد المتصل نفسه: نون النسوة، نون التوكيد، ألف الاثنين، واو الجماعة، أو ياء المخاطبة. لكل واحد منها أثر محدد في بناء فعل الأمر وإعراب الضمير.",
       answers: [
         { id: "a", text: "نون النسوة", next: "R_imperative_sukoon_niswa", eval: { fact: "attached", equals: "niswa" }, hint: "نون النسوة تدل على جماعة الإناث، مثل: اكتبْنَ، وهي ضمير في محل رفع فاعل." },
-        { id: "b", text: "نون التوكيد", next: "R_imperative_fath_tawkid", eval: { fact: "attached", equals: "tawkid" }, hint: "نون التوكيد تؤكد الفعل وتقوّي معناه، مثل: اكتبنَّ، ولا تدل على مؤنث." },
+        { id: "b", text: "نون التوكيد", next: "R_imperative_fath_tawkid", eval: { fact: "attached", equals: "tawkid" }, hint: "نون التوكيد تؤكد الفعل وتقوّي معناه، مثل: اكتبَنَّ، ولا تدل على مؤنث." },
         { id: "c", text: "ألف الاثنين", next: "R_imperative_delete_noon_alif2", eval: { fact: "attached", equals: "alif2" }, hint: "ألف الاثنين تدل على مخاطبَين اثنين، وفعل الأمر معها مبني على حذف النون." },
         { id: "d", text: "واو الجماعة", next: "R_imperative_delete_noon_waw", eval: { fact: "attached", equals: "waw" }, hint: "واو الجماعة تدل على جماعة المخاطبين، وفعل الأمر معها مبني على حذف النون." },
         { id: "e", text: "ياء المخاطبة", next: "R_imperative_delete_noon_yaa", eval: { fact: "attached", equals: "yaa" }, hint: "ياء المخاطبة تدل على المخاطبة المؤنثة، وفعل الأمر معها مبني على حذف النون." },

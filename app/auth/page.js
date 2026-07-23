@@ -341,6 +341,11 @@ export default function AuthPage() {
             بالبريد وكلمة المرور دون انتظار رابط جديد.
           </p>
 
+          <div className="auth-purpose-note" role="note" aria-label="سبب التسجيل">
+            <strong>تنبيه مهم</strong>
+            <p>التسجيل هدفه حفظ تقدمك، ومعرفة المرحلة التي وصلتَ إليها في التعلّم الموجّه والتدريب والاختبار النهائي. يمكنك التعلّم بالمحتوى نفسه، لكن الحساب يحفظ إنجازك ويعرضه لك بوضوح في لوحتك.</p>
+          </div>
+
           <div className="auth-benefits-grid">
             <div className="auth-benefit-card">
               <strong>تأكيد مرة واحدة</strong>

@@ -45,8 +45,8 @@ export const presentVerbExamples: Example[] = [
   },
   {
     id: "pr-binaa-tawkid",
-    sentence: "واللهِ لأذاكرنَّ الدرسَ.",
-    target: "أذاكرنَّ",
+    sentence: "واللهِ لأذاكرَنَّ الدرسَ.",
+    target: "أذاكرَنَّ",
     facts: { ...base, buildConnection: "tawkid", shape: "built_tawkid" },
     covers: ["present.binaa.tawkid"],
   },
@@ -103,7 +103,7 @@ export const presentVerbExamples: Example[] = [
   },
   {
     id: "pr-raf3-five-alif",
-    sentence: "الطالبان يقرآنِ القصةَ.",
+    sentence: "الطالبانِ يقرآنِ القصةَ.",
     target: "يقرآنِ",
     facts: { ...base, shape: "five", attached: "alif2" },
     covers: ["present.raf3.five"],
@@ -146,7 +146,7 @@ export const presentVerbExamples: Example[] = [
   },
   {
     id: "pr-nasb-five-alif2-kay",
-    sentence: "يتعاونُ الطالبان كي يرسما اللوحةَ.",
+    sentence: "يتعاونُ الطالبانِ كي يرسما اللوحةَ.",
     target: "يرسما",
     facts: { ...base, hasTool: true, tool: "nasb", toolWord: "كي", shape: "five", attached: "alif2" },
     covers: ["present.nasb.five"],

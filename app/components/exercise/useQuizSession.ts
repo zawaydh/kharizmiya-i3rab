@@ -37,6 +37,16 @@ export type RemedialActionResult =
   | "missing-example"
   | "missing-selection";
 
+
+function stableSeedFromText(value: string) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
 type UseQuizSessionArgs = {
   mode: Mode;
   tree: ExerciseTree;
@@ -47,18 +57,25 @@ type UseQuizSessionArgs = {
 };
 
 export function useQuizSession({ mode, tree, examples, quizCount, topicId, onComplete }: UseQuizSessionArgs) {
+  const baseSeed = React.useMemo(() => stableSeedFromText(topicId || "quiz"), [topicId]);
+  const attemptSeedRef = React.useRef(baseSeed);
   const [state, dispatch] = React.useReducer(
     quizSessionReducer,
     undefined,
-    () => createQuizSessionState(mode === "quiz" ? examples.length : 0, mode === "quiz" ? quizCount : 0)
+    () => createQuizSessionState(
+      mode === "quiz" ? examples.length : 0,
+      mode === "quiz" ? quizCount : 0,
+      baseSeed
+    )
   );
   const finalizeLockRef = React.useRef(false);
 
   React.useEffect(() => {
     if (mode !== "quiz") return;
-    dispatch({ type: "reset", exampleCount: examples.length, quizCount });
+    attemptSeedRef.current = baseSeed;
+    dispatch({ type: "reset", exampleCount: examples.length, quizCount, seed: baseSeed });
     finalizeLockRef.current = false;
-  }, [mode, examples, quizCount]);
+  }, [baseSeed, mode, examples, quizCount]);
 
   const currentIndex = currentQuizExampleIndex(state);
   const example = examples[currentIndex];
@@ -130,7 +147,13 @@ export function useQuizSession({ mode, tree, examples, quizCount, topicId, onCom
   }, []);
 
   const restart = React.useCallback(() => {
-    dispatch({ type: "reset", exampleCount: examples.length, quizCount });
+    attemptSeedRef.current = (attemptSeedRef.current + 1) >>> 0;
+    dispatch({
+      type: "reset",
+      exampleCount: examples.length,
+      quizCount,
+      seed: attemptSeedRef.current,
+    });
     finalizeLockRef.current = false;
   }, [examples.length, quizCount]);
 
