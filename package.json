@@ -7,7 +7,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm test && npm run typecheck:strict && tsc --noEmit && npm run lint",
+    "typecheck:strict": "tsc --noEmit -p tsconfig.strict.json"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.45.4",
@@ -19,7 +23,8 @@
     "@types/react": "19.2.14",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.35",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.1.10"
   },
   "engines": {
     "node": "22.x"

@@ -39,6 +39,19 @@ describe("النواة المفصولة من ExercisePlayer", () => {
     expect(selected).toBe(1);
   });
 
+  test("يستخدم بداية أقصر في التدريب عندما يحددها الباب", () => {
+    const tree: ExerciseTree = {
+      startNodeId: "learn-start",
+      practiceStartNodeId: "practice-start",
+      nodes: {
+        "learn-start": { id: "learn-start", type: "result", text: "تعلم" },
+        "practice-start": { id: "practice-start", type: "result", text: "تدريب" },
+      },
+    };
+    expect(buildRunnerState(tree, "learn", { id: "a", facts: {} }).currentNodeId).toBe("learn-start");
+    expect(buildRunnerState(tree, "practice", { id: "a", facts: {} }).currentNodeId).toBe("practice-start");
+  });
+
   test("يبني حالة البداية الخاصة بإن المكفوفة دون تغيير بقية الأمثلة", () => {
     const tree: ExerciseTree = {
       startNodeId: "start",

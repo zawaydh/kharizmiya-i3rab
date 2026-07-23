@@ -1,0 +1,27 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "allowJs": false,
+    "skipLibCheck": true,
+    "noUncheckedIndexedAccess": true,
+    "incremental": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true
+  },
+  "include": [
+    "lib/exercise/**/*.ts",
+    "lib/progressMerge.ts",
+    "lib/certificateEligibility.ts",
+    "lib/studentOptionText.ts",
+    "app/components/exercise/**/*.ts",
+    "app/components/exercise/**/*.tsx",
+    "app/components/ExercisePlayer.tsx",
+    "app/components/DynamicPathTree.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
+}
