@@ -91,7 +91,19 @@ export default function Navbar() {
           <span />
         </button>
 
+        <button
+          type="button"
+          className={`platform-navbar-backdrop ${open ? "is-open" : ""}`}
+          aria-label="إغلاق قائمة التنقل"
+          tabIndex={open ? 0 : -1}
+          onClick={closeMenu}
+        />
+
         <nav className={`platform-navbar-mobile ${open ? "is-open" : ""}`} aria-label="التنقل على الهاتف">
+          <div className="platform-navbar-mobile-head">
+            <strong>القائمة</strong>
+            <button type="button" className="platform-navbar-mobile-close" onClick={closeMenu} aria-label="إغلاق القائمة">×</button>
+          </div>
           <a href="/" onClick={closeMenu}>الرئيسية</a>
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="الموضوعات" className="mobile-topic-dropdown" locked={locked} onNavigate={closeMenu} />
           <TopicDropdown currentCode={currentTopicCode} buttonLabel="المسارات البصرية" className="mobile-topic-dropdown" locked={locked} mode="paths" onNavigate={closeMenu} />
