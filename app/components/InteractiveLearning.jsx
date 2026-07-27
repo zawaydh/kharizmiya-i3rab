@@ -156,6 +156,13 @@ export default function InteractiveLearning({ examples = [] }) {
     }
   }, [feedback]);
 
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, []);
+
   if (!example) return <div className="interactive-shell">لا توجد أمثلة بعد.</div>;
 
   function resetExample() {
@@ -208,7 +215,7 @@ export default function InteractiveLearning({ examples = [] }) {
 
         <p className="start-page-intro">اقرأ الجملة، وحدد دور الكلمة المطلوبة، ثم اختر إجابة واحدة في كل خطوة.</p>
 
-        <section className="learning-focus-box">
+        <section className={`learning-focus-box ${done ? "is-finished" : ""}`}>
           <div className="start-sticky-progress" aria-label="تقدم صفحة البداية">
             <div className="start-sticky-progress-top">
               <strong>{done ? "اكتمل المثال" : `الخطوة ${Math.min(stepIndex + 1, example.steps.length)} من ${example.steps.length}`}</strong>
@@ -216,16 +223,18 @@ export default function InteractiveLearning({ examples = [] }) {
             </div>
             <div className="start-sticky-progress-bar"><i style={{ width: `${done ? 100 : Math.max(7, visualProgress)}%` }} /></div>
           </div>
-          <section className="start-example-card" aria-label="الجملة المطلوب تحليلها">
-            <span className="start-example-label">اقرأ الجملة</span>
-            <p className="start-example-sentence">
-              <HighlightedSentence sentence={example.sentence} target={example.target} />
-            </p>
-            <div className="start-target-row">
-              <span>الكلمة المطلوبة</span>
-              <strong>{example.target}</strong>
-            </div>
-          </section>
+          {!done ? (
+            <section className="start-example-card" aria-label="الجملة المطلوب تحليلها">
+              <span className="start-example-label">اقرأ الجملة</span>
+              <p className="start-example-sentence">
+                <HighlightedSentence sentence={example.sentence} target={example.target} />
+              </p>
+              <div className="start-target-row">
+                <span>الكلمة المطلوبة</span>
+                <strong>{example.target}</strong>
+              </div>
+            </section>
+          ) : null}
 
           {!done ? (
             <div className="compact-step-zone refined-step-zone">
@@ -276,23 +285,24 @@ export default function InteractiveLearning({ examples = [] }) {
 
             </div>
           ) : (
-            <section className="result-card addictive-result-card start-finish-card">
+            <section className="result-card addictive-result-card start-finish-card" aria-live="polite">
               <div className="start-celebration-mark" aria-hidden="true">✓</div>
               <div className="success-badge">✓ {START_END_COPY.title}</div>
               <h2>{example.result}</h2>
-              <p className="start-finish-body">{START_END_COPY.body}</p>
 
-              <div className="start-next-topics" aria-label="اقتراحات المتابعة">
-                <h3>{START_END_COPY.nextTopicsTitle}</h3>
-                <div className="start-topic-grid start-stage-grid-horizontal">
-                  {START_END_COPY.nextTopics.map((item) => (
-                    <a key={item.href} className="start-topic-card" href={item.href}>
-                      <strong>{item.label}</strong>
-                      <span>{item.desc}</span>
-                    </a>
-                  ))}
+              <details className="start-result-more">
+                <summary>عرض التفسير والاقتراحات</summary>
+                <p className="start-finish-body">{START_END_COPY.body}</p>
+                <div className="start-next-topics" aria-label="اقتراحات المتابعة">
+                  <div className="start-topic-grid start-stage-grid-horizontal">
+                    {START_END_COPY.nextTopics.map((item) => (
+                      <a key={item.href} className="start-topic-card" href={item.href}>
+                        <strong>{item.label}</strong>
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </details>
 
               <div className="result-actions">
                 <a className="btn btn-primary" href={example.nextHref || example.continueHref || START_END_COPY.primaryHref}>{example.nextLabel || example.continueLabel || START_END_COPY.primaryLabel}</a>
