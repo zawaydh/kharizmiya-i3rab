@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getTopicByCode, getTopicRoutes, hasVisualPath } from "../../lib/topics";
 
@@ -75,14 +74,90 @@ function actionItemsForTopic(topicCode, mode = "learning", topicLabel = "الم�
   if (mode === "paths") {
     return hasVisualPath(topic.code) ? [{ label: "المسار البصري", href: routes.paths }] : [];
   }
-  // لا نضيف زر "ابدأ" داخل القائمة؛ اسم الموضوع نفسه ينقل للصفحة حتى تقل الزحمة.
   return [{ label: topicLabel, href: routes.learn }];
+}
+
+function availableChildren(item, mode) {
+  return (item.children || []).filter((child) => {
+    if (child.disabled) return false;
+    if (child.children?.length) return availableChildren(child, mode).length > 0;
+    return actionItemsForTopic(child.topicCode, mode, child.label).length > 0;
+  });
+}
+
+function DesktopPanel({ roots, activeRootId, setActiveRootId, go, mode }) {
+  const activeRoot = roots.find((item) => item.id === activeRootId) || roots[0];
+  const children = activeRoot ? availableChildren(activeRoot, mode) : [];
+  const rootActions = activeRoot ? actionItemsForTopic(activeRoot.topicCode, mode, activeRoot.label) : [];
+
+  return (
+    <div className="tree-dropdown-panel desktop-cascade-panel" dir="rtl">
+      <div className="desktop-cascade-roots" role="tablist" aria-label="أقسام الموضوعات">
+        {roots.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={`desktop-cascade-root ${item.id === activeRoot?.id ? "is-active" : ""}`}
+            onMouseEnter={() => setActiveRootId(item.id)}
+            onFocus={() => setActiveRootId(item.id)}
+            onClick={() => {
+              const actions = actionItemsForTopic(item.topicCode, mode, item.label);
+              if (!item.children?.length && actions[0]?.href) go(actions[0].href);
+              else setActiveRootId(item.id);
+            }}
+          >
+            <span>{item.label}</span>
+            <span aria-hidden="true">‹</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="desktop-cascade-content">
+        <div className="desktop-cascade-title">{activeRoot?.label}</div>
+        <div className="desktop-cascade-items">
+          {rootActions.map((action) => (
+            <button key={action.href} type="button" className="desktop-cascade-link" onClick={() => go(action.href)}>
+              {activeRoot?.label}
+            </button>
+          ))}
+
+          {children.map((child) => {
+            const childActions = actionItemsForTopic(child.topicCode, mode, child.label);
+            const nested = availableChildren(child, mode);
+            if (nested.length) {
+              return (
+                <section key={child.id} className="desktop-cascade-group">
+                  <h3>{child.label}</h3>
+                  <div>
+                    {nested.map((nestedItem) => {
+                      const nestedActions = actionItemsForTopic(nestedItem.topicCode, mode, nestedItem.label);
+                      return nestedActions.map((action) => (
+                        <button key={action.href} type="button" className="desktop-cascade-link" onClick={() => go(action.href)}>
+                          {nestedItem.label}
+                        </button>
+                      ));
+                    })}
+                  </div>
+                </section>
+              );
+            }
+            return childActions.map((action) => (
+              <button key={action.href} type="button" className="desktop-cascade-link" onClick={() => go(action.href)}>
+                {child.label}
+              </button>
+            ));
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function TreeItem({ item, level = 0, go, mode = "learning" }) {
   const [open, setOpen] = useState(false);
   const actions = actionItemsForTopic(item.topicCode, mode, item.label);
-  const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+  const children = availableChildren(item, mode);
+  const hasChildren = children.length > 0;
   const hasActions = actions.length > 0;
   const disabled = item.disabled || (!hasActions && !hasChildren);
 
@@ -97,23 +172,18 @@ function TreeItem({ item, level = 0, go, mode = "learning" }) {
             go(actions[0].href);
             return;
           }
-          if (hasChildren || hasActions) setOpen((v) => !v);
+          if (hasChildren || hasActions) setOpen((value) => !value);
         }}
-        title={item.note || undefined}
       >
         <span>{item.label}</span>
         {(hasChildren || hasActions) ? <span className="tree-menu-arrow">▾</span> : <span className="tree-menu-soon">قريبًا</span>}
       </button>
 
-      {open && item.note ? <div className="tree-menu-note">{item.note}</div> : null}
-
       {open && hasActions && mode === "paths" ? (
         <ul className="tree-menu-actions">
-          {actions.map((a) => (
-            <li key={a.href}>
-              <button type="button" className="tree-menu-action" onClick={() => go(a.href)}>
-                {a.label}
-              </button>
+          {actions.map((action) => (
+            <li key={action.href}>
+              <button type="button" className="tree-menu-action" onClick={() => go(action.href)}>{action.label}</button>
             </li>
           ))}
         </ul>
@@ -121,9 +191,7 @@ function TreeItem({ item, level = 0, go, mode = "learning" }) {
 
       {open && hasChildren ? (
         <ul className="tree-menu-children">
-          {item.children.map((child) => (
-            <TreeItem key={child.id} item={child} level={level + 1} go={go} mode={mode} />
-          ))}
+          {children.map((child) => <TreeItem key={child.id} item={child} level={level + 1} go={go} mode={mode} />)}
         </ul>
       ) : null}
     </li>
@@ -139,17 +207,26 @@ export default function TopicDropdown({
   onNavigate,
   mode = "learning",
 }) {
+  const roots = useMemo(() => (
+    mode === "paths"
+      ? TOPIC_TREE.filter((item) => ["nominal-sentence", "verbal-sentence"].includes(item.id))
+      : TOPIC_TREE
+  ), [mode]);
   const [open, setOpen] = useState(false);
+  const [activeRootId, setActiveRootId] = useState(roots[0]?.id || "");
   const rootRef = useRef(null);
   const router = useRouter();
-  const current = currentCode ? getTopicByCode(currentCode) : null;
 
   useEffect(() => {
-    function closeOutside(e) {
-      if (!rootRef.current?.contains(e.target)) setOpen(false);
+    if (!roots.some((item) => item.id === activeRootId)) setActiveRootId(roots[0]?.id || "");
+  }, [activeRootId, roots]);
+
+  useEffect(() => {
+    function closeOutside(event) {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
     }
-    function closeEscape(e) {
-      if (e.key === "Escape") setOpen(false);
+    function closeEscape(event) {
+      if (event.key === "Escape") setOpen(false);
     }
     document.addEventListener("mousedown", closeOutside);
     document.addEventListener("keydown", closeEscape);
@@ -171,28 +248,37 @@ export default function TopicDropdown({
       onNavigate?.();
       return;
     }
-    setOpen((v) => !v);
+    setActiveRootId(roots[0]?.id || "");
+    setOpen((value) => !value);
   }
 
   return (
-    <div ref={rootRef} className={`topic-dropdown topic-tree-dropdown ${compact ? "compact" : ""} ${className}`}>
+    <div ref={rootRef} data-current-topic={currentCode || undefined} className={`topic-dropdown topic-tree-dropdown ${compact ? "compact" : ""} ${className}`}>
       <button type="button" className="topic-picker-btn cascade-trigger" onClick={toggle} aria-expanded={open}>
         <span>{buttonLabel}</span>
         <span className="topic-picker-arrow">▾</span>
       </button>
 
       {open ? (
-        <div className="tree-dropdown-panel" dir="rtl">
-          <div className="tree-dropdown-title">{mode === "paths" ? "المسارات البصرية" : "الموضوعات"}</div>
-          <ul className="tree-menu-root">
-            {(mode === "paths"
-              ? TOPIC_TREE.filter((item) => ["nominal-sentence", "verbal-sentence"].includes(item.id))
-              : TOPIC_TREE
-            ).map((item) => (
-              <TreeItem key={item.id} item={item} go={go} mode={mode} />
-            ))}
-          </ul>
-        </div>
+        compact ? (
+          <DesktopPanel
+            roots={roots}
+            activeRootId={activeRootId}
+            setActiveRootId={setActiveRootId}
+            go={go}
+            mode={mode}
+          />
+        ) : (
+          <div className="tree-dropdown-panel mobile-tree-panel" dir="rtl">
+            <div className="tree-dropdown-title mobile-tree-title">
+              <span>{mode === "paths" ? "المسارات البصرية" : "الموضوعات"}</span>
+              <button type="button" className="mobile-tree-back" onClick={() => setOpen(false)}>رجوع</button>
+            </div>
+            <ul className="tree-menu-root">
+              {roots.map((item) => <TreeItem key={item.id} item={item} go={go} mode={mode} />)}
+            </ul>
+          </div>
+        )
       ) : null}
     </div>
   );

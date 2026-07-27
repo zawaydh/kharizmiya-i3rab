@@ -65,16 +65,16 @@ type HintBubble = {
   placement: "right" | "left" | "above" | "below";
 };
 
-const BOX_W = 280;
-const BOX_H = 128;
-const DIA_W = 320;
-const DIA_H = 220;
-const LEVEL_GAP = 270;
-const SIBLING_GAP = 56;
-const MIN_ZOOM = 0.55;
-const MAX_ZOOM = 1.7;
+const BOX_W = 310;
+const BOX_H = 132;
+const DIA_W = 390;
+const DIA_H = 270;
+const LEVEL_GAP = 330;
+const SIBLING_GAP = 64;
+const MIN_ZOOM = 0.58;
+const MAX_ZOOM = 1.55;
 
-function splitText(text?: string, max = 28) {
+function splitText(text?: string, max = 28, maxLines = 8) {
   if (!text) return [];
   const words = text.replace(/\s+/g, " ").trim().split(" ");
   const lines: string[] = [];
@@ -89,7 +89,7 @@ function splitText(text?: string, max = 28) {
     }
   });
   if (current) lines.push(current);
-  return lines.slice(0, 6);
+  return lines.slice(0, maxLines);
 }
 
 
@@ -200,8 +200,8 @@ function answerGridMetrics(labels: string[]) {
   const rows = Math.ceil(count / columns);
   const gapX = 8;
   const gapY = 7;
-  const btnH = 40;
-  const btnW = columns === 1 ? 250 : 142;
+  const btnH = 44;
+  const btnW = columns === 1 ? 286 : 164;
   return { count, columns, rows, gapX, gapY, btnH, btnW };
 }
 
@@ -223,11 +223,12 @@ function answerButtonLayout(node: PositionedNode, labels: string[], idx: number)
   };
 }
 
-function questionNodeHeight(node: TreeNode) {
+function questionNodeHeight(node: TreeNode, textLineCount = 3) {
   const labels = (node.answers || []).map((answer) => shortPathAnswerLabel(answer.text));
   const { rows, btnH, gapY } = answerGridMetrics(labels);
   const answerArea = rows * btnH + Math.max(0, rows - 1) * gapY;
-  return Math.max(DIA_H, 102 + answerArea);
+  const questionArea = Math.max(82, textLineCount * 24 + 28);
+  return Math.max(DIA_H, questionArea + answerArea + 74);
 }
 
 function answerInstructionY(node: PositionedNode, labels: string[]) {
@@ -311,11 +312,15 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
     const x = centerUnit * (BOX_W + SIBLING_GAP);
     const y = depth * LEVEL_GAP;
     const isQuestion = node.type === "question";
-    const w = isQuestion ? DIA_W : BOX_W;
-    const textLines = splitText(displayNodeQuestion(node, example), isQuestion ? 24 : 24);
+    const isResult = node.type === "result";
+    const w = isQuestion ? DIA_W : (isResult ? 360 : BOX_W);
+    const displayText = isResult && example?.facts?.finalI3rab
+      ? String(example.facts.finalI3rab)
+      : displayNodeQuestion(node, example);
+    const textLines = splitText(displayText, isQuestion ? 30 : (isResult ? 38 : 28), isResult ? 14 : 8);
     const h = isQuestion
-      ? questionNodeHeight(node)
-      : Math.max(BOX_H, 42 + textLines.length * 23);
+      ? questionNodeHeight(node, textLines.length)
+      : Math.max(BOX_H, 48 + textLines.length * (isResult ? 25 : 23));
 
     placed.set(id, {
       id,
@@ -543,15 +548,15 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     if (!node) return;
 
     const el = canvasScrollRef.current;
-    const mobileFitZoom = Math.max(MIN_ZOOM, (el.clientWidth - 24) / Math.max(node.w, 1));
-    const mobileReadableFloor = node.kind === "question" ? 0.72 : 0.78;
+    const mobileFitZoom = Math.max(MIN_ZOOM, (el.clientWidth - 20) / Math.max(node.w, 1));
+    const mobileReadableFloor = node.kind === "question" ? 0.74 : 0.8;
     const requestedZoom = el.clientWidth <= 760
       ? Math.max(mobileReadableFloor, Math.min(targetZoom, mobileFitZoom))
       : targetZoom;
     const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, requestedZoom));
     setZoom(nextZoom);
 
-    requestAnimationFrame(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       const scrollElement = canvasScrollRef.current;
       if (!scrollElement) return;
       scrollElement.dir = "ltr";
@@ -560,9 +565,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const scaledW = node.w * nextZoom;
       const scaledH = node.h * nextZoom;
       const left = Math.max(0, scaledLeft - (scrollElement.clientWidth - scaledW) / 2);
-      const top = Math.max(0, scaledTop - Math.max(22, (scrollElement.clientHeight - scaledH) * 0.22));
+      const top = Math.max(0, scaledTop - Math.max(18, (scrollElement.clientHeight - scaledH) * 0.18));
       scrollElement.scrollTo({ left, top, behavior: "smooth" });
-    });
+    }));
   }, [layout, layoutNodeMap]);
 
   const resetProgress = useCallback((nextExample: Example | null) => {
@@ -596,10 +601,10 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   useEffect(() => {
     if (!activeNodeId || !layout) return;
     const targetId = activeNodeId === tree.startNodeId ? "__exercise__" : activeNodeId;
-    const targetZoom = activeNodeId === tree.startNodeId ? 1.08 : 1.14;
+    const targetZoom = finalNodeId ? 0.96 : (activeNodeId === tree.startNodeId ? 0.98 : 1.02);
     const timer = setTimeout(() => focusNode(targetId, targetZoom), 100);
     return () => clearTimeout(timer);
-  }, [activeNodeId, focusNode, layout, tree.startNodeId]);
+  }, [activeNodeId, finalNodeId, focusNode, layout, tree.startNodeId]);
 
   function startExampleAt(index: number) {
     if (!examples.length) return;
@@ -1112,9 +1117,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 const isQuestion = n.kind === "question";
                 const isResult = n.kind === "result";
                 const isFinalResult = finalNodeId === n.id;
-                const renderedNodeLines = isFinalResult && example?.facts?.finalI3rab
-                  ? splitText(String(example.facts.finalI3rab), 30)
-                  : n.textLines;
+                const renderedNodeLines = n.textLines;
 
                 return (
                   <g
@@ -1156,19 +1159,27 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                     )}
 
                     {renderedNodeLines.map((line, i, renderedLines) => {
-                      const lineGap = isQuestion ? 19 : 22;
-                      const textCenterY = isQuestion ? n.y + 56 : n.y + n.h / 2;
+                      const answerLabels = (n.node?.answers || []).map((answer) => shortPathAnswerLabel(answer.text));
+                      const instructionY = isQuestion ? answerInstructionY(n, answerLabels) : 0;
+                      const lineGap = isQuestion ? 23 : (isResult ? 25 : 22);
+                      const textBlockHeight = Math.max(lineGap, renderedLines.length * lineGap);
+                      const questionTextTop = isQuestion
+                        ? n.y + Math.max(46, (instructionY - n.y - textBlockHeight) / 2)
+                        : 0;
+                      const y = isQuestion
+                        ? questionTextTop + i * lineGap
+                        : n.y + n.h / 2 + (i - (renderedLines.length - 1) / 2) * lineGap;
                       return (
-                      <text
-                        key={`${n.id}-${i}`}
-                        x={n.x + n.w / 2}
-                        y={textCenterY + (i - (renderedLines.length - 1) / 2) * lineGap}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
-                      >
-                        {line}
-                      </text>
+                        <text
+                          key={`${n.id}-${i}`}
+                          x={n.x + n.w / 2}
+                          y={y}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
+                        >
+                          {line}
+                        </text>
                       );
                     })}
                     {isQuestion && active ? (
@@ -1237,15 +1248,18 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
               dir="rtl"
             >
               <p>{hintBubble.text}</p>
-              <button
-                type="button"
-                onClick={closeHint}
-              >
-                حسنًا
-              </button>
+              <button type="button" onClick={closeHint}>حسنًا</button>
             </div>
           ) : null}
         </div>
+
+        {finalNodeId ? (
+          <section className="paths-final-result-card" role="status" aria-live="polite">
+            <span>النتيجة النهائية</span>
+            <strong>{String(example?.facts?.finalI3rab || tree.nodes[finalNodeId]?.text || "اكتمل المسار")}</strong>
+          </section>
+        ) : null}
+
         <div className="paths-thinking-dock paths-thinking-dock-hidden">
           <details open>
             <summary>كيف أفكر في هذه الخطوة؟</summary>
