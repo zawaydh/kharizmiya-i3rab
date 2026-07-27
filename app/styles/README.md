@@ -16,3 +16,6 @@ The files are imported in numeric order from `app/globals.css`. The order is int
 New visual changes should normally be placed in the relevant module. Avoid adding another global override section unless a cross-platform token genuinely belongs in `90-formal-theme.css`.
 
 - `95-classic-readable.css`: restores the clear Cairo-based academic reading style and the light topic/exercise surfaces inspired by the earlier prototypes.
+
+- `96-contrast-menu-path-fixes.css`: mobile drawer, contrast corrections, and path-node safeguards.
+- `97-unified-workspaces.css`: the single final cross-page visual system for workspace width, ChatGPT-like Arabic typography, thin borders, readable light surfaces, responsive sizing, and answer-state glow.

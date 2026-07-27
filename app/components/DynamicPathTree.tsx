@@ -66,13 +66,13 @@ type HintBubble = {
 };
 
 const BOX_W = 280;
-const BOX_H = 112;
+const BOX_H = 128;
 const DIA_W = 320;
 const DIA_H = 220;
 const LEVEL_GAP = 270;
 const SIBLING_GAP = 56;
-const MIN_ZOOM = 0.4;
-const MAX_ZOOM = 1.6;
+const MIN_ZOOM = 0.55;
+const MAX_ZOOM = 1.7;
 
 function splitText(text?: string, max = 28) {
   if (!text) return [];
@@ -312,7 +312,10 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
     const y = depth * LEVEL_GAP;
     const isQuestion = node.type === "question";
     const w = isQuestion ? DIA_W : BOX_W;
-    const h = isQuestion ? questionNodeHeight(node) : BOX_H;
+    const textLines = splitText(displayNodeQuestion(node, example), isQuestion ? 24 : 24);
+    const h = isQuestion
+      ? questionNodeHeight(node)
+      : Math.max(BOX_H, 42 + textLines.length * 23);
 
     placed.set(id, {
       id,
@@ -321,7 +324,7 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
       y,
       w,
       h,
-      textLines: splitText(displayNodeQuestion(node, example), isQuestion ? 24 : 24),
+      textLines,
       node,
     });
 
@@ -540,8 +543,11 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     if (!node) return;
 
     const el = canvasScrollRef.current;
-    const mobileFitZoom = Math.max(MIN_ZOOM, (el.clientWidth - 28) / Math.max(node.w, 1));
-    const requestedZoom = el.clientWidth <= 760 ? Math.min(targetZoom, mobileFitZoom) : targetZoom;
+    const mobileFitZoom = Math.max(MIN_ZOOM, (el.clientWidth - 24) / Math.max(node.w, 1));
+    const mobileReadableFloor = node.kind === "question" ? 0.72 : 0.78;
+    const requestedZoom = el.clientWidth <= 760
+      ? Math.max(mobileReadableFloor, Math.min(targetZoom, mobileFitZoom))
+      : targetZoom;
     const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, requestedZoom));
     setZoom(nextZoom);
 
@@ -554,7 +560,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const scaledW = node.w * nextZoom;
       const scaledH = node.h * nextZoom;
       const left = Math.max(0, scaledLeft - (scrollElement.clientWidth - scaledW) / 2);
-      const top = Math.max(0, scaledTop - Math.max(28, (scrollElement.clientHeight - scaledH) * 0.30));
+      const top = Math.max(0, scaledTop - Math.max(22, (scrollElement.clientHeight - scaledH) * 0.22));
       scrollElement.scrollTo({ left, top, behavior: "smooth" });
     });
   }, [layout, layoutNodeMap]);
@@ -590,7 +596,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   useEffect(() => {
     if (!activeNodeId || !layout) return;
     const targetId = activeNodeId === tree.startNodeId ? "__exercise__" : activeNodeId;
-    const targetZoom = activeNodeId === tree.startNodeId ? 1.02 : 1.06;
+    const targetZoom = activeNodeId === tree.startNodeId ? 1.08 : 1.14;
     const timer = setTimeout(() => focusNode(targetId, targetZoom), 100);
     return () => clearTimeout(timer);
   }, [activeNodeId, focusNode, layout, tree.startNodeId]);
@@ -1149,18 +1155,22 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                       />
                     )}
 
-                    {renderedNodeLines.map((line, i, renderedLines) => (
+                    {renderedNodeLines.map((line, i, renderedLines) => {
+                      const lineGap = isQuestion ? 19 : 22;
+                      const textCenterY = isQuestion ? n.y + 56 : n.y + n.h / 2;
+                      return (
                       <text
                         key={`${n.id}-${i}`}
                         x={n.x + n.w / 2}
-                        y={(isQuestion ? n.y + 54 : n.y + n.h / 2) + (i - (renderedLines.length - 1) / 2) * 16}
+                        y={textCenterY + (i - (renderedLines.length - 1) / 2) * lineGap}
                         textAnchor="middle"
                         dominantBaseline="middle"
                         className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
                       >
                         {line}
                       </text>
-                    ))}
+                      );
+                    })}
                     {isQuestion && active ? (
                       <text
                         x={n.x + n.w / 2}

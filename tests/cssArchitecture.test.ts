@@ -16,6 +16,8 @@ const expectedModules = [
   "80-typography-responsive.css",
   "90-formal-theme.css",
   "95-classic-readable.css",
+  "96-contrast-menu-path-fixes.css",
+  "97-unified-workspaces.css",
 ];
 
 describe("CSS architecture", () => {

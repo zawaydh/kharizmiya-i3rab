@@ -1,0 +1,679 @@
+/* النظام البصري الموحد: لوحات عمل ثابتة، خط هادئ، وحدود رقيقة */
+:root{
+  --ui-font: "Noto Sans Arabic", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --ui-page: #f3f6fa;
+  --ui-surface: #ffffff;
+  --ui-surface-soft: #f8fafc;
+  --ui-text: #172033;
+  --ui-muted: #64748b;
+  --ui-border: #d9e1ea;
+  --ui-border-strong: #c8d3df;
+  --ui-primary: #168f87;
+  --ui-primary-dark: #0f766e;
+  --ui-primary-soft: #eaf8f6;
+  --ui-blue: #2563eb;
+  --ui-correct: #16a34a;
+  --ui-correct-soft: #ecfdf3;
+  --ui-wrong: #dc2626;
+  --ui-wrong-soft: #fff1f2;
+  --ui-gold: #f4ce58;
+  --ui-radius: 18px;
+  --ui-workspace: 1040px;
+  --ui-reading: 920px;
+  --ui-shadow: 0 10px 30px rgba(30, 49, 73, .07);
+}
+
+html,
+body,
+body.platform-body,
+button,
+input,
+select,
+textarea,
+.platform-navbar,
+.platform-navbar *{
+  font-family: var(--ui-font) !important;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.platform-body{
+  background: var(--ui-page) !important;
+  color: var(--ui-text) !important;
+  line-height: 1.8 !important;
+}
+
+/* لوحات العمل الرئيسية كلها على مقياس واحد */
+.exercise-page-shell,
+.interactive-shell,
+.paths-direct-workspace,
+.speech-game-page,
+.speech-game-page-compact,
+.dashboard-page-modern,
+.text-game-page,
+.remedial-stage-page,
+.auth-modern-page,
+.topics-branch-page{
+  width: min(100%, var(--ui-workspace)) !important;
+  max-width: var(--ui-workspace) !important;
+  margin-inline: auto !important;
+}
+
+.thinking-layout.start-style-layout,
+.exercise-core-card,
+.speech-game-card-unified,
+.paths-react-card,
+.dashboard-list-card,
+.auth-modern-card,
+.auth-lock-card{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* سطح فاتح موحد، من دون توهج أو حواف سميكة */
+.exercise-panel,
+.clean-thinking-card,
+.clean-question-block,
+.algorithm-active-card,
+.sequential-active-card,
+.speech-game-card,
+.speech-game-card-unified,
+.speech-game-challenge-direct,
+.dashboard-hero-modern,
+.dashboard-list-card,
+.dashboard-stat-card,
+.dashboard-topic-card,
+.paths-react-card,
+.paths-react-board-wrap,
+.auth-modern-card,
+.auth-lock-card,
+.topic-branch-card,
+.text-game-card-clean,
+.remedial-stage-card{
+  background: var(--ui-surface) !important;
+  color: var(--ui-text) !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: var(--ui-radius) !important;
+  box-shadow: var(--ui-shadow) !important;
+}
+
+.exercise-panel,
+.clean-thinking-card,
+.speech-game-card-unified,
+.dashboard-list-card,
+.paths-react-card{
+  padding: clamp(18px, 2.5vw, 28px) !important;
+}
+
+/* سلم طباعي واحد يقلل ضوضاء الأحجام */
+h1,.h1,.exercise-page-title,.paths-react-head .h1,.speech-game-compact-head h1{
+  font-size: clamp(30px, 3.2vw, 40px) !important;
+  line-height: 1.45 !important;
+  font-weight: 750 !important;
+  letter-spacing: 0 !important;
+  color: var(--ui-text) !important;
+  text-shadow: none !important;
+}
+
+h2,.h2,.dashboard-list-head h2,.home-clean-section-head h2{
+  font-size: clamp(24px, 2.4vw, 30px) !important;
+  line-height: 1.55 !important;
+  font-weight: 700 !important;
+  color: var(--ui-text) !important;
+}
+
+h3,.h3,.dashboard-topic-card h3,.home-clean-stage h3{
+  font-size: clamp(19px, 1.8vw, 22px) !important;
+  line-height: 1.6 !important;
+  font-weight: 700 !important;
+}
+
+.p,.small,.muted,
+.start-page-intro,
+.exercise-stage-subtitle,
+.dashboard-list-description,
+.dashboard-topic-head p,
+.speech-game-compact-head p{
+  font-size: 15px !important;
+  line-height: 1.85 !important;
+  color: var(--ui-muted) !important;
+  opacity: 1 !important;
+}
+
+/* الجمل والأسئلة التعليمية */
+.dialogue-sentence-text,
+.sequential-sentence-line,
+.start-example-sentence,
+.exercise-sentence,
+.speech-game-sentence,
+.text-game-passage{
+  color: var(--ui-text) !important;
+  font-size: clamp(30px, 3.5vw, 42px) !important;
+  line-height: 2.05 !important;
+  font-weight: 650 !important;
+  opacity: 1 !important;
+}
+
+.exercise-question-title,
+.clean-question-title,
+.practice-correction-question,
+.practice-direct-prompt,
+.speech-game-question,
+.quiz-form-question,
+.clean-followup-title{
+  color: var(--ui-text) !important;
+  font-size: clamp(21px, 2.2vw, 27px) !important;
+  line-height: 1.9 !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+.question-choice-prompt,
+.dialogue-question-note,
+.practice-direct-note,
+.quiz-form-helper,
+.speech-game-instruction,
+.speech-game-meta,
+.start-example-label,
+.dialogue-label{
+  color: var(--ui-muted) !important;
+  font-size: 14px !important;
+  line-height: 1.8 !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+
+/* بطاقات الجملة والسؤال متصلة بصريًا */
+.sequential-sentence-line,
+.start-example-card,
+.speech-game-sentence,
+.text-game-passage{
+  background: var(--ui-surface-soft) !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+
+.clean-question-block,
+.sequential-active-card{
+  display: grid !important;
+  gap: 18px !important;
+  padding: clamp(18px, 2.6vw, 28px) !important;
+}
+
+.question-content-motion,
+.question-slide-viewport,
+.exercise-question-title,
+.clean-question-title,
+.practice-correction-question{
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* الخيارات: مقاس ثابت وحدود رقيقة */
+.exercise-answer-btn,
+.clean-answer-btn,
+.practice-direct-option,
+.practice-fast-option,
+.quiz-form-option,
+.speech-game-options button,
+.text-game-option,
+.drag-choice,
+.hint-after-options-btn{
+  min-height: 52px !important;
+  padding: 10px 16px !important;
+  border: 1px solid var(--ui-border-strong) !important;
+  border-radius: 13px !important;
+  background: var(--ui-surface) !important;
+  color: var(--ui-text) !important;
+  box-shadow: none !important;
+  font-family: var(--ui-font) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1.6 !important;
+  opacity: 1 !important;
+  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease, transform .16s ease !important;
+}
+
+.exercise-answer-btn:hover,
+.clean-answer-btn:hover,
+.practice-direct-option:hover,
+.practice-fast-option:hover,
+.quiz-form-option:hover,
+.speech-game-options button:hover,
+.text-game-option:hover,
+.drag-choice:hover{
+  border-color: #7bb9b4 !important;
+  background: #f5fbfa !important;
+  transform: translateY(-1px) !important;
+}
+
+/* إعادة توهج الإجابة الصحيحة فقط */
+.exercise-answer-btn.is-correct,
+.clean-answer-btn.is-correct,
+.quiz-form-option.is-correct,
+.practice-direct-option.is-correct,
+.practice-fast-option.is-correct,
+.speech-game-options button.is-correct,
+.text-game-option.is-correct,
+.paths-react-answer-selected-correct rect{
+  color: #14532d !important;
+  background: var(--ui-correct-soft) !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 3px rgba(34,197,94,.13), 0 0 22px rgba(34,197,94,.24) !important;
+}
+
+.exercise-answer-btn.is-wrong,
+.clean-answer-btn.is-wrong,
+.quiz-form-option.is-wrong,
+.practice-direct-option.is-wrong,
+.practice-fast-option.is-wrong,
+.speech-game-options button.is-wrong,
+.text-game-option.is-wrong{
+  color: #7f1d1d !important;
+  background: var(--ui-wrong-soft) !important;
+  border-color: #ef4444 !important;
+  box-shadow: none !important;
+}
+
+/* صفحة الإعراب في كلامنا */
+.speech-game-page,
+.speech-game-page-compact{
+  padding-block: 24px 40px !important;
+}
+.speech-game-card-unified{
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+.speech-game-challenge-direct,
+.speech-game-sentence,
+.speech-game-question,
+.speech-game-options,
+.speech-game-options button{
+  opacity: 1 !important;
+  filter: none !important;
+}
+.speech-game-challenge-direct{
+  overflow: hidden !important;
+  border: 1px solid var(--ui-border) !important;
+  box-shadow: none !important;
+}
+.speech-game-options{
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  gap: 10px !important;
+  padding: 12px !important;
+}
+.speech-game-blank.is-waiting{
+  color: var(--ui-muted) !important;
+  background: #fff !important;
+  border: 1px dashed var(--ui-border-strong) !important;
+}
+.speech-game-blank.is-active{
+  color: #7c5a00 !important;
+  background: #fffaf0 !important;
+  border: 1px solid #e8c558 !important;
+  box-shadow: 0 0 0 3px rgba(244,206,88,.13), 0 0 18px rgba(244,206,88,.18) !important;
+}
+.speech-game-blank.is-solved{
+  color: #14532d !important;
+  background: var(--ui-correct-soft) !important;
+  border: 1px solid #6dd18a !important;
+}
+
+/* لوحة الطالب: تباين واضح ومقاس مضغوط */
+.dashboard-page-modern{padding-block:24px 40px !important}
+.dashboard-summary-grid{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:12px !important;
+}
+.dashboard-stat-card{
+  min-height:118px !important;
+  display:grid !important;
+  align-content:center !important;
+  gap:6px !important;
+  padding:18px !important;
+}
+.dashboard-stat-card strong{font-size:30px !important;color:var(--ui-text) !important}
+.dashboard-stat-card span{font-size:14px !important;color:var(--ui-muted) !important;opacity:1 !important}
+.dashboard-topic-head p,
+.dashboard-progress-meta,
+.dashboard-chip-row,
+.dashboard-chip-row *,
+.dashboard-action-row,
+.dashboard-action-row *{
+  opacity:1 !important;
+}
+
+/* المسارات: مساحة عمل ثابتة وزوم على العقدة الحالية */
+.paths-direct-workspace{padding-block:24px 40px !important}
+.paths-direct-workspace .paths-react-card{gap:18px !important}
+.paths-direct-workspace .paths-react-board-wrap{padding:12px !important}
+.paths-direct-workspace .paths-react-canvas-scroll{
+  height: min(72vh,760px) !important;
+  min-height: 590px !important;
+  scroll-behavior: smooth !important;
+  background: #fff !important;
+}
+.paths-direct-workspace .paths-react-node text{
+  font-family: var(--ui-font) !important;
+  fill: var(--ui-text) !important;
+  font-size: 16px !important;
+  font-weight: 650 !important;
+  stroke: none !important;
+  paint-order: normal !important;
+}
+.paths-direct-workspace .paths-react-box-text{font-size:18px !important;font-weight:700 !important}
+.paths-direct-workspace .paths-react-question-text{font-size:16px !important;font-weight:700 !important}
+.paths-direct-workspace .paths-react-answer-text{font-size:13px !important;font-weight:600 !important}
+.paths-direct-workspace .paths-react-node rect,
+.paths-direct-workspace .paths-react-node polygon,
+.paths-direct-workspace .paths-react-answer rect{
+  stroke-width:1.5px !important;
+  vector-effect:non-scaling-stroke !important;
+}
+.paths-direct-workspace .paths-react-node.is-active rect,
+.paths-direct-workspace .paths-react-node.is-active polygon{
+  filter:drop-shadow(0 0 10px rgba(22,143,135,.18)) !important;
+  stroke-width:2.2px !important;
+}
+.paths-direct-workspace .paths-react-answer-selected-correct rect{
+  fill:var(--ui-correct-soft) !important;
+  stroke:#22c55e !important;
+  stroke-width:2.4px !important;
+  filter:drop-shadow(0 0 12px rgba(34,197,94,.34)) !important;
+}
+.paths-direct-workspace .paths-react-workbar{
+  display:grid !important;
+  grid-template-columns:1fr auto !important;
+  align-items:center !important;
+  gap:10px !important;
+}
+.paths-direct-workspace .paths-react-workbar-left,
+.paths-direct-workspace .paths-react-zoom-tools{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+}
+.paths-direct-workspace .paths-react-workbar .btn{
+  min-height:42px !important;
+  border-radius:11px !important;
+  border-width:1px !important;
+  box-shadow:none !important;
+}
+
+/* قائمة الحاسوب: عمود رئيسي وفروع إلى الجانب */
+@media (min-width:821px){
+  .platform-navbar-links .topic-dropdown.compact .tree-dropdown-panel{
+    width:260px !important;
+    max-height:none !important;
+    overflow:visible !important;
+    padding:10px !important;
+    border-radius:14px !important;
+  }
+  .platform-navbar-links .topic-dropdown.compact .tree-menu-root > .tree-menu-item{
+    position:relative !important;
+  }
+  .platform-navbar-links .topic-dropdown.compact .tree-menu-root > .tree-menu-item > .tree-menu-children,
+  .platform-navbar-links .topic-dropdown.compact .tree-menu-root > .tree-menu-item > .tree-menu-actions{
+    position:absolute !important;
+    top:0 !important;
+    right:calc(100% + 10px) !important;
+    width:250px !important;
+    max-height:68vh !important;
+    margin:0 !important;
+    padding:10px !important;
+    overflow:auto !important;
+    background:#071827 !important;
+    border:1px solid #29445a !important;
+    border-radius:14px !important;
+    box-shadow:0 18px 42px rgba(0,0,0,.28) !important;
+    z-index:12 !important;
+  }
+  .platform-navbar-links .topic-dropdown.compact .tree-menu-children .tree-menu-item{
+    position:relative !important;
+  }
+  .platform-navbar-links .topic-dropdown.compact .tree-menu-children .tree-menu-children{
+    position:absolute !important;
+    top:0 !important;
+    right:calc(100% + 10px) !important;
+    width:240px !important;
+    margin:0 !important;
+    padding:10px !important;
+    background:#071827 !important;
+    border:1px solid #29445a !important;
+    border-radius:14px !important;
+    box-shadow:0 18px 42px rgba(0,0,0,.28) !important;
+    z-index:13 !important;
+  }
+  .platform-navbar-links .tree-menu-label,
+  .platform-navbar-links .tree-menu-action{
+    min-height:42px !important;
+    font-size:14px !important;
+    text-align:right !important;
+  }
+  .platform-navbar-links .tree-menu-arrow{transform:rotate(90deg)}
+}
+
+/* القائمة الجانبية على الهاتف */
+@media (max-width:820px){
+  .platform-navbar-mobile{
+    width:min(80vw,292px) !important;
+    padding:14px !important;
+  }
+  .platform-navbar-mobile>a,
+  .platform-navbar-mobile>button,
+  .platform-navbar-mobile .topic-picker-btn{
+    min-height:44px !important;
+    padding:9px 12px !important;
+    font-size:14px !important;
+    text-align:right !important;
+  }
+  .platform-navbar-mobile .topic-picker-arrow{
+    margin-inline-start:auto !important;
+  }
+
+  .exercise-page-shell,
+  .interactive-shell,
+  .paths-direct-workspace,
+  .speech-game-page,
+  .speech-game-page-compact,
+  .dashboard-page-modern,
+  .text-game-page,
+  .remedial-stage-page{
+    width:100% !important;
+    padding-inline:8px !important;
+  }
+
+  h1,.h1,.exercise-page-title,.paths-react-head .h1,.speech-game-compact-head h1{
+    font-size:28px !important;
+    line-height:1.5 !important;
+  }
+  h2,.h2{font-size:23px !important}
+  .dialogue-sentence-text,
+  .sequential-sentence-line,
+  .start-example-sentence,
+  .exercise-sentence,
+  .speech-game-sentence,
+  .text-game-passage{
+    font-size:28px !important;
+    line-height:2.05 !important;
+  }
+  .exercise-question-title,
+  .clean-question-title,
+  .practice-correction-question,
+  .practice-direct-prompt,
+  .speech-game-question,
+  .quiz-form-question{
+    font-size:20px !important;
+    line-height:1.9 !important;
+  }
+
+  .clean-question-block,
+  .sequential-active-card,
+  .exercise-panel,
+  .clean-thinking-card,
+  .speech-game-card-unified,
+  .dashboard-list-card,
+  .paths-react-card{
+    padding:14px !important;
+    border-radius:16px !important;
+  }
+
+  .clean-answer-grid,
+  .practice-direct-options,
+  .practice-fast-options,
+  .speech-game-options{
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+  }
+
+  .dashboard-summary-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:9px !important;
+  }
+  .dashboard-stat-card{
+    min-height:96px !important;
+    padding:13px !important;
+  }
+  .dashboard-stat-card strong{font-size:25px !important}
+
+  .paths-direct-workspace .paths-react-workbar{
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+  }
+  .paths-direct-workspace .paths-react-workbar-left{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+  }
+  .paths-direct-workspace .paths-react-zoom-tools{
+    display:grid !important;
+    grid-template-columns:44px 1fr 44px !important;
+  }
+  .paths-direct-workspace .paths-react-zoom-tools .btn-fit{
+    grid-column:auto !important;
+    min-width:0 !important;
+  }
+  .paths-direct-workspace .paths-react-workbar .btn{
+    width:100% !important;
+    min-width:0 !important;
+    font-size:13px !important;
+  }
+  .paths-direct-workspace .paths-react-canvas-scroll{
+    height:64vh !important;
+    min-height:520px !important;
+  }
+  .paths-direct-workspace .paths-react-node text{
+    font-size:15px !important;
+  }
+  .paths-direct-workspace .paths-react-box-text{font-size:16px !important}
+  .paths-direct-workspace .paths-react-question-text{font-size:15px !important}
+  .paths-direct-workspace .paths-react-answer-text{font-size:12px !important}
+}
+
+@media (max-width:460px){
+  .dialogue-sentence-text,
+  .sequential-sentence-line,
+  .start-example-sentence,
+  .exercise-sentence,
+  .speech-game-sentence,
+  .text-game-passage{
+    font-size:25px !important;
+  }
+  .exercise-question-title,
+  .clean-question-title,
+  .practice-correction-question,
+  .practice-direct-prompt,
+  .speech-game-question,
+  .quiz-form-question{
+    font-size:18px !important;
+  }
+}
+
+/* تثبيت النوع واللون أمام المحددات القديمة الأعلى خصوصية */
+.exercise-page-shell,
+.interactive-shell,
+.paths-direct-workspace,
+.speech-game-page,
+.speech-game-page-compact,
+.dashboard-page-modern,
+.text-game-page,
+.remedial-stage-page,
+.auth-modern-page,
+.topics-branch-page,
+.home-clean-page{
+  font-family: var(--ui-font) !important;
+}
+
+.home-clean-copy h1,
+.dashboard-hero-copy h1,
+.auth-modern-copy h1,
+.topics-branch-hero h1{
+  font-family: var(--ui-font) !important;
+  font-size: clamp(32px, 3.6vw, 44px) !important;
+  line-height: 1.5 !important;
+  font-weight: 750 !important;
+  letter-spacing: 0 !important;
+}
+.home-clean-kicker,
+.home-entry-lead,
+.home-registration-note{
+  font-family: var(--ui-font) !important;
+  opacity: 1 !important;
+}
+.home-clean-kicker{font-size:15px !important;font-weight:600 !important}
+.home-entry-lead{font-size:17px !important;line-height:1.85 !important}
+.home-registration-note{font-size:14px !important;line-height:1.8 !important}
+
+body.platform-body .exercise-page-shell .sequential-active-card .clean-question-title,
+body.platform-body .exercise-page-shell .sequential-active-card .exercise-question-title,
+body.platform-body .exercise-page-shell .algorithm-active-card .clean-question-title,
+body.platform-body .exercise-page-shell .algorithm-active-card .exercise-question-title{
+  color: var(--ui-text) !important;
+  font-family: var(--ui-font) !important;
+  font-size: clamp(21px, 2.2vw, 27px) !important;
+  line-height: 1.9 !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+body.platform-body .exercise-page-shell .question-content-motion.question-text-idle,
+body.platform-body .exercise-page-shell .question-content-motion.question-text-success,
+body.platform-body .exercise-page-shell .question-content-motion > *{
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body.platform-body .exercise-page-shell .question-choice-prompt,
+body.platform-body .exercise-page-shell .dialogue-question-note{
+  color: var(--ui-muted) !important;
+  opacity: 1 !important;
+}
+
+body.platform-body .speech-game-page .speech-game-question,
+body.platform-body .speech-game-page .speech-game-options button,
+body.platform-body .speech-game-page-compact .speech-game-question,
+body.platform-body .speech-game-page-compact .speech-game-options button{
+  color: var(--ui-text) !important;
+  opacity: 1 !important;
+}
+
+@media (max-width:820px){
+  .home-clean-copy h1,
+  .dashboard-hero-copy h1,
+  .auth-modern-copy h1,
+  .topics-branch-hero h1{
+    font-size:29px !important;
+  }
+  body.platform-body .exercise-page-shell .sequential-active-card .clean-question-title,
+  body.platform-body .exercise-page-shell .sequential-active-card .exercise-question-title,
+  body.platform-body .exercise-page-shell .algorithm-active-card .clean-question-title,
+  body.platform-body .exercise-page-shell .algorithm-active-card .exercise-question-title{
+    font-size:19px !important;
+  }
+}
