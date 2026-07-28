@@ -19,3 +19,4 @@ New visual changes should normally be placed in the relevant module. Avoid addin
 
 - `96-contrast-menu-path-fixes.css`: mobile drawer, contrast corrections, and path-node safeguards.
 - `97-unified-workspaces.css`: the single final cross-page visual system for workspace width, ChatGPT-like Arabic typography, thin borders, readable light surfaces, responsive sizing, and answer-state glow.
+- `98-stable-activity-system.css`: final stabilization layer. It keeps the navbar in normal sticky flow, gives every interactive activity one centered frame, limits hints and long explanations, simplifies mobile topic navigation, and reserves the largest area for the active exercise or concept map.

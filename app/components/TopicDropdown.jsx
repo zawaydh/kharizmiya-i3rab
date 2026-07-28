@@ -198,6 +198,55 @@ function TreeItem({ item, level = 0, go, mode = "learning" }) {
   );
 }
 
+
+function MobilePanel({ roots, go, mode, onClose }) {
+  const [stack, setStack] = useState([]);
+  const parent = stack.length ? stack[stack.length - 1] : null;
+  const items = parent ? availableChildren(parent, mode) : roots;
+  const title = parent?.label || (mode === "paths" ? "المسارات البصرية" : "الموضوعات");
+
+  function openItem(item) {
+    const children = availableChildren(item, mode);
+    const actions = actionItemsForTopic(item.topicCode, mode, item.label);
+    if (children.length) {
+      setStack((current) => [...current, item]);
+      return;
+    }
+    if (actions[0]?.href) go(actions[0].href);
+  }
+
+  return (
+    <div className="tree-dropdown-panel mobile-tree-panel mobile-topic-screen" dir="rtl">
+      <div className="tree-dropdown-title mobile-tree-title">
+        <button
+          type="button"
+          className="mobile-tree-back"
+          onClick={() => {
+            if (stack.length) setStack((current) => current.slice(0, -1));
+            else onClose();
+          }}
+        >
+          {stack.length ? "رجوع" : "إغلاق"}
+        </button>
+        <strong>{title}</strong>
+      </div>
+      <div className="mobile-topic-list" role="menu">
+        {items.map((item) => {
+          const children = availableChildren(item, mode);
+          const actions = actionItemsForTopic(item.topicCode, mode, item.label);
+          if (!children.length && !actions.length) return null;
+          return (
+            <button key={item.id} type="button" className="mobile-topic-item" onClick={() => openItem(item)}>
+              <span>{item.label}</span>
+              <span aria-hidden="true">{children.length ? "‹" : ""}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function TopicDropdown({
   currentCode,
   compact = false,
@@ -269,15 +318,7 @@ export default function TopicDropdown({
             mode={mode}
           />
         ) : (
-          <div className="tree-dropdown-panel mobile-tree-panel" dir="rtl">
-            <div className="tree-dropdown-title mobile-tree-title">
-              <span>{mode === "paths" ? "المسارات البصرية" : "الموضوعات"}</span>
-              <button type="button" className="mobile-tree-back" onClick={() => setOpen(false)}>رجوع</button>
-            </div>
-            <ul className="tree-menu-root">
-              {roots.map((item) => <TreeItem key={item.id} item={item} go={go} mode={mode} />)}
-            </ul>
-          </div>
+          <MobilePanel roots={roots} go={go} mode={mode} onClose={() => setOpen(false)} />
         )
       ) : null}
     </div>

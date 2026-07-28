@@ -203,7 +203,7 @@ export default function InteractiveLearning({ examples = [] }) {
 
   return (
     <div className="interactive-shell start-learning-refined" dir="rtl">
-      <section className="interactive-card addictive-learning-card">
+      <section className="interactive-card addictive-learning-card activity-frame start-activity-frame">
         <header className="interactive-topline clean-learning-topline start-page-header">
           <div className="start-coach-copy">
             <span className="start-page-eyebrow">تجربة تمهيدية قصيرة</span>
@@ -215,7 +215,7 @@ export default function InteractiveLearning({ examples = [] }) {
 
         <p className="start-page-intro">اقرأ الجملة، وحدد دور الكلمة المطلوبة، ثم اختر إجابة واحدة في كل خطوة.</p>
 
-        <section className={`learning-focus-box ${done ? "is-finished" : ""}`}>
+        <section className={`learning-focus-box activity-workspace ${done ? "is-finished" : ""}`}>
           <div className="start-sticky-progress" aria-label="تقدم صفحة البداية">
             <div className="start-sticky-progress-top">
               <strong>{done ? "اكتمل المثال" : `الخطوة ${Math.min(stepIndex + 1, example.steps.length)} من ${example.steps.length}`}</strong>
@@ -313,17 +313,17 @@ export default function InteractiveLearning({ examples = [] }) {
           )}
         </section>
 
-        <section className="i3rab-board addictive-board compact-build-board">
-          <div className="board-title-row">
+        <details className="i3rab-board addictive-board compact-build-board activity-progress-details">
+          <summary className="board-title-row">
             <h2>مسار القرار الإعرابي</h2>
             <span>{progress}%</span>
-          </div>
+          </summary>
           <div className="board-progress"><span style={{ width: `${progress}%` }} /></div>
           {board.length === 0 ? <p className="muted">سيظهر كل قرار هنا بعد اختياره.</p> : null}
           <div className="board-steps">
             {board.map((item, i) => <span key={i}>{i + 1}. {item}</span>)}
           </div>
-        </section>
+        </details>
 
         {activeTerm ? (
           <div className="smart-popover start-smart-popover" role="dialog">

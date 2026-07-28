@@ -65,11 +65,11 @@ type HintBubble = {
   placement: "right" | "left" | "above" | "below";
 };
 
-const BOX_W = 310;
-const BOX_H = 132;
-const DIA_W = 390;
-const DIA_H = 270;
-const LEVEL_GAP = 330;
+const BOX_W = 300;
+const BOX_H = 112;
+const DIA_W = 440;
+const DIA_H = 310;
+const LEVEL_GAP = 370;
 const SIBLING_GAP = 64;
 const MIN_ZOOM = 0.58;
 const MAX_ZOOM = 1.55;
@@ -227,8 +227,8 @@ function questionNodeHeight(node: TreeNode, textLineCount = 3) {
   const labels = (node.answers || []).map((answer) => shortPathAnswerLabel(answer.text));
   const { rows, btnH, gapY } = answerGridMetrics(labels);
   const answerArea = rows * btnH + Math.max(0, rows - 1) * gapY;
-  const questionArea = Math.max(82, textLineCount * 24 + 28);
-  return Math.max(DIA_H, questionArea + answerArea + 74);
+  const questionArea = Math.max(108, textLineCount * 26 + 38);
+  return Math.max(DIA_H, questionArea + answerArea + 92);
 }
 
 function answerInstructionY(node: PositionedNode, labels: string[]) {
@@ -565,7 +565,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
       const scaledW = node.w * nextZoom;
       const scaledH = node.h * nextZoom;
       const left = Math.max(0, scaledLeft - (scrollElement.clientWidth - scaledW) / 2);
-      const top = Math.max(0, scaledTop - Math.max(18, (scrollElement.clientHeight - scaledH) * 0.18));
+      const top = Math.max(0, scaledTop - Math.max(24, (scrollElement.clientHeight - scaledH) / 2));
       scrollElement.scrollTo({ left, top, behavior: "smooth" });
     }));
   }, [layout, layoutNodeMap]);
@@ -992,19 +992,17 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   if (!layout) return null;
 
   return (
-    <section className="card paths-react-card">
+    <section className="card paths-react-card activity-frame paths-activity-frame">
       <div className="paths-react-head">
         <div>
           <div className="section-kicker">خريطة مفاهيمية تفاعلية</div>
           <h1 className="h1">{title}</h1>
           {subtitle ? <p className="p">{subtitle}</p> : null}
-          <p className="paths-react-map-intro">
-            تظهر جميع المفاهيم والفروع في خريطة واحدة، ويضيء المسار الذي تبنيه أثناء الإجابة.
-          </p>
+          <p className="paths-react-map-intro">أجب داخل الخريطة؛ يضيء المسار الصحيح خطوةً خطوة.</p>
         </div>
       </div>
 
-      <div className="paths-react-board-wrap">
+      <div className={`paths-react-board-wrap ${finalNodeId ? "has-final-result" : ""}`}>
         <div className="paths-react-workbar">
           <div className="paths-react-workbar-left">
             <button type="button" className="btn btn-primary btn-workbar-glow" onClick={startNextExercise}>

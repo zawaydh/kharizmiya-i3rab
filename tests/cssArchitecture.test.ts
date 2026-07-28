@@ -18,6 +18,7 @@ const expectedModules = [
   "95-classic-readable.css",
   "96-contrast-menu-path-fixes.css",
   "97-unified-workspaces.css",
+  "98-stable-activity-system.css",
 ];
 
 describe("CSS architecture", () => {
