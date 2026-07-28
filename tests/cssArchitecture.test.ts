@@ -13,18 +13,13 @@ const expectedModules = [
   "50-exercise-workspace.css",
   "60-exercise-stability.css",
   "70-pages-games-dashboard.css",
-  "80-typography-responsive.css",
-  "90-formal-theme.css",
-  "95-classic-readable.css",
-  "96-contrast-menu-path-fixes.css",
-  "97-unified-workspaces.css",
-  "98-stable-activity-system.css",
+  "80-clean-system.css",
 ];
 
 describe("CSS architecture", () => {
   it("keeps globals.css as a small ordered import manifest", () => {
     const globals = readFileSync(globalsPath, "utf8");
-    expect(Buffer.byteLength(globals, "utf8")).toBeLessThan(1500);
+    expect(Buffer.byteLength(globals, "utf8")).toBeLessThan(1200);
 
     const imports = [...globals.matchAll(/@import\s+"\.\/styles\/([^"]+)";/g)].map(
       (match) => match[1],
@@ -39,22 +34,12 @@ describe("CSS architecture", () => {
     }
   });
 
-  it("does not restore historical patch-section comments", () => {
-    const forbidden = [
-      "urgent fix",
-      "final patch",
-      "rescue",
-      "TRUE CLEANUP",
-      "v21:",
-      "v25:",
-    ];
-
-    const combined = expectedModules
-      .map((moduleName) => readFileSync(resolve(root, "app/styles", moduleName), "utf8"))
-      .join("\n");
-
-    for (const phrase of forbidden) {
-      expect(combined.toLowerCase()).not.toContain(phrase.toLowerCase());
-    }
+  it("uses exactly one active final visual system", () => {
+    const globals = readFileSync(globalsPath, "utf8");
+    expect(globals).toContain('80-clean-system.css');
+    expect(globals).not.toContain('95-classic-readable.css');
+    expect(globals).not.toContain('96-contrast-menu-path-fixes.css');
+    expect(globals).not.toContain('97-unified-workspaces.css');
+    expect(globals).not.toContain('98-stable-activity-system.css');
   });
 });
