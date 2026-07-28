@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
           <Navbar />
         </Suspense>
 
-        <main className="container">{children}</main>
+        <main className="container platform-main">{children}</main>
 
         <RouteAwareFooter />
       </body>

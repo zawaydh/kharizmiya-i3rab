@@ -109,7 +109,7 @@ export default function I3rabInOurSpeechGame() {
   }
 
   return (
-    <main className="speech-game-page speech-game-page-compact" dir="rtl">
+    <div className="speech-game-page speech-game-page-compact" dir="rtl">
       <section className="card speech-game-card speech-game-card-unified">
         <header className="speech-game-compact-head">
           <h1>الإعراب في كلامنا</h1>
@@ -211,6 +211,6 @@ export default function I3rabInOurSpeechGame() {
           ) : null}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

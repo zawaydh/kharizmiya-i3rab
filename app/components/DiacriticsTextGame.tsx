@@ -121,7 +121,7 @@ export default function DiacriticsTextGame({
   const progress = Math.round((completedCount / Math.max(1, text.blanks.length)) * 100);
 
   return (
-    <main className="text-game-page text-game-page-clean" dir="rtl">
+    <div className="text-game-page text-game-page-clean" dir="rtl">
       <section className="card text-game-clean-head">
         <div>
           <span>لعبة النصوص: التشكيل والضبط</span>
@@ -185,6 +185,6 @@ export default function DiacriticsTextGame({
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }

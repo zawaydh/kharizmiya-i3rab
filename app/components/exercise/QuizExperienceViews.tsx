@@ -280,44 +280,44 @@ export function QuizQuestionView({
   onNext: () => void;
 }) {
   return (
-    <>
-      <section className="exercise-panel exercise-sentence-panel" style={panelStyle}>
-        <div style={{ opacity: 0.6, marginBottom: 6 }}>السؤال {cursor + 1} من {total}</div>
-        <div style={{ opacity: 0.6, marginBottom: 6 }}>الجملة:</div>
+    <section className="exercise-panel quiz-workspace-panel" style={panelStyle}>
+      <div className="quiz-workspace-progress">السؤال {cursor + 1} من {total}</div>
+
+      <div className="quiz-workspace-sentence" aria-label="الجملة">
+        <span>الجملة</span>
         <div className="exercise-sentence">{renderSentence(example?.sentence, example?.target)}</div>
-        <div className="quiz-question-with-instruction" style={{ fontSize: 18, lineHeight: 1.9, marginTop: 10 }}>
-          {prompt}
-          <span className="question-choice-prompt"> اختر الإجابة الصحيحة مما يأتي:</span>
-        </div>
-      </section>
+      </div>
 
-      <section className="exercise-panel" style={panelStyle}>
-        <div className="quiz-form-card-options">
-          {options.map((option, index) => (
-            <button
-              key={`${option}-${index}`}
-              onClick={() => onSelect(option)}
-              className={`exercise-answer-btn quiz-form-option ${selected === option ? "is-selected" : ""}`}
-              style={{
-                ...answerButtonStyle,
-                background: selected === option ? "rgba(47,158,158,.22)" : "rgba(255,255,255,.05)",
-                borderColor: selected === option ? "#2f9e9e" : "rgba(255,255,255,.14)",
-              }}
-            >
-              <span className="quiz-option-dot">{index + 1}</span>
-              <span>{toStudentArabicOption(option)}</span>
-            </button>
-          ))}
-        </div>
+      <div className="quiz-question-with-instruction">
+        {prompt}
+        <span className="question-choice-prompt"> اختر الإجابة الصحيحة مما يأتي:</span>
+      </div>
 
-        <div className="quiz-form-actions">
-          <button onClick={onPrevious} style={ghostButtonStyle} disabled={cursor <= 0}>السابق</button>
-          <button onClick={onRestart} style={ghostButtonStyle}>إعادة</button>
-          <button onClick={onNext} style={primaryButtonStyle} disabled={!selected}>
-            {cursor + 1 >= total ? "تسليم الاختبار النهائي" : "التالي"}
+      <div className="quiz-form-card-options">
+        {options.map((option, index) => (
+          <button
+            key={`${option}-${index}`}
+            onClick={() => onSelect(option)}
+            className={`exercise-answer-btn quiz-form-option ${selected === option ? "is-selected" : ""}`}
+            style={{
+              ...answerButtonStyle,
+              background: selected === option ? "rgba(47,158,158,.22)" : "rgba(255,255,255,.05)",
+              borderColor: selected === option ? "#2f9e9e" : "rgba(255,255,255,.14)",
+            }}
+          >
+            <span className="quiz-option-dot">{index + 1}</span>
+            <span>{toStudentArabicOption(option)}</span>
           </button>
-        </div>
-      </section>
-    </>
+        ))}
+      </div>
+
+      <div className="quiz-form-actions">
+        <button onClick={onPrevious} style={ghostButtonStyle} disabled={cursor <= 0}>السابق</button>
+        <button onClick={onRestart} style={ghostButtonStyle}>إعادة</button>
+        <button onClick={onNext} style={primaryButtonStyle} disabled={!selected}>
+          {cursor + 1 >= total ? "تسليم الاختبار النهائي" : "التالي"}
+        </button>
+      </div>
+    </section>
   );
 }

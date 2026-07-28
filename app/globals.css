@@ -6,11 +6,4 @@
 @import "./styles/50-exercise-workspace.css";
 @import "./styles/60-exercise-stability.css";
 @import "./styles/70-pages-games-dashboard.css";
-@import "./styles/80-typography-responsive.css";
-@import "./styles/90-formal-theme.css";
-
-@import "./styles/95-classic-readable.css";
-
-@import "./styles/96-contrast-menu-path-fixes.css";
-@import "./styles/97-unified-workspaces.css";
-@import "./styles/98-stable-activity-system.css";
+@import "./styles/80-clean-system.css";

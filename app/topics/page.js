@@ -9,7 +9,7 @@ export default function TopicsPage() {
       title="اختيار الموضوع يفتح بعد تسجيل الدخول"
       text="سجّل الدخول لاختيار الموضوع."
     >
-      <main className="topics-branch-page">
+      <div className="topics-branch-page">
         <section className="card topics-branch-hero student-compact-hero">
           <span className="section-kicker">مدرّب تفكير نحوي موجّه</span>
           <h1 className="h1">اختر الموضوع</h1>
@@ -31,7 +31,7 @@ export default function TopicsPage() {
             );
           })}
         </section>
-      </main>
+      </div>
     </AuthLockGate>
   );
 }
