@@ -23,14 +23,20 @@ function SmartText({ text, onTerm }) {
   const pattern = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g");
   return String(text).split(pattern).map((part, idx) => START_GLOSSARY[part]
     ? (
-      <span key={`${part}-${idx}`} className="term-with-info">
-        <span className="term-label-text">{part}</span>
-        <button type="button" className="term-info-btn" onClick={() => onTerm(part)} aria-label={`معلومات عن ${part}`}>i</button>
-      </span>
+      <button
+        key={`${part}-${idx}`}
+        type="button"
+        className="smart-term start-smart-term"
+        onClick={() => onTerm(part)}
+        aria-label={`شرح ${part}`}
+      >
+        {part}
+      </button>
     )
     : <span key={idx}>{part}</span>
   );
 }
+
 
 
 function HighlightedSentence({ sentence, target }) {
@@ -55,33 +61,43 @@ function shuffle(arr) {
 }
 
 function getStepLead(stepIndex, step) {
-  if (step?.lead) return step.lead;
-  if (stepIndex === 0) return "أول خطوة: نميّز الكلمة.";
-  return "نكمل إعراب الكلمة نفسها.";
+  const q = String(step?.question || "");
+  if (q.includes("اسم") && q.includes("فعل") && q.includes("حرف")) return "تحديد نوع الكلمة";
+  if (q.includes("زمن")) return "تحديد زمن الفعل";
+  if (q.includes("أداة") || q.includes("العامل")) return "تحديد العامل";
+  if (q.includes("الأفعال الخمسة") || q.includes("علامة")) return "تحديد العلامة";
+  if (q.includes("مبني أم معرب")) return "تحديد نوع الاسم";
+  if (q.includes("موقع")) return "تحديد الموقع الإعرابي";
+
+  const lead = String(step?.lead || "").replace(/[.!؟]+$/g, "").trim();
+  if (lead && !/أول خطوة|الآن نكمل|بقي أن|نكمل بناء/.test(lead)) return lead;
+  return `الخطوة ${stepIndex + 1}`;
 }
+
 
 function refinedQuestion(example, step, stepIndex) {
   const target = example?.target || "الكلمة";
-  const q = String(step?.question || "").trim();
+  const q = String(step?.question || "").trim().replace(/[.!]+$/g, "");
 
   if (stepIndex === 0 && q.includes("اسم") && q.includes("فعل") && q.includes("حرف")) {
-    return `في جملة «${example.sentence}» نركّز على (${target}): هل هي اسم أم فعل أم حرف؟`;
+    return `ما نوع كلمة «${target}»؟`;
   }
 
   if (q.includes("زمن الفعل")) {
-    return `عرفنا أن (${target}) فعل. الآن نسأل: هل يدل على الماضي أم المضارع أم الأمر؟`;
+    return `ما زمن الفعل «${target}»؟`;
   }
 
   if (q.includes("أداة تؤثر")) {
-    return `بما أن (${target}) فعل مضارع معرب، ننظر قبله: هل سبقته أداة نصب أم أداة جزم؟`;
+    return `ما العامل الذي سبق الفعل «${target}»؟`;
   }
 
   if (q.includes("الأفعال الخمسة") || q.includes("سبب علامة الجزم")) {
-    return `هل الفعل (${target}) من الأفعال الخمسة؟ وهي أفعال مضارعة اتصلت بألف الاثنين أو ياء المخاطبة أو واو الجماعة.`;
+    return `هل الفعل «${target}» من الأفعال الخمسة؟`;
   }
 
   return q;
 }
+
 
 function refinedHint(example, step, stepIndex) {
   const q = String(step?.question || "");
@@ -101,30 +117,31 @@ function refinedHint(example, step, stepIndex) {
 
 function wrongFeedbackFor(choice, step, example, stepIndex) {
   const target = example?.target || "الكلمة";
-  const answer = step?.answer;
   const q = String(step?.question || "");
 
-  if (step?.wrongReasons?.[choice]) return `${step.wrongReasons[choice]} انقر على الإجابة الصحيحة.`;
+  if (step?.wrongReasons?.[choice]) {
+    return String(step.wrongReasons[choice]).replace(/\s*انقر على الإجابة الصحيحة[.!؟]?\s*$/g, "");
+  }
 
   if (stepIndex === 0 && q.includes("اسم") && q.includes("فعل") && q.includes("حرف")) {
-    if (choice === "اسم") return `ليست اسمًا هنا؛ (${target}) تدل على حدث وزمن. انقر على الإجابة الصحيحة.`;
-    if (choice === "حرف") return `ليست حرفًا؛ (${target}) كلمة لها معنى وزمن. انقر على الإجابة الصحيحة.`;
-    return `فكّر: هل (${target}) تدل على حدث وزمن؟ انقر على الإجابة الصحيحة.`;
+    if (choice === "اسم") return `«${target}» تدل على حدث وزمن؛ لذلك ليست اسمًا هنا.`;
+    if (choice === "حرف") return `«${target}» لها معنى يدل على حدث وزمن؛ لذلك ليست حرفًا.`;
+    return `حدّد هل تدل «${target}» على حدث وزمن.`;
   }
 
   if (q.includes("زمن الفعل")) {
-    return `قارن المعنى: متى وقع الفعل؟ ثم انقر على الإجابة الصحيحة.`;
+    return `حدّد زمن الحدث في الجملة، ثم أعد الاختيار.`;
   }
 
-  if (q.includes("أداة تؤثر")) {
-    return `انظر إلى الكلمة التي قبل (${target}) مباشرة: هل هي أداة نصب أم أداة جزم؟ انقر على الإجابة الصحيحة.`;
+  if (q.includes("أداة تؤثر") || q.includes("العامل")) {
+    return `انظر إلى الكلمة السابقة للفعل «${target}» مباشرة؛ فهي التي تحدد العامل.`;
   }
 
   if (q.includes("الأفعال الخمسة") || q.includes("سبب علامة الجزم")) {
-    return `اسأل: هل الفعل من الأفعال الخمسة؟ وهي أفعال مضارعة اتصلت بألف الاثنين أو واو الجماعة أو ياء المخاطبة. انقر على الإجابة الصحيحة.`;
+    return `افحص آخر الفعل: هل اتصلت به واو الجماعة أو ألف الاثنين أو ياء المخاطبة؟`;
   }
 
-  return `هذه الإجابة لا تناسب هذه الخطوة. انقر على الإجابة الصحيحة: ${answer}.`;
+  return `راجع السؤال، ثم اختر الإجابة التي تناسب هذه الخطوة.`;
 }
 
 export default function InteractiveLearning({ examples = [] }) {
@@ -189,7 +206,11 @@ export default function InteractiveLearning({ examples = [] }) {
     if (value === step.answer) {
       setLocked(true);
       setShowHint(false);
-      setFeedback({ type: "ok", text: step.reward || "أحسنت؛ أغلقت هذا القرار وفتحت الخطوة التالية في مسار الإعراب." });
+      const reward = String(step.reward || "إجابة صحيحة. ننتقل إلى الخطوة التالية.")
+        .replace(/!+/g, ".")
+        .replace(/\.{2,}/g, ".")
+        .trim();
+      setFeedback({ type: "ok", text: reward });
       setBoard((prev) => [...prev, step.boardText || value]);
       setTimeout(() => {
         setStepIndex((i) => i + 1);
@@ -213,7 +234,7 @@ export default function InteractiveLearning({ examples = [] }) {
           <button onClick={nextExample} className="soft-mini-btn start-new-example-btn">مثال جديد</button>
         </header>
 
-        <p className="start-page-intro">اقرأ الجملة، وحدد دور الكلمة المطلوبة، ثم اختر إجابة واحدة في كل خطوة.</p>
+        <p className="start-page-intro">اقرأ الجملة، ثم أجب عن سؤال واحد في كل خطوة.</p>
 
         <section className={`learning-focus-box activity-workspace ${done ? "is-finished" : ""}`}>
           <div className="start-sticky-progress" aria-label="تقدم صفحة البداية">
@@ -225,14 +246,9 @@ export default function InteractiveLearning({ examples = [] }) {
           </div>
           {!done ? (
             <section className="start-example-card" aria-label="الجملة المطلوب تحليلها">
-              <span className="start-example-label">اقرأ الجملة</span>
               <p className="start-example-sentence">
                 <HighlightedSentence sentence={example.sentence} target={example.target} />
               </p>
-              <div className="start-target-row">
-                <span>الكلمة المطلوبة</span>
-                <strong>{example.target}</strong>
-              </div>
             </section>
           ) : null}
 
@@ -243,7 +259,7 @@ export default function InteractiveLearning({ examples = [] }) {
                 <h1 id="start-current-question">
                   <SmartText text={refinedQuestion(example, step, stepIndex)} onTerm={setActiveTerm} />
                 </h1>
-                <p className="start-choice-instruction">اختر إجابة واحدة:</p>
+                <p className="start-choice-instruction">اختر الإجابة:</p>
               </section>
 
               <div className="drag-choices compact-choices" role="group" aria-labelledby="start-current-question">
@@ -279,7 +295,8 @@ export default function InteractiveLearning({ examples = [] }) {
 
               {feedback ? (
                 <div ref={feedbackRef} className={`feedback-pop inline-feedback ${feedback.type === "ok" ? "ok" : "bad"}`}>
-                  <strong>{feedback.type === "ok" ? "✓" : "!"}</strong> <SmartText text={feedback.text} onTerm={setActiveTerm} />
+                  <strong>{feedback.type === "ok" ? "صحيح" : "راجع الإجابة"}</strong>
+                  <SmartText text={feedback.text} onTerm={setActiveTerm} />
                 </div>
               ) : null}
 

@@ -351,10 +351,8 @@ function buildTreeLayout(tree: ExerciseTree, example: Example | null) {
     x: rootQuestion.x + (rootQuestion.w - BOX_W) / 2,
     y: 0,
     w: BOX_W,
-    h: BOX_H,
-    textLines: example
-      ? [PATHS_COPY.startNodeLine1, `الكلمة الهدف: ${example.target}`]
-      : [PATHS_COPY.startNodeLine1, PATHS_COPY.startNodeLine2],
+    h: 76,
+    textLines: ["ابدأ المسار"],
     node: null,
   };
 
@@ -406,6 +404,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   const [highlightedAnswerKey, setHighlightedAnswerKey] = useState<string | null>(null);
   const [highlightedAnswerKind, setHighlightedAnswerKind] = useState<"correct" | "wrong" | null>(null);
   const [pathSteps, setPathSteps] = useState<string[]>([]);
+  const [showFullMap, setShowFullMap] = useState(false);
 
   function cleanLearningText(text?: string, limit = 170) {
     const cleaned = (text || "")
@@ -430,107 +429,6 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   function teacherSequenceText(node: TreeNode | null | undefined, baseText?: string) {
     const text = baseText || node?.hint || node?.teaching_note || "اختر الدليل النحوي الذي يثبته المثال.";
     return cleanLearningText(diagnosticHintText(text, example?.target), 165);
-  }
-
-  function stepHintForNode(node: TreeNode | null | undefined) {
-    const id = String(node?.id || "");
-    const text = String(node?.text || "");
-    const facts = example?.facts || {};
-
-    if (id.includes("present") || text.includes("مضارع")) {
-      return "بعد أن عرفنا أنه فعل مضارع نحدّد أولًا: هل سبقته أداة نصب أو جزم؟ ثم نحدّد علامة الإعراب.";
-    }
-    if (id.includes("past") || text.includes("ماض")) {
-      return "الفعل الماضي مبني دائمًا؛ نبحث هل اتصل به ضمير، ثم نحدد أثر الضمير في حركة البناء.";
-    }
-    if (id.includes("imperative") || text.includes("أمر")) {
-      return "في فعل الأمر نحدد: صحيح الآخر، معتل الآخر، أو متصل بألف الاثنين/واو الجماعة/ياء المخاطبة.";
-    }
-    if (id.includes("built") || id.includes("mabni") || text.includes("مبني") || facts.nounKind === "mabni") {
-      return "في الاسم المبني نحدّد نوعه أولًا، ثم نقول: مبني في محل رفع أو نصب أو جر حسب موقعه.";
-    }
-    if (id.includes("masdar") || text.includes("مصدر مؤول") || facts.nounKind === "masdar") {
-      return "المصدر المؤول تركيب مثل (أن + فعل مضارع)، يؤول بمصدر صريح ويعامل معاملة الاسم.";
-    }
-    if (text.includes("اسم أم فعل أم حرف") || id.includes("wordType")) {
-      return "أول قرار في الإعراب هو تصنيف الكلمة: اسم أو فعل أو حرف؛ لأن التصنيف يحدد المسار التالي.";
-    }
-    if (id.includes("number") || text.includes("مفرد") || text.includes("مثنى") || text.includes("جمع")) {
-      return "بعد تحديد أن الكلمة اسم معرب نحدد العدد أو نوع الجمع؛ لأن العلامة تختلف باختلافه.";
-    }
-    if (id.includes("khabar") || text.includes("خبر")) {
-      return "في الخبر نسأل: ماذا أخبرنا عن المبتدأ؟ ثم نحدد هل الخبر مفرد أم جملة أم شبه جملة.";
-    }
-    if (node?.hint || node?.teaching_note) return cleanLearningText(firstLevelHintText(node?.id, node.hint || node.teaching_note, example?.target, node?.text), 150);
-    return "اقرأ المثال والكلمة الهدف، ثم اختر الإجابة التي يثبتها الدليل النحوي.";
-  }
-
-  function thinkingItemsForNode(node: TreeNode | null | undefined) {
-    const id = String(node?.id || "");
-    const text = String(node?.text || "");
-    const facts = example?.facts || {};
-    const target = example?.target || "الكلمة الهدف";
-
-    const custom = Array.isArray(node?.thinking) ? node!.thinking! : [];
-    if (custom.length) return custom;
-
-    if (id.includes("present") || text.includes("مضارع")) {
-      return [
-        { q: "ما أول سؤال بعد معرفة أن الفعل مضارع؟", a: "أسأل: هل سبق الفعل أداة نصب أو أداة جزم؟" },
-        { q: "إذا لم يسبق بناصب أو جازم؟", a: "يكون الفعل المضارع مرفوعًا." },
-        { q: "متى تظهر الأفعال الخمسة؟", a: "هي أفعال مضارعة اتصلت بألف الاثنين أو واو الجماعة أو ياء المخاطبة، وتتبع أحكام المضارع لكن تختلف علامتها." },
-        { q: "كيف أكتب النتيجة؟", a: "أقول: فعل مضارع مرفوع/منصوب/مجزوم، ثم أذكر العلامة، وأعرب الضمير المتصل إن وجد." },
-      ];
-    }
-    if (id.includes("past") || text.includes("ماض")) {
-      return [
-        { q: "هل الفعل الماضي معرب؟", a: "لا، الفعل الماضي مبني دائمًا." },
-        { q: "ما الذي أبحث عنه؟", a: "أبحث هل اتصل بالفعل ضمير، وما نوع هذا الضمير." },
-        { q: "متى يبنى على السكون؟", a: "إذا اتصل به ضمير رفع متحرك مثل: تُ، تَ، تِ، نا، تم، تما، تنّ." },
-        { q: "كيف أعرب الضمير في كتبتُ؟", a: "التاء: ضمير متصل مبني في محل رفع فاعل." },
-      ];
-    }
-    if (id.includes("imperative") || text.includes("أمر")) {
-      return [
-        { q: "ما أصل فعل الأمر؟", a: "فعل الأمر مبني، ونبحث عن علامة بنائه حسب آخره وما اتصل به." },
-        { q: "إذا كان معتل الآخر؟", a: "يبنى على حذف حرف العلة، مثل: ادعُ أصلها يدعو." },
-        { q: "إذا اتصل بألف الاثنين أو واو الجماعة أو ياء المخاطبة؟", a: "يبنى على حذف حرف النون من آخره، مثل: اذهبي أصلها اذهبين." },
-      ];
-    }
-    if (id.includes("built") || id.includes("mabni") || text.includes("مبني") || facts.nounKind === "mabni") {
-      return [
-        { q: "ما القاعدة العامة في الاسم المبني؟", a: "الأسماء الأصل فيها الإعراب، والمبني استثناء يلزم آخره صورة واحدة." },
-        { q: "لماذا نحدد نوع الاسم المبني أولًا؟", a: "لأن بداية الإعراب تكون باسمه: ضمير، اسم إشارة، اسم موصول، اسم استفهام، اسم شرط…" },
-        { q: "كيف أحدد المحل الإعرابي؟", a: "أنظر إلى موقعه في الجملة أو الاسم الذي حل محله: رفع أو نصب أو جر." },
-        { q: "ما الصياغة الثابتة للضمير المتصل؟", a: "ضمير متصل مبني في محل… ثم نكمل: رفع فاعل، أو نصب مفعول به، أو جر اسم مجرور." },
-      ];
-    }
-    if (id.includes("masdar") || text.includes("مصدر مؤول") || facts.nounKind === "masdar") {
-      return [
-        { q: "ما المصدر المؤول؟", a: "هو تركيب يؤول بمصدر صريح، مثل: أن تنجح = نجاحك." },
-        { q: "هل نعرب (أن) وحدها هنا؟", a: "لا، ننظر إلى التركيب كاملًا: أن + الفعل المضارع." },
-        { q: "كيف يعامل في الإعراب؟", a: "يعامل معاملة الاسم، لذلك قد يكون في محل رفع مبتدأ أو غير ذلك حسب موقعه." },
-      ];
-    }
-    if (text.includes("اسم أم فعل أم حرف") || id.includes("wordType")) {
-      return [
-        { q: "لماذا أبدأ بتحديد نوع الكلمة؟", a: "لأن الاسم والفعل والحرف لكل واحد منها مسار إعرابي مختلف." },
-        { q: "كيف أميز الاسم؟", a: "الاسم يقبل غالبًا أل التعريف أو التنوين، ويقع في مواقع الأسماء مثل مبتدأ أو فاعل." },
-        { q: "كيف أميز الفعل؟", a: "الفعل مرتبط بزمن: ماضٍ أو مضارع أو أمر." },
-        { q: "كيف أميز الحرف؟", a: "الحرف لا يظهر معناه مستقلًا، بل يعمل مع غيره." },
-      ];
-    }
-    if (id.includes("number") || text.includes("مفرد") || text.includes("مثنى") || text.includes("جمع")) {
-      return [
-        { q: "لماذا أحدد العدد أو نوع الجمع؟", a: "لأن علامة الإعراب تختلف: المفرد غالبًا بالضمة/الفتحة/الكسرة، والمثنى بالألف/الياء، وجمع المذكر السالم بالواو/الياء." },
-        { q: "ماذا نلاحظ بعد معرفة النوع؟", a: "بعد معرفة النوع نحدد العلامة المناسبة للموقع الإعرابي." },
-      ];
-    }
-    return [
-      { q: "ما الذي نثبته في هذه الخطوة؟", a: cleanLearningText(node?.text || "اختر ما يثبته المثال.", 180) },
-      { q: "كيف أختار؟", a: `أربط السؤال بالكلمة الهدف (${target})، ثم أبحث عن الدليل في الجملة.` },
-      { q: "ماذا بعد الاختيار الصحيح؟", a: "ننتقل إلى العقدة التالية حتى نصل إلى الإعراب الكامل." },
-    ];
   }
 
   const canvasScrollRef = useRef<HTMLDivElement | null>(null);
@@ -578,6 +476,7 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     setHighlightedAnswerKind(null);
     setFinalNodeId(null);
     setPathSteps([]);
+    setShowFullMap(false);
 
     if (!nextExample) {
       setVisitedNodes([]);
@@ -600,8 +499,8 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
 
   useEffect(() => {
     if (!activeNodeId || !layout) return;
-    const targetId = activeNodeId === tree.startNodeId ? "__exercise__" : activeNodeId;
-    const targetZoom = finalNodeId ? 0.96 : (activeNodeId === tree.startNodeId ? 0.98 : 1.02);
+    const targetId = activeNodeId;
+    const targetZoom = finalNodeId ? 0.96 : 1.02;
     const timer = setTimeout(() => focusNode(targetId, targetZoom), 100);
     return () => clearTimeout(timer);
   }, [activeNodeId, finalNodeId, focusNode, layout, tree.startNodeId]);
@@ -615,8 +514,14 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
   }
 
   function startNextExercise() {
+    if (!examples.length) return;
     const nextIndex = currentExampleIndex < 0 ? 0 : (currentExampleIndex + 1) % examples.length;
     startExampleAt(nextIndex);
+  }
+
+  function restartCurrentExercise() {
+    if (!example) return;
+    resetProgress(example);
   }
 
 
@@ -981,32 +886,80 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
     const scrollBox = canvasScrollRef.current;
     if (!scrollBox || !layout) return;
     closeHint();
+    setShowFullMap(true);
     const fittedZoom = Math.max(
       MIN_ZOOM,
       Math.min(1, (scrollBox.clientWidth - 28) / Math.max(layout.width, 1))
     );
     setZoom(Number(fittedZoom.toFixed(2)));
-    requestAnimationFrame(() => scrollBox.scrollTo({ left: 0, top: 0, behavior: "smooth" }));
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      scrollBox.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+    }));
+  }
+
+  function returnToCurrentPath() {
+    closeHint();
+    setShowFullMap(false);
+    const focusId = finalNodeId || activeNodeId || tree.startNodeId;
+    requestAnimationFrame(() => focusNode(focusId, finalNodeId ? 0.96 : 1.02));
   }
 
   if (!layout) return null;
 
+  const visibleNodeIds = new Set<string>(["__exercise__", ...visitedNodes]);
+  if (activeNodeId) {
+    visibleNodeIds.add(activeNodeId);
+    layout.edges.forEach((edge) => {
+      if (edge.from === activeNodeId) visibleNodeIds.add(edge.to);
+    });
+  }
+  if (finalNodeId) visibleNodeIds.add(finalNodeId);
+
+  const visibleEdgeKeys = new Set<string>(visitedEdges);
+  if (activeNodeId) {
+    layout.edges.forEach((edge) => {
+      if (edge.from === activeNodeId) visibleEdgeKeys.add(`${edge.from}->${edge.to}`);
+    });
+  }
+
+  const stepNumber = finalNodeId ? pathSteps.length : pathSteps.length + 1;
+  const currentResult = finalNodeId
+    ? String(example?.facts?.finalI3rab || tree.nodes[finalNodeId]?.text || "اكتمل المسار")
+    : "";
+
   return (
-    <section className="card paths-react-card activity-frame paths-activity-frame">
-      <div className="paths-react-head">
+    <section className="card paths-react-card">
+      <header className="paths-react-head">
         <div>
-          <div className="section-kicker">خريطة مفاهيمية تفاعلية</div>
+          <span className="section-kicker">مسار بصري تفاعلي</span>
           <h1 className="h1">{title}</h1>
           {subtitle ? <p className="p">{subtitle}</p> : null}
-          <p className="paths-react-map-intro">أجب داخل الخريطة؛ يضيء المسار الصحيح خطوةً خطوة.</p>
         </div>
-      </div>
+        <p className="paths-react-map-intro">اختر من داخل العقدة الحالية؛ يظهر مسار المثال تدريجيًا.</p>
+      </header>
+
+      {example ? (
+        <section className="paths-example-strip" aria-label="المثال الحالي">
+          <div className="paths-example-copy">
+            <span>المثال {currentExampleIndex + 1} من {examples.length}</span>
+            <strong>{example.sentence}</strong>
+          </div>
+          <div className="paths-example-meta">
+            <span>الكلمة الهدف</span>
+            <b>{example.target}</b>
+            <small>{finalNodeId ? "اكتمل المسار" : `الخطوة ${stepNumber}`}</small>
+          </div>
+        </section>
+      ) : null}
 
       <div className={`paths-react-board-wrap ${finalNodeId ? "has-final-result" : ""}`}>
         <div className="paths-react-workbar">
           <div className="paths-react-workbar-left">
-            <button type="button" className="btn btn-primary btn-workbar-glow" onClick={startNextExercise}>
-              {PATHS_COPY.startButton}
+            <button type="button" className="btn btn-primary" onClick={startNextExercise} disabled={!examples.length}>
+              مثال آخر
+            </button>
+            <button type="button" className="btn btn-soft" onClick={restartCurrentExercise} disabled={!example}>
+              إعادة المثال
             </button>
             <button
               type="button"
@@ -1019,13 +972,13 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
                 }
                 showHintNearAnswer(activeNodeId);
               }}
-              disabled={!activeNodeId}
+              disabled={!activeNodeId || Boolean(finalNodeId)}
             >
               {showHint ? PATHS_COPY.hideHintButton : PATHS_COPY.hintButton}
             </button>
           </div>
 
-          <div className="paths-react-zoom-tools">
+          <div className="paths-react-zoom-tools" aria-label="أدوات عرض المسار">
             <button
               type="button"
               className="btn btn-soft btn-zoom"
@@ -1037,8 +990,12 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
             >
               {PATHS_COPY.zoomOut}
             </button>
-            <button type="button" className="btn btn-soft btn-fit" onClick={fitPathToViewport}>
-              عرض الخريطة كاملة
+            <button
+              type="button"
+              className="btn btn-soft btn-fit"
+              onClick={showFullMap ? returnToCurrentPath : fitPathToViewport}
+            >
+              {showFullMap ? "العودة إلى المسار" : "عرض الخريطة كاملة"}
             </button>
             <button
               type="button"
@@ -1054,189 +1011,199 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
           </div>
         </div>
 
-        
+        {finalNodeId ? (
+          <section className="paths-final-result-card" role="status" aria-live="polite">
+            <div className="paths-final-result-copy">
+              <span>الإعراب النهائي</span>
+              <strong>{currentResult}</strong>
+            </div>
+            <div className="paths-final-result-actions">
+              <button type="button" className="btn btn-primary" onClick={startNextExercise}>
+                انتقل إلى المثال التالي
+              </button>
+              <button type="button" className="btn btn-soft" onClick={restartCurrentExercise}>
+                أعد هذا المثال
+              </button>
+            </div>
+          </section>
+        ) : null}
+
         <div className="paths-react-canvas-shell">
           <div ref={canvasScrollRef} className="paths-react-canvas-scroll">
             <div className="paths-react-canvas-stage" style={{ width: layout.width * zoom, height: layout.height * zoom }}>
-            <svg
-              viewBox={`0 0 ${layout.width} ${layout.height}`}
-              width={layout.width * zoom}
-              height={layout.height * zoom}
-              className="paths-react-svg"
-              preserveAspectRatio="xMinYMin meet"
-            >
-              <defs>
-                <marker id="pathsArrow" markerWidth="6" markerHeight="6" refX="5.4" refY="3" orient="auto">
-                  <path d="M0,0 L6,3 L0,6 Z" fill="rgba(37,99,235,.62)" />
-                </marker>
-                <marker id="pathsArrowActive" markerWidth="7" markerHeight="7" refX="6.2" refY="3.5" orient="auto">
-                  <path d="M0,0 L7,3.5 L0,7 Z" fill="#16a34a" />
-                </marker>
-              </defs>
+              <svg
+                viewBox={`0 0 ${layout.width} ${layout.height}`}
+                width={layout.width * zoom}
+                height={layout.height * zoom}
+                className="paths-react-svg"
+                preserveAspectRatio="xMinYMin meet"
+                aria-label={`المسار البصري لموضوع ${title}`}
+              >
+                <defs>
+                  <marker id="pathsArrow" markerWidth="6" markerHeight="6" refX="5.4" refY="3" orient="auto">
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8" />
+                  </marker>
+                  <marker id="pathsArrowActive" markerWidth="7" markerHeight="7" refX="6.2" refY="3.5" orient="auto">
+                    <path d="M0,0 L7,3.5 L0,7 Z" fill="#137f7a" />
+                  </marker>
+                </defs>
 
-              {layout.edges.map((edge, edgeIndex) => {
-                const from = layoutNodeMap.get(edge.from);
-                const to = layoutNodeMap.get(edge.to);
-                if (!from || !to) return null;
-                const active = visitedEdges.includes(`${edge.from}->${edge.to}`);
-                const start = centerBottom(from);
-                const end = centerTop(to);
-                const midX = (start.x + end.x) / 2;
-                const midY = (start.y + end.y) / 2 - 10;
-                return (
-                  <g key={`${edge.from}-${edge.to}-${edgeIndex}`}>
-                    <path
-                      d={pathD(start, end)}
-                      className={`paths-react-edge ${active ? "is-active" : ""}`}
-                      fill="none"
-                      stroke={active ? "#16a34a" : "rgba(37,99,235,.42)"}
-                      strokeWidth={active ? 2.05 : 1.1}
-                      markerEnd={active ? "url(#pathsArrowActive)" : "url(#pathsArrow)"}
-                      style={{ transition: "stroke .2s ease, stroke-width .2s ease" }}
-                    />
-                    {edge.label ? (
-                      <text
-                        x={midX}
-                        y={midY}
-                        textAnchor="middle"
-                        className={`paths-react-edge-label ${active ? "is-active" : ""}`}
-                      >
-                        {shortEdgeLabel(edge.label)}
-                      </text>
-                    ) : null}
-                  </g>
-                );
-              })}
-
-              {layout.nodes.map((n) => {
-                const visited = visitedNodes.includes(n.id);
-                const active = activeNodeId === n.id;
-                const isStart = n.kind === "start";
-                const isQuestion = n.kind === "question";
-                const isResult = n.kind === "result";
-                const isFinalResult = finalNodeId === n.id;
-                const renderedNodeLines = n.textLines;
-
-                return (
-                  <g
-                    key={n.id}
-                    className={`paths-react-node ${isStart ? "is-start paths-react-start-clickable" : ""} ${isQuestion ? "is-question" : ""} ${isResult ? "is-result" : ""} ${active ? "is-active" : ""} ${visited ? "is-visited" : ""}`}
-                    role={isStart ? "button" : undefined}
-                    tabIndex={isStart ? 0 : undefined}
-                    aria-label={isStart ? "ابدأ المثال الحالي" : undefined}
-                    onClick={isStart ? () => startExampleAt(currentExampleIndex < 0 ? 0 : currentExampleIndex) : undefined}
-                    onKeyDown={isStart ? (event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        startExampleAt(currentExampleIndex < 0 ? 0 : currentExampleIndex);
-                      }
-                    } : undefined}
-                    style={isStart ? { cursor: "pointer" } : undefined}
-                  >
-                    {isQuestion ? (
-                      <polygon
-                        points={diamondPoints(n.x, n.y, n.w, n.h)}
-                        fill={active ? "#fff2c7" : visited ? "#eef5f3" : "#ffffff"}
-                        stroke={active ? "#187f78" : visited ? "rgba(24,127,120,.62)" : "rgba(70,96,116,.35)"}
-                        strokeWidth={active ? 1.9 : 1.05}
-                        style={{ transition: "fill .2s ease, stroke .2s ease, stroke-width .2s ease" }}
+                {layout.edges.map((edge, edgeIndex) => {
+                  const edgeKey = `${edge.from}->${edge.to}`;
+                  if (!showFullMap && !visibleEdgeKeys.has(edgeKey)) return null;
+                  const from = layoutNodeMap.get(edge.from);
+                  const to = layoutNodeMap.get(edge.to);
+                  if (!from || !to) return null;
+                  const active = visitedEdges.includes(edgeKey);
+                  const preview = !active;
+                  const startPoint = centerBottom(from);
+                  const endPoint = centerTop(to);
+                  const midX = (startPoint.x + endPoint.x) / 2;
+                  const midY = (startPoint.y + endPoint.y) / 2 - 10;
+                  return (
+                    <g key={`${edge.from}-${edge.to}-${edgeIndex}`}>
+                      <path
+                        d={pathD(startPoint, endPoint)}
+                        className={`paths-react-edge ${active ? "is-active" : ""} ${preview ? "is-preview" : ""}`}
+                        fill="none"
+                        markerEnd={active ? "url(#pathsArrowActive)" : "url(#pathsArrow)"}
                       />
-                    ) : (
-                      <rect
-                        x={n.x}
-                        y={n.y}
-                        width={n.w}
-                        height={n.h}
-                        rx={18}
-                        fill={isStart ? "#e9f3f1" : isResult ? "#e9f3f1" : "#f4f7f8"}
-                        stroke={isResult ? "#187f78" : "rgba(70,96,116,.48)"}
-                        strokeWidth={1.05}
-                        className={`${isStart && !example ? "paths-react-start-pulse" : ""} ${isFinalResult ? "paths-react-result-pulse" : ""}`}
-                        style={{ transition: "stroke .2s ease" }}
-                      />
-                    )}
-
-                    {renderedNodeLines.map((line, i, renderedLines) => {
-                      const answerLabels = (n.node?.answers || []).map((answer) => shortPathAnswerLabel(answer.text));
-                      const instructionY = isQuestion ? answerInstructionY(n, answerLabels) : 0;
-                      const lineGap = isQuestion ? 23 : (isResult ? 25 : 22);
-                      const textBlockHeight = Math.max(lineGap, renderedLines.length * lineGap);
-                      const questionTextTop = isQuestion
-                        ? n.y + Math.max(46, (instructionY - n.y - textBlockHeight) / 2)
-                        : 0;
-                      const y = isQuestion
-                        ? questionTextTop + i * lineGap
-                        : n.y + n.h / 2 + (i - (renderedLines.length - 1) / 2) * lineGap;
-                      return (
+                      {edge.label ? (
                         <text
-                          key={`${n.id}-${i}`}
+                          x={midX}
+                          y={midY}
+                          textAnchor="middle"
+                          className={`paths-react-edge-label ${active ? "is-active" : ""}`}
+                        >
+                          {shortEdgeLabel(edge.label)}
+                        </text>
+                      ) : null}
+                    </g>
+                  );
+                })}
+
+                {layout.nodes.map((n) => {
+                  if (!showFullMap && !visibleNodeIds.has(n.id)) return null;
+                  const visited = visitedNodes.includes(n.id);
+                  const active = activeNodeId === n.id;
+                  const isStart = n.kind === "start";
+                  const isQuestion = n.kind === "question";
+                  const isResult = n.kind === "result";
+                  const isFinalResult = finalNodeId === n.id;
+                  const preview = !active && !visited;
+                  const renderedNodeLines = n.textLines;
+
+                  return (
+                    <g
+                      key={n.id}
+                      className={`paths-react-node ${isStart ? "is-start paths-react-start-clickable" : ""} ${isQuestion ? "is-question" : ""} ${isResult ? "is-result" : ""} ${active ? "is-active" : ""} ${visited ? "is-visited" : ""} ${preview ? "is-preview" : ""}`}
+                      role={isStart ? "button" : undefined}
+                      tabIndex={isStart ? 0 : undefined}
+                      aria-label={isStart ? "إعادة بدء المثال الحالي" : undefined}
+                      onClick={isStart ? restartCurrentExercise : undefined}
+                      onKeyDown={isStart ? (event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          restartCurrentExercise();
+                        }
+                      } : undefined}
+                    >
+                      {isQuestion ? (
+                        <polygon points={diamondPoints(n.x, n.y, n.w, n.h)} />
+                      ) : (
+                        <rect
+                          x={n.x}
+                          y={n.y}
+                          width={n.w}
+                          height={n.h}
+                          rx={18}
+                          className={isFinalResult ? "paths-react-result-pulse" : ""}
+                        />
+                      )}
+
+                      {renderedNodeLines.map((line, i, renderedLines) => {
+                        const answerLabels = (n.node?.answers || []).map((answer) => shortPathAnswerLabel(answer.text));
+                        const instructionY = isQuestion ? answerInstructionY(n, answerLabels) : 0;
+                        const lineGap = isQuestion ? 23 : (isResult ? 25 : 22);
+                        const textBlockHeight = Math.max(lineGap, renderedLines.length * lineGap);
+                        const questionTextTop = isQuestion
+                          ? n.y + Math.max(46, (instructionY - n.y - textBlockHeight) / 2)
+                          : 0;
+                        const y = isQuestion
+                          ? questionTextTop + i * lineGap
+                          : n.y + n.h / 2 + (i - (renderedLines.length - 1) / 2) * lineGap;
+                        return (
+                          <text
+                            key={`${n.id}-${i}`}
+                            x={n.x + n.w / 2}
+                            y={y}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
+                          >
+                            {line}
+                          </text>
+                        );
+                      })}
+
+                      {isQuestion && active ? (
+                        <text
                           x={n.x + n.w / 2}
-                          y={y}
+                          y={answerInstructionY(n, (n.node?.answers || []).map((answer) => shortPathAnswerLabel(answer.text)))}
                           textAnchor="middle"
                           dominantBaseline="middle"
-                          className={isQuestion ? "paths-react-question-text" : "paths-react-box-text"}
+                          className="paths-react-question-instruction"
                         >
-                          {line}
+                          اختر الإجابة:
                         </text>
-                      );
-                    })}
-                    {isQuestion && active ? (
-                      <text
-                        x={n.x + n.w / 2}
-                        y={answerInstructionY(n, (n.node?.answers || []).map((answer) => shortPathAnswerLabel(answer.text)))}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className="paths-react-question-instruction"
-                      >
-                        اختر المناسب:
-                      </text>
-                    ) : null}
+                      ) : null}
 
-                    {isQuestion && active && n.node?.answers ? (
-                      <g>
-                        {n.node.answers.map((answer, idx) => {
-                          const labels = n.node!.answers!.map((item) => shortPathAnswerLabel(item.text));
-                          const { bx, by, btnW, btnH } = answerButtonLayout(n, labels, idx);
-                          const answerHighlighted = highlightedAnswerKey === `${n.id}:${answer.id}`;
-                          const answerLines = splitText(shortPathAnswerLabel(answer.text), btnW > 200 ? 28 : 17).slice(0, 2);
-                          return (
-                            <g
-                              key={answer.id}
-                              className={`paths-react-answer ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""}`}
-                              role="button"
-                              tabIndex={0}
-                              aria-label={answer.text}
-                              onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 })}
-                              onKeyDown={(event) => {
-                                if (event.key === "Enter" || event.key === " ") {
-                                  event.preventDefault();
-                                  handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 });
-                                }
-                              }}
-                            >
-                              <rect x={bx} y={by} width={btnW} height={btnH} rx={11} fill="#f8fafc" stroke="rgba(70,96,116,.36)" strokeWidth={0.9} />
-                              <text x={bx + btnW / 2} y={by + btnH / 2} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
-                                {answerLines.map((line, lineIndex) => (
-                                  <tspan
-                                    key={`${answer.id}-${lineIndex}`}
-                                    x={bx + btnW / 2}
-                                    dy={lineIndex === 0 ? (answerLines.length === 1 ? 0 : -7) : 14}
-                                  >
-                                    {line}
-                                  </tspan>
-                                ))}
-                              </text>
-                            </g>
-                          );
-                        })}
-                      </g>
-                    ) : null}
-                  </g>
-                );
-              })}
-            </svg>
+                      {isQuestion && active && n.node?.answers ? (
+                        <g>
+                          {n.node.answers.map((answer, idx) => {
+                            const labels = n.node!.answers!.map((item) => shortPathAnswerLabel(item.text));
+                            const { bx, by, btnW, btnH } = answerButtonLayout(n, labels, idx);
+                            const answerHighlighted = highlightedAnswerKey === `${n.id}:${answer.id}`;
+                            const answerLines = splitText(shortPathAnswerLabel(answer.text), btnW > 200 ? 28 : 17).slice(0, 2);
+                            return (
+                              <g
+                                key={answer.id}
+                                className={`paths-react-answer ${answerHighlighted ? "paths-react-answer-selected" : ""} ${answerHighlighted && highlightedAnswerKind === "wrong" ? "paths-react-answer-selected-wrong" : ""} ${answerHighlighted && highlightedAnswerKind === "correct" ? "paths-react-answer-selected-correct" : ""}`}
+                                role="button"
+                                tabIndex={0}
+                                aria-label={answer.text}
+                                onClick={() => handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 })}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    handleAnswer(n.id, answer.id, { x: bx + btnW / 2, y: by + btnH / 2 });
+                                  }
+                                }}
+                              >
+                                <rect x={bx} y={by} width={btnW} height={btnH} rx={11} />
+                                <text x={bx + btnW / 2} y={by + btnH / 2} textAnchor="middle" dominantBaseline="middle" className="paths-react-answer-text">
+                                  {answerLines.map((line, lineIndex) => (
+                                    <tspan
+                                      key={`${answer.id}-${lineIndex}`}
+                                      x={bx + btnW / 2}
+                                      dy={lineIndex === 0 ? (answerLines.length === 1 ? 0 : -7) : 14}
+                                    >
+                                      {line}
+                                    </tspan>
+                                  ))}
+                                </text>
+                              </g>
+                            );
+                          })}
+                        </g>
+                      ) : null}
+                    </g>
+                  );
+                })}
+              </svg>
             </div>
           </div>
+
           {showHint && hintBubble ? (
             <div
               className={`paths-hint-bubble paths-hint-bubble-${hintBubble.placement}`}
@@ -1245,43 +1212,9 @@ export default function DynamicPathTree({ tree, examples, title, subtitle }: Pro
               aria-live="polite"
               dir="rtl"
             >
-              <p>{hintBubble.text}</p>
+              <div className="paths-hint-text">{hintBubble.text}</div>
               <button type="button" onClick={closeHint}>حسنًا</button>
             </div>
-          ) : null}
-        </div>
-
-        {finalNodeId ? (
-          <section className="paths-final-result-card" role="status" aria-live="polite">
-            <span>النتيجة النهائية</span>
-            <strong>{String(example?.facts?.finalI3rab || tree.nodes[finalNodeId]?.text || "اكتمل المسار")}</strong>
-          </section>
-        ) : null}
-
-        <div className="paths-thinking-dock paths-thinking-dock-hidden">
-          <details open>
-            <summary>كيف أفكر في هذه الخطوة؟</summary>
-            <div className="paths-thinking-list">
-              {thinkingItemsForNode(activeNodeId ? tree.nodes[activeNodeId] : null).map((item, idx) => (
-                <div className="paths-thinking-item" key={`${item.q}-${idx}`}>
-                  <h3>{item.q}</h3>
-                  <p>{item.a}</p>
-                </div>
-              ))}
-            </div>
-          </details>
-          {finalNodeId ? (
-            <details>
-              <summary>خطوات بناء الإعراب</summary>
-              <div className="paths-thinking-list">
-                {pathSteps.map((step, idx) => (
-                  <div className="paths-thinking-item" key={`${step}-${idx}`}>
-                    <h3>الخطوة {idx + 1}</h3>
-                    <p>{step}</p>
-                  </div>
-                ))}
-              </div>
-            </details>
           ) : null}
         </div>
       </div>

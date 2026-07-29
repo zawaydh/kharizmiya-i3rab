@@ -43,6 +43,7 @@ export function renderSmartText(text?: string, onTerm?: (term: string) => void) 
           type="button"
           className="smart-term"
           onClick={() => onTerm?.(part)}
+          aria-label={`شرح ${part}`}
         >
           {part}
         </button>

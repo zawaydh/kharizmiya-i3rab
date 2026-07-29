@@ -3479,9 +3479,8 @@ export default function ExercisePlayer({
       setFinalCtaReady(false);
       return undefined;
     }
-    setFinalCtaReady(false);
-    const timer = window.setTimeout(() => setFinalCtaReady(true), 2400);
-    return () => window.clearTimeout(timer);
+    setFinalCtaReady(true);
+    return undefined;
   }, [node?.type, state?.currentNodeId]);
 
   function pickFollowUp(label: string) {
@@ -4400,21 +4399,21 @@ export default function ExercisePlayer({
                   <button
                     onClick={completeCurrentAndGoNextStage}
                     className="next-example-glow stage-focus-next-btn"
-                    style={{ ...primaryNavBtn, opacity: canMoveAfterResult ? 1 : 0.55, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
+                    style={{ ...primaryNavBtn, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
                     disabled={!canMoveAfterResult}
                   >
-                    {finalCtaReady ? (stageMeta.nextLabel || "انتقل للمرحلة التالية") : "اقرأ رسالة الإتمام أولًا"}
+                    {stageMeta.nextLabel || "انتقل إلى المرحلة التالية"}
                   </button>
                 </div>
               ) : (
               <div ref={activeCardRef} className="clean-result-block algorithm-step-card algorithm-final-card pro-final-focus">
                 <div className="final-achievement-mark" aria-hidden="true">{isPracticeMode ? "🏆" : "✓"}</div>
-                <div className="clean-final-label">{isPracticeMode ? "أكملت جولة من التدريب" : "أحسنت! هذه ثمرة المسار"}</div>
+                <div className="clean-final-label">{isPracticeMode ? "اكتملت جولة التدريب" : "اكتمل المسار"}</div>
                 {isPresentBuiltResult(tree, thinkingNode) ? (
                   <div className="built-closure-note" role="note">{presentBuiltClosureNote(thinkingNode)}</div>
                 ) : null}
                 <div className="exercise-result-text clean-result-text final-glow-result final-single-i3rab final-structured-i3rab" style={{ whiteSpace: "pre-line" }}>
-                  <strong className="final-result-heading">إذن إعراب {finalI3rabSubject(tree, title)} {renderSmartText(state.currentTarget, setActiveGlossary)}:</strong>
+                  <strong className="final-result-heading">إعراب {finalI3rabSubject(tree, title)} {renderSmartText(state.currentTarget, setActiveGlossary)}:</strong>
                   <span className="final-i3rab-line">{renderSmartText(finalThinkingTextForDisplay(thinkingNode, state), setActiveGlossary)}</span>
                   {String(tree?.startNodeId || "").includes("kana") && kanaNasikhFinalIntro(state) ? (
                     <span className="final-i3rab-line final-nasikh-note">{renderSmartText(`انتبه:
@@ -4424,17 +4423,6 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
                     <span className="final-i3rab-line final-nasikh-note">{renderSmartText(innaNasikhFinalIntro(state), setActiveGlossary)}</span>
                   ) : null}
                 </div>
-                {!finalCtaReady ? <div className="final-read-cue" aria-live="polite">توقّف لحظة واقرأ الإعراب النهائي؛ هذه نتيجة المسار الذي بنيته.</div> : null}
-                <div className="final-motivation-line">كل خطوة سابقة كانت جزءًا من بناء هذا الإعراب.</div>
-                {finalCtaReady ? (
-                  <div className="final-next-instruction" aria-live="polite">
-                    {resultWouldCompleteStage
-                      ? "اكتمل هذا المستوى. انتقل إلى المرحلة التالية لمواصلة رحلتك."
-                      : mode === "practice"
-                        ? "اكتمل هذا المثال. انتقل إلى المثال التالي لمواصلة التدريب."
-                        : "اكتمل بناء إعراب هذا المثال. انتقل إلى المثال التالي لمواصلة التعلّم."}
-                  </div>
-                ) : null}
               </div>
               )}
 
@@ -4457,7 +4445,7 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
                     })}
                     {followUpChoice ? (
                       <div className={`thinking-bubble ${chosenFollowUp?.correct ? "success" : "hint"}`}>
-                        {chosenFollowUp?.correct ? "أحسنت ✨" : "فكر من جديد: "}{chosenFollowUp?.feedback || (chosenFollowUp?.correct ? "صحيح." : "راجع العلاقة النحوية في الجملة.")}
+                        {chosenFollowUp?.correct ? "إجابة صحيحة: " : "راجع الإجابة: "}{chosenFollowUp?.feedback || (chosenFollowUp?.correct ? "صحيح." : "راجع العلاقة النحوية في الجملة.")}
                       </div>
                     ) : null}
                   </div>
@@ -4467,16 +4455,10 @@ ${kanaNasikhFinalIntro(state)}`, setActiveGlossary)}</span>
                   <button
                     onClick={resultWouldCompleteStage ? () => setPendingStageComplete(true) : goNextExample}
                     className="next-example-glow"
-                    style={{ ...primaryNavBtn, opacity: canMoveAfterResult ? 1 : 0.55, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
+                    style={{ ...primaryNavBtn, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
                     disabled={!canMoveAfterResult}
                   >
-{finalCtaReady
-  ? (resultWouldCompleteStage
-      ? "انتقل إلى المرحلة التالية"
-      : mode === "practice"
-        ? "انتقل إلى المثال التالي"
-        : "انتقل إلى المثال التالي")
-  : "اقرأ الإعراب النهائي أولًا"}
+{resultWouldCompleteStage ? "انتقل إلى المرحلة التالية" : "انتقل إلى المثال التالي"}
                   </button>
                 ) : null}
                 {/* لا نعرض نقاطًا سفلية في شاشة النتيجة؛ التركيز على الإعراب النهائي وزر فهمت. */}

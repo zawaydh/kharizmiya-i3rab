@@ -7,10 +7,10 @@ import {
 } from "../../content/games/i3rab_in_our_speech";
 
 const CORRECT_ENCOURAGEMENT = [
-  "أحسنت، اختيار دقيق. واصل بهذا التركيز.",
-  "ممتاز، ربطت الموقع بصورة الكلمة بنفسك.",
-  "رائع، أنت تطبّق الخوارزمية خطوةً خطوة.",
-  "اختيار موفق. تقدّمك واضح، أكمل.",
+  "اختيار صحيح. أكمل الفراغ التالي.",
+  "ربط صحيح بين الموقع وصورة الكلمة.",
+  "أحسنت الاختيار. تابع الجولة.",
+  "إجابة صحيحة. انتقل إلى الفراغ التالي.",
 ];
 
 function renderRound(
@@ -113,13 +113,13 @@ export default function I3rabInOurSpeechGame() {
       <section className="card speech-game-card speech-game-card-unified">
         <header className="speech-game-compact-head">
           <h1>الإعراب في كلامنا</h1>
-          <p>اختر المناسب، ثم اكتشف السبب.</p>
+          <p>أكمل الجملة باختيار الصيغة الصحيحة.</p>
         </header>
 
         <div className="speech-game-meta" aria-label="موضعك في اللعبة">
           <span>
-            الجولة {roundIndex + 1}/{rounds.length}
-            {!finished ? ` · الفراغ ${blankIndex + 1}/${round.blanks.length}` : " · اكتملت الجولة"}
+            الجولة {roundIndex + 1} من {rounds.length}
+            {!finished ? ` — الفراغ ${blankIndex + 1} من ${round.blanks.length}` : " — اكتملت الجولة"}
           </span>
         </div>
 
@@ -129,7 +129,7 @@ export default function I3rabInOurSpeechGame() {
               <div className="speech-game-sentence">
                 {renderRound(round, blankIndex, answers)}
               </div>
-              <div className="speech-game-question">اختر المناسب:</div>
+              <div className="speech-game-question">اختر الصيغة المناسبة:</div>
               <div className="speech-game-options">
                 {round.choices.map((value) => (
                   <button
@@ -187,7 +187,7 @@ export default function I3rabInOurSpeechGame() {
           {finished ? (
             <div className="speech-game-finished speech-game-finished-inline">
               <span>أكملت الجولة</span>
-              <h2>ربطت صورة كل كلمة أو فعل بموقعه أو بالعامل الذي سبقه.</h2>
+              <h2>أكملت الجملة وربطت كل كلمة بموقعها الصحيح.</h2>
               <div className="speech-game-solution-grid">
                 {round.blanks.map((blank) => (
                   <article key={blank.id}>
