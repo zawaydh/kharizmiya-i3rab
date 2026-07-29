@@ -2,8 +2,8 @@
   "name": "منصة خوارزمية الإعراب",
   "short_name": "خوارزمية الإعراب",
   "description": "مدرّب تفكير نحوي موجّه؛ الإعراب خطوات، ثم تطبيق على نصوص التشكيل والضبط.",
-  "theme_color": "#06101C",
-  "background_color": "#06101C",
+  "theme_color": "#081722",
+  "background_color": "#151A21",
   "display": "standalone",
   "icons": [
     { "src": "/brand-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
