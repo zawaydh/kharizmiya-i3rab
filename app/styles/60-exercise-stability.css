@@ -67,17 +67,6 @@
   margin-top:18px !important;
   animation:none !important;}
 
-html,body,.exercise-page-shell{scrollbar-color:#159a78 rgba(15,23,42,.16) !important;
-  scrollbar-width:thin !important;}
-
-::-webkit-scrollbar{width:10px;height:10px;}
-
-::-webkit-scrollbar-track{background:rgba(15,23,42,.10);border-radius:999px;}
-
-::-webkit-scrollbar-thumb{background:#159a78;border-radius:999px;border:2px solid rgba(255,255,255,.45);}
-
-::-webkit-scrollbar-thumb:hover{background:#0f766e;}
-
 .exercise-page-shell{--kh-fixed-progress-top: 74px;
   --kh-fixed-progress-height: 48px;
   padding-top: calc(var(--kh-fixed-progress-top) + var(--kh-fixed-progress-height) + 18px) !important;}

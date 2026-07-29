@@ -169,7 +169,7 @@ export function StageBottomNavigation({
   return (
     <div className="exercise-bottom-nav stage-locked-next" style={navNextWrapStyle}>
       <button
-        style={{ ...primaryNavButtonStyle, opacity: ready ? 1 : 0.48, cursor: ready ? "pointer" : "not-allowed" }}
+        style={{ ...primaryNavButtonStyle, opacity: 1, cursor: ready ? "pointer" : "not-allowed" }}
         className="stage-next-button"
         disabled={!ready}
         onClick={onClick}
@@ -184,10 +184,10 @@ const ghostButtonStyle: React.CSSProperties = {
   marginTop: 12,
   padding: "10px 14px",
   borderRadius: 14,
-  border: "1px solid rgba(255,255,255,.18)",
+  border: "1px solid #8795a7",
   cursor: "pointer",
-  background: "rgba(255,255,255,.06)",
-  color: "#eef4ff",
+  background: "#ffffff",
+  color: "#172033",
   fontWeight: 800,
 };
 
@@ -204,7 +204,7 @@ const primaryNavButtonStyle: React.CSSProperties = {
   cursor: "pointer",
   fontWeight: 900,
   fontSize: 16,
-  color: "#04111d",
-  background: "linear-gradient(135deg,#22c55e,#67e8f9)",
+  color: "#ffffff",
+  background: "#137f7a",
   boxShadow: "0 10px 30px rgba(0,0,0,.12)",
 };

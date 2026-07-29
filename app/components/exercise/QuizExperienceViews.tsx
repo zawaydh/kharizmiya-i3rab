@@ -16,11 +16,11 @@ type RenderSentence = (sentence?: string, target?: string) => React.ReactNode;
 
 const panelStyle: React.CSSProperties = {
   padding: 16,
-  border: "1px solid rgba(255,255,255,.12)",
+  border: "1px solid #d8dee7",
   borderRadius: 18,
   marginBottom: 16,
-  background: "linear-gradient(180deg, rgba(15,23,42,.88), rgba(15,23,42,.72))",
-  color: "#eef4ff",
+  background: "#ffffff",
+  color: "#172033",
   boxShadow: "0 16px 40px rgba(0,0,0,.18)",
 };
 
@@ -30,11 +30,11 @@ const answerButtonStyle: React.CSSProperties = {
   marginBottom: 8,
   padding: 12,
   borderRadius: 14,
-  border: "1px solid rgba(255,255,255,.14)",
+  border: "1px solid #d8dee7",
   textAlign: "right",
   cursor: "pointer",
-  background: "rgba(255,255,255,.05)",
-  color: "#eef4ff",
+  background: "#ffffff",
+  color: "#172033",
   fontWeight: 800,
 };
 
@@ -42,10 +42,10 @@ const ghostButtonStyle: React.CSSProperties = {
   marginTop: 12,
   padding: "10px 14px",
   borderRadius: 14,
-  border: "1px solid rgba(255,255,255,.18)",
+  border: "1px solid #8795a7",
   cursor: "pointer",
-  background: "rgba(255,255,255,.06)",
-  color: "#eef4ff",
+  background: "#ffffff",
+  color: "#172033",
   fontWeight: 800,
 };
 
@@ -56,8 +56,8 @@ const primaryButtonStyle: React.CSSProperties = {
   cursor: "pointer",
   fontWeight: 900,
   fontSize: 16,
-  color: "#04111d",
-  background: "linear-gradient(135deg,#22c55e,#67e8f9)",
+  color: "#ffffff",
+  background: "#137f7a",
   boxShadow: "0 10px 30px rgba(0,0,0,.12)",
 };
 
@@ -131,8 +131,8 @@ export function RemedialTrainingView({
                   className={`exercise-answer-btn quiz-form-option ${optionSelected ? "is-selected" : ""} ${optionCorrect ? "is-correct" : ""} ${optionWrong ? "is-wrong" : ""}`}
                   style={{
                     ...answerButtonStyle,
-                    background: optionCorrect ? "rgba(34,197,94,.18)" : optionWrong ? "rgba(251,146,60,.18)" : optionSelected ? "rgba(47,158,158,.22)" : "rgba(255,255,255,.05)",
-                    borderColor: optionCorrect ? "rgba(34,197,94,.65)" : optionWrong ? "rgba(251,146,60,.65)" : optionSelected ? "#2f9e9e" : "rgba(255,255,255,.14)",
+                    background: optionCorrect ? "#edf9f1" : optionWrong ? "#fff1f3" : optionSelected ? "#edf9f8" : "#ffffff",
+                    borderColor: optionCorrect ? "#168544" : optionWrong ? "#c93645" : optionSelected ? "#137f7a" : "#d8dee7",
                   }}
                 >
                   <span className="quiz-option-dot">{index + 1}</span>
@@ -210,21 +210,21 @@ export function QuizSummaryView({
             تحميل الشهادة
           </a>
         ) : (
-          <button type="button" style={{ ...primaryButtonStyle, opacity: 0.45, cursor: "not-allowed" }} disabled>
+          <button type="button" style={{ ...primaryButtonStyle, background: "#e8edf2", color: "#536174", border: "1px solid #8795a7", opacity: 1, cursor: "not-allowed" }} disabled>
             تحميل الشهادة
           </button>
         )}
         <button
           type="button"
           onClick={onStartRemedial}
-          style={{ ...primaryButtonStyle, background: canStartRemedial ? undefined : "rgba(255,255,255,.12)", opacity: canStartRemedial ? 1 : 0.48, cursor: canStartRemedial ? "pointer" : "not-allowed" }}
+          style={{ ...primaryButtonStyle, background: canStartRemedial ? undefined : "#e8edf2", color: canStartRemedial ? undefined : "#536174", border: canStartRemedial ? undefined : "1px solid #8795a7", opacity: 1, cursor: canStartRemedial ? "pointer" : "not-allowed" }}
           disabled={!canStartRemedial}
         >
           عالج ضعفي
         </button>
         <a
           href={textsHref}
-          style={{ ...primaryButtonStyle, display: "inline-flex", textDecoration: "none", background: "linear-gradient(135deg,#7c3aed,#4f46e5)" }}
+          style={{ ...primaryButtonStyle, display: "inline-flex", textDecoration: "none", background: "#e0b84c", color: "#172033", border: "1px solid #624b10" }}
         >
           لعبة النصوص
         </a>
@@ -238,13 +238,13 @@ export function QuizSummaryView({
 
       <div style={{ display: "grid", gap: 10 }}>
         {answers.map((answer, index) => (
-          <div key={answer.exampleId} className={`exercise-review-card ${answer.isCorrect ? "is-correct" : "is-wrong"}`} style={{ padding: 12, border: "1px solid rgba(255,255,255,.12)", borderRadius: 16, background: answer.isCorrect ? "rgba(34,197,94,.12)" : "rgba(251,146,60,.12)" }}>
+          <div key={answer.exampleId} className={`exercise-review-card ${answer.isCorrect ? "is-correct" : "is-wrong"}`} style={{ padding: 12, border: `1px solid ${answer.isCorrect ? "#168544" : "#c93645"}`, borderRadius: 16, background: answer.isCorrect ? "#edf9f1" : "#fff1f3", color: answer.isCorrect ? "#145a31" : "#852433" }}>
             <div style={{ fontWeight: 800, marginBottom: 6 }}>السؤال {index + 1}: {answer.isCorrect ? "✅ صحيح" : "❌ خطأ"}</div>
             <div style={{ marginBottom: 6 }}>الجملة: <span style={{ fontSize: 18 }}>{renderSentence(answer.sentence, answer.target)}</span></div>
             <div style={{ marginBottom: 4 }}><strong>إجابتك:</strong> {answer.actualLabel || "لم يختر إجابة"}</div>
             <div style={{ marginBottom: 4 }}><strong>الإجابة الصحيحة:</strong> {answer.expectedLabel || coverageDisplayLabel(answer.expectedCoverage)}</div>
-            {!answer.isCorrect && answer.actualOptionReason ? <div style={{ marginTop: 6, color: "#ffd5a8", lineHeight: 1.8 }}><strong>سبب خطأ اختيارك:</strong> {answer.actualOptionReason}</div> : null}
-            {!answer.isCorrect && answer.whyCorrect ? <div style={{ marginTop: 6, color: "#b8ffd4", lineHeight: 1.8 }}><strong>كيف نصل إلى الصواب:</strong> {answer.whyCorrect}</div> : null}
+            {!answer.isCorrect && answer.actualOptionReason ? <div style={{ marginTop: 6, color: "#852433", lineHeight: 1.8 }}><strong>سبب خطأ اختيارك:</strong> {answer.actualOptionReason}</div> : null}
+            {!answer.isCorrect && answer.whyCorrect ? <div style={{ marginTop: 6, color: "#145a31", lineHeight: 1.8 }}><strong>كيف نصل إلى الصواب:</strong> {answer.whyCorrect}</div> : null}
           </div>
         ))}
       </div>
@@ -301,8 +301,8 @@ export function QuizQuestionView({
             className={`exercise-answer-btn quiz-form-option ${selected === option ? "is-selected" : ""}`}
             style={{
               ...answerButtonStyle,
-              background: selected === option ? "rgba(47,158,158,.22)" : "rgba(255,255,255,.05)",
-              borderColor: selected === option ? "#2f9e9e" : "rgba(255,255,255,.14)",
+              background: selected === option ? "#edf9f8" : "#ffffff",
+              borderColor: selected === option ? "#137f7a" : "#d8dee7",
             }}
           >
             <span className="quiz-option-dot">{index + 1}</span>
