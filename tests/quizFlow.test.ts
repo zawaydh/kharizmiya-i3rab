@@ -33,11 +33,36 @@ describe("منطق الاختبار النهائي المفصول", () => {
     expect(isSameQuizAnswer("فاعل مرفوع", "مفعول به منصوب")).toBe(false);
   });
 
+  test("لا تهمل الأسطر التي تميز حرف العلة أو الضمير", () => {
+    const alif = "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الألف.";
+    const waw = "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الواو.";
+    expect(isSameQuizAnswer(alif, waw)).toBe(false);
+  });
+
   test("خيارات السؤال تحتوي الإجابة الصحيحة مرة واحدة", () => {
     const options = buildCloseQuizOptions(example, "stable-seed", 2);
     expect(options).toHaveLength(4);
     expect(new Set(options).size).toBe(4);
     expect(options.filter((option) => isSameQuizAnswer(option, example.correctI3rab))).toHaveLength(1);
+  });
+
+  test("يحافظ مولد الخيارات على السطر المميز في الإجابات المركبة", () => {
+    const weakImperative: QuizExampleLike = {
+      id: "weak-imperative",
+      sentence: "اسعَ إلى الخير.",
+      target: "اسعَ",
+      correctI3rab: "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الألف.",
+      options: [
+        "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الألف.",
+        "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الواو.",
+        "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الياء.",
+        "فعل أمر مبني على السكون.",
+      ],
+    };
+    const options = buildCloseQuizOptions(weakImperative, "weak-seed", 0);
+    expect(options).toHaveLength(4);
+    expect(options.every((option) => option.includes("حرف العلة المحذوف") || option.includes("السكون"))).toBe(true);
+    expect(options.filter((option) => isSameQuizAnswer(option, weakImperative.correctI3rab))).toHaveLength(1);
   });
 
   test("يبني سجل الإجابة الصحيحة والخاطئة مع سبب تشخيصي", () => {

@@ -1,0 +1,145 @@
+@layer algorithm-guide {
+@media (max-width: 820px) {
+  .algorithm-step-explanation-grid { grid-template-columns: 1fr; }
+
+  .algorithm-guide-actions { align-items: stretch; flex-direction: column; }
+
+  .algorithm-guide-action-buttons { justify-content: stretch; }
+}
+
+@media (max-width: 720px) {
+  body.platform-body:has(.algorithm-guide-page),
+  body.platform-body:has(.algorithm-guide-index) { background: #f3f7f6; }
+
+  .algorithm-guide-index,
+  .algorithm-guide-page { padding-top: 12px; gap: 14px; }
+
+  .algorithm-guide-hero,
+  .algorithm-guide-index-hero { padding: 21px 17px; border-radius: 17px; }
+
+  .algorithm-reading-map,
+  .algorithm-index-flow { padding: 9px; gap: 6px; }
+
+  .algorithm-reading-map a,
+  .algorithm-index-flow span { flex: 1 1 calc(50% - 6px); }
+
+  .algorithm-rule-summary {
+    grid-template-columns: 1fr;
+    gap: 13px;
+    padding: 18px;
+  }
+
+  .algorithm-summary-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+  }
+
+  .algorithm-guide-section-heading { align-items: flex-start; }
+
+  .algorithm-step-card {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+    padding: 15px 13px;
+  }
+
+  .algorithm-step-number {
+    width: 35px;
+    height: 35px;
+    flex-basis: 35px;
+    border-radius: 10px;
+  }
+
+  .algorithm-step-block { padding: 11px 12px; }
+
+  .algorithm-example-card { grid-template-columns: 1fr; padding: 15px; }
+
+  .algorithm-example-sentence,
+  .algorithm-example-target,
+  .algorithm-example-walkthrough,
+  .algorithm-example-result { grid-column: 1; }
+
+  .algorithm-guide-action-buttons,
+  .algorithm-guide-action-buttons a { width: 100%; }
+
+  .algorithm-mistakes-card { padding: 17px 36px 17px 18px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .algorithm-step-card,
+  .algorithm-guide-topic-card { transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+
+  .algorithm-step-card:hover,
+  .algorithm-guide-topic-card:hover { transform: translateY(-2px); }
+}
+
+/* MOBILE GUIDE — give every explanation card the full phone width. */
+@media (max-width: 520px) {
+  .algorithm-guide-page,
+  .algorithm-guide-index,
+  .algorithm-guide-section,
+  .algorithm-steps-list,
+  .algorithm-step-content,
+  .algorithm-step-explanation-grid,
+  .algorithm-step-branches {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .algorithm-step-card {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 13px 10px 14px;
+    overflow: visible;
+  }
+
+  .algorithm-step-rail {
+    position: absolute;
+    top: 12px;
+    inset-inline-end: 10px;
+    width: 35px;
+    min-height: 0;
+    height: 35px;
+    display: block;
+    z-index: 2;
+  }
+
+  .algorithm-step-line { display: none; }
+
+  .algorithm-step-content { display: grid; gap: 8px; }
+
+  .algorithm-step-heading {
+    min-height: 35px;
+    padding-inline-end: 45px;
+    align-items: center;
+  }
+
+  .algorithm-step-heading h3 { font-size: 18px; }
+
+  .algorithm-step-block,
+  .algorithm-step-question-block,
+  .algorithm-step-why,
+  .algorithm-step-direction,
+  .algorithm-step-branch {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .algorithm-step-explanation-grid,
+  .algorithm-step-branches { grid-template-columns: minmax(0, 1fr); }
+
+  .algorithm-step-block p,
+  .algorithm-step-branch p,
+  .algorithm-example-card p,
+  .algorithm-mistakes-card li {
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .algorithm-guide-section-heading { gap: 8px; }
+
+  .algorithm-section-kicker { min-width: 52px; padding-inline: 9px; }
+}
+}

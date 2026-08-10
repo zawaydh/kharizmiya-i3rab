@@ -4,27 +4,51 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
+    "clean:cache": "node scripts/clean-next-cache.mjs",
+    "dev:fresh": "npm run clean:cache && next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "test": "vitest run",
+    "lint": "eslint . --max-warnings=0",
+    "test": "npm run test:unit && npm run test:dom",
+    "test:unit": "vitest run",
+    "test:coverage": "npm run test:dom && vitest run --coverage",
+    "test:dom": "npm run test:dom:exercise && npm run test:dom:where",
+    "test:dom:exercise": "vitest run --config vitest.dom.config.ts tests/exerciseViews.dom.test.tsx",
+    "test:dom:where": "vitest run --config vitest.dom.config.ts tests/whereIsMyPlaceGame.dom.test.tsx",
+    "test:e2e": "node scripts/run-e2e-stable.mjs",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "release:verify": "npm run check && npm run test:e2e",
+    "verify:supabase": "node scripts/verify-supabase-schema.mjs",
     "test:watch": "vitest",
-    "check": "npm test && npm run typecheck:strict && tsc --noEmit && npm run lint",
-    "typecheck:strict": "tsc --noEmit -p tsconfig.strict.json"
+    "check": "npm run preflight && npm run audit && npm run test:coverage && npm run typecheck:strict && npm run typecheck:tests && tsc --noEmit && npm run lint && npm run build",
+    "audit": "npm audit --audit-level=high",
+    "typecheck:strict": "tsc --noEmit -p tsconfig.strict.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
+    "preflight": "node scripts/preflight.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.45.4",
-    "next": "^14.2.30",
+    "@supabase/supabase-js": "2.112.0",
+    "next": "16.3.0",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "sharp": "0.35.3"
   },
   "devDependencies": {
-    "@types/react": "19.2.14",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.35",
+    "@playwright/test": "1.62.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.3",
+    "@types/node": "22.20.1",
+    "@types/react": "18.3.23",
+    "@types/react-dom": "18.3.7",
+    "@vitest/coverage-v8": "4.1.10",
+    "axe-core": "4.12.1",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.0",
+    "jsdom": "29.1.1",
+    "postcss": "8.5.25",
     "typescript": "5.9.3",
-    "vitest": "^4.1.10"
+    "vitest": "4.1.10"
   },
   "engines": {
     "node": "22.x"

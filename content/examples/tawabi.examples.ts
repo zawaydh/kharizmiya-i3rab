@@ -1,4 +1,4 @@
-export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[]; followUp?: any };
+export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[]; followUp?: unknown };
 
 export const tawabiCoverageKeysOrdered = [
   "tawabi.naat",
@@ -862,7 +862,17 @@ export const tawabiExamples: Example[] = [
 
 ];
 
-const resultByCover: Record<string, string> = Object.fromEntries(tawabiExamples.map((ex) => [ex.id, ex.facts.finalI3rab.split("\n")[0]]));
+function requireFinalI3rab(ex: Example): string {
+  const value = ex.facts.finalI3rab;
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`المثال ${ex.id} لا يحتوي إعرابًا نهائيًا صالحًا.`);
+  }
+  return value;
+}
+
+const resultByCover: Record<string, string> = Object.fromEntries(
+  tawabiExamples.map((ex) => [ex.id, requireFinalI3rab(ex).split("\n")[0] || ""])
+);
 const allResults = Array.from(new Set(Object.values(resultByCover)));
 
 export const tawabiQuizExamples = tawabiExamples.map((ex, i) => {

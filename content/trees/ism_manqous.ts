@@ -1,184 +1,95 @@
-export type ExerciseTree = { startNodeId: string; practiceStartNodeId?: string; nodes: Record<string, any> };
+import type { ExerciseTree } from "../../lib/exercise/model";
 
 export const ismManqousTree: ExerciseTree = {
-  "startNodeId": "manqous_relation_gate",
-  "practiceStartNodeId": "manqous_case",
-  "nodes": {
-    "manqous_relation_gate": {
-      "id": "manqous_relation_gate",
-      "type": "question",
-      "context": "في الاسم المنقوص لا نبدأ بشكل الياء وحده، بل نبدأ بالموقع الإعرابي: رفع أو نصب أو جر، ثم نفسر ظهور العلامة أو تقديرها.",
-      "text": "ما أول خطوة صحيحة في الاسم المنقوص؟",
-      "hint": "الموقع الإعرابي أولًا؛ لأن النصب تظهر فيه الفتحة، أما الرفع والجر فتقدر العلامة غالبًا للثقل، وقد تحذف الياء في بعض الصور.",
-      "answers": [
-        { "id": "a", "text": "أحدد موقعه الإعرابي أولًا، ثم أفحص صورة الياء", "next": "manqous_identity", "correct": true },
-        { "id": "b", "text": "أحكم عليه من وجود الياء فقط", "next": "manqous_relation_gate", "correct": false, "hint": "وجود الياء أو حذفها لا يكفي وحده؛ نحتاج الموقع الإعرابي أولًا." },
-        { "id": "c", "text": "أبحث عن زمن الفعل", "next": "manqous_relation_gate", "correct": false, "hint": "الاسم المنقوص اسم، وليس فعلًا؛ لذلك لا نسأل عن الزمن." }
-      ]
+  startNodeId: "manqous_identity",
+  practiceStartNodeId: "manqous_has_al",
+  nodes: {
+    manqous_identity: {
+      id: "manqous_identity",
+      type: "question",
+      context: "نثبت أولًا أن الكلمة اسم منقوص، ثم نبحث عن سبب بقاء الياء أو حذفها قبل تحديد العلامة.",
+      text: "هل الكلمة اسم معرب آخره ياء لازمة مكسور ما قبلها، مثل: القاضي والساعي؟",
+      hint: "إذا كانت الياء محذوفة في صورة مثل «قاضٍ»، أعد الكلمة إلى صورتها مع «الـ»: القاضي. ظهور ياء لازمة قبلها كسرة يدل على أنها اسم منقوص.",
+      answers: [
+        { id: "yes", text: "نعم، هي اسم منقوص", next: "manqous_has_al", correct: true },
+        { id: "no", text: "لا، ليست اسمًا منقوصًا", next: "manqous_identity", correct: false, hint: "جرّب إعادة الكلمة إلى صورتها مع «الـ». إذا ظهرت ياء لازمة قبلها كسرة، فهي اسم منقوص." },
+      ],
     },
-    "manqous_step_1": {
-      "id": "manqous_step_1",
-      "type": "question",
-      "context": "نبدأ من الموقع الإعرابي ثم ننتبه إلى صورة الاسم المنقوص؛ لأن العلامة قد تكون مقدرة أو تظهر في النصب.",
-      "text": "ما الخطوة الصحيحة؟",
-      "hint": "الاسم المنقوص اسم آخره ياء لازمة قبلها كسرة. بعد تحديد أنه اسم، نحدد موقعه: رفع أو نصب أو جر، ثم نعلل حذف الياء أو بقاءها. عد للسؤال وانقر على الإجابة الصحيحة لنكمل الإعراب.",
-      "answers": [
-        {
-          "id": "a",
-          "text": "فحص الاسم المنقوص",
-          "next": "manqous_identity",
-          "correct": true
-        },
-        {
-          "id": "b",
-          "text": "تحديد زمن الفعل",
-          "next": "manqous_step_1",
-          "correct": false,
-          "hint": "الزمن للفعل لا للاسم."
-        }
-      ]
+    manqous_has_al: {
+      id: "manqous_has_al",
+      type: "question",
+      context: "عرفنا أنه اسم منقوص. الآن نحدد أول سبب يجعل الياء ثابتة.",
+      text: "هل الاسم المنقوص معرّف بـ«الـ»؟",
+      hint: "انظر إلى الكلمة نفسها: «القاضي، الساعي» معرفان بـ«الـ»، ولذلك تبقى الياء فيهما.",
+      answers: [
+        { id: "yes", text: "نعم، معرّف بـ«الـ»", next: "manqous_case_kept", eval: { fact: "hasAl", equals: true } },
+        { id: "no", text: "لا، ليس معرّفًا بـ«الـ»", next: "manqous_is_added", eval: { fact: "hasAl", equals: false } },
+      ],
     },
-    "manqous_identity": {
-      "id": "manqous_identity",
-      "type": "question",
-      "context": "نفحص آخر الاسم.",
-      "text": "هل آخره ياء لازمة قبلها كسرة؟",
-      "hint": "أعد الكلمة إلى صورتها المعرفة أو المضافة، ثم افحص: هل آخرها ياء لازمة مكسور ما قبلها؟",
-      "answers": [
-        {
-          "id": "a",
-          "text": "نعم، اسم منقوص",
-          "next": "manqous_case",
-          "correct": true
-        },
-        {
-          "id": "b",
-          "text": "لا",
-          "next": "manqous_identity",
-          "correct": false,
-          "hint": "أعد الكلمة إلى صورتها مع «أل»: هل تظهر ياء لازمة قبلها كسرة؟"
-        }
-      ]
+    manqous_is_added: {
+      id: "manqous_is_added",
+      type: "question",
+      context: "استبعدنا التعريف بـ«الـ». نفحص الآن السبب الثاني لبقاء الياء.",
+      text: "هل الاسم المنقوص مضاف إلى اسم أو ضمير بعده؟",
+      hint: "مثل «قاضي المحكمةِ» و«قاضيها»: الاسم المنقوص مضاف، ولذلك تبقى ياؤه. أمّا «قاضٍ» فليس معرفًا بـ«الـ» ولا مضافًا.",
+      answers: [
+        { id: "yes", text: "نعم، هو مضاف", next: "manqous_case_kept", eval: { fact: "isAdded", equals: true } },
+        { id: "no", text: "لا، نكرة مجردة غير مضافة", next: "manqous_indef_case", eval: { fact: "isAdded", equals: false } },
+      ],
     },
-    "manqous_case": {
-      "id": "manqous_case",
-      "type": "question",
-      "context": "عرفنا أنه اسم منقوص.",
-      "text": "ما موقعه الإعرابي؟",
-      "hint": "حدد موقع الكلمة في الجملة أولًا: أهي مرفوعة أم منصوبة أم مجرورة؟",
-      "answers": [
-        {
-          "id": "a",
-          "text": "منصوب",
-          "next": "R_manqous_nasb",
-          "eval": {
-            "fact": "case",
-            "equals": "nasb"
-          }
-        },
-        {
-          "id": "b",
-          "text": "مرفوع",
-          "next": "manqous_y_raf3",
-          "eval": {
-            "fact": "case",
-            "equals": "raf3"
-          }
-        },
-        {
-          "id": "c",
-          "text": "مجرور",
-          "next": "manqous_y_jar",
-          "eval": {
-            "fact": "case",
-            "equals": "jar"
-          }
-        }
-      ]
+    manqous_case_kept: {
+      id: "manqous_case_kept",
+      type: "question",
+      context: "ثبتت الياء لأنه معرف بـ«الـ» أو مضاف. بقي أن نحدد الحالة الإعرابية حتى نعرف العلامة.",
+      text: "ما الحالة الإعرابية للاسم المنقوص في الجملة؟",
+      hint: "إذا كان منصوبًا تظهر الفتحة على الياء. وإذا كان مرفوعًا أو مجرورًا تبقى الياء وتقدر الضمة أو الكسرة عليها للثقل.",
+      answers: [
+        { id: "nasb", text: "منصوب", next: "R_manqous_nasb", eval: { fact: "case", equals: "nasb" } },
+        { id: "raf3", text: "مرفوع", next: "R_manqous_raf3_kept", eval: { fact: "case", equals: "raf3" } },
+        { id: "jar", text: "مجرور", next: "R_manqous_jar_kept", eval: { fact: "case", equals: "jar" } },
+      ],
     },
-    "manqous_y_raf3": {
-      "id": "manqous_y_raf3",
-      "type": "question",
-      "context": "عرفنا أنه مرفوع.",
-      "text": "هل الياء مذكورة أم محذوفة؟",
-      "hint": "إذا كان الاسم المنقوص نكرة مرفوعًا، غير مضاف ولا معرف بـ«أل»، حذفت ياؤه وعوض عنها بتنوين الكسر.",
-      "answers": [
-        {
-          "id": "a",
-          "text": "الياء مذكورة",
-          "next": "R_manqous_raf3_kept",
-          "eval": {
-            "fact": "yStatus",
-            "equals": "kept"
-          }
-        },
-        {
-          "id": "b",
-          "text": "الياء محذوفة",
-          "next": "R_manqous_raf3_deleted",
-          "eval": {
-            "fact": "yStatus",
-            "equals": "deleted"
-          }
-        }
-      ]
+    manqous_indef_case: {
+      id: "manqous_indef_case",
+      type: "question",
+      context: "الاسم نكرة مجردة: ليس معرفًا بـ«الـ» ولا مضافًا. هنا تحدد الحالة الإعرابية هل تثبت الياء أم تحذف.",
+      text: "ما الحالة الإعرابية للاسم المنقوص النكرة؟",
+      hint: "في النصب تثبت الياء وتظهر الفتحة: «رأيتُ قاضيًا». أمّا في الرفع والجر فتحذف الياء ويظهر تنوين الكسر: «جاء قاضٍ / مررتُ بقاضٍ».",
+      answers: [
+        { id: "nasb", text: "منصوب: تثبت الياء وتظهر الفتحة", next: "R_manqous_nasb", eval: { fact: "case", equals: "nasb" } },
+        { id: "raf3", text: "مرفوع: تحذف الياء", next: "R_manqous_raf3_deleted", eval: { fact: "case", equals: "raf3" } },
+        { id: "jar", text: "مجرور: تحذف الياء", next: "R_manqous_jar_deleted", eval: { fact: "case", equals: "jar" } },
+      ],
     },
-    "manqous_y_jar": {
-      "id": "manqous_y_jar",
-      "type": "question",
-      "context": "عرفنا أنه مجرور.",
-      "text": "هل الياء مذكورة أم محذوفة؟",
-      "hint": "في الجر تقدر الكسرة على الياء للثقل؛ وتبقى الياء مع «أل» أو الإضافة، وتحذف في النكرة غير المضافة.",
-      "answers": [
-        {
-          "id": "a",
-          "text": "الياء مذكورة",
-          "next": "R_manqous_jar_kept",
-          "eval": {
-            "fact": "yStatus",
-            "equals": "kept"
-          }
-        },
-        {
-          "id": "b",
-          "text": "الياء محذوفة",
-          "next": "R_manqous_jar_deleted",
-          "eval": {
-            "fact": "yStatus",
-            "equals": "deleted"
-          }
-        }
-      ]
+    R_manqous_nasb: {
+      id: "R_manqous_nasb",
+      type: "result",
+      coverage: "manqous.nasb",
+      text: "اسم منقوص منصوب وعلامة نصبه الفتحة الظاهرة على الياء؛ فالفتحة خفيفة فتظهر، وتثبت الياء في النصب.",
     },
-    "R_manqous_nasb": {
-      "id": "R_manqous_nasb",
-      "type": "result",
-      "coverage": "manqous.nasb",
-      "text": "اسم منقوص منصوب وعلامة نصبه الفتحة الظاهرة على آخره."
+    R_manqous_raf3_kept: {
+      id: "R_manqous_raf3_kept",
+      type: "result",
+      coverage: "manqous.raf3.kept",
+      text: "اسم منقوص مرفوع وعلامة رفعه الضمة المقدرة على الياء منع من ظهورها الثقل، والياء ثابتة لأنه معرف بـ«الـ» أو مضاف.",
     },
-    "R_manqous_raf3_kept": {
-      "id": "R_manqous_raf3_kept",
-      "type": "result",
-      "coverage": "manqous.raf3.kept",
-      "text": "اسم منقوص مرفوع وعلامة رفعه الضمة المقدرة على الياء منع من ظهورها الثقل."
+    R_manqous_raf3_deleted: {
+      id: "R_manqous_raf3_deleted",
+      type: "result",
+      coverage: "manqous.raf3.deleted",
+      text: "اسم منقوص مرفوع وعلامة رفعه الضمة المقدرة على الياء المحذوفة للثقل؛ حذفت الياء لأنه نكرة غير مضافة ولا معرفة بـ«الـ».",
     },
-    "R_manqous_raf3_deleted": {
-      "id": "R_manqous_raf3_deleted",
-      "type": "result",
-      "coverage": "manqous.raf3.deleted",
-      "text": "اسم منقوص مرفوع وعلامة رفعه الضمة المقدرة على الياء المحذوفة منع من ظهورها الثقل."
+    R_manqous_jar_kept: {
+      id: "R_manqous_jar_kept",
+      type: "result",
+      coverage: "manqous.jar.kept",
+      text: "اسم منقوص مجرور وعلامة جره الكسرة المقدرة على الياء منع من ظهورها الثقل، والياء ثابتة لأنه معرف بـ«الـ» أو مضاف.",
     },
-    "R_manqous_jar_kept": {
-      "id": "R_manqous_jar_kept",
-      "type": "result",
-      "coverage": "manqous.jar.kept",
-      "text": "اسم منقوص مجرور وعلامة جره الكسرة المقدرة على الياء منع من ظهورها الثقل."
+    R_manqous_jar_deleted: {
+      id: "R_manqous_jar_deleted",
+      type: "result",
+      coverage: "manqous.jar.deleted",
+      text: "اسم منقوص مجرور وعلامة جره الكسرة المقدرة على الياء المحذوفة للثقل؛ حذفت الياء لأنه نكرة غير مضافة ولا معرفة بـ«الـ».",
     },
-    "R_manqous_jar_deleted": {
-      "id": "R_manqous_jar_deleted",
-      "type": "result",
-      "coverage": "manqous.jar.deleted",
-      "text": "اسم منقوص مجرور وعلامة جره الكسرة المقدرة على الياء المحذوفة منع من ظهورها الثقل."
-    }
-  }
+  },
 };

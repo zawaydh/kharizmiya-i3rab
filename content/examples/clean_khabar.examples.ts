@@ -1,6 +1,6 @@
 export type FollowUpOption = { label: string; correct: boolean; feedback: string };
 export type FollowUp = { question: string; options: FollowUpOption[] };
-export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[]; followUp?: FollowUp };
+export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[]; followUp?: FollowUp };
 export const cleanKhabarCoverageKeysOrdered = [
   "khabar_single.visible",
   "khabar_single.estimated",
@@ -36,8 +36,8 @@ export const cleanKhabarExamples: Example[] = [
   },
   {
     id: 'kh-02',
-    sentence: 'الطالبُ فتى.',
-    target: 'فتى',
+    sentence: 'الطالبُ فتًى.',
+    target: 'فتًى',
     facts: {
     "khabarKind": "single",
     "nounKind": "mu3rab",
@@ -400,8 +400,8 @@ export const cleanKhabarQuizExamples = [
 },
 {
   "id": "kh-02",
-  "sentence": "الطالبُ فتى.",
-  "target": "فتى",
+  "sentence": "الطالبُ فتًى.",
+  "target": "فتًى",
   "facts": {
     "khabarKind": "single",
     "nounKind": "mu3rab",

@@ -8,20 +8,16 @@
     "incremental": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "target": "ES2018"
   },
   "include": [
-    "lib/exercise/**/*.ts",
-    "lib/progressMerge.ts",
-    "lib/certificateEligibility.ts",
-    "lib/studentOptionText.ts",
-    "app/components/exercise/**/*.ts",
-    "app/components/exercise/**/*.tsx",
-    "app/components/ExercisePlayer.tsx",
-    "app/components/DynamicPathTree.tsx"
+    "next-env.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "lib/**/*.ts",
+    "content/**/*.ts",
+    "data/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    ".next"
-  ]
+  "exclude": ["node_modules", ".next"]
 }

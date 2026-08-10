@@ -17,6 +17,7 @@ function renderTemplate(
     if (!match) return <React.Fragment key={`text-${index}`}>{part}</React.Fragment>;
 
     const id = match[1];
+    if (!id) return <React.Fragment key={`missing-${index}`}>______</React.Fragment>;
     const blank = blankMap.get(id);
     if (!blank) return <React.Fragment key={`missing-${id}`}>______</React.Fragment>;
 
@@ -53,16 +54,7 @@ export default function DiacriticsTextGame({
 
   const text = texts[textIndex];
   const activeBlank = text?.blanks?.[blankIndex] || null;
-  const finished = Boolean(text) && blankIndex >= text.blanks.length;
-
-  React.useEffect(() => {
-    setBlankIndex(0);
-    setAnswers({});
-    setFeedback(null);
-    setWrongChoice(null);
-    setAdvancing(false);
-    if (timerRef.current) window.clearTimeout(timerRef.current);
-  }, [textIndex]);
+  const finished = text ? blankIndex >= text.blanks.length : false;
 
   React.useEffect(() => () => {
     if (timerRef.current) window.clearTimeout(timerRef.current);
@@ -113,7 +105,13 @@ export default function DiacriticsTextGame({
   }
 
   function nextText() {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
     setTextIndex((current) => (current + 1) % texts.length);
+    setBlankIndex(0);
+    setAnswers({});
+    setFeedback(null);
+    setWrongChoice(null);
+    setAdvancing(false);
   }
 
   const activeId = finished ? null : activeBlank?.id || null;

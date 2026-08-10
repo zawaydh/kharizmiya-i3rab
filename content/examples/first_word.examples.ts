@@ -1,4 +1,5 @@
-export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[] };
+import { requireCoverageResult, requirePrimaryCoverage } from "./exampleCoverage";
+export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[] };
 export const firstWordCoverageKeysOrdered = ["first.noun", "first.verb.past", "first.verb.present", "first.verb.imperative", "first.particle.verb", "first.particle.noun"];
 export const firstWordExamples: Example[] = [
   { id: "fw-01", sentence: "الطالبُ مجتهدٌ.", target: "الطالبُ", facts: { wordType: "noun" }, covers: ["first.noun"] },
@@ -17,7 +18,7 @@ export const firstWordExamples: Example[] = [
 const resultByCover: Record<string, string> = {
   "first.noun": "الكلمة الأولى اسم؛ ننتقل بعدها إلى شجرة الاسم لتحديد: معرب/مبني/مصدر مؤول ثم الإعراب الدقيق بحسب موقعها",
   "first.verb.past": "الكلمة الأولى فعل ماضٍ؛ ننتقل إلى خوارزمية الفعل الماضي لتحديد علامة البناء",
-  "first.verb.present": "الكلمة الأولى فعل مضارع؛ ننتقل إلى خوارزمية الفعل المضارع بدءًا من الأداة السابقة له",
+  "first.verb.present": "الكلمة الأولى فعل مضارع؛ ننتقل إلى خوارزمية الفعل المضارع بدءًا من فحص اتصال نون النسوة أو نون التوكيد",
   "first.verb.imperative": "الكلمة الأولى فعل أمر؛ ننتقل إلى خوارزمية فعل الأمر لتحديد علامة البناء",
   "first.particle.verb": "حرف مبني لا محل له من الإعراب، وبعده فعل فتتجه الجملة إلى تركيب فعلي",
   "first.particle.noun": "حرف مبني لا محل له من الإعراب، وبعده اسم فتتجه الجملة إلى تركيب اسمي أو شبه جملة بحسب الحرف"
@@ -34,7 +35,7 @@ function firstWordOptionReason(ex: Example, option: string, correct: string): st
 }
 
 export const firstWordQuizExamples = firstWordExamples.map((ex) => {
-  const correct = resultByCover[ex.covers[0]];
+  const correct = requireCoverageResult(resultByCover, ex);
   const options = Object.values(resultByCover).filter(Boolean).slice(0, 4);
   if (!options.includes(correct)) options[0] = correct;
   return { ...ex, prompt: "ما المسار الصحيح للكلمة الأولى؟", options, correctI3rab: correct, whyCorrect: "نبدأ بتحديد نوع الكلمة الأولى، ثم ننتقل إلى الشجرة المناسبة.", optionReasons: Object.fromEntries(options.map((o) => [o, firstWordOptionReason(ex, o, correct)])) };

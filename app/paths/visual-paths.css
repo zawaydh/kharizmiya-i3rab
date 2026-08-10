@@ -1,0 +1,557 @@
+/* نظام المسارات البصرية الوحيد: لوحة ثابتة، تركيز تلقائي، وخط نهاية خارج التفرعات. */
+.paths-embed-page,
+.paths-direct-workspace {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  font-family: var(--clean-font, "Cairo", Tahoma, Arial, sans-serif);
+}
+
+.paths-direct-workspace .visual-path-card {
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100svh - 18px);
+  padding: 8px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #d6dee8;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
+}
+
+.paths-direct-workspace .visual-path-head {
+  min-width: 0;
+  min-height: 46px;
+  padding: 1px 4px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #dce3eb;
+}
+
+.paths-direct-workspace .visual-path-head h1 {
+  margin: 0;
+  color: #10213b;
+  font-size: clamp(20px, 2.35vw, 27px);
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.paths-direct-workspace .visual-path-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  direction: rtl;
+  flex-wrap: wrap;
+}
+
+.paths-direct-workspace .path-tool {
+  min-height: 37px;
+  padding: 6px 11px;
+  color: #172033;
+  background: #ffffff;
+  border: 1px solid #8a9aaf;
+  border-radius: 10px;
+  box-shadow: 0 3px 9px rgba(15, 23, 42, .06);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 730;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.paths-direct-workspace .path-tool:hover,
+.paths-direct-workspace .path-tool:focus-visible {
+  color: #075f59;
+  background: #effbf9;
+  border-color: #16877f;
+  outline: 3px solid rgba(20, 151, 140, .11);
+  outline-offset: 0;
+}
+
+.paths-direct-workspace .path-primary {
+  color: #ffffff;
+  background: linear-gradient(180deg, #199991, #117a74);
+  border-color: #0f746e;
+  box-shadow: 0 7px 15px rgba(15, 118, 110, .20);
+}
+
+.paths-direct-workspace .path-primary:hover,
+.paths-direct-workspace .path-primary:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(180deg, #1ba69c, #0d6e69);
+}
+
+.paths-direct-workspace .path-zoom {
+  width: 39px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.paths-direct-workspace .visual-path-shell {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: clamp(570px, calc(100svh - 105px), 860px);
+  min-height: 570px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  background: #fbfcfe;
+  border: 1px solid #cad5e2;
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 #ffffff;
+}
+
+.paths-direct-workspace .visual-path-scroll {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  direction: ltr;
+  overscroll-behavior: contain;
+  scroll-behavior: auto;
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: #b3c1cf transparent;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.paths-direct-workspace .visual-path-scroll:focus-visible { outline: 2px solid rgba(12, 139, 129, .42); outline-offset: -2px; }
+
+.paths-direct-workspace .visual-path-scroll::-webkit-scrollbar { width: 7px; height: 7px; }
+
+.paths-direct-workspace .visual-path-scroll::-webkit-scrollbar-thumb {
+  background: #b3c1cf;
+  border: 2px solid #fbfcfe;
+  border-radius: 999px;
+}
+
+.paths-direct-workspace .visual-path-stage {
+  position: relative;
+  min-width: 100%;
+  margin: 0;
+  display: grid;
+  place-items: start center;
+  transform-origin: top center;
+  isolation: isolate;
+}
+
+.paths-direct-workspace .visual-path-svg {
+  position: relative;
+  display: block;
+  overflow: visible;
+  font-family: var(--clean-font, "Cairo", Tahoma, Arial, sans-serif);
+  text-rendering: optimizeLegibility;
+}
+
+.paths-direct-workspace .visual-path-edge {
+  fill: none;
+  stroke: #6f91d6;
+  stroke-width: 1.05;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+  opacity: .55;
+}
+
+.paths-direct-workspace .visual-path-edge.is-available { stroke: #4f78cc; opacity: .76; }
+
+.paths-direct-workspace .visual-path-edge.is-selected {
+  stroke: #0c8b81;
+  stroke-width: 2.8;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(12, 139, 129, .52));
+}
+
+.paths-direct-workspace .visual-path-edge.is-excluded {
+  stroke: #b8c1cc;
+  stroke-width: .9;
+  stroke-dasharray: 3 7;
+  opacity: .42;
+}
+
+.paths-direct-workspace .visual-path-edge.is-context {
+  stroke: #8798ad;
+  stroke-width: .95;
+  stroke-dasharray: 4 5;
+  opacity: .58;
+}
+
+.paths-direct-workspace .visual-path-edge.is-context.is-excluded { stroke: #9ba8b8; opacity: .42; }
+
+.paths-direct-workspace .visual-path-node polygon,
+.paths-direct-workspace .visual-path-node rect { vector-effect: non-scaling-stroke; }
+
+.paths-direct-workspace .visual-path-node.is-start rect {
+  fill: #fff0a8;
+  stroke: #26a867;
+  stroke-width: 1.6;
+}
+
+.paths-direct-workspace .visual-path-start-text {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #10213b;
+  font-size: 15.5px;
+  font-weight: 780;
+  line-height: 1.6;
+  text-align: center;
+  overflow: hidden;
+}
+
+.paths-direct-workspace .visual-path-start-text mark {
+  padding: 1px 5px;
+  color: #075f59;
+  background: #d8f8f0;
+  border-radius: 6px;
+}
+
+.paths-direct-workspace .visual-path-node.is-decision polygon {
+  fill: #edf4ff;
+  stroke: #376bd4;
+  stroke-width: 1.2;
+}
+
+.paths-direct-workspace .visual-path-node.is-decision.is-visited polygon {
+  fill: #e9f8f5;
+  stroke: #18a397;
+  stroke-width: 1.55;
+}
+
+.paths-direct-workspace .visual-path-node.is-decision.is-active polygon {
+  fill: #fff6c9;
+  stroke: #0d8178;
+  stroke-width: 2.15;
+}
+
+.paths-direct-workspace .visual-path-question {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  color: #10213b;
+  font-size: clamp(13.5px, 1.35vw, 15.5px);
+  font-weight: 760;
+  line-height: 1.38;
+  text-align: center;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.paths-direct-workspace .visual-path-question-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.paths-direct-workspace .visual-path-question-instruction {
+  color: #0b756d;
+  font-size: 11.5px;
+  font-weight: 820;
+  line-height: 1.25;
+}
+
+.paths-direct-workspace .visual-path-choice {
+  width: 100%;
+  height: 100%;
+  padding: 3px 7px;
+  display: grid;
+  place-items: center;
+  color: #18304f;
+  background: #f8fbff;
+  border: 1px solid #7793c7;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(30, 64, 175, .08);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 780;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: opacity 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.paths-direct-workspace .visual-path-choice.is-option-1 {
+  color: #075d42;
+  background: #ecfdf5;
+  border-color: #2f9e65;
+}
+
+.paths-direct-workspace .visual-path-choice.is-option-2 {
+  color: #274690;
+  background: #eef4ff;
+  border-color: #6b8fd6;
+}
+
+.paths-direct-workspace .visual-path-choice.is-option-3 {
+  color: #6c3b82;
+  background: #faf0ff;
+  border-color: #a675bd;
+}
+
+.paths-direct-workspace .visual-path-choice.is-path-selected,
+.paths-direct-workspace .visual-path-choice.is-path-selected:disabled {
+  color: #ffffff;
+  background: #0d8a68;
+  border-color: #08664e;
+  opacity: 1;
+  box-shadow: 0 0 14px rgba(8, 126, 117, .42);
+}
+
+.paths-direct-workspace .visual-path-choice.is-path-muted:disabled { opacity: .34; filter: grayscale(.18); }
+
+.paths-direct-workspace .visual-path-choice:hover:not(:disabled),
+.paths-direct-workspace .visual-path-choice:focus-visible:not(:disabled) {
+  outline: 2px solid rgba(15, 145, 135, .24);
+  outline-offset: 0;
+  box-shadow: 0 0 9px rgba(15, 145, 135, .2);
+}
+
+.paths-direct-workspace .visual-path-choice:disabled { cursor: default; opacity: .48; }
+
+.paths-direct-workspace .visual-path-node.is-active .visual-path-choice:disabled,
+.paths-direct-workspace .visual-path-choice.is-path-selected:disabled { opacity: 1; }
+
+.paths-direct-workspace .visual-path-choice.is-correct {
+  color: #ffffff;
+  background: #0d8a68;
+  border-color: #08664e;
+  box-shadow: 0 0 15px rgba(8, 126, 117, .48);
+}
+
+.paths-direct-workspace .visual-path-choice.is-wrong {
+  color: #ffffff;
+  background: #b8303f;
+  border-color: #8d2130;
+  box-shadow: 0 0 11px rgba(184, 48, 63, .32);
+}
+
+.paths-direct-workspace .visual-path-node.is-result rect {
+  fill: #fff3ba;
+  stroke: #3f6ed3;
+  stroke-width: 1.2;
+}
+
+.paths-direct-workspace .visual-path-node.is-result.is-context rect {
+  fill: #f8fafc;
+  stroke: #91a1b5;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.paths-direct-workspace .visual-path-node.is-result.is-context .visual-path-result-text {
+  color: #42526a;
+  font-size: 11.5px;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
+.paths-direct-workspace .visual-path-node.is-result.is-visited rect { stroke: #159087; stroke-width: 1.75; }
+
+.paths-direct-workspace .visual-path-node.is-result.is-final rect {
+  fill: #fff0a4;
+  stroke: #10867c;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 14px rgba(16, 134, 124, .62));
+}
+
+.paths-direct-workspace .visual-path-result-text {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #352803;
+  font-size: 13px;
+  font-weight: 730;
+  line-height: 1.5;
+  text-align: center;
+  white-space: pre-line;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.paths-direct-workspace .is-present-path .visual-path-question,
+.paths-direct-workspace .is-kana-path .visual-path-question { font-size: 16px; }
+
+.paths-direct-workspace .is-present-path .visual-path-result-text,
+.paths-direct-workspace .is-kana-path .visual-path-result-text { font-size: 13.5px; }
+
+.paths-direct-workspace .visual-path-terminal line {
+  stroke: #7186a8;
+  stroke-width: 1.1;
+  stroke-dasharray: 8 7;
+  vector-effect: non-scaling-stroke;
+  opacity: .55;
+}
+
+.paths-direct-workspace .visual-path-terminal rect {
+  fill: #18345f;
+  stroke: #18345f;
+  stroke-width: 1;
+}
+
+.paths-direct-workspace .visual-path-terminal text {
+  fill: #ffffff;
+  font-size: 13px;
+  font-weight: 780;
+}
+
+.paths-direct-workspace .visual-path-terminal.is-reached line {
+  stroke: #0c8b81;
+  stroke-width: 2.2;
+  opacity: 1;
+}
+
+.paths-direct-workspace .visual-path-terminal.is-reached rect {
+  fill: #0c8b81;
+  stroke: #07685f;
+  filter: drop-shadow(0 0 8px rgba(12, 139, 129, .38));
+}
+
+.paths-direct-workspace .visual-path-shell.has-hint { grid-template-rows: auto minmax(0, 1fr); }
+
+.paths-direct-workspace .visual-path-hint {
+  position: relative;
+  z-index: 2;
+  width: auto;
+  max-height: 150px;
+  margin: 8px 8px 0;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  direction: rtl;
+  color: #4f3a05;
+  background: rgba(255, 247, 214, .98);
+  border: 1px solid #b8860b;
+  border-radius: 12px;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, .1);
+}
+
+.paths-direct-workspace .visual-path-hint strong,
+.paths-direct-workspace .visual-path-hint span,
+.paths-direct-workspace .visual-path-hint button { font-size: 12.5px; }
+
+.paths-direct-workspace .visual-path-hint span {
+  max-height: 105px;
+  overflow: auto;
+  font-weight: 650;
+  line-height: 1.65;
+}
+
+.paths-direct-workspace .visual-path-hint button {
+  min-height: 33px;
+  padding: 5px 9px;
+  color: #0f5f5b;
+  background: #edf9f8;
+  border: 1px solid #137f7a;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 720;
+  cursor: pointer;
+}
+
+.paths-direct-workspace .paths-unavailable-notice {
+  width: min(760px, 100%);
+  margin: 32px auto;
+  padding: 26px;
+}
+
+.paths-direct-workspace .paths-unavailable-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 820px) {
+  .paths-direct-workspace .visual-path-card {
+    min-height: calc(100svh - 10px);
+    padding: 6px;
+    border-radius: 13px;
+  }
+
+  .paths-direct-workspace .visual-path-head {
+    min-height: 86px;
+    display: grid;
+    justify-items: center;
+    gap: 5px;
+    text-align: center;
+  }
+
+  .paths-direct-workspace .visual-path-head h1 { font-size: 20px; }
+
+  .paths-direct-workspace .visual-path-tools { justify-content: center; gap: 5px; }
+
+  .paths-direct-workspace .path-tool {
+    min-height: 34px;
+    padding: 5px 8px;
+    font-size: 11.5px;
+  }
+
+  .paths-direct-workspace .path-zoom { width: 35px; font-size: 18px; }
+
+  .paths-direct-workspace .visual-path-shell { height: calc(100svh - 112px); min-height: 560px; }
+
+  .paths-direct-workspace .visual-path-scroll { height: 100%; min-height: 0; }
+
+  .paths-direct-workspace .visual-path-hint { margin: 6px 6px 0; grid-template-columns: auto minmax(0, 1fr); }
+
+  .paths-direct-workspace .visual-path-hint button { grid-column: 1 / -1; justify-self: center; }
+}
+
+/* الكشف التدريجي: لا تظهر العقدة التالية إلا بعد الإجابة الصحيحة. */
+.paths-direct-workspace .visual-path-node,
+.paths-direct-workspace .visual-path-edge { animation: visual-path-reveal 180ms ease-out both; }
+
+@keyframes visual-path-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* العقد المرحلية تجعل الخريطة مفاهيمية: قرار ← نتيجة مرحلية ← القرار التالي. */
+.paths-direct-workspace .visual-path-node.is-outcome rect {
+  fill: #f4f8ff;
+  stroke: #6a86bd;
+  stroke-width: 1.15;
+}
+
+.paths-direct-workspace .visual-path-node.is-outcome.is-visited rect {
+  fill: #eaf9f4;
+  stroke: #138c79;
+  stroke-width: 1.85;
+  filter: drop-shadow(0 0 7px rgba(13, 138, 104, .22));
+}
+
+.paths-direct-workspace .visual-path-outcome-text {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #18304f;
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.4;
+  text-align: center;
+  white-space: pre-line;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}

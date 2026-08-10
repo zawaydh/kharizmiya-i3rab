@@ -11,6 +11,7 @@ import {
   type QuizExampleLike,
 } from "../../../lib/exercise/quiz";
 import { toStudentArabicOption } from "../../../lib/studentOptionText";
+import { ghostActionStyle, primaryActionStyle } from "./exerciseViewStyles";
 
 type RenderSentence = (sentence?: string, target?: string) => React.ReactNode;
 
@@ -38,28 +39,9 @@ const answerButtonStyle: React.CSSProperties = {
   fontWeight: 800,
 };
 
-const ghostButtonStyle: React.CSSProperties = {
-  marginTop: 12,
-  padding: "10px 14px",
-  borderRadius: 14,
-  border: "1px solid #8795a7",
-  cursor: "pointer",
-  background: "#ffffff",
-  color: "#172033",
-  fontWeight: 800,
-};
 
-const primaryButtonStyle: React.CSSProperties = {
-  padding: "14px 22px",
-  borderRadius: 14,
-  border: "none",
-  cursor: "pointer",
-  fontWeight: 900,
-  fontSize: 16,
-  color: "#ffffff",
-  background: "#137f7a",
-  boxShadow: "0 10px 30px rgba(0,0,0,.12)",
-};
+
+
 
 export function RemedialTrainingView({
   example,
@@ -98,7 +80,7 @@ export function RemedialTrainingView({
           <h2>نفهم موضع الخطأ ثم نحل مثالًا جديدًا</h2>
           <p>مثال {Math.min(cursor + 1, total)} من {total}</p>
         </div>
-        <button type="button" onClick={onBack} style={ghostButtonStyle}>العودة للنتيجة</button>
+        <button type="button" onClick={onBack} style={ghostActionStyle}>العودة للنتيجة</button>
       </div>
 
       {example ? (
@@ -123,7 +105,7 @@ export function RemedialTrainingView({
               const optionCorrect = checked && isSameQuizAnswer(option, expectedLabel);
               const optionWrong = checked && optionSelected && !optionCorrect;
               return (
-                <button
+                <button type="button"
                   key={`${option}-${index}`}
                   onClick={() => {
                     if (!checked) onSelect(option);
@@ -154,8 +136,8 @@ export function RemedialTrainingView({
           ) : null}
 
           <div className="quiz-form-actions remedial-actions">
-            <button type="button" onClick={onRetry} style={ghostButtonStyle}>إعادة المحاولة</button>
-            <button type="button" onClick={onNext} style={primaryButtonStyle} disabled={!selected}>
+            <button type="button" onClick={onRetry} style={ghostActionStyle}>إعادة المحاولة</button>
+            <button type="button" onClick={onNext} style={primaryActionStyle} disabled={!selected}>
               {checked ? (cursor + 1 >= total ? "إنهاء العلاج" : "مثال جديد من موضع الضعف") : "تحقق من الإجابة"}
             </button>
           </div>
@@ -206,25 +188,25 @@ export function QuizSummaryView({
       <div style={{ marginBottom: 12, opacity: 0.85 }}>معيار النجاح: {QUIZ_PASS_PERCENT}% أو أكثر</div>
       <div className="quiz-form-actions" style={{ marginBottom: 16, justifyContent: "flex-start", flexWrap: "wrap" }}>
         {canDownloadCertificate ? (
-          <a href={certificateHref} style={{ ...primaryButtonStyle, display: "inline-flex", textDecoration: "none" }}>
+          <a href={certificateHref} style={{ ...primaryActionStyle, display: "inline-flex", textDecoration: "none" }}>
             تحميل الشهادة
           </a>
         ) : (
-          <button type="button" style={{ ...primaryButtonStyle, background: "#e8edf2", color: "#536174", border: "1px solid #8795a7", opacity: 1, cursor: "not-allowed" }} disabled>
+          <button type="button" style={{ ...primaryActionStyle, background: "#e8edf2", color: "#536174", border: "1px solid #8795a7", opacity: 1, cursor: "not-allowed" }} disabled>
             تحميل الشهادة
           </button>
         )}
         <button
           type="button"
           onClick={onStartRemedial}
-          style={{ ...primaryButtonStyle, background: canStartRemedial ? undefined : "#e8edf2", color: canStartRemedial ? undefined : "#536174", border: canStartRemedial ? undefined : "1px solid #8795a7", opacity: 1, cursor: canStartRemedial ? "pointer" : "not-allowed" }}
+          style={{ ...primaryActionStyle, background: canStartRemedial ? undefined : "#e8edf2", color: canStartRemedial ? undefined : "#536174", border: canStartRemedial ? undefined : "1px solid #8795a7", opacity: 1, cursor: canStartRemedial ? "pointer" : "not-allowed" }}
           disabled={!canStartRemedial}
         >
           عالج ضعفي
         </button>
         <a
           href={textsHref}
-          style={{ ...primaryButtonStyle, display: "inline-flex", textDecoration: "none", background: "#e0b84c", color: "#172033", border: "1px solid #624b10" }}
+          style={{ ...primaryActionStyle, display: "inline-flex", textDecoration: "none", background: "#e0b84c", color: "#172033", border: "1px solid #624b10" }}
         >
           لعبة النصوص
         </a>
@@ -249,7 +231,7 @@ export function QuizSummaryView({
         ))}
       </div>
 
-      <button onClick={onRestart} style={ghostButtonStyle}>إعادة الاختبار النهائي</button>
+      <button type="button" onClick={onRestart} style={ghostActionStyle}>إعادة الاختبار النهائي</button>
     </section>
   );
 }
@@ -295,7 +277,7 @@ export function QuizQuestionView({
 
       <div className="quiz-form-card-options">
         {options.map((option, index) => (
-          <button
+          <button type="button"
             key={`${option}-${index}`}
             onClick={() => onSelect(option)}
             className={`exercise-answer-btn quiz-form-option ${selected === option ? "is-selected" : ""}`}
@@ -312,9 +294,9 @@ export function QuizQuestionView({
       </div>
 
       <div className="quiz-form-actions">
-        <button onClick={onPrevious} style={ghostButtonStyle} disabled={cursor <= 0}>السابق</button>
-        <button onClick={onRestart} style={ghostButtonStyle}>إعادة</button>
-        <button onClick={onNext} style={primaryButtonStyle} disabled={!selected}>
+        <button type="button" onClick={onPrevious} style={ghostActionStyle} disabled={cursor <= 0}>السابق</button>
+        <button type="button" onClick={onRestart} style={ghostActionStyle}>إعادة</button>
+        <button type="button" onClick={onNext} style={primaryActionStyle} disabled={!selected}>
           {cursor + 1 >= total ? "تسليم الاختبار النهائي" : "التالي"}
         </button>
       </div>

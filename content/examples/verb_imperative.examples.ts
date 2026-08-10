@@ -1,4 +1,5 @@
-export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[] };
+import { requireCoverageResult, requirePrimaryCoverage } from "./exampleCoverage";
+export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[] };
 
 export const imperativeVerbCoverageKeysOrdered = [
   "imperative.sukoon.sahih",
@@ -88,7 +89,7 @@ export const imperativeVerbExamples: Example[] = [
 
 const resultByCover: Record<string, string> = {
   "imperative.sukoon.sahih": "فعل أمر مبني على السكون.\nالفاعل: ضمير مستتر وجوبًا تقديره أنت.",
-  "imperative.sukoon.niswa": "فعل أمر مبني على السكون لاتصاله بنون النسوة.\nنون النسوة: ضمير متصل مبني في محل رفع فاعل.",
+  "imperative.sukoon.niswa": "فعل أمر مبني على السكون لاتصاله بنون النسوة.\nنون النسوة: ضمير متصل مبني على الفتح في محل رفع فاعل.",
   "imperative.delete_letter.alif": "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الألف.\nالفاعل: ضمير مستتر وجوبًا تقديره أنت.",
   "imperative.delete_letter.waw": "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الواو.\nالفاعل: ضمير مستتر وجوبًا تقديره أنت.",
   "imperative.delete_letter.ya": "فعل أمر مبني على حذف حرف العلة.\nحرف العلة المحذوف: الياء.\nالفاعل: ضمير مستتر وجوبًا تقديره أنت.",
@@ -100,7 +101,7 @@ const resultByCover: Record<string, string> = {
 
 const optionsBase = Object.values(resultByCover);
 export const imperativeVerbQuizExamples = imperativeVerbExamples.map((ex, i) => {
-  const correct = resultByCover[ex.covers[0]];
+  const correct = requireCoverageResult(resultByCover, ex);
   const options = Array.from(new Set([correct, ...optionsBase.slice(i % 3, i % 3 + 4), ...optionsBase])).slice(0, 4);
   if (!options.includes(correct)) options[0] = correct;
   return {

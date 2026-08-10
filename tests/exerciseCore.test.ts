@@ -13,7 +13,11 @@ import {
   resolveCoverageKeys,
 } from "../lib/exercise/progress";
 import { buildRunnerState, pickNextExampleIndex } from "../lib/exercise/runner";
-import { buildStageProgressPayload } from "../lib/exercise/persistence";
+import {
+  buildQuizProgressSubmission,
+  buildStageResultSubmission,
+  parseProgressSubmission,
+} from "../lib/progressEvents";
 
 describe("النواة المفصولة من ExercisePlayer", () => {
   test("تحسب التغطية من المفاتيح المطلوبة فقط", () => {
@@ -110,27 +114,31 @@ describe("النواة المفصولة من ExercisePlayer", () => {
       })
     ).toEqual(["skill.a", "skill.b"]);
   });
-  test("يبني حمولة المرحلة من دون إرسال حقول تمحو مرحلة أخرى", () => {
-    const covered = { a: true, b: false };
-    const learn = buildStageProgressPayload({
+  test("يرسل دليل النتيجة فقط ولا يثق بنسب محسوبة في المتصفح", () => {
+    const learn = buildStageResultSubmission({
       mode: "learn",
       topicId: "topic",
       level: 2,
-      covered,
-      coverageKeys: ["a", "b"],
+      exampleId: "example-1",
+      resultNodeId: "result-1",
     });
-    const practice = buildStageProgressPayload({
-      mode: "practice",
+    const quiz = buildQuizProgressSubmission({
       topicId: "topic",
       level: 2,
-      covered,
-      coverageKeys: ["a", "b"],
+      rows: [{ exampleId: "quiz-1", actualLabel: "الإجابة" }],
     });
 
-    expect(learn.percent).toBe(50);
-    expect(learn.practice_percent).toBeUndefined();
-    expect(practice.practice_percent).toBe(50);
-    expect(practice.percent).toBeUndefined();
+    expect(learn).toEqual({
+      kind: "stage-result",
+      mode: "learn",
+      topicId: "topic",
+      level: 2,
+      exampleId: "example-1",
+      resultNodeId: "result-1",
+    });
+    expect(quiz.answers).toEqual([{ exampleId: "quiz-1", actualLabel: "الإجابة" }]);
+    expect(parseProgressSubmission({ ...learn, percent: 100 })).toEqual(learn);
+    expect(parseProgressSubmission({ kind: "quiz-complete", topicId: "topic", level: 2, answers: [] })).toBeNull();
   });
 
 });

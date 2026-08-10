@@ -1,4 +1,5 @@
-export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[]; followUp?: any };
+import { requireCoverageResult, requirePrimaryCoverage } from "./exampleCoverage";
+export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[]; followUp?: unknown };
 
 export const faelCoverageKeysOrdered = [
   "fael.singular",
@@ -125,7 +126,7 @@ export const faelExamples: Example[] = [
     id: "fa-12",
     sentence: "الممرضاتُ حضرنَ مبكرًا.",
     target: "نون النسوة في (حضرنَ)",
-    facts: { ...nominalConnected, roleKind: "connected", mabniType: "connected", connectedType: "niswa", nominalSubject: "الممرضات", verbalKhabar: "حضرنَ مبكرًا", pronounMeaning: "هن", actionQuestion: "من اللاتي حضرن؟", finalI3rab: `نون النسوة: ضمير متصل مبني في محل رفع فاعل.
+    facts: { ...nominalConnected, roleKind: "connected", mabniType: "connected", connectedType: "niswa", nominalSubject: "الممرضات", verbalKhabar: "حضرنَ مبكرًا", pronounMeaning: "هن", actionQuestion: "من اللاتي حضرن؟", finalI3rab: `نون النسوة: ضمير متصل مبني على الفتح في محل رفع فاعل.
 والعامل في محل رفعه الفعل الوارد في الجملة: حضرنَ.
 سبب الاختيار: لأن نون النسوة دلت على جماعة الإناث اللواتي قمن بالحضور.
 وجملة (حضرنَ مبكرًا) جملة فعلية في محل رفع خبر للمبتدأ الممرضاتُ.` },
@@ -229,20 +230,45 @@ export const faelExamples: Example[] = [
   }
 ];
 
-const resultByCover: Record<string, string> = Object.fromEntries(faelExamples.map((ex) => [ex.covers[0], ex.facts.finalI3rab.split("\n")[0]]));
+function faelQuizAnswer(ex: Example) {
+  const lines = String(ex.facts.finalI3rab || "").split("\n").map((line) => line.trim()).filter(Boolean);
+  if (ex.facts.roleKind === "hidden") {
+    const hiddenLine = lines.find((line) => line.includes("الفاعل:") && line.includes("ضمير مستتر"));
+    return String(hiddenLine || "").replace(/^و/, "");
+  }
+  return lines[0] || "";
+}
 
-const allResults = Array.from(new Set(Object.values(resultByCover)));
+const resultByCover: Record<string, string> = Object.fromEntries(
+  faelExamples.map((ex) => [requirePrimaryCoverage(ex), faelQuizAnswer(ex)])
+);
+
+const allResults = Array.from(new Set(Object.values(resultByCover).filter(Boolean)));
+const hiddenResults = Array.from(new Set(
+  faelExamples.filter((example) => example.facts.roleKind === "hidden").map(faelQuizAnswer).filter(Boolean)
+));
 
 export const faelQuizExamples = faelExamples.map((ex, i) => {
-  const correct = resultByCover[ex.covers[0]];
-  const options = Array.from(new Set([correct, ...allResults.slice(i % allResults.length), ...allResults])).slice(0, 4);
+  const correct = requireCoverageResult(resultByCover, ex);
+  const hidden = ex.facts.roleKind === "hidden";
+  const resultPool = hidden ? hiddenResults : allResults;
+  const options = Array.from(new Set([correct, ...resultPool.slice(i % resultPool.length), ...resultPool])).filter(Boolean).slice(0, 4);
   if (!options.includes(correct)) options[0] = correct;
   return {
     ...ex,
-    prompt: "ما الإعراب الصحيح للفاعل المحدد؟",
+    prompt: hidden
+      ? "ما تقدير الفاعل المستتر في الفعل المحدد، وما إعرابه؟"
+      : "ما الإعراب الصحيح للفاعل المحدد؟",
     options,
     correctI3rab: correct,
-    whyCorrect: "حدّدنا الفاعل أولًا، ثم طبقنا حكم الرفع أو محل الرفع حسب صورته.",
-    optionReasons: Object.fromEntries(options.map((o) => [o, o === correct ? "صحيح؛ هذه الصياغة توافق صورة الفاعل." : "خطأ؛ راجع نوع الفاعل: معرب، مبني، ضمير، مستتر، أو مصدر مؤول."]))
+    whyCorrect: hidden
+      ? "بحثنا عمّن قام بالفعل، فلم نجد فاعلًا ظاهرًا أو ضميرًا متصلًا؛ لذلك قدّرنا الضمير المستتر المناسب للمتكلم أو المخاطب أو الغائب."
+      : "حدّدنا الفاعل أولًا، ثم طبقنا حكم الرفع أو محل الرفع حسب صورته.",
+    optionReasons: Object.fromEntries(options.map((o) => [
+      o,
+      o === correct
+        ? hidden ? "صحيح؛ هذا هو الضمير المستتر الذي يدل عليه الفعل والسياق." : "صحيح؛ هذه الصياغة توافق صورة الفاعل."
+        : "خطأ؛ راجع نوع الفاعل: معرب، مبني، ضمير متصل، ضمير مستتر، أو مصدر مؤول."
+    ]))
   };
 });

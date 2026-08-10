@@ -1,9 +1,8 @@
 @import "./styles/00-foundation.css";
 @import "./styles/10-shell-auth-exercise.css";
 @import "./styles/20-navigation-paths.css";
-@import "./styles/30-start-learning-core.css";
-@import "./styles/40-learning-flow.css";
-@import "./styles/50-exercise-workspace.css";
-@import "./styles/60-exercise-stability.css";
-@import "./styles/70-pages-games-dashboard.css";
+@import "./styles/79-navigation-system.css";
 @import "./styles/80-clean-system.css";
+@import "./styles/80-page-system.css";
+@import "./styles/81-clean-responsive.css";
+@import "./styles/82-learning-stability.css";

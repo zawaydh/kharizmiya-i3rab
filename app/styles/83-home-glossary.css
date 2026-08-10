@@ -1,0 +1,114 @@
+@layer home-glossary {
+.home-tools-heading { margin-bottom: 14px; text-align: center; }
+.home-tools-heading .section-kicker {
+  color: var(--clean-primary-text);
+  font-size: 13px;
+  font-weight: 650;
+}
+.home-tools-heading h2 {
+  margin: 4px 0 0;
+  color: var(--clean-text);
+  font-size: 23px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+.home-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+.home-tool-card {
+  min-width: 0;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  border: 1px solid var(--clean-border);
+  border-radius: 11px;
+  box-shadow: none;
+}
+.home-tool-guide { background: var(--clean-gold-soft); border-color: var(--clean-gold); }
+.home-tool-trainer { background: var(--clean-primary-soft); border-color: var(--clean-primary); }
+.home-tool-number {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: #fff;
+  background: var(--clean-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+.home-tool-guide .home-tool-number {
+  color: var(--clean-gold-text);
+  background: var(--clean-gold);
+  border: 1px solid var(--clean-gold-text);
+}
+.home-tool-card h3 {
+  margin: 0 0 4px;
+  color: var(--clean-text);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.home-tool-card p {
+  margin: 0 0 8px;
+  color: var(--clean-muted);
+  font-size: 14px;
+  line-height: 1.75;
+}
+.home-tool-card a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--clean-primary-text);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.home-tool-card a:hover,
+.home-tool-card a:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
+
+/* MOBILE GLOSSARY — keep the definition inside the visible phone viewport. */
+html body .smart-popover,
+html body .smart-popover.start-smart-popover {
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+}
+html body .smart-popover ul,
+html body .smart-popover li {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .home-learning-tools { padding: 14px 11px; }
+  .home-tools-heading { margin-bottom: 10px; }
+  .home-tools-heading h2 { font-size: 20px; }
+  .home-tools-grid { grid-template-columns: 1fr; gap: 8px; }
+  .home-tool-card { padding: 12px; gap: 10px; }
+  .home-tool-card h3 { font-size: 16px; }
+  .home-tool-card p {
+    margin-bottom: 5px;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  html body .smart-popover,
+  html body .smart-popover.start-smart-popover {
+    position: fixed;
+    top: auto;
+    right: auto;
+    bottom: 10px;
+    left: 50%;
+    width: min(360px, calc(100vw - 20px));
+    max-width: calc(100vw - 20px);
+    max-height: min(42svh, 300px);
+    margin: 0;
+    padding: 13px 14px 12px;
+    transform: translateX(-50%);
+  }
+}
+}

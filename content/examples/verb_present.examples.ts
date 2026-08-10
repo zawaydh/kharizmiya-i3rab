@@ -1,6 +1,8 @@
+import { presentVerbBuiltResult } from "../../lib/presentVerbBuiltPosition";
+import { requireCoverageResult, requirePrimaryCoverage } from "./exampleCoverage";
 export type FollowUpOption = { label: string; correct: boolean; feedback: string };
 export type FollowUp = { question: string; options: FollowUpOption[] };
-export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[]; followUp?: FollowUp };
+export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[]; followUp?: FollowUp };
 
 export const presentVerbCoverageKeysOrdered = [
   "present.binaa.niswa",
@@ -48,6 +50,34 @@ export const presentVerbExamples: Example[] = [
     sentence: "واللهِ لأذاكرَنَّ الدرسَ.",
     target: "أذاكرَنَّ",
     facts: { ...base, buildConnection: "tawkid", shape: "built_tawkid" },
+    covers: ["present.binaa.tawkid"],
+  },
+  {
+    id: "pr-binaa-niswa-nasb",
+    sentence: "لن يهملْنَ واجباتِهِنَّ.",
+    target: "يهملْنَ",
+    facts: { ...base, buildConnection: "niswa", hasTool: true, tool: "nasb", toolWord: "لن", shape: "built_niswa" },
+    covers: ["present.binaa.niswa"],
+  },
+  {
+    id: "pr-binaa-niswa-jazm",
+    sentence: "لم يهملْنَ واجباتِهِنَّ.",
+    target: "يهملْنَ",
+    facts: { ...base, buildConnection: "niswa", hasTool: true, tool: "jazm", toolWord: "لم", shape: "built_niswa" },
+    covers: ["present.binaa.niswa"],
+  },
+  {
+    id: "pr-binaa-tawkid-nasb",
+    sentence: "لن تُهمِلَنَّ واجبَكَ.",
+    target: "تُهمِلَنَّ",
+    facts: { ...base, buildConnection: "tawkid", hasTool: true, tool: "nasb", toolWord: "لن", shape: "built_tawkid" },
+    covers: ["present.binaa.tawkid"],
+  },
+  {
+    id: "pr-binaa-tawkid-jazm",
+    sentence: "لا تُهمِلَنَّ واجبَكَ.",
+    target: "تُهمِلَنَّ",
+    facts: { ...base, buildConnection: "tawkid", hasTool: true, tool: "jazm", toolWord: "لا الناهية", shape: "built_tawkid" },
     covers: ["present.binaa.tawkid"],
   },
 
@@ -211,8 +241,8 @@ export const presentVerbExamples: Example[] = [
 ];
 
 const resultByCover: Record<string, string> = {
-  "present.binaa.niswa": "فعل مضارع مبني على السكون لاتصاله بنون النسوة.\nنون النسوة: ضمير متصل مبني في محل رفع فاعل.",
-  "present.binaa.tawkid": "فعل مضارع مبني على الفتح لاتصاله بنون التوكيد.\nنون التوكيد: حرف توكيد لا محل له من الإعراب.",
+  "present.binaa.niswa": presentVerbBuiltResult({ build: "niswa", tool: "none" }),
+  "present.binaa.tawkid": presentVerbBuiltResult({ build: "tawkid", tool: "none" }),
   "present.raf3.sahih": "فعل مضارع مرفوع.\nعلامة رفعه: الضمة الظاهرة على آخره.",
   "present.raf3.alif": "فعل مضارع مرفوع.\nعلامة رفعه: الضمة المقدرة على الألف منع من ظهورها التعذر.",
   "present.raf3.waw": "فعل مضارع مرفوع.\nعلامة رفعه: الضمة المقدرة على الواو منع من ظهورها الثقل.",
@@ -237,8 +267,21 @@ function attachedPronounI3rab(ex: Example) {
   return "";
 }
 
+function builtResultForExample(ex: Example) {
+  if (ex.facts?.buildConnection === "niswa") {
+    return presentVerbBuiltResult({ build: "niswa", tool: String(ex.facts?.tool || "none") });
+  }
+  if (ex.facts?.buildConnection === "tawkid") {
+    return presentVerbBuiltResult({ build: "tawkid", tool: String(ex.facts?.tool || "none") });
+  }
+  return "";
+}
+
 function resultForExample(ex: Example) {
-  const baseResult = resultByCover[ex.covers[0]] || "";
+  const builtResult = builtResultForExample(ex);
+  if (builtResult) return builtResult;
+
+  const baseResult = requireCoverageResult(resultByCover, ex) || "";
   const toolWord = ex.facts?.toolWord;
   const withTool = toolWord && (ex.facts?.tool === "nasb" || ex.facts?.tool === "jazm")
     ? baseResult.replace("فعل مضارع منصوب", `فعل مضارع منصوب بـ ${toolWord}`).replace("فعل مضارع مجزوم", `فعل مضارع مجزوم بـ ${toolWord}`)
@@ -248,7 +291,16 @@ function resultForExample(ex: Example) {
   return pronoun ? `${withTool}\n${pronoun}` : withTool;
 }
 
-const distractors = Object.values(resultByCover);
+const builtDistractors = [
+  presentVerbBuiltResult({ build: "niswa", tool: "none" }),
+  presentVerbBuiltResult({ build: "niswa", tool: "nasb" }),
+  presentVerbBuiltResult({ build: "niswa", tool: "jazm" }),
+  presentVerbBuiltResult({ build: "tawkid", tool: "none" }),
+  presentVerbBuiltResult({ build: "tawkid", tool: "nasb" }),
+  presentVerbBuiltResult({ build: "tawkid", tool: "jazm" }),
+];
+
+const distractors = [...builtDistractors, ...Object.values(resultByCover)];
 
 export const presentVerbQuizExamples = presentVerbExamples.map((ex, i) => {
   const correct = resultForExample(ex);
@@ -260,7 +312,7 @@ export const presentVerbQuizExamples = presentVerbExamples.map((ex, i) => {
     prompt: "بعد تتبّع القرارات، ما الإعراب الصحيح للفعل المضارع المحدد؟",
     options,
     correctI3rab: correct,
-    whyCorrect: "اتبعنا المسار: نوع الكلمة، زمن الفعل، هل هو مبني أو معرب، ثم العامل السابق، ثم صورة الفعل وعلامته.",
+    whyCorrect: "بدأنا بفحص نون النسوة ونون التوكيد، ثم حدّدنا العامل السابق؛ فإن كان الفعل معربًا حدّدنا صورته وعلامته، وإن كان مبنيًا حدّدنا محله الإعرابي.",
     optionReasons: Object.fromEntries(
       options.map((o) => [
         o,

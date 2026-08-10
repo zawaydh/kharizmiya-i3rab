@@ -1,4 +1,4 @@
-export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[] };
+export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[] };
 
 export const attachedPronounsCoverageKeysOrdered = [
   "pronoun.raf3.attached",

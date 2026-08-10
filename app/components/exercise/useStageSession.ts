@@ -4,9 +4,9 @@ import React from "react";
 import { getTopicProgress } from "../../../lib/db";
 import type { ExerciseExample, ExerciseTree, Mode } from "../../../lib/exercise/model";
 import {
-  buildStageProgressPayload,
-  type ProgressSavePayload,
-} from "../../../lib/exercise/persistence";
+  buildStageResultSubmission,
+  type ProgressSubmission,
+} from "../../../lib/progressEvents";
 import { buildEmptyCovered } from "../../../lib/exercise/progress";
 import { pickNextExampleIndex } from "../../../lib/exercise/runner";
 import {
@@ -18,11 +18,18 @@ import {
   type TopicStageProgressRow,
 } from "../../../lib/exercise/stageSession";
 
+type StageSaveState = {
+  percent: number;
+  missingCoverage: boolean;
+  saveFailed: boolean;
+  saveError?: string;
+};
+
 export type StageAdvanceResult =
-  | { status: "next"; nextIndex: number; percent: number; missingCoverage: boolean; saveFailed: boolean }
-  | { status: "stage-complete"; percent: number; missingCoverage: boolean; saveFailed: boolean }
-  | { status: "blocked"; percent: number; missingCoverage: boolean; saveFailed: boolean }
-  | { status: "save-failed"; percent: number; missingCoverage: boolean; saveFailed: true };
+  | ({ status: "next"; nextIndex: number } & StageSaveState)
+  | ({ status: "stage-complete" } & StageSaveState)
+  | ({ status: "blocked" } & StageSaveState)
+  | ({ status: "save-failed"; saveFailed: true } & StageSaveState);
 
 type UseStageSessionArgs = {
   mode: Mode;
@@ -31,7 +38,7 @@ type UseStageSessionArgs = {
   orderedKeys: string[];
   topicId?: string;
   level: number;
-  onSaveProgress?: (payload: ProgressSavePayload) => Promise<unknown> | unknown;
+  onSaveProgress?: (submission: ProgressSubmission) => Promise<unknown> | unknown;
 };
 
 export function useStageSession({
@@ -47,17 +54,27 @@ export function useStageSession({
   const [exampleIndex, setExampleIndex] = React.useState(0);
   const [learnReady, setLearnReady] = React.useState(false);
   const [practiceReady, setPracticeReady] = React.useState(false);
+  const coveredRef = React.useRef(covered);
   const usedExampleIdsRef = React.useRef<string[]>([]);
+  const savedResultKeysRef = React.useRef(new Set<string>());
+  const saveInFlightRef = React.useRef(new Map<string, Promise<StageSaveState>>());
+
+  const updateCovered = React.useCallback((nextCovered: Record<string, boolean>) => {
+    coveredRef.current = nextCovered;
+    setCovered(nextCovered);
+  }, []);
 
   React.useEffect(() => {
     let active = true;
     usedExampleIdsRef.current = [];
+    savedResultKeysRef.current.clear();
+    saveInFlightRef.current.clear();
 
     async function loadProgress() {
       const empty = hydrateStageProgress(mode, orderedKeys, null);
       if (!topicId || !level || mode === "quiz") {
         if (!active) return;
-        setCovered(empty.covered);
+        updateCovered(empty.covered);
         setExampleIndex(0);
         setLearnReady(false);
         setPracticeReady(false);
@@ -68,13 +85,13 @@ export function useStageSession({
         const row = await getTopicProgress(topicId, level) as TopicStageProgressRow | null;
         if (!active) return;
         const hydrated = hydrateStageProgress(mode, orderedKeys, row);
-        setCovered(hydrated.covered);
+        updateCovered(hydrated.covered);
         setLearnReady(hydrated.learnReady);
         setPracticeReady(hydrated.practiceReady);
         setExampleIndex(pickNextExampleIndex(examples, orderedKeys, hydrated.covered, 0));
       } catch {
         if (!active) return;
-        setCovered(empty.covered);
+        updateCovered(empty.covered);
         setExampleIndex(0);
         setLearnReady(false);
         setPracticeReady(false);
@@ -85,7 +102,7 @@ export function useStageSession({
     return () => {
       active = false;
     };
-  }, [examples, level, mode, orderedKeys, topicId]);
+  }, [examples, level, mode, orderedKeys, topicId, updateCovered]);
 
   const metrics = React.useMemo(
     () => buildStageMetrics({ mode, covered, orderedKeys, learnReady, practiceReady }),
@@ -93,23 +110,84 @@ export function useStageSession({
   );
 
   const save = React.useCallback(async (
-    nextCovered: Record<string, boolean>,
-    forceComplete: boolean
+    example?: ExerciseExample | null,
+    resultNodeId?: string | null,
   ) => {
     if (!topicId || !onSaveProgress || mode === "quiz") return;
-    const payload = buildStageProgressPayload({
+    if (example?.id === undefined || !resultNodeId) return;
+    const submission = buildStageResultSubmission({
       mode,
       topicId,
       level,
-      covered: nextCovered,
-      coverageKeys: orderedKeys,
-      extra: {
-        learn_completed: mode === "learn" ? (forceComplete ? true : undefined) : undefined,
-        practice_completed: mode === "practice" ? (forceComplete ? true : undefined) : undefined,
-      },
+      exampleId: example.id,
+      resultNodeId,
     });
-    await onSaveProgress(payload);
-  }, [level, mode, onSaveProgress, orderedKeys, topicId]);
+    await onSaveProgress(submission);
+  }, [level, mode, onSaveProgress, topicId]);
+
+  const recordResult = React.useCallback((params: {
+    currentIndex: number;
+    example?: ExerciseExample | null;
+    currentNodeId?: string | null;
+  }): Promise<StageSaveState> => {
+    const update = applyCurrentCoverage({
+      tree,
+      example: params.example,
+      currentNodeId: params.currentNodeId,
+      orderedKeys,
+      covered: coveredRef.current,
+    });
+    updateCovered(update.covered);
+
+    if (mode === "learn" && update.percent >= 100) setLearnReady(true);
+    if (mode === "practice" && update.percent >= 100) setPracticeReady(true);
+
+    const exampleId = params.example?.id;
+    const resultNodeId = params.currentNodeId;
+    if (exampleId === undefined || !resultNodeId || mode === "quiz") {
+      return Promise.resolve({
+        percent: update.percent,
+        missingCoverage: !update.hasCoverageKey,
+        saveFailed: false,
+      });
+    }
+
+    const resultKey = `${mode}:${String(exampleId)}:${resultNodeId}`;
+    if (savedResultKeysRef.current.has(resultKey)) {
+      return Promise.resolve({
+        percent: update.percent,
+        missingCoverage: !update.hasCoverageKey,
+        saveFailed: false,
+      });
+    }
+
+    const pendingSave = saveInFlightRef.current.get(resultKey);
+    if (pendingSave) return pendingSave;
+
+    const savePromise = (async (): Promise<StageSaveState> => {
+      try {
+        await save(params.example, resultNodeId);
+        savedResultKeysRef.current.add(resultKey);
+        return {
+          percent: update.percent,
+          missingCoverage: !update.hasCoverageKey,
+          saveFailed: false,
+        };
+      } catch (error) {
+        return {
+          percent: update.percent,
+          missingCoverage: !update.hasCoverageKey,
+          saveFailed: true,
+          saveError: error instanceof Error ? error.message : "PROGRESS_SAVE_FAILED",
+        };
+      } finally {
+        saveInFlightRef.current.delete(resultKey);
+      }
+    })();
+
+    saveInFlightRef.current.set(resultKey, savePromise);
+    return savePromise;
+  }, [mode, orderedKeys, save, tree, updateCovered]);
 
   const advance = React.useCallback(async (params: {
     currentIndex: number;
@@ -118,31 +196,17 @@ export function useStageSession({
     forceComplete?: boolean;
   }): Promise<StageAdvanceResult> => {
     const forceComplete = Boolean(params.forceComplete);
-    const update = applyCurrentCoverage({
-      tree,
-      example: params.example,
-      currentNodeId: params.currentNodeId,
-      orderedKeys,
-      covered,
-    });
-    setCovered(update.covered);
+    const saved = await recordResult(params);
 
-    let saveFailed = false;
-    try {
-      await save(update.covered, forceComplete);
-    } catch {
-      saveFailed = true;
-      if (forceComplete) {
-        return {
-          status: "save-failed",
-          percent: update.percent,
-          missingCoverage: !update.hasCoverageKey,
-          saveFailed: true,
-        };
-      }
+    if (saved.saveFailed && forceComplete) {
+      return {
+        status: "save-failed",
+        ...saved,
+        saveFailed: true,
+      };
     }
 
-    const completed = forceComplete || update.percent >= 100;
+    const completed = forceComplete || saved.percent >= 100;
     if (mode === "learn" && completed) setLearnReady(true);
     if (mode === "practice" && completed) setPracticeReady(true);
 
@@ -153,28 +217,18 @@ export function useStageSession({
     );
     usedExampleIdsRef.current = nextUsedIds;
 
-    if (!forceComplete && update.percent >= 100) {
-      return {
-        status: "stage-complete",
-        percent: update.percent,
-        missingCoverage: !update.hasCoverageKey,
-        saveFailed,
-      };
+    if (!forceComplete && saved.percent >= 100) {
+      return { status: "stage-complete", ...saved };
     }
 
-    if (forceComplete && update.percent >= 100) {
-      return {
-        status: "stage-complete",
-        percent: update.percent,
-        missingCoverage: !update.hasCoverageKey,
-        saveFailed,
-      };
+    if (forceComplete && saved.percent >= 100) {
+      return { status: "stage-complete", ...saved };
     }
 
     const nextIndex = findNextStageExample({
       examples,
       currentIndex: params.currentIndex,
-      covered: update.covered,
+      covered: coveredRef.current,
       orderedKeys,
       usedIds: nextUsedIds,
       allowPreviouslyUsed: !forceComplete,
@@ -183,9 +237,7 @@ export function useStageSession({
     if (nextIndex === null) {
       return {
         status: forceComplete ? "stage-complete" : "blocked",
-        percent: update.percent,
-        missingCoverage: !update.hasCoverageKey,
-        saveFailed,
+        ...saved,
       };
     }
 
@@ -193,19 +245,19 @@ export function useStageSession({
     return {
       status: "next",
       nextIndex,
-      percent: update.percent,
-      missingCoverage: !update.hasCoverageKey,
-      saveFailed,
+      ...saved,
     };
-  }, [covered, examples, mode, orderedKeys, save, tree]);
+  }, [examples, mode, orderedKeys, recordResult]);
 
   const reset = React.useCallback(() => {
-    setCovered(buildEmptyCovered(orderedKeys));
+    updateCovered(buildEmptyCovered(orderedKeys));
     setExampleIndex(0);
     setLearnReady(false);
     setPracticeReady(false);
     usedExampleIdsRef.current = [];
-  }, [orderedKeys]);
+    savedResultKeysRef.current.clear();
+    saveInFlightRef.current.clear();
+  }, [orderedKeys, updateCovered]);
 
   return {
     covered,
@@ -213,6 +265,7 @@ export function useStageSession({
     learnReady,
     practiceReady,
     metrics,
+    recordResult,
     advance,
     reset,
   };

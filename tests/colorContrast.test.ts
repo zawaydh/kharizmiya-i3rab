@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readCleanSystemCss } from "./cssTestUtils";
 
 function channel(value: number) {
   const normalized = value / 255;
@@ -38,15 +37,13 @@ describe("final color system", () => {
     ["#852433", "#fff1f3"],
     ["#734b00", "#fff8df"],
     ["#dce7ed", "#081722"],
+    ["#465568", "#e8edf2"],
   ])("keeps %s readable on %s", (foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("does not use the former low-contrast accent colors as text in the final layer", () => {
-    const css = readFileSync(
-      resolve(process.cwd(), "app/styles/80-clean-system.css"),
-      "utf8",
-    ).toLowerCase();
+    const css = readCleanSystemCss().toLowerCase();
     expect(css).not.toContain("color: #2cc7bc");
     expect(css).not.toContain("color: #27b9b0");
     expect(css).not.toContain("background: #edc443");

@@ -1,0 +1,199 @@
+@layer learning-stability {
+
+/* Certificate is a standalone document, not an application workspace. */
+body.platform-body.certificate-route,
+body.platform-body.certificate-route.nav-collapsed {
+  --app-sidebar-current: 0px;
+  padding-inline-start: 0;
+  background: #f8fafc;
+}
+body.platform-body.certificate-route main.container.platform-main {
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* Light surfaces must always keep readable foreground colours. */
+.auth-modern-page .auth-field label { color: #334155; font-weight: 650; }
+.auth-modern-page .auth-benefit-card { background: #f8fafc; border-color: #cbd5e1; }
+.auth-modern-page .auth-benefit-card strong { color: #172033; }
+.auth-modern-page .auth-benefit-card span,
+.auth-modern-page .auth-purpose-note p,
+.auth-modern-page .auth-note-box { color: #475569; }
+.auth-modern-page .auth-tab {
+  color: #334155;
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+.auth-modern-page .auth-tab.is-active {
+  color: #0f5f5b;
+  background: #edf9f8;
+  border-color: #137f7a;
+}
+
+.dashboard-page-modern .dashboard-topic-card,
+.dashboard-page-modern .dashboard-stat-card { background: #ffffff; border-color: #d8dee7; }
+.dashboard-page-modern .dashboard-topic-card :where(h3, strong),
+.dashboard-page-modern .dashboard-progress-meta strong { color: #172033; }
+.dashboard-page-modern .dashboard-topic-card :where(p, span),
+.dashboard-page-modern .dashboard-progress-meta span { color: #536174; }
+.dashboard-page-modern .pill,
+.dashboard-page-modern .pill-muted {
+  color: #334155;
+  background: #eef2f6;
+  border-color: #cbd5e1;
+}
+.dashboard-page-modern .pill-accent {
+  color: #145a31;
+  background: #edf9f1;
+  border-color: #7fc69a;
+}
+.dashboard-page-modern .dashboard-action-row .btn-soft {
+  color: #244158;
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+.dashboard-page-modern .dashboard-action-row .btn-soft:hover {
+  color: #0f5f5b;
+  background: #edf9f8;
+  border-color: #137f7a;
+}
+.dashboard-page-modern .dashboard-action-row .is-disabled-link,
+.dashboard-page-modern .dashboard-action-row button:disabled {
+  color: #526174;
+  background: #e9eef3;
+  border-color: #aeb9c5;
+  opacity: 1;
+}
+/* Hints and corrections grow naturally; the page scrolls,
+not a tiny inner box. */
+.start-visible-hint,.feedback-pop.inline-feedback,.inline-correction-hint,.remedial-teacher-card,.thinking-bubble { max-height: none; overflow: visible; }
+.inline-correction-hint {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.inline-correction-hint-title { color: #704900; background: #fffdf4; }
+.inline-correction-hint-text {
+  color: #3f2e08;
+  font-weight: 650;
+  line-height: 1.85;
+  opacity: 1;
+  filter: none;
+  text-shadow: none;
+}
+.practice-wrong-sequence,
+.practice-wrong-sequence.is-primary-panel,
+.practice-direct-board,
+.practice-teacher-explanation {
+  max-height: none;
+  overflow: visible;
+}
+.practice-wrong-actions {
+  position: static;
+  width: 100%;
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* JoQuiz-style single-card transition.
+   Only one question exists in the viewport at a time, so text cannot overlap. */
+@keyframes khSingleQuestionLeave {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 0; transform: translate3d(-44px, 0, 0); }
+}
+
+@keyframes khSingleQuestionEnter {
+  from { opacity: 0; transform: translate3d(44px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+html body .exercise-page-shell .question-content-motion.question-text-leaving {
+  animation: khSingleQuestionLeave 180ms cubic-bezier(.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+
+html body .exercise-page-shell .question-content-motion.question-text-entering {
+  animation: khSingleQuestionEnter 320ms cubic-bezier(.22, 1, .36, 1) both;
+  pointer-events: none;
+}
+
+html body .exercise-page-shell .question-content-motion.question-text-idle,
+html body .exercise-page-shell .question-content-motion.question-text-success {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+
+/* No child receives a separate entrance animation. */
+html body .exercise-page-shell .question-content-motion.question-text-entering *,
+html body .exercise-page-shell .question-content-motion.question-text-leaving * { animation: none; }
+
+@media (max-width: 640px) {
+  @keyframes khSingleQuestionLeave {
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(-26px, 0, 0); }
+  }
+
+  @keyframes khSingleQuestionEnter {
+    from { opacity: 0; transform: translate3d(26px, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body .exercise-page-shell .question-content-motion.question-text-entering,
+  html body .exercise-page-shell .question-content-motion.question-text-leaving { animation: none; }
+}
+
+/* Responsive final-result stability. */
+.exercise-page-shell .clean-result-block.algorithm-final-card.pro-final-focus {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: stretch;
+  align-items: start;
+  box-sizing: border-box;
+}
+.exercise-page-shell .clean-result-block.algorithm-final-card.pro-final-focus > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.exercise-page-shell .clean-result-block.algorithm-final-card.pro-final-focus > .final-achievement-mark,
+.exercise-page-shell .clean-result-block.algorithm-final-card.pro-final-focus > .clean-final-label { justify-self: center; }
+.exercise-page-shell .exercise-result-text.clean-result-text.final-glow-result.final-single-i3rab.final-structured-i3rab,
+.exercise-page-shell .final-result-heading,
+.exercise-page-shell .final-i3rab-line,
+.exercise-page-shell .built-closure-note {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: normal;
+  writing-mode: horizontal-tb;
+}
+.exercise-page-shell .final-result-heading,
+.exercise-page-shell .final-i3rab-line { width: 100%; }
+.exercise-page-shell .smart-term,
+.exercise-page-shell .start-smart-term {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+}
+@media (max-width: 700px) {
+  .exercise-page-shell .clean-result-block.algorithm-final-card.pro-final-focus { width: 100%; padding-inline: 12px; }
+  .exercise-page-shell .exercise-result-text.clean-result-text.final-glow-result.final-single-i3rab.final-structured-i3rab { width: 100%; padding-inline: 12px; }
+}
+
+/* HOME LEARNING TOOLS — concise orientation before the longer journey section */
+.home-learning-tools {
+  padding: 22px;
+  color: var(--clean-text);
+  background: #fff;
+  border: 1px solid var(--clean-border);
+  border-radius: var(--clean-radius);
+  box-shadow: var(--clean-shadow-soft);
+}
+}

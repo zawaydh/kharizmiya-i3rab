@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { GameSuccessPop, gameBackLinkStyle, gameShellStyle, gameThemeVars } from "./games/GameVisualTheme";
 import {
   I3RAB_IN_OUR_SPEECH_ROUNDS,
   type SpeechGameRound,
@@ -28,6 +30,7 @@ function renderRound(
       if (!match) return <React.Fragment key={`text-${index}`}>{part}</React.Fragment>;
 
       const id = match[1];
+      if (!id) return <React.Fragment key={`missing-${index}`}>______</React.Fragment>;
       const blank = byId.get(id);
       if (!blank) return <React.Fragment key={`missing-${id}`}>______</React.Fragment>;
 
@@ -62,11 +65,11 @@ export default function I3rabInOurSpeechGame() {
   } | null>(null);
   const [wrongChoice, setWrongChoice] = React.useState<string | null>(null);
 
-  const round = rounds[roundIndex];
-  const activeBlank = round.blanks[blankIndex] || null;
-  const finished = blankIndex >= round.blanks.length;
+  const round = rounds[roundIndex] ?? rounds[0] ?? null;
+  const activeBlank = round?.blanks[blankIndex] ?? null;
+  const finished = round ? blankIndex >= round.blanks.length : false;
   const solvedCurrent = Boolean(activeBlank && answers[activeBlank.id]);
-  const encouragement = CORRECT_ENCOURAGEMENT[(roundIndex + blankIndex) % CORRECT_ENCOURAGEMENT.length];
+  const encouragement = CORRECT_ENCOURAGEMENT[(roundIndex + blankIndex) % CORRECT_ENCOURAGEMENT.length] ?? "إجابة صحيحة. انتقل إلى الفراغ التالي.";
 
   function choose(value: string) {
     if (!activeBlank || finished || solvedCurrent || feedback) return;
@@ -108,12 +111,19 @@ export default function I3rabInOurSpeechGame() {
     setWrongChoice(null);
   }
 
+  if (!round) {
+    return <section className="card">لا توجد جولات متاحة بعد.</section>;
+  }
+
   return (
-    <div className="speech-game-page speech-game-page-compact" dir="rtl">
-      <section className="card speech-game-card speech-game-card-unified">
+    <div className="speech-game-page speech-game-page-compact game-theme-speech" dir="rtl" style={gameThemeVars("speech")}>
+      <section className="card speech-game-card speech-game-card-unified" style={gameShellStyle("speech")}>
         <header className="speech-game-compact-head">
-          <h1>الإعراب في كلامنا</h1>
-          <p>أكمل الجملة باختيار الصيغة الصحيحة.</p>
+          <div>
+            <h1>الإعراب في كلامنا</h1>
+            <p>أكمل الجملة باختيار الصيغة الصحيحة.</p>
+          </div>
+          <Link href="/games" className="place-game-back-link" style={gameBackLinkStyle}>كل الألعاب</Link>
         </header>
 
         <div className="speech-game-meta" aria-label="موضعك في اللعبة">
@@ -161,7 +171,7 @@ export default function I3rabInOurSpeechGame() {
             >
               {feedback.tone === "correct" ? (
                 <div className="speech-game-correct-pop" aria-label="إجابة صحيحة">
-                  <span aria-hidden="true">✓</span>
+                  <GameSuccessPop />
                   <strong>صحيح</strong>
                 </div>
               ) : null}
@@ -200,9 +210,9 @@ export default function I3rabInOurSpeechGame() {
                 <button type="button" className="btn btn-primary" onClick={nextRound}>
                   تابع إلى جولة جديدة
                 </button>
-                <a href="/learn/start" className="btn btn-soft">
+                <Link href="/learn/start" className="btn btn-soft">
                   ابدأ التعلّم الموجّه
-                </a>
+                </Link>
                 <button type="button" className="btn btn-soft" onClick={restart}>
                   أعد هذه الجولة
                 </button>

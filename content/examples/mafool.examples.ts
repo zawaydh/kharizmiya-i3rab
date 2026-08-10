@@ -1,4 +1,5 @@
-export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[]; followUp?: any };
+import { requireCoverageResult, requirePrimaryCoverage } from "./exampleCoverage";
+export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[]; followUp?: unknown };
 
 export const mafoolCoverageKeysOrdered = [
   "mafool.singular",
@@ -227,11 +228,21 @@ export const mafoolExamples: Example[] = [
   }
 ];
 
-const resultByCover: Record<string, string> = Object.fromEntries(mafoolExamples.map((ex) => [ex.covers[0], ex.facts.finalI3rab.split("\n")[0]]));
+function requireFinalI3rab(ex: Example): string {
+  const value = ex.facts.finalI3rab;
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`المثال ${ex.id} لا يحتوي إعرابًا نهائيًا صالحًا.`);
+  }
+  return value;
+}
+
+const resultByCover: Record<string, string> = Object.fromEntries(
+  mafoolExamples.map((ex) => [requirePrimaryCoverage(ex), requireFinalI3rab(ex).split("\n")[0] || ""])
+);
 const allResults = Array.from(new Set(Object.values(resultByCover)));
 
 export const mafoolQuizExamples = mafoolExamples.map((ex, i) => {
-  const correct = resultByCover[ex.covers[0]];
+  const correct = requireCoverageResult(resultByCover, ex);
   const options = Array.from(new Set([correct, ...allResults.slice(i % allResults.length), ...allResults])).slice(0, 4);
   if (!options.includes(correct)) options[0] = correct;
   return {

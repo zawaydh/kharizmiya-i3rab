@@ -4,7 +4,7 @@ import {
   getQuizPercent,
   isCertificateEligible,
 } from "../lib/certificateEligibility";
-import { resolveVisualPathTopic } from "../lib/topics";
+import { getTopicRoutes, resolveVisualPathTopic } from "../lib/topics";
 
 const existingProgress = {
   user_id: "student-1",
@@ -78,12 +78,59 @@ describe("دمج تقدم الطالب", () => {
     expect(result.practice_percent).toBe(75);
     expect(result.coverage).toEqual(["learn.a"]);
     expect(result.practice_coverage).toEqual(["practice.a"]);
-    expect(result.quiz_passed).toBe(false);
-    expect(result.quiz_score).toBe(10);
+    expect(result.quiz_passed).toBe(true);
+    expect(result.quiz_score).toBe(13);
+  });
+
+  test("لا تسمح لجلسة قديمة بتخفيض النسب أو إلغاء الإكمال", () => {
+    const result = mergeProgressRecord({
+      existing: existingProgress,
+      update: {
+        percent: 35,
+        practice_percent: 20,
+        learn_completed: false,
+        practice_completed: false,
+        quiz_passed: false,
+        quiz_score: 8,
+        quiz_total: 15,
+      },
+      userId: "student-1",
+      topicCode: "nominal-advanced",
+      level: 2,
+      updatedAt: "2026-07-22T00:00:00.000Z",
+    });
+
+    expect(result.percent).toBe(100);
+    expect(result.practice_percent).toBe(75);
+    expect(result.learn_completed).toBe(true);
+    expect(result.quiz_passed).toBe(true);
+    expect(result.quiz_score).toBe(13);
+  });
+
+  test("يثبت تاريخ استحقاق الشهادة بعد تسجيله أول مرة", () => {
+    const earnedAt = "2026-07-20T00:00:00.000Z";
+    const result = mergeProgressRecord({
+      existing: { ...existingProgress, practice_completed: true, practice_percent: 100, certificate_earned_at: earnedAt },
+      update: { quiz_score: 15, quiz_total: 15, quiz_passed: true },
+      userId: "student-1",
+      topicCode: "nominal-advanced",
+      level: 2,
+      updatedAt: "2026-07-25T00:00:00.000Z",
+    });
+
+    expect(result.certificate_earned_at).toBe(earnedAt);
+    expect(result.quiz_score).toBe(15);
   });
 });
 
 describe("روابط المسارات البصرية", () => {
+  test("مفتاح الكلمة الأولى متاح بوصفه مسارًا بصريًا أساسيًا", () => {
+    const result = resolveVisualPathTopic("first-word-key");
+    expect(result.status).toBe("available");
+    expect(result.code).toBe("first-word-key");
+    expect(result.topic?.code).toBe("first-word-key");
+  });
+
   test("الموضوع ذو المسار البصري يظل موضوعه نفسه", () => {
     const result = resolveVisualPathTopic("present-verb");
     expect(result.status).toBe("available");
@@ -107,8 +154,17 @@ describe("روابط المسارات البصرية", () => {
   test("فتح صفحة المسارات دون موضوع يستخدم الجملة الاسمية افتراضيًا", () => {
     const result = resolveVisualPathTopic(null);
     expect(result.status).toBe("available");
+    if (result.status !== "available") {
+      throw new Error("كان متوقعًا أن يكون المسار الافتراضي متاحًا");
+    }
     expect(result.code).toBe("nominal-advanced");
     expect(result.isDefault).toBe(true);
+  });
+
+  test("رابط قائمة الموضوعات لا يعيد المستخدم إلى صفحة المسارات", () => {
+    const routes = getTopicRoutes("present-verb");
+    expect(routes.topics).toBe("/topics");
+    expect(routes.paths).toBe("/paths?topic=present-verb");
   });
 });
 

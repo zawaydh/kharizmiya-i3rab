@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+
+# Vercel
+.vercel/
+
+# TypeScript incremental cache
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# env files
+.env*.local
+.env
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/

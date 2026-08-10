@@ -1,40 +1,14 @@
-"use client";
+import TopicExercisePage from "../../components/TopicExercisePage";
+import "../../styles/30-start-learning-core.css";
+import "../../styles/40-learning-flow.css";
+import "../../styles/50-exercise-workspace.css";
+import "../../styles/60-exercise-stability.css";
+import "../../styles/61-exercise-feedback.css";
+import "../../styles/70-exercise-flow.css";
+import "../../styles/71-quiz-remedial.css";
+import "../../styles/83-home-glossary.css";
 
-import ExercisePlayer from "../../components/ExercisePlayer";
-import AuthLockGate from "../../components/AuthLockGate";
-import StageAccessGate from "../../components/StageAccessGate";
-import { saveProgress } from "../../../lib/db";
-import { getTopicByCode, getTopicRoutes } from "../../../lib/topics";
-
-export default function QuizTopicPage({ params }: { params: { topicCode: string } }) {
-  const topic = getTopicByCode(params.topicCode);
-
-  if (
-    !topic ||
-    !topic.isReady ||
-    !topic.tree ||
-    !topic.quizExamples ||
-    !topic.quizCoverageKeysOrdered
-  ) {
-    return <div className="card">هذا الموضوع غير متاح بعد.</div>;
-  }
-
-  return (
-    <AuthLockGate title="سجّل الدخول للاختبار النهائي" text="سجّل الدخول حتى تُحفظ نتيجتك.">
-    <StageAccessGate topicCode={topic.code} level={topic.level ?? 2} require="quiz">
-    <ExercisePlayer
-      title={`الاختبار النهائي — ${topic.name_ar}`}
-      mode="quiz"
-      tree={topic.tree}
-      examples={topic.quizExamples}
-      coverageKeysOrdered={topic.quizCoverageKeysOrdered}
-      quizCount={topic.quizCount ?? topic.quizCoverageKeysOrdered.length}
-      nav={getTopicRoutes(topic.code)}
-      topicId={topic.code}
-      level={topic.level ?? 2}
-      onSaveProgress={saveProgress}
-    />
-    </StageAccessGate>
-    </AuthLockGate>
-  );
+export default async function QuizTopicPage({ params }: { params: Promise<{ topicCode: string }> }) {
+  const { topicCode } = await params;
+  return <TopicExercisePage topicCode={topicCode} mode="quiz" />;
 }

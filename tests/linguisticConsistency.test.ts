@@ -13,6 +13,8 @@ const descriptiveTargetIds = new Set([
   "mf-10",
   "mf-11",
   "ka-04b",
+  "nf-09",
+  "nf-10",
 ]);
 
 function findExample(id: string) {

@@ -1,6 +1,7 @@
+import { requireCoverageResult, requirePrimaryCoverage } from "./exampleCoverage";
 export type FollowUpOption = { label: string; correct: boolean; feedback: string };
 export type FollowUp = { question: string; options: FollowUpOption[] };
-export type Example = { id: string; sentence: string; target: string; facts: Record<string, any>; covers: string[]; followUp?: FollowUp };
+export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[]; followUp?: FollowUp };
 
 export const pastVerbCoverageKeysOrdered = [
   "past.fatha",
@@ -143,7 +144,7 @@ const resultByCover: Record<string, string> = {
   "past.fatha_nasb_estimated_alif": "فعل ماضٍ مبني على الفتح المقدر على الألف، والهاء ضمير متصل مبني في محل نصب مفعول به",
   "past.sukoon_taa_fael": "فهمتُ: فعل ماضٍ مبني على السكون لاتصاله بضمير رفع متحرك (تاء الفاعل). والتاء: ضمير متصل مبني في محل رفع فاعل",
   "past.sukoon_na_faelin": "حفظنا: فعل ماضٍ مبني على السكون لاتصاله بضمير رفع متحرك (نا الفاعلين). نا: ضمير متصل مبني في محل رفع فاعل",
-  "past.sukoon_niswa": "جلسنَ: فعل ماضٍ مبني على السكون لاتصاله بضمير رفع متحرك (نون النسوة). ونون النسوة: ضمير متصل مبني في محل رفع فاعل",
+  "past.sukoon_niswa": "جلسنَ: فعل ماضٍ مبني على السكون لاتصاله بضمير رفع متحرك (نون النسوة). ونون النسوة: ضمير متصل مبني على الفتح في محل رفع فاعل",
   "past.fatha_alif": "حضرا: فعل ماضٍ مبني على الفتح لاتصاله بألف الاثنين. وألف الاثنين: ضمير متصل مبني في محل رفع فاعل",
   "past.fatha_alif_weak": "سعيا: فعل ماضٍ مبني على الفتح لاتصاله بألف الاثنين. وألف الاثنين: ضمير متصل مبني في محل رفع فاعل. وأصل الفعل: سعى",
   "past.damma_waw": "رجعوا: فعل ماضٍ مبني على الضم لاتصاله بواو الجماعة. وواو الجماعة: ضمير متصل مبني في محل رفع فاعل. والألف: ألف فارقة لا محل لها من الإعراب",
@@ -154,12 +155,15 @@ const resultByCover: Record<string, string> = {
 const optionsBase = Object.values(resultByCover);
 
 export const pastVerbQuizExamples = pastVerbExamples.map((ex, i) => {
-  const correct = resultByCover[ex.covers[0]];
+  const correct = requireCoverageResult(resultByCover, ex);
   const distractors = optionsBase.filter((o) => o !== correct);
+  if (distractors.length === 0) {
+    throw new Error(`${ex.id}: لا توجد مشتتات كافية لبناء سؤال الفعل الماضي.`);
+  }
   const options = [correct, ...distractors.slice(i % Math.max(1, distractors.length - 3), i % Math.max(1, distractors.length - 3) + 3)];
   while (options.length < 4) {
     const candidate = distractors[options.length % distractors.length];
-    if (!options.includes(candidate)) options.push(candidate);
+    if (candidate && !options.includes(candidate)) options.push(candidate);
   }
 
   return {

@@ -1,4 +1,5 @@
-export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
+import type { ExerciseTree } from "../../lib/exercise/model";
+
 
 export const firstWordTree: ExerciseTree = {
   "startNodeId": "fw_decision_1",
@@ -80,7 +81,7 @@ export const firstWordTree: ExerciseTree = {
       "type": "question",
       "context": "عرفنا أن الكلمة حرف.",
       "text": "ماذا نفحص بعد الحرف؟",
-      "hint": "الحرف يوجّه ما بعده.",
+      "hint": "انظر إلى الكلمة التي جاءت بعد الحرف: هل تدل على حدث وزمن فتكون فعلًا، أم تدل على معنى بلا زمن فتكون اسمًا؟",
       "answers": [
         {
           "id": "a",
@@ -118,7 +119,7 @@ export const firstWordTree: ExerciseTree = {
       "id": "R_first_present",
       "type": "result",
       "coverage": "first.verb.present",
-      "text": "الكلمة الأولى فعل مضارع؛ الخطوة التالية فحص أداة نصب أو أداة جزم."
+      "text": "الكلمة الأولى فعل مضارع؛ الخطوة التالية فحص اتصال نون النسوة أو نون التوكيد أولًا."
     },
     "R_first_imperative": {
       "id": "R_first_imperative",

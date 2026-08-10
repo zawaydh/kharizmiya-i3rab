@@ -87,22 +87,28 @@ describe("اتساع بنوك الأسئلة وتنوعها", () => {
 });
 
 describe("تقليل الخطوات المتكررة", () => {
-  test("الضمائر والاسم المنقوص لا يعيدان سؤالين تمهيديين متشابهين", () => {
-    for (const code of ["attached-pronouns", "ism-manqous"]) {
-      const value = topic(code);
-      const learnMax = Math.max(...value.examples.map((example: ExerciseExample) => countCorrectPathQuestions(value.tree, example, "learn")));
-      const practiceMax = Math.max(...value.examples.map((example: ExerciseExample) => countCorrectPathQuestions(value.tree, example, "practice")));
-      expect(learnMax, `${code}: مسار التعلم طويل`).toBeLessThanOrEqual(4);
-      expect(practiceMax, `${code}: مسار التدريب طويل`).toBeLessThanOrEqual(2);
-    }
+  test("الضمائر تبقى مختصرة والاسم المنقوص يحافظ على تسلسل «الـ» ثم الإضافة ثم الحالة", () => {
+    const pronouns = topic("attached-pronouns");
+    const pronounsLearnMax = Math.max(...pronouns.examples.map((example: ExerciseExample) => countCorrectPathQuestions(pronouns.tree, example, "learn")));
+    const pronounsPracticeMax = Math.max(...pronouns.examples.map((example: ExerciseExample) => countCorrectPathQuestions(pronouns.tree, example, "practice")));
+    expect(pronounsLearnMax, "attached-pronouns: مسار التعلم طويل").toBeLessThanOrEqual(4);
+    expect(pronounsPracticeMax, "attached-pronouns: مسار التدريب طويل").toBeLessThanOrEqual(2);
+
+    const manqous = topic("ism-manqous");
+    const manqousLearnMax = Math.max(...manqous.examples.map((example: ExerciseExample) => countCorrectPathQuestions(manqous.tree, example, "learn")));
+    const manqousPracticeMax = Math.max(...manqous.examples.map((example: ExerciseExample) => countCorrectPathQuestions(manqous.tree, example, "practice")));
+    expect(manqous.tree.practiceStartNodeId).toBe("manqous_has_al");
+    expect(manqousLearnMax, "ism-manqous: مسار التعلم أطول من تسلسل الهوية/الـ/الإضافة/الحالة").toBeLessThanOrEqual(4);
+    expect(manqousPracticeMax, "ism-manqous: التدريب يجب أن يقتصر على الـ/الإضافة/الحالة").toBeLessThanOrEqual(3);
   });
 
   test("فروع التوابع المنفصلة أقصر من التدريب المختلط", () => {
     const limits: Record<string, { learn: number; practice: number }> = {
-      "tawabi-naat": { learn: 4, practice: 4 },
-      "tawabi-atf": { learn: 4, practice: 4 },
-      "tawabi-tawkid": { learn: 5, practice: 5 },
-      "tawabi-badal": { learn: 4, practice: 4 },
+      // يضيف التعلم خطوة اكتشاف دلالية واحدة، بينما يبقى التدريب السريع مختصرًا.
+      "tawabi-naat": { learn: 5, practice: 4 },
+      "tawabi-atf": { learn: 4, practice: 3 },
+      "tawabi-tawkid": { learn: 5, practice: 4 },
+      "tawabi-badal": { learn: 4, practice: 3 },
     };
 
     for (const [code, limit] of Object.entries(limits)) {
@@ -113,7 +119,33 @@ describe("تقليل الخطوات المتكررة", () => {
       expect(practiceMax, `${code}: مسار التدريب أطول من المطلوب`).toBeLessThanOrEqual(limit.practice);
     }
 
+    expect(topic("tawabi-naat").tree.startNodeId).toBe("tawabi_naat_discovery");
+    expect(topic("tawabi-naat").tree.practiceStartNodeId).toBe("tawabi_case");
+    expect(topic("tawabi-atf").tree.startNodeId).toBe("tawabi_atf_discovery");
+    expect(topic("tawabi-tawkid").tree.startNodeId).toBe("tawabi_tawkid_discovery");
+    expect(topic("tawabi-tawkid").tree.practiceStartNodeId).toBe("tawabi_tawkid_kind");
+    expect(topic("tawabi-badal").tree.startNodeId).toBe("tawabi_badal_discovery");
+
+    // لا نعرض سؤالًا بخيار واحد في العطف والتوكيد والبدل؛ ننتقل من الحالة إلى صورة الاسم مباشرة.
+    for (const code of ["tawabi-atf", "tawabi-tawkid", "tawabi-badal"]) {
+      expect(topic(code).tree.nodes.tawabi_form).toBeUndefined();
+    }
+
+    expect(String(topic("tawabi-naat").tree.nodes.tawabi_naat_discovery?.text || "")).toContain("ما الدليل");
+    expect(String(topic("tawabi-atf").tree.nodes.tawabi_atf_discovery?.text || "")).toContain("ما الدليل");
+    expect(String(topic("tawabi-atf").tree.nodes.tawabi_atf_discovery?.hint || "")).toContain("حرف عطف");
+    expect(String(topic("tawabi-tawkid").tree.nodes.tawabi_tawkid_discovery?.text || "")).toContain("ماذا فعلت");
+    expect(String(topic("tawabi-badal").tree.nodes.tawabi_badal_discovery?.text || "")).toContain("ما العلاقة");
+
     const mixed = topic("tawabi");
+    for (const branchOnlyId of [
+      "tawabi_naat_discovery",
+      "tawabi_atf_discovery",
+      "tawabi_tawkid_discovery",
+      "tawabi_badal_discovery",
+    ]) {
+      expect(mixed.tree.nodes[branchOnlyId], `${branchOnlyId}: يجب ألا تبقى عقدة غير قابلة للوصول في التدريب المختلط`).toBeUndefined();
+    }
     const mixedMax = Math.max(...mixed.examples.map((example: ExerciseExample) => countCorrectPathQuestions(mixed.tree, example, "learn")));
     expect(mixedMax, "مسار التوابع المختلط ما زال طويلًا").toBeLessThanOrEqual(8);
   });
@@ -124,6 +156,9 @@ describe("تقليل الخطوات المتكررة", () => {
       expect(value.quizCount).toBeLessThanOrEqual(value.quizExamples.length);
       if (["attached-pronouns", "ism-manqous", "tawabi-atf", "tawabi-tawkid", "tawabi-badal"].includes(value.code)) {
         expect(value.quizCount).toBeLessThanOrEqual(8);
+      }
+      if (value.code === "fael") {
+        expect(value.quizCount).toBeLessThanOrEqual(14);
       }
     }
   });

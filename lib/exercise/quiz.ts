@@ -69,10 +69,10 @@ function firstLine(text?: unknown) {
 }
 
 export function normalizeQuizAnswerLabel(text?: string | null) {
-  return firstLine(text)
+  return String(text || "")
     .replace(/[\u064B-\u0652\u0670]/g, "")
     .replace(/[ـ]/g, "")
-    .replace(/[،؛:]/g, " ")
+    .replace(/[،؛:.\n\r]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -284,11 +284,19 @@ function quizTargetHead(example?: QuizExampleLike | null) {
 }
 
 function localizeQuizOptionToExample(option: string, example?: QuizExampleLike | null) {
-  const line = toStudentArabicOption(firstLine(option));
-  const separatorIndex = line.indexOf(":");
+  const localized = String(option || "")
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => toStudentArabicOption(line))
+    .filter(Boolean)
+    .join("\n");
+  const lines = localized.split(/\r?\n/);
+  const first = lines[0] || "";
+  const separatorIndex = first.indexOf(":");
   const head = quizTargetHead(example);
-  if (separatorIndex <= 0 || !head) return line;
-  return toStudentArabicOption(`${head}${line.slice(separatorIndex)}`);
+  if (separatorIndex <= 0 || !head) return localized;
+  lines[0] = `${head}${first.slice(separatorIndex)}`;
+  return toStudentArabicOption(lines.join("\n"));
 }
 
 export function localQuizExpectedLabel(label: string, example?: QuizExampleLike | null) {
@@ -305,8 +313,10 @@ function swapOne(text: string, pairs: ReadonlyArray<readonly [string, string]>) 
 function fallbackCloseQuizDistractors(correct: string) {
   const output: string[] = [];
   const push = (candidate?: string) => {
-    const value = firstLine(candidate);
-    if (value && value !== correct && !output.includes(value)) output.push(value);
+    const value = String(candidate || "").trim();
+    if (value && !isSameQuizAnswer(value, correct) && !output.some((item) => isSameQuizAnswer(item, value))) {
+      output.push(value);
+    }
   };
 
   push(swapOne(correct, [["توكيد لفظي", "توكيد معنوي"], ["توكيد معنوي", "توكيد لفظي"], ["نعت", "بدل"], ["بدل", "نعت"], ["معطوف", "توكيد معنوي"], ["فاعل", "مفعول به"], ["مفعول به", "فاعل"], ["مبتدأ", "خبر"], ["خبر", "مبتدأ"]]));
@@ -365,6 +375,13 @@ export function buildRemedialTeacherExplanation(
   if (startId.includes("present") || label.includes("فعل مضارع") || Object.prototype.hasOwnProperty.call(facts, "hasTool")) {
     const tool = facts.toolWord || facts.tool;
     const toolText = facts.hasTool && tool ? `سبقته أداة «${String(tool)}»` : "لم تسبقه أداة نصب أو جزم";
+    const position = facts.tool === "nasb" ? "نصب" : facts.tool === "jazm" ? "جزم" : "رفع";
+    if (facts.buildConnection === "niswa") {
+      return `نبدأ بـ«${target}»: اتصلت به نون النسوة فبُني على السكون. ${toolText}؛ لذلك الفعل هو في محل ${position}. ونون النسوة ضمير متصل مبني على الفتح في محل رفع فاعل. فنصل إلى: ${label}.`;
+    }
+    if (facts.buildConnection === "tawkid") {
+      return `نبدأ بـ«${target}»: اتصلت به نون التوكيد اتصالًا مباشرًا فبُني على الفتح. ${toolText}؛ لذلك الفعل هو في محل ${position}. فنصل إلى: ${label}.`;
+    }
     const shape = facts.shape === "five" ? "وهو من الأفعال الخمسة" : facts.ending === "weak" ? "وهو معتل الآخر" : "وهو صحيح الآخر";
     return `نبدأ بـ«${target}»: هو فعل مضارع. ${toolText}، ${shape}. نجمع هذين القرارين لنحدد حالته وعلامته، فنصل إلى: ${label}.`;
   }
@@ -431,33 +448,7 @@ function findResultLabelByCoverage(tree: ExerciseTree | null | undefined, covera
 }
 
 export function coverageDisplayLabel(key?: string | null) {
-  const normalizedKey = String(key || "");
-  const labels: Record<string, string> = {
-    "tawabi.naat": "النعت",
-    "tawabi.atf": "العطف",
-    "tawabi.tawkid": "التوكيد",
-    "tawabi.tawkid_lafzi": "التوكيد اللفظي",
-    "tawabi.tawkid_manawi": "التوكيد المعنوي",
-    "tawabi.badal": "البدل",
-    "tawabi.raf3": "الرفع",
-    "tawabi.nasb": "النصب",
-    "tawabi.jarr": "الجر",
-    "tawabi.singular": "المفرد",
-    "tawabi.dual": "المثنى",
-    "tawabi.jms": "جمع مذكر سالم",
-    "tawabi.jfs": "جمع مؤنث سالم",
-    "tawabi.jt": "جمع تكسير",
-    "tawabi.five": "الأسماء الخمسة",
-    "tawabi.sentence": "الجملة",
-    "tawabi.shibh": "شبه الجملة",
-    "tawabi.damma": "الضمة",
-    "tawabi.fatha": "الفتحة",
-    "tawabi.kasra": "الكسرة",
-    "tawabi.alif": "الألف",
-    "tawabi.yaa": "الياء",
-    "tawabi.waw": "الواو",
-  };
-  return labels[normalizedKey] || toStudentArabicOption(normalizedKey, "التصنيف النحوي المناسب");
+  return toStudentArabicOption(String(key || ""), "التصنيف النحوي المناسب");
 }
 
 export function safeFinalLabel(
@@ -465,7 +456,7 @@ export function safeFinalLabel(
   example: QuizExampleLike | null | undefined,
   fallbackCoverage?: string
 ) {
-  const fromExample = exampleFinalLabel(example);
+  const fromExample = String(example?.correctI3rab || example?.facts?.finalI3rab || "").trim();
   if (fromExample && !looksLikeProgrammingOption(fromExample)) return toStudentArabicOption(fromExample);
   const fromResult = findResultLabelByCoverage(tree, fallbackCoverage);
   if (fromResult && !looksLikeProgrammingOption(fromResult)) return toStudentArabicOption(fromResult);

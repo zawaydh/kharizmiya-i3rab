@@ -1,4 +1,5 @@
-export type ExerciseTree = { startNodeId: string; nodes: Record<string, any> };
+import type { ExerciseTree } from "../../lib/exercise/model";
+
 
 export const cleanKhabarTree: ExerciseTree = {
   startNodeId: "khabar_meaning_gate",

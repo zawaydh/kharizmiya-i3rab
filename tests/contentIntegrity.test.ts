@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { TOPICS } from "../lib/topics";
+import { isSameQuizAnswer } from "../lib/exercise/quiz";
 
 type Facts = Record<string, unknown>;
 type Flags = Record<string, boolean>;
@@ -111,7 +112,7 @@ function walkExample(topic: TopicLike, example: TopicLike["examples"][number]) {
   );
 }
 
-const readyTopics = (TOPICS as TopicLike[]).filter(
+const readyTopics = (TOPICS as unknown as TopicLike[]).filter(
   (topic) => topic.tree && Array.isArray(topic.examples)
 );
 
@@ -198,8 +199,8 @@ describe("سلامة أسئلة الاختبار النهائي", () => {
           `${topic.code}/${question.id}: توجد خيارات مكررة`
         ).toBe(question.options.length);
         expect(
-          question.options.filter((option) => option === question.correctI3rab),
-          `${topic.code}/${question.id}: الإجابة الصحيحة غير موجودة مرة واحدة`
+          question.options.filter((option) => isSameQuizAnswer(option, question.correctI3rab)),
+          `${topic.code}/${question.id}: توجد إجابة واحدة فقط بعد التطبيع الكامل`
         ).toHaveLength(1);
       }
     }
@@ -215,6 +216,21 @@ describe("سلامة أسئلة الاختبار النهائي", () => {
             `${topic.code}/${question.id}: مفتاح اختبار غير معلن ${key}`
           ).toBe(true);
         }
+      }
+    }
+  });
+
+
+  test("كل مفتاح تغطية معلن للاختبار له سؤال فعلي في البنك", () => {
+    for (const topic of readyTopics) {
+      const coveredByQuestions = new Set(
+        (topic.quizExamples || []).flatMap((question) => question.covers || [])
+      );
+      for (const key of topic.quizCoverageKeysOrdered || []) {
+        expect(
+          coveredByQuestions.has(key),
+          `${topic.code}: مفتاح اختبار معلن بلا سؤال فعلي ${key}`
+        ).toBe(true);
       }
     }
   });

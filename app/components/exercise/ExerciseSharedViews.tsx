@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { ghostActionStyle, primaryActionStyle } from "./exerciseViewStyles";
 import type { Mode } from "../../../lib/exercise/model";
 import {
   buildGlobalProgress,
@@ -11,15 +12,17 @@ import {
 export type GlossaryEntry = { title: string; body: string[] };
 
 export const SMART_GLOSSARY: Record<string, GlossaryEntry> = {
+  "حروف الجر": { title: "حروف الجر وعلامات الجر", body: ["من أشهر حروف الجر: من، إلى، عن، على، في، الباء، الكاف، اللام، ربّ، حتى، مذ، منذ، واو القسم، وتاء القسم.", "الاسم بعد حرف الجر يكون مجرورًا، لكن علامة الجر تتغير بحسب صورة الاسم: الكسرة في المفرد وجمع التكسير وجمع المؤنث السالم، والياء في المثنى وجمع المذكر السالم والأسماء الخمسة المستوفية للشروط.", "الممنوع من الصرف يجر بالفتحة إذا لم يضف ولم يعرف بـ«الـ»، والاسم المبني نقول فيه: مبني في محل جر." ] },
+  "المضاف إليه": { title: "المضاف إليه", body: ["المضاف إليه اسم أو ضمير يتمم معنى اسم قبله، وهو مجرور دائمًا أو في محل جر إذا كان مبنيًا.", "اسأل عن علاقة الإضافة: كتابُ مَن؟ كتابُ الطالبِ. بابُ ماذا؟ بابُ المدرسةِ. والضمير إذا اتصل باسم مثل «كتابك» يكون في محل جر مضاف إليه.", "من الكلمات التي يكثر أن تضاف لما بعدها: كل، بعض، فوق، تحت، أمام، خلف، قبل، بعد. وجود «الـ» في الكلمة الثانية وحده لا يكفي للحكم بأنها مضاف إليه." ] },
   "حروف العلة": { title: "حروف العلة", body: ["الألف، الواو، الياء.", "ننظر إليها عند آخر الكلمة لتحديد: تعذر، ثقل، أو حذف حرف العلة."] },
-  "الأسماء الخمسة": { title: "الأسماء الخمسة", body: ["أب، أخ، حم، فو، ذو بمعنى صاحب.", "تعرب بالحروف إذا كانت مفردة، مضافة، غير مضافة إلى ياء المتكلم.", "ترفع بالواو، وتنصب بالألف، وتجر بالياء."] },
+  "الأسماء الخمسة": { title: "الأسماء الخمسة", body: ["أب، أخ، حم، فو، ذو. ويشترط في «ذو» أن تكون بمعنى صاحب، وفي «فو» أن تكون بلا ميم.", "تعرب بالحروف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم.", "ترفع بالواو، وتنصب بالألف، وتجر بالياء."] },
   "الأفعال الخمسة": { title: "الأفعال الخمسة", body: ["أفعال مضارعة اتصلت بألف الاثنين أو واو الجماعة أو ياء المخاطبة.", "أوزانها: يفعلان، تفعلان، يفعلون، تفعلون، تفعلين.", "ترفع بثبوت النون، وتنصب وتجزم بحذف النون."] },
   "اسم منقوص": { title: "الاسم المنقوص", body: ["اسم معرب آخره ياء لازمة مكسور ما قبلها، مثل: القاضي، الساعي.", "تظهر الفتحة في النصب، وتقدر الضمة والكسرة في الرفع والجر."] },
   "اسم مقصور": { title: "الاسم المقصور", body: ["اسم معرب آخره ألف لازمة، مثل: الفتى، العصا.", "تقدر عليه الحركات الثلاث للتعذر."] },
   "واو الجماعة": { title: "واو الجماعة", body: ["ضمير متصل يدل على جماعة الذكور.", "يكون في محل رفع فاعل إذا اتصل بالفعل."] },
   "ألف الاثنين": { title: "ألف الاثنين", body: ["ضمير متصل يدل على مثنى.", "يكون في محل رفع فاعل إذا اتصل بالفعل."] },
   "ياء المخاطبة": { title: "ياء المخاطبة", body: ["ضمير متصل يدل على المخاطبة المؤنثة.", "مع المضارع والأمر تكون في محل رفع فاعل."] },
-  "نون النسوة": { title: "نون النسوة", body: ["ضمير متصل يدل على مجموعة مؤنثة.", "مثل: يكتبْنَ، يدرسْنَ، ينجحْنَ.", "إذا اتصلت بالفعل المضارع حسمت البناء مباشرة، فلا نفحص الرفع أو النصب أو الجزم."] },
+  "نون النسوة": { title: "نون النسوة", body: ["ضمير متصل يدل على مجموعة مؤنثة.", "مثل: يكتبْنَ، يدرسْنَ، ينجحْنَ.", "إذا اتصلت بالمضارع بنته على السكون، ثم نحدد محله الإعرابي من العامل السابق."] },
   "ضمير رفع متحرك": { title: "ضمير رفع متحرك", body: ["مثل: تُ، تَ، تِ، نا، تم، تما.", "إذا اتصل بالفعل الماضي بُني الفعل على السكون."] },
   "ضمير متصل": { title: "الضمير المتصل", body: ["ضمير لا يستقل بنفسه ويتصل بكلمة قبله.", "قد يكون في محل رفع أو نصب أو جر بحسب موقعه."] },
   "ضمير منفصل": { title: "الضمير المنفصل", body: ["ضمير يستقل في النطق والكتابة، مثل: أنا، أنت، هو.", "غالبًا يُعرب مبنيًا في محل رفع مبتدأ إذا بدأ به الكلام."] },
@@ -42,7 +45,7 @@ export const SMART_GLOSSARY: Record<string, GlossaryEntry> = {
   "إن وأخواتها": { title: "إن وأخواتها", body: ["تدخل على الجملة الاسمية.", "تنصب الاسم ويسمى اسمها، وترفع الخبر ويسمى خبرها."] },
   "الاسم المعرب": { title: "الاسم المعرب", body: ["يتغير ضبط آخره أو علامته بتغير موقعه في الجملة.", "مثل: طالبٌ، طالبًا، طالبٍ."] },
   "الاسم المبني": { title: "الاسم المبني", body: ["لا يتغير آخره بتغير موقعه.", "يعرب في محل رفع أو نصب أو جر حسب موقعه."] },
-  "الأسماء المبنية": { title: "الأسماء المبنية", body: ["مثل الضمائر، أسماء الإشارة، الأسماء الموصولة، أسماء الاستفهام والشرط.", "لا نقول مرفوع بالضمة، بل نقول: مبني في محل رفع/نصب/جر."] },
+  "الأسماء المبنية": { title: "الأسماء المبنية", body: ["من أشهرها: الضمائر، وأكثر أسماء الإشارة، وأكثر الأسماء الموصولة، وكثير من أسماء الاستفهام والشرط.", "الاسم المبني لا تتغير صورة آخره بتغير موقعه، لذلك نحدد موقعه أولًا ثم نقول: مبني في محل رفع أو نصب أو جر.", "مثال: «رأيتُ هذا»؛ هذا اسم إشارة مبني في محل نصب مفعول به."] },
   "علامة أصلية": { title: "العلامة الأصلية", body: ["الضمة للرفع، الفتحة للنصب، الكسرة للجر، السكون للجزم."] },
   "علامة فرعية": { title: "العلامة الفرعية", body: ["مثل الواو والألف والياء وثبوت النون وحذف النون وحذف حرف العلة.", "تظهر في أبواب مخصوصة مثل المثنى والجمع والأسماء الخمسة والأفعال الخمسة."] },
   "أدوات النصب": { title: "أدوات النصب", body: ["منها: لن، أن، كي.", "إذا دخلت على الفعل المضارع جعلته منصوبًا."] },
@@ -111,7 +114,7 @@ export function StageCompletionBanner({ mode, onReset }: { mode: Exclude<Mode, "
         <strong>{copy.title}</strong>
         <p>{copy.description}</p>
       </div>
-      <button onClick={onReset} style={ghostButtonStyle}>{copy.resetLabel}</button>
+      <button type="button" onClick={onReset} style={ghostActionStyle}>{copy.resetLabel}</button>
     </section>
   );
 }
@@ -146,7 +149,18 @@ export function SmartGlossaryPopover({ term, onClose }: { term: string | null; o
   const entry = SMART_GLOSSARY[term];
   if (!entry) return null;
   return (
-    <div className="smart-popover" role="dialog" aria-label={entry.title}>
+    <div
+      className="smart-popover"
+      role="dialog"
+      aria-label={entry.title}
+      style={{
+        width: "min(300px, calc(100vw - 24px))",
+        maxHeight: "min(230px, 34svh)",
+        padding: "11px 13px 10px",
+        fontSize: 12,
+        lineHeight: 1.65,
+      }}
+    >
       <button type="button" className="smart-popover-close" onClick={onClose}>×</button>
       <strong>{entry.title}</strong>
       <ul>{entry.body.map((line) => <li key={line}>{line}</li>)}</ul>
@@ -168,8 +182,8 @@ export function StageBottomNavigation({
   if (!visible) return null;
   return (
     <div className="exercise-bottom-nav stage-locked-next" style={navNextWrapStyle}>
-      <button
-        style={{ ...primaryNavButtonStyle, opacity: 1, cursor: ready ? "pointer" : "not-allowed" }}
+      <button type="button"
+        style={{ ...primaryActionStyle, opacity: 1, cursor: ready ? "pointer" : "not-allowed" }}
         className="stage-next-button"
         disabled={!ready}
         onClick={onClick}
@@ -180,31 +194,10 @@ export function StageBottomNavigation({
   );
 }
 
-const ghostButtonStyle: React.CSSProperties = {
-  marginTop: 12,
-  padding: "10px 14px",
-  borderRadius: 14,
-  border: "1px solid #8795a7",
-  cursor: "pointer",
-  background: "#ffffff",
-  color: "#172033",
-  fontWeight: 800,
-};
-
 const navNextWrapStyle: React.CSSProperties = {
   marginTop: 24,
   display: "flex",
   justifyContent: "center",
 };
 
-const primaryNavButtonStyle: React.CSSProperties = {
-  padding: "14px 22px",
-  borderRadius: 14,
-  border: "none",
-  cursor: "pointer",
-  fontWeight: 900,
-  fontSize: 16,
-  color: "#ffffff",
-  background: "#137f7a",
-  boxShadow: "0 10px 30px rgba(0,0,0,.12)",
-};
+
