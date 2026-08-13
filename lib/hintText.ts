@@ -56,6 +56,10 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     const id = String(nodeId || "");
     const quoted = quoteTarget(target);
     const q = String(question || "");
+    if (id === "fw_decision_1")
+        return `هل تدل ${quoted} على اسم أو معنى بلا زمن، أم على حدث وزمن، أم لا يظهر معناها كاملًا إلا مع غيرها؟`;
+    if (id === "fw_verb_tense")
+        return `هل يدل ${quoted} على حدث وقع وانتهى، أم على حدث يقع أو يتجدد، أم على طلب حصول الحدث؟`;
     if (id === "present_word_kind" || id === "past_word_kind" || id === "imperative_word_kind")
         return `هل تدل ${quoted} على حدث وزمن، أم على معنى بلا زمن، أم لا يظهر معناها إلا مع غيرها؟`;
     if (id === "present_tense" || id === "past_tense" || id === "imperative_meaning")
@@ -163,6 +167,20 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
         return `حدد موقع ${quoted} أولًا: أهو مرفوع أم منصوب أم مجرور؟`;
     if (id === "manqous_y_raf3" || id === "manqous_y_jar")
         return `هل ${quoted} معرفة بـ«أل» أو مضافة، أم نكرة غير مضافة؟`;
+    if (id === "hal_relation")
+        return `اسأل عن ${quoted} في الجملة: كيف كان صاحبها وقت وقوع الفعل؟ هل تصف هيئته في تلك اللحظة؟`;
+    if (id === "hal_kind")
+        return `بعد أن ثبتت وظيفة الحال، افحص ${quoted}: أهي كلمة واحدة، أم جملة كاملة، أم شبه جملة؟`;
+    if (id === "munada_tool")
+        return `انظر قبل ${quoted} مباشرة: هل سبقتها أداة نداء مثل «يا»؟`;
+    if (id === "munada_kind")
+        return `بعد ثبوت النداء، افحص ${quoted}: أعلم مفرد هو، أم نكرة مقصودة، أم نكرة غير مقصودة، أم مضاف، أم شبيه بالمضاف؟`;
+    if (id === "istithna_mufarragh_role")
+        return `احذف «إلا» مؤقتًا، ثم اقرأ الجملة: ما الموقع الذي تشغله ${quoted} من الفعل أو حرف الجر؟`;
+    if (id === "naib_role")
+        return `الفعل مبني للمجهول؛ اسأل: ما الشيء أو الشخص الذي وقع عليه الفعل ثم ناب عن الفاعل؟`;
+    if (id === "mafoolat_bih_check")
+        return `بعد استبعاد المفعول معه وفيه والمطلق ولأجله، اسأل: على من أو على ماذا وقع الفعل مباشرة؟`;
     if (id === "fael_hukm" || id === "mafool_hukm")
         return `بعد تحديد وظيفة ${quoted}، ما الحالة الإعرابية الأصلية لهذه الوظيفة؟`;
     if (id === "fael_role_verbal")
@@ -199,7 +217,7 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
         return `حدّد صورة الخبر في ${quoted}: خبر مفرد، جملة اسمية، جملة فعلية، أم شبه جملة من جار ومجرور أو ظرف؟`;
     }
     if (id === "fw_particle_after")
-        return `انظر إلى الكلمة التي جاءت بعد الحرف: هل تدل على حدث وزمن فتكون فعلًا، أم تدل على معنى بلا زمن فتكون اسمًا؟`;
+        return `انظر إلى الكلمة التي جاءت بعد ${quoted}: هل تدل على حدث وزمن فتكون فعلًا، أم على معنى بلا زمن فتكون اسمًا؟`;
     if (id === "khabar_sentence_type")
         return `انظر إلى أول كلمة في جملة الخبر: إن بدأت باسم فهي جملة اسمية، وإن بدأت بفعل فهي جملة فعلية.`;
     const fullNounShapeHint = `افحص صورة ${quoted}: مفرد، مثنى، جمع مذكر سالم، جمع مؤنث سالم، جمع تكسير، أم من الأسماء الخمسة؟`;
@@ -207,8 +225,23 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
         return fullNounShapeHint;
     if (["inna_ism_number", "inna_khabar_single_number"].includes(id))
         return `افحص صورة ${quoted}: مفرد أو جمع تكسير، مثنى، جمع مذكر سالم، جمع مؤنث سالم، أم من الأسماء الخمسة؟`;
-    if (/_number$|_shape$|_form$/.test(id))
-        return `افحص صورة ${quoted} وفق الخيارات الظاهرة في هذه العقدة، ولا تنتقل إلى العلامة قبل تثبيت الصورة.`;
+    if (["fael_form", "mafool_form", "mafoolat_form", "naib_form"].includes(id))
+        return `افحص ${quoted} نفسها: أهي اسم ظاهر تتغير علامته، أم اسم مبني يلزم صورة واحدة، أم ضمير متصل، أم تركيب يمكن تأويله باسم؟`;
+    if (["mafoolat_shape", "naib_shape", "munada_shape", "la_nasb_shape", "tawabi_shape"].includes(id))
+        return `افحص صورة ${quoted} من لفظها: مفرد، مثنى، جمع، أم من الأسماء الخمسة؟`;
+    if (id === "hal_shape")
+        return `بعد أن ثبت أن ${quoted} حال، افحص صورتها: أهي كلمة واحدة تصف الهيئة، أم جملة كاملة، أم شبه جملة؟`;
+    if (id === "istithna_shape")
+        return `بعد تحديد نوع الاستثناء وحكم ${quoted}، افحص صورتها لتحديد العلامة: مفرد، مثنى، جمع، أم اسم مبني؟`;
+    if (id === "la_built_shape")
+        return `عرفنا أن اسم «لا» هنا مبني. افحص صورته: أمفرد هو، أم مثنى، أم جمع مذكر سالم؟`;
+    if (id === "tawabi_form")
+        return `عرفنا وظيفة ${quoted} وحالتها من المتبوع؛ افحص الآن: أهي اسم ظاهر معرب، أم اسم مبني، أم جملة، أم شبه جملة؟`;
+    if (/_number$|_shape$|_form$/.test(id)) {
+        const cleanedShapeHint = diagnosticHintText(rawHint, target);
+        if (cleanedShapeHint) return cleanedShapeHint;
+        return `افحص صورة ${quoted} من المثال نفسه قبل اختيار العلامة.`;
+    }
     if (/_mark$/.test(id))
         return `بعد معرفة الحالة وصورة ${quoted}، ما العلامة التي تناسبهما؟`;
     if (/_case$/.test(id))

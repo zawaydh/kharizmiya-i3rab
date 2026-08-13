@@ -270,7 +270,7 @@ const tawabiSourceTree: ExerciseTree = {
                 { id: "jms", text: "جمع مذكر سالم", next: "tawabi_mark", eval: { fact: "shape", equals: "jms" }, hint: "جمع المذكر السالم يدل على جماعة ذكور عاقلة، وعلامته الواو في الرفع والياء في النصب والجر." },
                 { id: "jfs", text: "جمع مؤنث سالم", next: "tawabi_mark", eval: { fact: "shape", equals: "jfs" }, hint: "جمع المؤنث السالم ينتهي غالبًا بألف وتاء زائدتين، وينصب بالكسرة نيابة عن الفتحة." },
                 { id: "jt", text: "جمع تكسير", next: "tawabi_mark", eval: { fact: "shape", equals: "jt" }, hint: "جمع التكسير تتغير فيه صورة المفرد، مثل: طفل ← أطفال، ويعرب غالبًا بالحركات." },
-                { id: "five", text: "من الأسماء الخمسة", next: "tawabi_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة تعرب بالحروف إذا كانت مفردة، مضافة، ومضافة إلى غير ياء المتكلم." }
+                { id: "five", text: "من الأسماء الخمسة", next: "tawabi_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة تعرب بالحروف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم." }
             ]
         },
         tawabi_mark: {

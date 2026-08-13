@@ -50,7 +50,7 @@ export const munadaTree: ExerciseTree = {
       answers: [
         { id: "fatha", text: "الفتحة الظاهرة", next: "R_munada_nasb", eval: { fact: "nasbMark", equals: "fatha" }, hint: "الفتحة علامة النصب الأصلية للمفرد." },
         { id: "yaa", text: "الياء", next: "R_munada_nasb", eval: { fact: "nasbMark", equals: "yaa" }, hint: "الياء علامة نصب المثنى وجمع المذكر السالم." },
-        { id: "alif", text: "الألف", next: "R_munada_nasb", eval: { fact: "nasbMark", equals: "alif" }, hint: "الألف علامة نصب الأسماء الخمسة إذا استوفت شروط الإعراب بالحروف." },
+        { id: "alif", text: "الألف", next: "R_munada_nasb", eval: { fact: "nasbMark", equals: "alif" }, hint: "الألف علامة نصب الأسماء الخمسة إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم." },
       ],
     },
     R_munada_built: { id: "R_munada_built", type: "result", text: "منادى مبني على ما يرفع به في محل نصب." },

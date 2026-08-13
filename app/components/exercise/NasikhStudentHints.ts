@@ -43,11 +43,11 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
         }
         if (id === "kana_khabar_kind") {
             if (pickedText.includes("مفرد"))
-                return `انظر إلى (${currentTarget}) في المثال نفسه. هل هو كلمة واحدة فقط؟ تذكّر أن كلمة واحدة قد تكون مثنى أو جمعًا، ومع ذلك تسمى خبرًا مفردًا من حيث الصورة.`;
+                return `اخترتَ «خبر مفرد». اختبر (${currentTarget}): الخبر المفرد هنا ليس جملة ولا شبه جملة، ولو كان مثنى أو جمعًا. هل المحدد كلمة/اسمًا واحدًا لا إسناد فيه ولا جارًا ومجرورًا ولا ظرفًا؟`;
             if (pickedText.includes("جملة"))
-                return `انظر إلى (${currentTarget}). هل ترى جملة كاملة فيها فعل وفاعل، أو مبتدأ وخبر داخليان؟ أم أنه كلمة واحدة أو تركيب جار ومجرور أو ظرف؟`;
+                return `اخترتَ «خبر جملة». اختبر (${currentTarget}): هل فيه إسناد كامل من فعل وفاعل أو مبتدأ وخبر؟ إن لم يوجد فليس خبر جملة.`;
             if (pickedText.includes("شبه"))
-                return `انظر إلى (${currentTarget}). شبه الجملة يكون مثل: في الحقيبة، عند المعلم، فوق الطاولة. هل الموجود أمامك تركيب من هذا النوع، أم كلمة واحدة أو جملة كاملة؟`;
+                return `اخترتَ «خبر شبه جملة». شبه الجملة يكون جارًا ومجرورًا مثل «في الحقيبة»، أو ظرفًا مثل «عند المعلم». افحص (${currentTarget}): هل هو واحد من هذين التركيبين؟`;
         }
         if (id === "kana_ism_number" || id === "kana_khabar_single_number") {
             if (pickedText.includes("مثنى"))
@@ -61,12 +61,27 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
             const isFiveNounTarget = String(currentTarget || "").includes("أبو") || String(currentTarget || "").includes("أخو") || String(currentTarget || "").includes("حمو") || String(currentTarget || "").includes("فوك") || String(currentTarget || "").includes("ذو");
             if (pickedText.includes("مفرد") && isFiveNounTarget) {
                 const fiveMark = id === "kana_khabar_single_number" ? "ينصب بالألف لا بالفتحة" : "يرفع بالواو لا بالضمة";
-                return `أحسنت، (${currentTarget}) يدل على واحد فعلًا، لكن له باب خاص لأنه من الأسماء الخمسة. إذا تحققت شروطها: مفرد، ومضاف، وغير مضاف إلى ياء المتكلم؛ فإنه يعرب بالحروف. وهنا ${fiveMark}. عد للسؤال واختر: من الأسماء الخمسة.`;
+                return `أحسنت، (${currentTarget}) يدل على واحد فعلًا، لكن له باب خاص لأنه من الأسماء الخمسة. إذا تحققت شروطها: مفرد، ومكبر، ومضاف، وغير مضاف إلى ياء المتكلم؛ فإنه يعرب بالحروف. وهنا ${fiveMark}. عد للسؤال واختر: من الأسماء الخمسة.`;
             }
             if (pickedText.includes("الأسماء الخمسة"))
-                return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو بمعنى صاحب. وتشترط لإعرابها بالحروف أن تكون مفردة، مضافة، غير مضافة إلى ياء المتكلم. هل (${currentTarget}) واحد منها؟`;
+                return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو بمعنى صاحب. وتشترط لإعرابها بالحروف أن تكون مفردة، مكبرة، مضافة، وغير مضافة إلى ياء المتكلم. هل (${currentTarget}) واحد منها؟`;
             if (pickedText.includes("مفرد"))
                 return `المفرد هنا يعني أنه يدل على واحد لا مثنى ولا جمع. افحص (${currentTarget}): هل يدل على واحد، أم على اثنين، أم جماعة؟`;
+        }
+        if (id === "kana_ism_ending") {
+            const actualEnding = String(state?.facts?.ending || "");
+            if (pickedText.includes("صحيح الآخر") && actualEnding !== "sahih") {
+                if (actualEnding === "attached_ya")
+                    return `اخترتَ «صحيح الآخر»، لكن (${currentTarget}) متصل بياء المتكلم: افصل الياء أولًا؛ فهي ضمير مضاف إليه، ثم انظر إلى أصل الاسم.`;
+                return `اخترتَ «صحيح الآخر»، لكن آخر (${currentTarget}) الأصلي حرف علة؛ لذلك لا تظهر عليه علامة الرفع كما تظهر على الاسم الصحيح الآخر.`;
+            }
+            if (pickedText.includes("متصل بياء المتكلم") && actualEnding !== "attached_ya")
+                return `اخترتَ «متصل بياء المتكلم»، لكن الياء في هذا المثال ليست ضمير المتكلم المضاف إليه. افحص آخر (${currentTarget}) الأصلي قبل الحكم.`;
+            if (pickedText.includes("معتل الآخر") && actualEnding !== "moatal") {
+                if (actualEnding === "attached_ya")
+                    return `اخترتَ «معتل الآخر»، لكن الياء في (${currentTarget}) ياء المتكلم وليست من أصل الاسم. افصلها أولًا، ثم افحص آخر الأصل.`;
+                return `اخترتَ «معتل الآخر»، لكن آخر (${currentTarget}) الأصلي حرف صحيح، وليس ألفًا ولا واوًا ولا ياءً أصلية.`;
+            }
         }
         if (id === "kana_khabar_sentence_type") {
             if (pickedText.includes("فعلية"))
@@ -153,7 +168,7 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
             }
             if (id === "inna_ism_number" || id === "inna_khabar_single_number") {
                 if (number === "five")
-                    return `افحص هل (${currentTarget}) من الأسماء الخمسة: أب، أخ، حم، فو، ذو. إذا كان مفردًا ومضافًا وغير مضاف إلى ياء المتكلم، فله علامة بالحروف.`;
+                    return `افحص هل (${currentTarget}) من الأسماء الخمسة: أب، أخ، حم، فو، ذو بمعنى صاحب. إذا كان مفردًا، مكبرًا، مضافًا، ومضافًا إلى غير ياء المتكلم، أعرب بالحروف.`;
                 if (number === "dual")
                     return `ابحث عن دلالة الاثنين وعلامة التثنية في (${currentTarget}): غالبًا ألف ونون أو ياء ونون.`;
                 if (number === "jms")
@@ -256,13 +271,13 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
             if (pickedText.includes("مفرد") && state?.facts?.shibhType === "jar")
                 return `الجار والمجرور مثل (${currentTarget}) ليس خبرًا مفردًا، بل شبه جملة؛ لأنه تركيب يبدأ بحرف جر ويتعلق بمحذوف خبر.`;
             if (pickedText.includes("مفرد"))
-                return `انظر إلى (${currentTarget}) في المثال نفسه. الخبر المفرد في النحو يعني: ليس جملة ولا شبه جملة، ولو كان مثنى أو جمعًا أو مضافًا.`;
+                return `اخترتَ «خبر مفرد». الخبر المفرد في النحو يعني: ليس جملة ولا شبه جملة، ولو كان مثنى أو جمعًا أو مضافًا. افحص (${currentTarget}) على هذا الأساس.`;
             if (pickedText.includes("جملة") && state?.facts?.nounKind === "masdar")
-                return `صحيح أن داخل (${currentTarget}) فعلًا وفاعلًا، لكن التركيب سبق بـ(أن)، فصار مصدرًا مؤولًا يؤول باسم مثل: نجاحك. لذلك لا نعربه خبر جملة، بل مصدرًا مؤولًا في محل رفع خبر ${innaParticleName(state)}.`;
+                return `اخترتَ «خبر جملة». صحيح أن داخل (${currentTarget}) فعلًا، لكن التركيب سبق بـ«أن»، فصار مصدرًا مؤولًا يؤول باسم مثل «نجاحك»؛ لذلك لا نعربه خبر جملة، بل مصدرًا مؤولًا في محل رفع خبر ${innaParticleName(state)}.`;
             if (pickedText.includes("جملة"))
-                return `انظر إلى (${currentTarget}). هل ترى جملة كاملة فيها فعل وفاعل، أو مبتدأ وخبر داخليان؟ أم أنه كلمة واحدة أو تركيب جار ومجرور أو ظرف؟`;
+                return `اخترتَ «خبر جملة». الجملة لا بد أن يكون فيها إسناد كامل: فعل وفاعل، أو مبتدأ وخبر. افحص (${currentTarget}): هل يوجد فيه هذا الإسناد، أم أنه كلمة واحدة أو جار ومجرور أو ظرف؟`;
             if (pickedText.includes("شبه"))
-                return `انظر إلى (${currentTarget}). شبه الجملة يكون مثل: في الحقيبة، عند المعلم، فوق الطاولة، أو ظرفًا مثل: غدًا. هل الموجود أمامك تركيب من هذا النوع؟`;
+                return `اخترتَ «خبر شبه جملة»، لكن شبه الجملة لا بد أن يكون جارًا ومجرورًا أو ظرفًا مثل: في الحقيبة، عند المعلم، غدًا. افحص (${currentTarget}) نفسه.`;
         }
         if (id === "inna_ism_number" || id === "inna_khabar_single_number") {
             if (pickedText.includes("مثنى"))
@@ -276,10 +291,10 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
             const isFiveNounTarget = String(currentTarget || "").includes("أبو") || String(currentTarget || "").includes("أبا") || String(currentTarget || "").includes("أبي") || String(currentTarget || "").includes("أخو") || String(currentTarget || "").includes("أخا") || String(currentTarget || "").includes("أخي") || String(currentTarget || "").includes("حمو") || String(currentTarget || "").includes("فوك") || String(currentTarget || "").includes("فو") || String(currentTarget || "").includes("ذو") || String(currentTarget || "").includes("ذا") || String(currentTarget || "").includes("ذي");
             if (pickedText.includes("مفرد") && isFiveNounTarget) {
                 const fiveMark = id === "inna_ism_number" ? "ينصب بالألف لا بالفتحة" : "يرفع بالواو لا بالضمة";
-                return `أحسنت، (${currentTarget}) يدل على واحد فعلًا، لكن له باب خاص لأنه من الأسماء الخمسة. إذا تحققت شروطها: مفرد، ومضاف، وغير مضاف إلى ياء المتكلم؛ فإنه يعرب بالحروف. وهنا ${fiveMark}. عد للسؤال واختر: من الأسماء الخمسة.`;
+                return `أحسنت، (${currentTarget}) يدل على واحد فعلًا، لكن له باب خاص لأنه من الأسماء الخمسة. إذا تحققت شروطها: مفرد، ومكبر، ومضاف، وغير مضاف إلى ياء المتكلم؛ فإنه يعرب بالحروف. وهنا ${fiveMark}. عد للسؤال واختر: من الأسماء الخمسة.`;
             }
             if (pickedText.includes("الأسماء الخمسة"))
-                return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو بمعنى صاحب. هل (${currentTarget}) واحد منها وتحققت شروطها؟`;
+                return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو بمعنى صاحب. وتعرب بالحروف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم. هل (${currentTarget}) واحد منها واستوفى هذه الشروط؟`;
             if (pickedText.includes("مفرد"))
                 return `افحص (${currentTarget}): هل يدل على واحد، أم على اثنين، أم على جمع؟`;
         }

@@ -70,7 +70,7 @@ export function extendedTopicStudentHintText(
     const owner = textFact(facts, "owner", "صاحب الحال");
     const question = textFact(facts, "howQuestion", `كيف كان ${owner} وقت وقوع الفعل؟`);
     const paraphrase = textFact(facts, "halParaphrase", `ضع «وهو/وهي» قبل معنى (${target})`);
-    return `لا تبدأ من الحركة. اسأل: ${question} إذا كانت (${target}) تجيب عن «كيف؟» وتبين هيئة ${owner} وقت الفعل، فهي حال. جرّب أيضًا: ${paraphrase}. إذا استقام المعنى، فهذه قرينة قوية. عد واختر الإجابة التي تبني على الهيئة.`;
+    return `اسأل من معنى الجملة: ${question} إذا كانت (${target}) تجيب عن «كيف؟» وتبين هيئة ${owner} وقت الفعل، فهذا هو الدليل المطلوب. جرّب أيضًا: ${paraphrase}. إذا استقام المعنى، فهذه قرينة قوية على وظيفة الكلمة.`;
   }
   if (id === "hal_kind") {
     const kind = String(facts.halKind || "");

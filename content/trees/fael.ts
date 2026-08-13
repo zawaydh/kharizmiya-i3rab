@@ -147,7 +147,7 @@ export const faelTree: ExerciseTree = {
         { id: "c", text: "جمع مذكر سالم", next: "fael_raf3_mark", eval: { fact: "shape", equals: "jms" }, hint: "جمع المذكر السالم يدل على جماعة ذكور عاقلة وينتهي في الرفع بـ ونَ، مثل: المعلمونَ." },
         { id: "d", text: "جمع مؤنث سالم", next: "fael_raf3_mark", eval: { fact: "shape", equals: "jfs" }, hint: "جمع المؤنث السالم يدل على جماعة إناث وينتهي غالبًا بـ ات، مثل: الطالباتُ." },
         { id: "e", text: "جمع تكسير", next: "fael_raf3_mark", eval: { fact: "shape", equals: "jt" }, hint: "جمع التكسير تتغير فيه صورة المفرد عند الجمع، مثل: طفل ← أطفال." },
-        { id: "f", text: "من الأسماء الخمسة", next: "fael_raf3_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة هي: أب، أخ، حم، فو، ذو. تعرب بالحروف إذا كانت مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
+        { id: "f", text: "من الأسماء الخمسة", next: "fael_raf3_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة هي: أب، أخ، حم، فو، ذو. تعرب بالحروف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم." },
       ]
     },
 
@@ -160,7 +160,7 @@ export const faelTree: ExerciseTree = {
       answers: [
         { id: "a", text: "الضمة الظاهرة", next: "R_fael_mu3rab", eval: { fact: "raf3Mark", equals: "damma" }, hint: "الضمة تناسب المفرد العادي وجمع التكسير وجمع المؤنث السالم إذا ظهرت الحركة على آخر الكلمة." },
         { id: "b", text: "الألف", next: "R_fael_mu3rab", eval: { fact: "raf3Mark", equals: "alif" }, hint: "الألف علامة رفع المثنى، مثل: الوالدانِ والصديقانِ." },
-        { id: "c", text: "الواو", next: "R_fael_mu3rab", eval: { fact: "raf3Mark", equals: "waw" }, hint: "الواو علامة رفع جمع المذكر السالم، وتكون علامة رفع الأسماء الخمسة إذا استوفت شروطها: مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
+        { id: "c", text: "الواو", next: "R_fael_mu3rab", eval: { fact: "raf3Mark", equals: "waw" }, hint: "الواو علامة رفع جمع المذكر السالم، وتكون علامة رفع الأسماء الخمسة إذا استوفت شروطها: مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم." },
         { id: "d", text: "ثبوت النون", next: "fael_raf3_mark", correct: false, hint: "ثبوت النون ليس علامة رفع للأسماء، بل يخص الفعل المضارع المتصل بألف الاثنين أو واو الجماعة أو ياء المخاطبة." },
       ]
     },

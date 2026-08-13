@@ -100,7 +100,7 @@ export function tawabiCorrectShapeHint(facts: Facts | undefined, targetText: str
     if (shape === "jt")
         return `(${targetText}) جمع تكسير؛ يدل على جماعة مع تغير صورة المفرد، ويعرب غالبًا بالحركات.`;
     if (shape === "five")
-        return `(${targetText}) من الأسماء الخمسة، وشروطها هنا متحققة: مفردة، مضافة، ومضافة إلى غير ياء المتكلم؛ لذلك نعربها بالحروف.`;
+        return `(${targetText}) من الأسماء الخمسة، وشروطها هنا متحققة: مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم؛ لذلك نعربها بالحروف.`;
     return `بعد أن أخذ التابع ${caseName} من المتبوع، نحدد صورة (${targetText}) لاختيار العلامة.`;
 }
 export function tawabiCorrectMarkHint(facts: Facts | undefined, targetText: string) {

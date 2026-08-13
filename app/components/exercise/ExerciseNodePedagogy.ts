@@ -22,6 +22,12 @@ function getNodeContext(node: PedagogyNode | null | undefined, state: PedagogySt
 }
 function currentStepIntro(node: PedagogyNode | null | undefined, tokens: string[] = []) {
     const id = String(node?.id || "");
+    if (id === "fw_decision_1")
+        return "نبدأ بتحديد نوع الكلمة";
+    if (id === "fw_verb_tense")
+        return "عرفنا أن الكلمة فعل";
+    if (id === "fw_particle_after")
+        return "عرفنا أن الكلمة حرف";
     if (id === "past_word_kind")
         return "نبدأ من نوع الكلمة";
     if (id === "past_tense")
@@ -68,7 +74,7 @@ function currentStepIntro(node: PedagogyNode | null | undefined, tokens: string[
         return "نبدأ من نوع الكلمة";
     if (id.includes("khabar") || id.includes("mubtada") || id.includes("nounKind"))
         return "نكمل التفكير بموقع الاسم";
-    return "نكمل التفكير بسؤال واحد";
+    return "نبني هذه الخطوة على ما ثبت في الخطوة السابقة";
 }
 export function cleanQuestionText(node: PedagogyNode | null | undefined) {
     const id = String(node?.id || "");
@@ -97,8 +103,8 @@ export function cleanQuestionText(node: PedagogyNode | null | undefined) {
         return "هل الاسم معرب أم مبني أم مصدر مؤول؟";
     if (id === "khabar_single_number" || id === "i3rabNumber")
         return "هل الاسم مفرد أم مثنى أم جمع؟";
-    if (text === "ماذا نتحقق الآن؟" || text === "ماذا نتحقق الآن؟")
-        return "ماذا نلاحظ في هذا المثال؟";
+    if (text === "ماذا نتحقق الآن؟")
+        return "ما القرار الذي تدل عليه قرائن المثال في هذه الخطوة؟";
     return text;
 }
 function makeDecisionHint(answerText?: string, nodeText?: string) {

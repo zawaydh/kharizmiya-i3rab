@@ -20,7 +20,7 @@ export function faelStudentHintText(node: PedagogyNode | null | undefined, picke
         const pronounMeaning = String(facts.pronounMeaning || "");
         const connectedType = String(facts.connectedType || "");
         const actionQuestion = String(facts.actionQuestion || "من الذي فعل؟");
-        const fiveConditions = "مفردة، مضافة، ومضافة إلى غير ياء المتكلم";
+        const fiveConditions = "مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم";
         if (id === "fael_context") {
             if (facts.specialContext === "istifham" && pickedText.includes("جملة اسمية")) {
                 return `(${targetText}) هنا اسم استفهام له الصدارة، وليس فعلًا. لكن بعده فعل ظاهر هو (حضرَ)، و(${targetText}) يسأل عن الشخص الذي قام بالحضور. لذلك نتعامل مع الفعل وفاعله في السؤال.`;
@@ -83,17 +83,17 @@ export function faelStudentHintText(node: PedagogyNode | null | undefined, picke
         }
         if (id === "fael_hidden_estimate") {
             if (facts.hiddenPronoun === "هي" && pickedText !== "هي") {
-                return `الفعل (${targetText}) مضارع، والتاء في أوله تاء مضارعة تناسب الغائبة المؤنثة في هذا المثال، وليست تاء تأنيث ساكنة. اسأل: ${actionQuestion} الجواب يعود على (${nominalSubject || "الاسم السابق"})، لذلك نقدّر الفاعل المستتر: هي.`;
+                return `اخترتَ «${pickedText}»، لكن الفعل (${targetText}) مضارع، والتاء في أوله تاء مضارعة تناسب الغائبة المؤنثة في هذا المثال، وليست تاء تأنيث ساكنة. اسأل: ${actionQuestion} الجواب يعود على (${nominalSubject || "الاسم السابق"})، لذلك نقدّر الفاعل المستتر: هي.`;
             }
             if (facts.hiddenPronoun === "هو" && pickedText !== "هو") {
-                return `الضمير يعود على (${nominalSubject})، وهو مفرد مذكر في هذا المثال؛ لذلك نقدّر الفاعل المستتر: هو.`;
+                return `اخترتَ «${pickedText}»، لكن الضمير المستتر يعود على (${nominalSubject})، وهو مفرد مذكر في هذا المثال؛ لذلك تقديره «هو».`;
             }
             if (facts.hiddenPronoun === "أنا" && pickedText !== "أنا")
-                return `الفعل (${targetText}) بدأ بهمزة المتكلم، لذلك تقدير الفاعل المستتر: أنا.`;
+                return `اخترتَ «${pickedText}»، لكن الفعل (${targetText}) بدأ بهمزة المتكلم، وهي قرينة على أن الفاعل المستتر تقديره «أنا».`;
             if (facts.hiddenPronoun === "نحن" && pickedText !== "نحن")
-                return `الفعل (${targetText}) بدأ بنون المتكلمين، لذلك تقدير الفاعل المستتر: نحن.`;
+                return `اخترتَ «${pickedText}»، لكن الفعل (${targetText}) بدأ بنون المتكلمين، وهي قرينة على أن الفاعل المستتر تقديره «نحن».`;
             if (facts.hiddenPronoun === "أنت" && pickedText !== "أنت")
-                return `فعل الأمر موجه إلى المخاطب، فإذا لم يظهر فاعله نقدّره: أنت.`;
+                return `اخترتَ «${pickedText}»، لكن فعل الأمر (${targetText}) موجه إلى المخاطب، فإذا لم يظهر فاعله نقدّره «أنت».`;
             return node?.hint || "نقدر الضمير بحسب صيغة الفعل والمعنى.";
         }
         if (id === "fael_hukm") {
@@ -170,7 +170,7 @@ export function faelStudentHintText(node: PedagogyNode | null | undefined, picke
                     return `صحيح أن (${targetText}) يدل على واحد، لكنه ليس مفردًا عاديًا في الإعراب مثل (الطالبُ). أصله (أب) وهو من الأسماء الخمسة، وقد تحققت شروط إعرابه بالحروف: ${fiveConditions}. لذلك نختار: من الأسماء الخمسة.`;
             }
             if (pickedText.includes("الأسماء الخمسة") && facts.shape !== "five")
-                return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو، وتعرب بالحروف إذا كانت مفردة، مضافة، ومضافة إلى غير ياء المتكلم. أما (${targetText}) فليست من هذا الباب في هذا المثال؛ ${correctShapeHint}`;
+                return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو، وتعرب بالحروف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم. أما (${targetText}) فليست من هذا الباب في هذا المثال؛ ${correctShapeHint}`;
             if (pickedText.includes("مثنى") && facts.shape !== "dual")
                 return `المثنى يدل على اثنين أو اثنتين ويرفع بالألف. افحص (${targetText}) في هذا المثال: ${correctShapeHint}`;
             if (pickedText.includes("جمع مذكر") && facts.shape !== "jms")

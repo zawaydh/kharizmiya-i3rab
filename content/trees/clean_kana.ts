@@ -87,7 +87,7 @@ export const cleanKanaTree: ExerciseTree = {
                 { "id": "a", "text": "مفرد", "next": "kana_ism_ending", "eval": { "fact": "number", "equals": "singular" }, "hint": "المفرد يدل على واحد لا على مثنى ولا جمع. افحص الكلمة المطلوبة نفسها: هل تدل على واحد، أم على اثنين، أم على جمع؟" },
                 { "id": "c", "text": "جمع مذكر سالم", "next": "R_kana_ism_jms", "eval": { "fact": "number", "equals": "jms" }, "hint": "جمع المذكر السالم يدل على أكثر من اثنين من الذكور وينتهي غالبًا بـ(ون) أو (ين)، مثل: المعلمون، المخلصين." },
                 { "id": "e", "text": "جمع تكسير", "next": "kana_ism_ending", "eval": { "fact": "number", "equals": "jt" }, "hint": "جمع التكسير تتغير فيه صورة المفرد، مثل: رجل ← رجال، كتاب ← كتب." },
-                { "id": "f", "text": "من الأسماء الخمسة", "next": "R_kana_ism_five", "eval": { "fact": "number", "equals": "five" }, "hint": "الأسماء الخمسة مثل: أبو، أخو، حمو، فو، ذو، وتعرب بالحروف بشروطها." }
+                { "id": "f", "text": "من الأسماء الخمسة", "next": "R_kana_ism_five", "eval": { "fact": "number", "equals": "five" }, "hint": "الأسماء الخمسة مثل: أبو، أخو، حمو، فو، ذو بمعنى صاحب، وتعرب بالحروف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم." }
             ]
         },
         "kana_ism_ending": {
@@ -235,7 +235,7 @@ export const cleanKanaTree: ExerciseTree = {
         "R_kana_ism_visible": { "id": "R_kana_ism_visible", "type": "result", "coverage": "kana_ism.visible", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الضمة الظاهرة على آخره." },
         "R_kana_ism_estimated": { "id": "R_kana_ism_estimated", "type": "result", "coverage": "kana_ism.estimated", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الضمة المقدرة على الألف في آخره، منع من ظهورها التعذر." },
         "R_kana_ism_jms": { "id": "R_kana_ism_jms", "type": "result", "coverage": "kana_ism.jms", "text": "اسم الفعل الناسخ مرفوع، وهو جمع مذكر سالم، وعلامة رفعه الواو." },
-        "R_kana_ism_five": { "id": "R_kana_ism_five", "type": "result", "coverage": "kana_ism.five", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة. وقد تحققت شروط الإعراب بالحروف: مفرد، مضاف، غير مضاف إلى ياء المتكلم." },
+        "R_kana_ism_five": { "id": "R_kana_ism_five", "type": "result", "coverage": "kana_ism.five", "text": "اسم الفعل الناسخ مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة، وقد استوفى شروط إعرابها بالحروف: مفرد، مكبر، مضاف، ومضاف إلى غير ياء المتكلم." },
         "R_kana_ism_damir": { "id": "R_kana_ism_damir", "type": "result", "coverage": "kana_ism.damir", "text": "ضمير متصل مبني في محل رفع اسم الفعل الناسخ. وإذا سبق الفعل الناسخ اسم ظاهر يعود عليه الضمير، فالمعنى يعود إلى الاسم الظاهر، أما الموقع الإعرابي فيشغله الضمير المتصل." },
         "R_kana_ism_ishara": { "id": "R_kana_ism_ishara", "type": "result", "coverage": "kana_ism.ishara", "text": "اسم إشارة مبني في محل رفع اسم الفعل الناسخ." },
         "R_kana_ism_mawsool": { "id": "R_kana_ism_mawsool", "type": "result", "coverage": "kana_ism.mawsool", "text": "اسم موصول مبني في محل رفع اسم الفعل الناسخ." },

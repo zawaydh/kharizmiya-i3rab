@@ -70,7 +70,7 @@ export const laNafiyaTree: ExerciseTree = {
       answers: [
         { id: "fatha", text: "الفتحة الظاهرة", next: "R_la_nasb", eval: { fact: "nasbMark", equals: "fatha" }, hint: "الفتحة علامة النصب الأصلية للمفرد." },
         { id: "yaa", text: "الياء", next: "R_la_nasb", eval: { fact: "nasbMark", equals: "yaa" }, hint: "الياء علامة نصب المثنى وجمع المذكر السالم." },
-        { id: "alif", text: "الألف", next: "R_la_nasb", eval: { fact: "nasbMark", equals: "alif" }, hint: "الألف علامة نصب الأسماء الخمسة عند استيفاء شروط الإعراب بالحروف." },
+        { id: "alif", text: "الألف", next: "R_la_nasb", eval: { fact: "nasbMark", equals: "alif" }, hint: "الألف علامة نصب الأسماء الخمسة إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم." },
       ],
     },
     R_la_built: { id: "R_la_built", type: "result", text: "اسم «لا» مبني على ما ينصب به في محل نصب." },

@@ -8,8 +8,8 @@ export const firstWordTree: ExerciseTree = {
       "id": "fw_decision_1",
       "type": "question",
       "context": "نبدأ من الكلمة الأولى فقط.",
-      "text": "من أين نبدأ؟",
-      "hint": "نحدد نوع الكلمة قبل أي إعراب.",
+      "text": "ما نوع الكلمة المحددة في الجملة؟",
+      "hint": "هل تدل الكلمة المحددة على اسم أو معنى بلا زمن، أم على حدث وزمن، أم لا يظهر معناها كاملًا إلا مع غيرها؟",
       "answers": [
         {
           "id": "a",
@@ -44,8 +44,8 @@ export const firstWordTree: ExerciseTree = {
       "id": "fw_verb_tense",
       "type": "question",
       "context": "عرفنا أن الكلمة فعل.",
-      "text": "ماذا نتحقق الآن؟",
-      "hint": "بعد الفعل نحدد الزمن.",
+      "text": "ما زمن الفعل؟",
+      "hint": "هل يدل الفعل على حدث وقع وانتهى، أم على حدث يقع أو يتجدد، أم على طلب حصول الحدث؟",
       "answers": [
         {
           "id": "a",
@@ -80,7 +80,7 @@ export const firstWordTree: ExerciseTree = {
       "id": "fw_particle_after",
       "type": "question",
       "context": "عرفنا أن الكلمة حرف.",
-      "text": "ماذا نفحص بعد الحرف؟",
+      "text": "ما نوع الكلمة التي جاءت بعد الحرف؟",
       "hint": "انظر إلى الكلمة التي جاءت بعد الحرف: هل تدل على حدث وزمن فتكون فعلًا، أم تدل على معنى بلا زمن فتكون اسمًا؟",
       "answers": [
         {

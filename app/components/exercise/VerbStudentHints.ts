@@ -47,19 +47,33 @@ export function verbStudentHintText(node: PedagogyNode | null | undefined, picke
             return `قارن: مشتْ ← هو مشى. آخر الأصل ألف، وهذه الألف غير ظاهرة في مشتْ؛ إذن المحذوف هو الألف. أمّا بقيتْ فالياء فيها ظاهرة، وليست من مسار الحذف.${reminder}`;
         }
         if (id === "past_raf3_type") {
-            if (pickedText.includes("ألف الاثنين") && facts.raf3BuildGroup === "waw") {
-                return `الألف في (${targetPast}) ليست ألف الاثنين. ألف الاثنين تكون ضميرًا يدل على اثنين مثل: رجعا / حضرا / سعيا. أما الألف بعد واو الجماعة في مثل رجعوا ومضوا وبقوا فهي ألف فارقة لا محل لها من الإعراب، والضمير هو واو الجماعة.${reminder}`;
+            const actualGroup = String(facts.raf3BuildGroup || "");
+            if (pickedText.includes("ألف الاثنين") && actualGroup !== "alif") {
+                if (actualGroup === "waw")
+                    return `اخترتَ «ألف الاثنين»، لكن المتصل في (${targetPast}) هو واو الجماعة؛ فهي تدل على جماعة قاموا بالفعل، والألف بعدها ألف فارقة لا محل لها. ألف الاثنين تدل على فاعلين اثنين مثل: حضرا وسعيا.${reminder}`;
+                return `اخترتَ «ألف الاثنين»، لكن المتصل في (${targetPast}) من ضمائر السكون: تاء الفاعل أو نا الفاعلين أو نون النسوة، وليس ألفًا يدل على اثنين.${reminder}`;
             }
-            if (pickedText.includes("واو الجماعة") && facts.raf3BuildGroup === "alif") {
-                return `في مثل حضرا أو سعيا الضمير هو ألف الاثنين؛ لأنه يدل على فاعلين اثنين. واو الجماعة تكون في مثل رجعوا وبقوا.${reminder}`;
+            if (pickedText.includes("واو الجماعة") && actualGroup !== "waw") {
+                if (actualGroup === "alif")
+                    return `اخترتَ «واو الجماعة»، لكن المتصل في (${targetPast}) هو ألف الاثنين؛ لأنه يدل على فاعلين اثنين. واو الجماعة تكون في مثل: رجعوا وبقوا.${reminder}`;
+                return `اخترتَ «واو الجماعة»، لكن آخر (${targetPast}) لا يحتوي واو جماعة؛ المتصل من ضمائر السكون: تاء الفاعل أو نا الفاعلين أو نون النسوة.${reminder}`;
             }
-            return `انظر إلى الضمير المتصل: تاء/نا/نون النسوة تبني على السكون، ألف الاثنين تدل على اثنين، وواو الجماعة تدل على جماعة والألف بعدها فارقة.${reminder}`;
+            if ((pickedText.includes("تاء الفاعل") || pickedText.includes("نا الفاعلين") || pickedText.includes("نون النسوة")) && actualGroup !== "sukoon") {
+                const actual = actualGroup === "alif" ? "ألف الاثنين" : actualGroup === "waw" ? "واو الجماعة" : "ضمير الرفع الظاهر";
+                return `اخترتَ مجموعة ضمائر السكون، لكن المتصل في (${targetPast}) هو ${actual}. انظر إلى آخر الفعل نفسه وحدد الضمير الظاهر قبل الحكم على البناء.${reminder}`;
+            }
+            return `انظر إلى الضمير المتصل في (${targetPast}) نفسه: تاء/نا/نون النسوة، أم ألف الاثنين، أم واو الجماعة؟${reminder}`;
         }
         if (id === "past_sukoon_raf3_type") {
-            if (pickedText.includes("نا")) {
-                return `انتبه: نا قد تكون للفاعلين أو للمفعولين. في حفظنا النشيدَ: نا أضمرت من قاموا بالحفظ، فهي نا الفاعلين في محل رفع فاعل. أما في حفظَنا اللهُ: نا أضمرت من وقع عليهم الحفظ، فهي نا المفعولين في محل نصب مفعول به، والفاعل هو اللهُ.${reminder}`;
-            }
-            return `تاء الفاعل مثل فهمتُ، ونا الفاعلين مثل حفظنا، ونون النسوة مثل جلسنَ. كلها ضمائر رفع متحركة تبني الفعل الماضي على السكون.${reminder}`;
+            const actualType = String(facts.raf3Type || "");
+            const actualName = actualType === "taa_fael" ? "تاء الفاعل" : actualType === "na_faelin" ? "نا الفاعلين" : actualType === "niswa" ? "نون النسوة" : "ضمير الرفع المتصل";
+            if (pickedText.includes("تاء الفاعل") && actualType !== "taa_fael")
+                return `اخترتَ «تاء الفاعل»، لكن المتصل في (${targetPast}) هو ${actualName}. تاء الفاعل تظهر مثل: فهمتُ، فهمتَ، فهمتِ.${reminder}`;
+            if (pickedText.includes("نا الفاعلين") && actualType !== "na_faelin")
+                return `اخترتَ «نا الفاعلين»، لكن المتصل في (${targetPast}) هو ${actualName}. «نا» تكون فاعلين فقط حين تدل على من قام بالفعل، مثل: حفظنا النشيدَ.${reminder}`;
+            if (pickedText.includes("نون النسوة") && actualType !== "niswa")
+                return `اخترتَ «نون النسوة»، لكن المتصل في (${targetPast}) هو ${actualName}. نون النسوة تدل على جماعة الإناث مثل: الطالبات جلسنَ.${reminder}`;
+            return `حدّد الضمير الظاهر في آخر (${targetPast}) نفسه: تاء الفاعل، نا الفاعلين، أم نون النسوة.${reminder}`;
         }
         if (id === "past_waw_weak") {
             const shown = baseHuwa ? `${targetPast} ← هو ${baseHuwa}` : `مَضَوْا ← هو مضى، بَقُوا ← هو بقي`;
@@ -135,28 +149,24 @@ export function verbStudentHintText(node: PedagogyNode | null | undefined, picke
             return `انظر إلى آخر الفعل (${targetNow}): هل اتصلت به نون النسوة أو نون التوكيد؟ إن لم تتصل به واحدة منهما فهو معرب.`;
         }
         if (id === "present_niswa_position" || id === "present_tawkid_position") {
-            if (facts.tool === "jazm" && !pickedText.includes("جزم")) {
-                return `اتصال النون يحدد بناء (${targetNow})، لكن (${toolWord}) جازم؛ لذلك يكون الفعل في محل جزم.`;
-            }
-            if (facts.tool === "nasb" && !pickedText.includes("نصب")) {
-                return `اتصال النون يحدد بناء (${targetNow})، لكن (${toolWord}) ناصب؛ لذلك يكون الفعل في محل نصب.`;
-            }
-            if ((facts.tool === "none" || facts.hasTool === false) && !pickedText.includes("رفع")) {
-                return `لم يسبق (${targetNow}) ناصب ولا جازم؛ لذلك يكون الفعل المبني في محل رفع.`;
-            }
-            return `علامة البناء ثابتة بسبب النون، أما المحل الإعرابي فيحدده العامل السابق: رفع بلا ناصب أو جازم، ونصب بعد الناصب، وجزم بعد الجازم.`;
+            const clicked = pickedText || "هذا المحل";
+            if (facts.tool === "jazm" && !pickedText.includes("جزم"))
+                return `اخترتَ «${clicked}»، لكن العامل السابق هو (${toolWord}) وهو جازم؛ لذلك يكون (${targetNow})، مع ثبات بنائه بسبب النون، في محل جزم.`;
+            if (facts.tool === "nasb" && !pickedText.includes("نصب"))
+                return `اخترتَ «${clicked}»، لكن العامل السابق هو (${toolWord}) وهو ناصب؛ لذلك يكون (${targetNow})، مع ثبات بنائه بسبب النون، في محل نصب.`;
+            if ((facts.tool === "none" || facts.hasTool === false) && !pickedText.includes("رفع"))
+                return `اخترتَ «${clicked}»، لكن (${targetNow}) لم يسبقه ناصب ولا جازم؛ لذلك يكون الفعل المبني في محل رفع.`;
+            return `افصل بين البناء والمحل: النون تثبت بناء (${targetNow})، والعامل السابق وحده يحدد محله رفعًا أو نصبًا أو جزمًا.`;
         }
         if (id === "present_tool_presence") {
-            if (facts.tool === "jazm" && !pickedText.includes("جزم")) {
-                return `انظر إلى ما قبل الفعل (${targetNow}): سبقه الحرف (${toolWord}). و(${toolWord}) حرف جزم يدخل على الفعل المضارع؛ لذلك لا يصح اختيار أنه بلا ناصب ولا جازم أو أنه منصوب.`;
-            }
-            if (facts.tool === "nasb" && !pickedText.includes("نصب")) {
-                return `انظر إلى ما قبل الفعل (${targetNow}): سبقه الحرف (${toolWord}). و(${toolWord}) حرف نصب يدخل على الفعل المضارع؛ لذلك لا يصح اختيار أنه مرفوع أو مجزوم.`;
-            }
-            if ((facts.tool === "none" || facts.hasTool === false) && (pickedText.includes("نصب") || pickedText.includes("جزم"))) {
-                return `انظر قبل الفعل (${targetNow}) في الجملة: لا توجد أداة نصب ولا أداة جزم مؤثرة، لذلك يبقى الفعل مرفوعًا.`;
-            }
-            return `نحدد حالة المضارع من الأداة التي قبله مباشرة، وقد تتصل بحرف عطف أو استئناف مثل «فلن» و«ولم». أدوات النصب مثل لن وأن وكي تنصب، وأدوات الجزم مثل لم ولا الناهية ولام الأمر تجزم، وإذا لم توجد أداة مؤثرة فهو مرفوع.`;
+            const clicked = pickedText || "هذا الاختيار";
+            if (facts.tool === "jazm" && !pickedText.includes("جزم"))
+                return `اخترتَ «${clicked}»، لكن قبل (${targetNow}) أداة الجزم (${toolWord})؛ لذلك الفعل مجزوم، لا مرفوعًا ولا منصوبًا.`;
+            if (facts.tool === "nasb" && !pickedText.includes("نصب"))
+                return `اخترتَ «${clicked}»، لكن قبل (${targetNow}) أداة النصب (${toolWord})؛ لذلك الفعل منصوب، لا مرفوعًا ولا مجزومًا.`;
+            if ((facts.tool === "none" || facts.hasTool === false) && (pickedText.includes("نصب") || pickedText.includes("جزم")))
+                return `اخترتَ «${clicked}»، لكن لا توجد قبل (${targetNow}) أداة نصب ولا أداة جزم مؤثرة؛ لذلك يبقى مرفوعًا.`;
+            return `افحص الكلمة التي قبل (${targetNow}) مباشرة، بما في ذلك «فلن» و«ولم»: هل هي ناصب، جازم، أم لا يوجد عامل منهما؟`;
         }
         if (id === "present_raf3_shape" || id === "present_nasb_shape" || id === "present_jazm_shape") {
             if (facts.shape === "five") {
@@ -182,11 +192,11 @@ export function verbStudentHintText(node: PedagogyNode | null | undefined, picke
             }
         }
         if (id === "present_raf3_weak_letter" || id === "present_nasb_weak_letter" || id === "present_jazm_weak_letter") {
-            const expected = facts.weakLetter === "alif" ? "الألف" : facts.weakLetter === "waw" ? "الواو" : facts.weakLetter === "ya" ? "الياء" : "حرف العلة";
-            if (id === "present_jazm_weak_letter") {
-                return `نسند الفعل إلى الضمير هو لنتأكد من الحرف الأخير في أصل الفعل: ${targetNow} ← ${baseWithHuwa}. الحرف الذي يظهر في الأصل ولا يظهر في الفعل المجزوم هو حرف العلة المحذوف. في هذا المثال المحذوف هو ${expected}.`;
-            }
-            return `أسند الفعل إلى هو: ${targetNow} ← ${baseWithHuwa}. انظر إلى آخر الأصل: حرف العلة هنا هو ${expected}.`;
+            const expected = facts.weakLetter === "alif" ? "الألف" : facts.weakLetter === "waw" ? "الواو" : facts.weakLetter === "ya" || facts.weakLetter === "yaa" ? "الياء" : "حرف العلة";
+            const pickedLetter = pickedText.includes("الألف") ? "الألف" : pickedText.includes("الواو") ? "الواو" : pickedText.includes("الياء") ? "الياء" : pickedText;
+            if (id === "present_jazm_weak_letter")
+                return `اخترتَ «${pickedLetter}»، لكن أعد (${targetNow}) إلى أصله: ${baseWithHuwa}. الحرف الذي يظهر في الأصل ويغيب من الصورة المجزومة هو ${expected}؛ فهو حرف العلة المحذوف.`;
+            return `اخترتَ «${pickedLetter}»، لكن أَسنِد (${targetNow}) إلى «هو»: ${baseWithHuwa}. آخر الأصل هو ${expected}، فهو حرف العلة في هذا المثال.`;
         }
     }
     if (id.startsWith("imperative_")) {
@@ -217,14 +227,21 @@ export function verbStudentHintText(node: PedagogyNode | null | undefined, picke
             return `نسند الفعل إلى المضارع مع الضمير هو لنعرف أصل آخره، ثم ننظر هل زاد بعد الأصل شيء.`;
         }
         if (id === "imperative_attached_kind") {
-            const baseHuwa = String(facts.presentBase || "يكتب");
-            if (pickedText.includes("نون النسوة") && facts.attached !== "niswa")
-                return `نون النسوة ضمير يدل على جماعة الإناث مثل: اكتبْنَ، وتجعل الفعل مبنيًا على السكون. في (${targetNow}) ليست هذه النون هي المتصل الصحيح.`;
-            if (pickedText.includes("نون التوكيد") && facts.attached !== "tawkid")
-                return `نون التوكيد تؤكد الفعل وتقوّي معناه، ولا تدل على مؤنث، مثل: اكتبَنَّ. إذا لم تكن النون للتوكيد في (${targetNow}) فلا نختارها.`;
-            if ((pickedText.includes("ألف الاثنين") || pickedText.includes("واو الجماعة") || pickedText.includes("ياء المخاطبة")) && !["alif2", "waw", "yaa"].includes(String(facts.attached || "")))
-                return `ألف الاثنين وواو الجماعة وياء المخاطبة ضمائر مخاطبة، وعلامة البناء معها حذف النون. أسند (${targetNow}) إلى: هو ${baseHuwa} ثم حدد الزائد بعد أصل الفعل.`;
-            return `أسند (${targetNow}) إلى المضارع مع الضمير هو: هو ${baseHuwa}. ما المتصل بعد أصل الفعل: نون النسوة، نون التوكيد، ألف الاثنين، واو الجماعة، أم ياء المخاطبة؟`;
+            const attached = String(facts.attached || "");
+            const actualName = attached === "niswa" ? "نون النسوة" : attached === "tawkid" ? "نون التوكيد" : attached === "alif2" ? "ألف الاثنين" : attached === "waw" ? "واو الجماعة" : attached === "yaa" ? "ياء المخاطبة" : "المتصل الظاهر";
+            if (pickedText && !pickedText.includes(actualName)) {
+                if (attached === "niswa")
+                    return `اخترتَ «${pickedText}»، لكن النون في (${targetNow}) تدل على جماعة الإناث مثل: اكتبْنَ؛ فهي نون النسوة.`;
+                if (attached === "tawkid")
+                    return `اخترتَ «${pickedText}»، لكن النون في (${targetNow}) جاءت لتأكيد الطلب مثل: اكتبَنَّ؛ فهي نون التوكيد.`;
+                if (attached === "alif2")
+                    return `اخترتَ «${pickedText}»، لكن المتصل في (${targetNow}) ألف الاثنين؛ لأنه يدل على مخاطبَين اثنين.`;
+                if (attached === "waw")
+                    return `اخترتَ «${pickedText}»، لكن المتصل في (${targetNow}) واو الجماعة؛ لأنها تدل على جماعة المخاطبين.`;
+                if (attached === "yaa")
+                    return `اخترتَ «${pickedText}»، لكن المتصل في (${targetNow}) ياء المخاطبة؛ لأنها تدل على مخاطبة مؤنثة.`;
+            }
+            return `حدّد المتصل الظاهر في (${targetNow}) نفسه: ${actualName}.`;
         }
         if (id === "imperative_ending") {
             if (facts.ending === "weak" && pickedText.includes("صحيح"))

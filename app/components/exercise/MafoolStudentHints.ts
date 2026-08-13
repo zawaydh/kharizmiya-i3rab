@@ -16,7 +16,7 @@ export function mafoolStudentHintText(node: PedagogyNode | null | undefined, pic
         const actor = String(facts.actor || "الفاعل");
         const pronounMeaning = String(facts.pronounMeaning || "");
         const taweel = String(facts.taweel || "المصدر المؤول");
-        const fiveConditions = "مفردة، مضافة، ومضافة إلى غير ياء المتكلم";
+        const fiveConditions = "مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم";
         if (id === "mafool_context") {
             if (pickedText.includes("جملة اسمية")) {
                 return `انظر إلى بداية الجملة: (${firstWord}). هذه كلمة تدل على حدث وزمن، فهي فعل. والجملة التي تبدأ بالفعل غالبًا تكون جملة فعلية.`;
@@ -106,7 +106,7 @@ export function mafoolStudentHintText(node: PedagogyNode | null | undefined, pic
                     return `صحيح أن (${targetText}) يدل على واحد، لكنه ليس مفردًا عاديًا في الإعراب مثل (الواجبَ). هو من الأسماء الخمسة، وقد تحققت شروط إعرابه بالحروف: ${fiveConditions}. لذلك نختار: من الأسماء الخمسة.`;
             }
             if (pickedText.includes("الأسماء الخمسة") && shape !== "five")
-                return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو، وتعرب بالحروف إذا كانت مفردة، مضافة، ومضافة إلى غير ياء المتكلم. أما (${targetText}) فليست من هذا الباب في هذا المثال؛ ${correctShapeHint}`;
+                return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو، وتعرب بالحروف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم. أما (${targetText}) فليست من هذا الباب في هذا المثال؛ ${correctShapeHint}`;
             if (pickedText.includes("مثنى") && shape !== "dual")
                 return `المثنى يدل على اثنين أو اثنتين وينصب بالياء. افحص (${targetText}) في هذا المثال: ${correctShapeHint}`;
             if (pickedText.includes("جمع مذكر") && shape !== "jms")

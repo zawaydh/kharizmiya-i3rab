@@ -80,7 +80,7 @@ export const faelExamples: Example[] = [
     id: "fa-06",
     sentence: "عادَ أبوكَ من العمل.",
     target: "أبوكَ",
-    facts: { ...verbal, roleKind: "visible", shape: "five", raf3Mark: "waw", fiveNoun: true, finalI3rab: `أبوك: فاعل مرفوع، وعلامة رفعه الواو لأنه من الأسماء الخمسة، وقد تحققت شروط إعرابها بالحروف: مفردة، مضافة، ومضافة إلى غير ياء المتكلم.
+    facts: { ...verbal, roleKind: "visible", shape: "five", raf3Mark: "waw", fiveNoun: true, finalI3rab: `أبوك: فاعل مرفوع، وعلامة رفعه الواو لأنه من الأسماء الخمسة، وقد تحققت شروط إعرابها بالحروف: مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم.
 والكاف: ضمير متصل مبني في محل جر مضاف إليه.
 والعامل في رفعه الفعل الوارد في الجملة: عادَ.` },
     covers: ["fael.five"]

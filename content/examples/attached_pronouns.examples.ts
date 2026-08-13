@@ -15,7 +15,7 @@ export const attachedPronounsExamples: Example[] = [
   { id: "pr-04", sentence: "إيّاكَ نعبدُ.", target: "إيّاكَ", facts: { position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
   { id: "pr-05", sentence: "هذا كتابُهُ.", target: "هُ", facts: { position: "jar", form: "attached", role: "mudaf_ileyh" }, covers: ["pronoun.jar"] },
 
-  { id: "pr-06", sentence: "شاركْنا في المسابقةِ.", target: "نا", facts: { position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
+  { id: "pr-06", sentence: "شارَكْنا في المسابقةِ.", target: "نا", facts: { position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
   { id: "pr-07", sentence: "الطالباتُ كتبْنَ الواجبَ.", target: "نَ", facts: { position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
   { id: "pr-08", sentence: "هو يحفظُ القصيدةَ.", target: "هو", facts: { position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
   { id: "pr-09", sentence: "نحنُ نحترمُ النظامَ.", target: "نحنُ", facts: { position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },

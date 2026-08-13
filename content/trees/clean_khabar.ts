@@ -81,7 +81,7 @@ export const cleanKhabarTree: ExerciseTree = {
         { id: "c", text: "جمع مذكر سالم", next: "R_khabar_single_jms", eval: { fact: "number", equals: "jms" }, hint: "جمع المذكر السالم يدل غالبًا على جماعة ذكور عاقلين، وينتهي في الرفع بواو ونون مثل: المعلمون، مخلصون، وفي النصب والجر بياء ونون مثل: المعلمين، مخلصين." },
         { id: "d", text: "جمع مؤنث سالم", next: "R_khabar_single_jfs", eval: { fact: "number", equals: "jfs" }, hint: "جمع المؤنث السالم يدل غالبًا على جماعة مؤنثة، وينتهي بألف وتاء زائدتين، مثل: الطالبات، المعلمات، مجتهدات. يرفع غالبًا بالضمة." },
         { id: "e", text: "جمع تكسير", next: "khabar_single_ending", eval: { fact: "number", equals: "jt" }, hint: "جمع التكسير يدل على جماعة، لكن صورة المفرد تتغير عند الجمع، مثل: كتاب ← كتب، رجل ← رجال، قلم ← أقلام. إذا لم تجد علامة مثنى أو جمع سالم، فانظر هل تغير بناء المفرد." },
-        { id: "f", text: "من الأسماء الخمسة", next: "R_khabar_single_five", eval: { fact: "number", equals: "five" }, hint: "الأسماء الخمسة تعرب بالحروف إذا تحققت شروطها: مفردة، مضافة، غير مضافة إلى ياء المتكلم." }
+        { id: "f", text: "من الأسماء الخمسة", next: "R_khabar_single_five", eval: { fact: "number", equals: "five" }, hint: "الأسماء الخمسة تعرب بالحروف إذا تحققت شروطها: مفردة، مكبرة، مضافة، وغير مضافة إلى ياء المتكلم." }
       ]
     },
 
@@ -146,11 +146,11 @@ export const cleanKhabarTree: ExerciseTree = {
     },
 
     R_khabar_single_visible: { id: "R_khabar_single_visible", type: "result", coverage: "khabar_single.visible", text: "خبر مرفوع وعلامة رفعه الضمة الظاهرة على آخره." },
-    R_khabar_single_estimated: { id: "R_khabar_single_estimated", type: "result", coverage: "khabar_single.estimated", text: "خبر مرفوع وعلامة رفعه الضمة المقدرة على آخره." },
+    R_khabar_single_estimated: { id: "R_khabar_single_estimated", type: "result", coverage: "khabar_single.estimated", text: "خبر مرفوع وعلامة رفعه الضمة المقدرة على الألف منع من ظهورها التعذر." },
     R_khabar_single_dual: { id: "R_khabar_single_dual", type: "result", coverage: "khabar_single.dual", text: "خبر مرفوع وعلامة رفعه الألف لأنه مثنى." },
     R_khabar_single_jms: { id: "R_khabar_single_jms", type: "result", coverage: "khabar_single.jms", text: "خبر مرفوع وعلامة رفعه الواو لأنه جمع مذكر سالم." },
     R_khabar_single_jfs: { id: "R_khabar_single_jfs", type: "result", coverage: "khabar_single.jfs", text: "خبر مرفوع وعلامة رفعه الضمة الظاهرة على آخره لأنه جمع مؤنث سالم." },
-    R_khabar_single_five: { id: "R_khabar_single_five", type: "result", coverage: "khabar_single.five", text: "خبر مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة إذا تحققت شروط عملها." },
+    R_khabar_single_five: { id: "R_khabar_single_five", type: "result", coverage: "khabar_single.five", text: "خبر مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة، وقد استوفى شروط إعرابها بالحروف: مفرد، مكبر، مضاف، ومضاف إلى غير ياء المتكلم." },
     R_khabar_single_damir: { id: "R_khabar_single_damir", type: "result", coverage: "khabar_single.damir", text: "ضمير منفصل مبني في محل رفع خبر." },
     R_khabar_single_ishara: { id: "R_khabar_single_ishara", type: "result", coverage: "khabar_single.ishara", text: "اسم إشارة مبني في محل رفع خبر." },
     R_khabar_single_mawsool: { id: "R_khabar_single_mawsool", type: "result", coverage: "khabar_single.mawsool", text: "اسم موصول مبني في محل رفع خبر. والجملة بعده صلة موصول لا محل لها من الإعراب." },

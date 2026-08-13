@@ -99,7 +99,7 @@ export const mafoolTree: ExerciseTree = {
         { id: "jms", text: "جمع مذكر سالم", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "jms" }, hint: "جمع المذكر السالم يدل على جماعة ذكور عاقلة، وينصب بالياء مثل: المعلمينَ." },
         { id: "jfs", text: "جمع مؤنث سالم", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "jfs" }, hint: "جمع المؤنث السالم ينتهي غالبًا بألف وتاء زائدتين، وينصب بالكسرة نيابة عن الفتحة مثل: الطالباتِ." },
         { id: "jt", text: "جمع تكسير", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "jt" }, hint: "جمع التكسير تتغير فيه صورة المفرد عند الجمع، مثل: قصة ← قصص، وينصب بالفتحة غالبًا." },
-        { id: "five", text: "من الأسماء الخمسة", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة هي: أب، أخ، حم، فو، ذو. تعرب بالحروف إذا كانت مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
+        { id: "five", text: "من الأسماء الخمسة", next: "mafool_nasb_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة هي: أب، أخ، حم، فو، ذو. تعرب بالحروف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم." },
       ]
     },
 
@@ -113,7 +113,7 @@ export const mafoolTree: ExerciseTree = {
         { id: "fatha", text: "الفتحة الظاهرة", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "fatha" }, hint: "الفتحة تناسب المفرد العادي وجمع التكسير إذا ظهرت الحركة على آخر الكلمة." },
         { id: "yaa", text: "الياء", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "yaa" }, hint: "الياء علامة نصب المثنى وجمع المذكر السالم، مثل: الطالبينِ والمعلمينَ." },
         { id: "kasra", text: "الكسرة نيابةً عن الفتحة", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "kasra" }, hint: "الكسرة تنوب عن الفتحة في نصب جمع المؤنث السالم، مثل: الطالباتِ." },
-        { id: "alif", text: "الألف", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "alif" }, hint: "الألف علامة نصب الأسماء الخمسة إذا استوفت شروطها: مفردة، مضافة، ومضافة إلى غير ياء المتكلم." },
+        { id: "alif", text: "الألف", next: "R_mafool_mu3rab", eval: { fact: "nasbMark", equals: "alif" }, hint: "الألف علامة نصب الأسماء الخمسة إذا استوفت شروطها: مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم." },
       ]
     },
 

@@ -18,6 +18,20 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
     const kind = topicKindForDialogue(tree, title);
     const extendedLine = extendedTopicOpeningDialogueLine(node, state, target);
     if (extendedLine) return extendedLine;
+    if (nodeId === "fw_decision_1") {
+        return `ما نوع كلمة «${target}»؟`;
+    }
+    if (nodeId === "fw_verb_tense") {
+        return `عرفنا أن «${target}» فعل. ما زمنه؟`;
+    }
+    if (nodeId === "fw_particle_after") {
+        const sentenceWords = sentence.replace(/[.؟!،]/g, " ").trim().split(/\s+/).filter(Boolean);
+        const targetIndex = sentenceWords.findIndex((word) => word === target || word.replace(/[ًٌٍَُِّْ]/g, "") === target.replace(/[ًٌٍَُِّْ]/g, ""));
+        const following = targetIndex >= 0 ? sentenceWords[targetIndex + 1] : "";
+        return following
+            ? `عرفنا أن «${target}» حرف. ما نوع الكلمة التي جاءت بعده «${following}»؟`
+            : `عرفنا أن «${target}» حرف. ما نوع الكلمة التي جاءت بعده؟`;
+    }
     if (start.includes("present")) {
         if (nodeId === "present_word_kind")
             return `ما نوع كلمة «${target}»؟`;
@@ -398,27 +412,22 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
     }
     if (start.includes("mubtada")) {
         if (nodeId === "mubtada_word_type") {
-            const isPhrase = String(target || "").includes(" ");
-            const subjectLabel = isPhrase ? "التركيب المحدد" : "الكلمة المطلوبة";
-            const occurrenceText = isPhrase ? "وقع التركيب المحدد" : "وقعت الكلمة المطلوبة";
-            const pronounText = isPhrase ? "وظيفته النحوية أو إعرابه" : "وظيفتها النحوية أو إعرابها";
-            return `المطلوب إعراب (${target}). ${occurrenceText} في أول الجملة. قبل تحديد ${pronounText} نحتاج أولًا إلى معرفة النوع. أيُّ الخيارات الآتية يصف نوع ${subjectLabel}؟`;
+            return `ما نوع (${target}) في الجملة: اسم أو ما في معنى الاسم، أم فعل، أم حرف؟`;
         }
         if (nodeId === "mubtada_function_gate") {
-            const subjectLabel = String(target || "").includes(" ") ? "التركيب" : "كلمة";
-            return `عرفنا أن (${target}) اسم أو في معنى الاسم. الآن ننظر إلى دوره في الجملة. أيُّ الخيارات الآتية يصف دور ${subjectLabel} (${target}) في هذه الجملة؟`;
+            return `عرفنا أن (${target}) اسم أو في معنى الاسم. ما دوره في هذه الجملة؟`;
         }
         if (nodeId === "mubtada_start") {
-            return `بما أن (${target}) اسم أو في معنى الاسم وبدأنا الحديث عنه، فهو يؤدي وظيفة المبتدأ. أيُّ الخيارات الآتية يصف صورة المبتدأ هنا؟`;
+            return `ثبت أن (${target}) مبتدأ. ما صورته هنا: اسم معرب، اسم مبني، أم مصدر مؤول؟`;
         }
         if (nodeId === "mubtada_built") {
-            return `بما أن (${target}) اسم مبني في موقع المبتدأ، لا نبحث عن ضمة على آخره، بل نحدد نوعه. أيُّ الخيارات الآتية يصف نوع هذا الاسم المبني؟`;
+            return `عرفنا أن (${target}) اسم مبني في موقع المبتدأ. ما نوع هذا الاسم المبني؟`;
         }
         if (nodeId === "mubtada_number") {
-            return `بما أن (${target}) اسم معرب مرفوع لأنه مبتدأ، نفحص صورته قبل اختيار علامة الرفع. أيُّ الخيارات الآتية يصف صورة هذا الاسم؟`;
+            return `عرفنا أن (${target}) مبتدأ معرب مرفوع. ما صورة الاسم التي تحدد علامة رفعه؟`;
         }
         if (nodeId === "mubtada_ending") {
-            return `بعد تحديد صورة (${target})، ننظر إلى آخره لنقرر هل تظهر الضمة أو تقدر. أيُّ الخيارات الآتية يصف حالة آخر الكلمة؟`;
+            return `عرفنا أن (${target}) يرفع بالضمة في هذه الصورة. ما حالة آخره: صحيح الآخر، مقصور، أم منقوص؟`;
         }
     }
     const fallbackContext = String(node?.context || `نكمل من النتيجة التي وصلنا إليها في ${kind}`).replace(/[.،؛]+$/g, "").trim();

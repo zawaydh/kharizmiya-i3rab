@@ -28,8 +28,13 @@ export function tawabiStudentHintText(node: PedagogyNode | null | undefined, pic
     if (id === "tawabi_naat_discovery") {
         if (isHelp)
             return `انظر إلى العلاقة بين (${targetText}) و(${matbu3}): هل الكلمة وصفت الاسم السابق وبيّنت صفة فيه؟ ${correctRelation}`;
-        if (!pickedText.includes("تصف"))
-            return `ليست وظيفة (${targetText}) هنا خبرًا ولا حالًا؛ بل هي تصف (${matbu3}) وتبين صفة فيه، ولذلك تبدأ بها مسار النعت.`;
+        if (!pickedText.includes("تصف")) {
+            if (pickedText.includes("خبر"))
+                return `اخترتَ «${pickedText}»، لكن الخبر يتمم معنى مبتدأ ولا يتبع اسمًا قبله في صفته. هنا (${targetText}) وصفت (${matbu3}) وبيّنت صفة فيه؛ لذلك العلاقة نعت.`;
+            if (pickedText.includes("حال"))
+                return `اخترتَ «${pickedText}»، لكن الحال يبين هيئة صاحبه وقت وقوع الفعل ويجيب غالبًا عن «كيف؟». هنا (${targetText}) تصف (${matbu3}) نفسه؛ لذلك العلاقة نعت.`;
+            return `اخترتَ «${pickedText}»، لكن (${targetText}) تصف (${matbu3}) وتبين صفة فيه؛ لذلك تبدأ بها مسار النعت.`;
+        }
         return `صحيح؛ (${targetText}) تصف (${matbu3})، فالعلاقة نعت قبل أن ننقل الإعراب.`;
     }
     if (id === "tawabi_atf_discovery") {
@@ -43,16 +48,26 @@ export function tawabiStudentHintText(node: PedagogyNode | null | undefined, pic
     if (id === "tawabi_tawkid_discovery") {
         if (isHelp)
             return `اسأل: هل أضافت (${targetText}) صفة جديدة، أم ثبتت معنى (${matbu3}) ورفعت الشك؟ ${correctRelation}`;
-        if (!pickedText.includes("أكدته"))
-            return `(${targetText}) لم تصف (${matbu3}) ولم تفسره بدلًا؛ بل أكدت معناه، ولذلك ننتقل بعد ذلك إلى نوع التوكيد.`;
+        if (!pickedText.includes("أكدته")) {
+            if (pickedText.includes("وصف"))
+                return `اخترتَ «${pickedText}»، لكن (${targetText}) لم تضف صفة جديدة إلى (${matbu3})؛ بل قوّت معناه ورفعت احتمال الشك، فالعلاقة توكيد.`;
+            if (pickedText.includes("بدل") || pickedText.includes("توضح"))
+                return `اخترتَ «${pickedText}»، لكن البدل يبين المقصود من الاسم أو جزءًا منه أو معنى يشتمل عليه. هنا (${targetText}) تثبت معنى (${matbu3})؛ لذلك العلاقة توكيد.`;
+            return `اخترتَ «${pickedText}»، لكن (${targetText}) أكدت معنى (${matbu3})، ولذلك ننتقل بعد ذلك إلى نوع التوكيد.`;
+        }
         return `صحيح؛ (${targetText}) أكدت (${matbu3})، والخطوة التالية تحديد: لفظي أم معنوي.`;
     }
     if (id === "tawabi_badal_discovery") {
         const badalKind = String(facts?.badalKind || "");
         if (isHelp)
             return `اختبر العلاقة بين (${targetText}) و(${matbu3}): هل هو المقصود نفسه، أم جزء منه، أم معنى يشتمل عليه؟ هنا النوع: ${badalKind || "بدل"}. ${correctRelation}`;
-        if (!pickedText.includes("توضح"))
-            return `(${targetText}) لا تصف (${matbu3}) ولا تؤكده؛ بل تبين المقصود منه أو جزءًا أو معنى مرتبطًا به، ولذلك هي بدل.`;
+        if (!pickedText.includes("توضح")) {
+            if (pickedText.includes("وصف"))
+                return `اخترتَ «${pickedText}»، لكن (${targetText}) لا تضيف صفة إلى (${matbu3})؛ بل تبين المقصود منه أو جزءًا منه أو معنى يشتمل عليه، ولذلك هي بدل.`;
+            if (pickedText.includes("توكيد") || pickedText.includes("أكد"))
+                return `اخترتَ «${pickedText}»، لكن التوكيد يقوي معنى الاسم نفسه، أما (${targetText}) فتفسر (${matbu3}) أو تبين جزءًا أو معنى مرتبطًا به؛ لذلك هي بدل.`;
+            return `اخترتَ «${pickedText}»، لكن (${targetText}) تبين المقصود من (${matbu3}) أو جزءًا منه أو معنى مرتبطًا به؛ لذلك هي بدل.`;
+        }
         return `صحيح؛ علاقة (${targetText}) بـ(${matbu3}) هي بدل ${badalKind ? `(${badalKind})` : ""}.`;
     }
     if (id === "tawabi_entry") {
@@ -70,13 +85,13 @@ export function tawabiStudentHintText(node: PedagogyNode | null | undefined, pic
         if (isHelp)
             return correctRelation;
         if (facts?.relationKind === "description" && !pickedText.includes("وصف"))
-            return `ليست العلاقة هنا عطفًا أو توكيدًا أو بدلًا. (${targetText}) يصف (${matbu3}) أو يخصصه؛ لذلك العلاقة وصف، ومنها نصل إلى النعت.`;
+            return `اخترتَ «${pickedText}»، لكن (${targetText}) يصف (${matbu3}) أو يخصصه؛ لذلك العلاقة وصف، ومنها نصل إلى النعت.`;
         if (facts?.relationKind === "coordination" && !pickedText.includes("شارك"))
-            return `ابحث قبل (${targetText}) عن حرف العطف. وجود ${facts?.connector || "حرف عطف"} جعلها تشارك (${matbu3}) في الحكم، لا تصفه ولا تؤكده.`;
+            return `اخترتَ «${pickedText}»، لكن قبل (${targetText}) يوجد ${facts?.connector || "حرف عطف"}؛ وهذا جعلها تشارك (${matbu3}) في الحكم، لذلك العلاقة عطف.`;
         if (facts?.relationKind === "emphasis" && !pickedText.includes("أكد"))
-            return `(${targetText}) لا يصف (${matbu3}) بصفة جديدة ولا يفسره، بل يقوي معناه أو يثبت شموله؛ لذلك العلاقة توكيد.`;
+            return `اخترتَ «${pickedText}»، لكن (${targetText}) لا يصف (${matbu3}) بصفة جديدة ولا يفسره؛ بل يقوي معناه أو يثبت شموله، لذلك العلاقة توكيد.`;
         if (facts?.relationKind === "substitution" && !pickedText.includes("فسر"))
-            return `اختبر البدل: احذف (${matbu3}) وضع (${targetText}) مكانه. في هذا المثال تبقى الجملة مفهومة؛ لذلك العلاقة بدل، لا مجرد وصف أو توكيد.`;
+            return `اخترتَ «${pickedText}»، لكن اختبر البدل: احذف (${matbu3}) وضع (${targetText}) مكانه. في هذا المثال تبقى الجملة مفهومة؛ لذلك العلاقة بدل.`;
         return correctRelation;
     }
     if (id === "tawabi_term") {
@@ -84,7 +99,7 @@ export function tawabiStudentHintText(node: PedagogyNode | null | undefined, pic
         if (isHelp)
             return `العلاقة هي ${tawabiRelationHintName(String(facts?.relationKind || ""))}؛ لذلك المصطلح المناسب هو: ${correctTerm}.${naatNote}`;
         if (!pickedText.includes(correctTerm))
-            return `المصطلح لا يُختار من الحركة. بما أن العلاقة بين (${targetText}) و(${matbu3}) هي ${tawabiRelationHintName(String(facts?.relationKind || ""))}، فالمصطلح الصحيح: ${correctTerm}.${naatNote}`;
+            return `اخترتَ «${pickedText}»، لكن المصطلح يُبنى على العلاقة التي أثبتناها: علاقة (${targetText}) بـ(${matbu3}) هي ${tawabiRelationHintName(String(facts?.relationKind || ""))}؛ لذلك المصطلح الصحيح هو ${correctTerm}.${naatNote}`;
         return `صحيح؛ (${targetText}) ${correctTerm} لأن علاقته بـ(${matbu3}) هي ${tawabiRelationHintName(String(facts?.relationKind || ""))}.${naatNote}`;
     }
     if (id === "tawabi_tawkid_kind") {
@@ -94,9 +109,9 @@ export function tawabiStudentHintText(node: PedagogyNode | null | undefined, pic
                 ? `لاحظ أن (${targetText}) أعادت اللفظ نفسه؛ إذن هذا توكيد لفظي.`
                 : `لاحظ أن (${targetText}) من ألفاظ التوكيد المعنوي، وفيها غالبًا ضمير يعود على المؤكَّد.`;
         if (kind === "lafzi" && !pickedText.includes("تكرار"))
-            return `هنا حصل التوكيد بتكرار اللفظ نفسه، لا بلفظ من ألفاظ التوكيد المعنوي؛ إذن هو توكيد لفظي.`;
+            return `اخترتَ «${pickedText}»، لكن التوكيد هنا حصل بتكرار اللفظ نفسه؛ لذلك هو توكيد لفظي، لا معنوي.`;
         if (kind === "manawi" && !pickedText.includes("ألفاظ"))
-            return `هنا لم يتكرر اللفظ نفسه، بل جاءت كلمة من ألفاظ التوكيد المعنوي مثل: نفس، عين، كل، جميع، كلا، كلتا.`;
+            return `اخترتَ «${pickedText}»، لكن اللفظ نفسه لم يتكرر؛ بل جاءت كلمة من ألفاظ التوكيد المعنوي مثل: نفس، عين، كل، جميع، كلا، كلتا.`;
         return kind === "lafzi" ? "صحيح؛ هذا توكيد لفظي لأنه أعاد اللفظ." : "صحيح؛ هذا توكيد معنوي لأنه جاء بلفظ من ألفاظه.";
     }
     if (id === "tawabi_case") {
@@ -117,13 +132,13 @@ export function tawabiStudentHintText(node: PedagogyNode | null | undefined, pic
             return `(${targetText}) اسم ظاهر معرب؛ لذلك نكمل إلى صورته ثم علامته. لا نقفز من الحالة إلى العلامة قبل معرفة الصورة.`;
         }
         if (roleKind === "sentence" && !pickedText.includes("جملة"))
-            return `داخل (${targetText}) قد ترى فعلًا أو اسمًا، لكن المطلوب هو التركيب كله. هذا نعت جملة في محل ${correctCase}؛ لأنه جاء بعد نكرة وفيه رابط يعود على (${matbu3}).`;
+            return `اخترتَ «${pickedText}»، لكن المطلوب هو التركيب (${targetText}) كله لا أول كلمة فيه. هذا نعت جملة في محل ${correctCase}؛ لأنه جاء بعد نكرة وفيه رابط يعود على (${matbu3}).`;
         if (roleKind === "shibh" && !pickedText.includes("شبه"))
-            return `(${targetText}) ليس اسمًا واحدًا ولا جملة تامة؛ إنه شبه جملة: ظرف أو جار ومجرور، في محل ${correctCase} نعت.`;
+            return `اخترتَ «${pickedText}»، لكن (${targetText}) ليس اسمًا واحدًا ولا جملة تامة؛ إنه شبه جملة: ظرف أو جار ومجرور، في محل ${correctCase} نعت.`;
         if (roleKind === "mu3rab" && !pickedText.includes("معرب"))
-            return `(${targetText}) كلمة ظاهرة تتغير علامتها، وليست اسمًا مبنيًا ولا جملة ولا شبه جملة؛ لذلك نختار: اسم ظاهر معرب.`;
+            return `اخترتَ «${pickedText}»، لكن (${targetText}) كلمة ظاهرة تتغير علامتها، وليست اسمًا مبنيًا ولا جملة ولا شبه جملة؛ لذلك نختار: اسم ظاهر معرب.`;
         if (roleKind === "mabni" && !pickedText.includes("مبني"))
-            return `(${targetText}) اسم مبني؛ لا تظهر عليه علامة الإعراب، بل يكون في محل ${correctCase} تابعًا للمتبوع.`;
+            return `اخترتَ «${pickedText}»، لكن (${targetText}) اسم مبني؛ لا تظهر عليه علامة الإعراب، بل يكون في محل ${correctCase} تابعًا للمتبوع.`;
         return String(picked?.hint || node?.hint || "حدد صورة التابع من الكلمة أو التركيب المحدد.");
     }
     if (id === "tawabi_shape") {
@@ -143,7 +158,7 @@ export function tawabiStudentHintText(node: PedagogyNode | null | undefined, pic
         if (pickedText.includes("جمع تكسير") && facts?.shape !== "jt")
             return `جمع التكسير تتغير فيه صورة المفرد. أما (${targetText}) فصورته: ${tawabiShapeNameHint(String(facts?.shape || ""), targetText)}.`;
         if (pickedText.includes("الأسماء الخمسة") && facts?.shape !== "five")
-            return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو، بشروطها. أما (${targetText}) فصورته: ${tawabiShapeNameHint(String(facts?.shape || ""), targetText)}.`;
+            return `الأسماء الخمسة هي: أب، أخ، حم، فو، ذو بمعنى صاحب، وتعرب بالحروف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم. أما (${targetText}) فصورته: ${tawabiShapeNameHint(String(facts?.shape || ""), targetText)}.`;
         return correctShape;
     }
     if (id === "tawabi_mark") {
