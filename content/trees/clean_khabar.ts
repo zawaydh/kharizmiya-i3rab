@@ -33,13 +33,24 @@ export const cleanKhabarTree: ExerciseTree = {
     khabar_single_start: {
       id: "khabar_single_start",
       type: "question",
-      context: "بما أننا عرفنا وظيفة الخبر، نحتاج الآن إلى معرفة طبيعته حتى نقرر بعد ذلك: هل يظهر رفعه لفظًا أم يكون في محل رفع.",
-      text: "هل الخبر هنا اسم معرب، أم اسم مبني، أم مصدر مؤول؟",
-      hint: "الاسم المعرب تتغير علامة آخره بحسب موقعه، مثل: شجاعٌ، شجاعًا، شجاعٍ، ولذلك يكون مرفوعًا لفظًا إذا كان خبرًا. والاسم المبني يلزم صورة واحدة مثل: هو، هذا، الذي، فنقول: في محل رفع خبر. أما المصدر المؤول فهو تركيب من حرف مصدري وفعل مثل: أن تنجح، ويؤول باسم: نجاحك، فنقول: مصدر مؤول في محل رفع خبر.",
+      context: "ثبت أن الخبر ليس جملة ولا شبه جملة. نميز الآن هل المحدد كلمة مفردة أم تركيبًا في تأويل اسم.",
+      text: "هل الخبر كلمة مفردة أم تركيب في تأويل اسم؟",
+      hint: "إذا أمكن تأويل التركيب بمصدر صريح مثل «أن تنجح» = «نجاحك»، فهو تركيب في تأويل اسم. أما الاسم المفرد فينتقل بعد ذلك إلى سؤال: معرب أم مبني.",
       answers: [
-        { id: "a", text: "اسم معرب", next: "khabar_single_number", eval: { fact: "nounKind", equals: "mu3rab" } },
-        { id: "b", text: "اسم مبني", next: "khabar_single_built", eval: { fact: "nounKind", equals: "mabni" } },
-        { id: "c", text: "مصدر مؤول", next: "khabar_masdar_discovery", eval: { fact: "nounKind", equals: "masdar" } }
+        { id: "word", text: "كلمة مفردة", next: "khabar_single_inflection", eval: { fact: "nounKind", anyOf: ["mu3rab", "mabni"] }, hint: "إذا كان الخبر كلمة واحدة نحدد بعد ذلك هل هي معربة أم مبنية." },
+        { id: "source", text: "تركيب في تأويل اسم", next: "khabar_masdar_discovery", eval: { fact: "nounKind", equals: "masdar" }, hint: "جرّب التأويل بمصدر صريح: «أن تنجح» = «نجاحك». إذا استقام المعنى فهو مصدر مؤول." }
+      ]
+    },
+
+    khabar_single_inflection: {
+      id: "khabar_single_inflection",
+      type: "question",
+      context: "بما أن الخبر كلمة مفردة، نحدد هل الاسم معرب أم مبني قبل العلامة أو المحل.",
+      text: "هل الخبر اسم معرب أم اسم مبني؟",
+      hint: "الاسم المعرب تتغير علامته بحسب موقعه، أما الاسم المبني فيلزم صورة واحدة ويكون هنا في محل رفع خبر.",
+      answers: [
+        { id: "mu3rab", text: "اسم معرب", next: "khabar_single_number", eval: { fact: "nounKind", equals: "mu3rab" }, hint: "الاسم المعرب إذا وقع خبرًا يكون مرفوعًا بعلامة ظاهرة أو مقدرة أو فرعية." },
+        { id: "mabni", text: "اسم مبني", next: "khabar_single_built", eval: { fact: "nounKind", equals: "mabni" }, hint: "الاسم المبني يلزم صورة واحدة؛ فإذا وقع خبرًا قلنا: مبني في محل رفع خبر." }
       ]
     },
 
@@ -90,7 +101,7 @@ export const cleanKhabarTree: ExerciseTree = {
       type: "question",
       context: "بقي أن نعرف هل تظهر الضمة على آخر الاسم أم تقدر عليه.",
       text: "ما حالة آخر الاسم؟",
-      hint: "افحص آخر الاسم: الصحيح الآخر تظهر عليه الضمة، والمقصور تقدر عليه للتعذر، والمنقوص تقدر عليه للثقل.",
+      hint: "افحص آخر الاسم. حروف العلة هي: الألف والواو والياء. الصحيح الآخر لا ينتهي بحرف علة أصلي، والمقصور آخره ألف لازمة فتقدر عليه الضمة للتعذر، والمنقوص آخره ياء لازمة مكسور ما قبلها فتقدر عليه الضمة للثقل.",
       answers: [
         { id: "a", text: "صحيح الآخر", next: "R_khabar_single_visible", eval: { fact: "ending", equals: "sahih" } },
         { id: "b", text: "معتل الآخر", next: "R_khabar_single_estimated", eval: { fact: "ending", equals: "moatal" } }

@@ -85,8 +85,7 @@ not a tiny inner box. */
 }
 .practice-wrong-sequence,
 .practice-wrong-sequence.is-primary-panel,
-.practice-direct-board,
-.practice-teacher-explanation {
+.practice-direct-board {
   max-height: none;
   overflow: visible;
 }

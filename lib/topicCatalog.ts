@@ -202,7 +202,7 @@ export const TOPIC_CATALOG: TopicMetadata[] = [
   },
   {
     code: "nominal-advanced",
-    name_ar: "الجملة الاسمية",
+    name_ar: "المبتدأ",
     subtitle: "مسار المبتدأ — شجرة نظيفة قابلة للتوسعة",
     shortLabel: "المبتدأ",
     slogan: "تدريب موجّه بخوارزميات الإعراب التفاعلية",

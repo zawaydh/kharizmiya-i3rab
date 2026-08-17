@@ -2,7 +2,8 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    pool: "threads",
+    pool: "forks",
+    // Use child processes instead of worker_threads for stable cross-platform execution, especially on Windows.
     // Keep the core suite serialized; DOM suites run in fresh isolated Vitest processes via vitest.dom.config.ts.
     fileParallelism: false,
     exclude: ["e2e/**", "tests/integration/**", "tests/**/*.dom.test.tsx", "node_modules/**", ".next/**"],

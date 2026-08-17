@@ -67,9 +67,9 @@ function currentStepIntro(node: PedagogyNode | null | undefined, tokens: string[
     if (id.includes("attached"))
         return "ننتبه إلى ما اتصل بآخر الكلمة";
     if ((id.includes("ending") || id.includes("weak")) && !id.includes("kana"))
-        return "نكمل التفكير بسؤال عن آخر الفعل";
+        return "ننظر إلى آخر الفعل لنحدد أثره في علامة البناء أو الإعراب";
     if (id.includes("tense"))
-        return "نبدأ بتحديد زمن الفعل";
+        return "نبدأ بتحديد نوع الفعل";
     if (id.includes("wordType") || id === "start")
         return "نبدأ من نوع الكلمة";
     if (id.includes("khabar") || id.includes("mubtada") || id.includes("nounKind"))
@@ -84,7 +84,7 @@ export function cleanQuestionText(node: PedagogyNode | null | undefined) {
     if (id === "present_step_1")
         return "ماذا نتحقق أولًا؟";
     if (id === "present_tense")
-        return "ما زمن الفعل؟";
+        return "ما نوع الفعل؟";
     if (id === "present_tool")
         return "هل نفحص ما قبل الفعل؟";
     if (id === "present_has_tool")
@@ -99,8 +99,10 @@ export function cleanQuestionText(node: PedagogyNode | null | undefined) {
         return "ما حرف العلة في آخره؟";
     if (id === "wordType")
         return "هل الكلمة اسم أم فعل أم حرف؟";
-    if (id === "nounKind" || id === "khabar_single_start")
-        return "هل الاسم معرب أم مبني أم مصدر مؤول؟";
+    if (id === "nounKind")
+        return "هل المحدد كلمة مفردة أم تركيب في تأويل اسم؟";
+    if (id === "khabar_single_start")
+        return "هل الخبر كلمة مفردة أم تركيب في تأويل اسم؟";
     if (id === "khabar_single_number" || id === "i3rabNumber")
         return "هل الاسم مفرد أم مثنى أم جمع؟";
     if (text === "ماذا نتحقق الآن؟")

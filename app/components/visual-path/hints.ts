@@ -31,6 +31,8 @@ function commonCriterion(label: string): string | undefined {
     "اسم شرط": "أن تربط الكلمة بين فعل الشرط وجوابه",
     "كم الخبرية": "أن تكون الكلمة «كم» الدالة على الكثرة من غير طلب جواب",
     "مصدر مؤول": "أن يكون المحدد تركيبًا من حرف مصدري وفعل يمكن تأويله بمصدر صريح",
+    "تركيب في تأويل اسم": "أن يكون المحدد تركيبًا من أكثر من كلمة ويمكن تحويله إلى اسم صريح يؤدي معناه",
+    "كلمة مفردة": "أن يكون المحدد كلمة واحدة لا تركيبًا من حرف مصدري وفعل",
     "مفرد": "أن يدل الاسم على واحد أو واحدة من غير علامة تثنية أو جمع",
     "مفرد أو جمع تكسير": "ألا يحمل الاسم علامة المثنى أو الجمع السالم أو الأسماء الخمسة",
     "مثنى": "أن يدل الاسم على اثنين وتظهر فيه علامة التثنية «ان/ين»",
@@ -342,9 +344,14 @@ export function visualPathWrongHint(node: PositionedNode, choice: VisualChoice, 
 
   const target = quoted(example?.target);
   const sentence = quoted(example?.sentence, "الجملة");
-  return chosen(
+  const question = String(node.text || node.originalNode?.text || "السؤال الحالي")
+    .replace(/\s+/g, " ")
+    .trim();
+  const compactQuestion = question.length > 72 ? `${question.slice(0, 69).trimEnd()}…` : question;
+  const fallback = chosen(
     choice.label,
-    "أن يطابق معنى الخيار وصيغته ما يطلبه السؤال الحالي",
-    `أعد قراءة السؤال، ثم افحص ${target} داخل ${sentence} وحدد الدليل المرتبط به.`,
+    "وجود دليل مباشر في المثال يثبت الخاصية التي يصفها هذا الخيار",
+    `ارجع إلى سؤال «${compactQuestion}»، ثم افحص ${target} داخل ${sentence} وحدد القرينة التي تؤيد هذا الاختيار أو تستبعده.`,
   );
+  return fallback.length > 230 ? `${fallback.slice(0, 227).trimEnd()}…` : fallback;
 }

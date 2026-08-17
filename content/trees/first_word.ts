@@ -44,7 +44,7 @@ export const firstWordTree: ExerciseTree = {
       "id": "fw_verb_tense",
       "type": "question",
       "context": "عرفنا أن الكلمة فعل.",
-      "text": "ما زمن الفعل؟",
+      "text": "ما نوع الفعل؟",
       "hint": "هل يدل الفعل على حدث وقع وانتهى، أم على حدث يقع أو يتجدد، أم على طلب حصول الحدث؟",
       "answers": [
         {

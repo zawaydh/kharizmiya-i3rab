@@ -45,7 +45,7 @@ function nextStepCue(id: string, target: string): string {
     naib_mark: `لا نصل إلى العلامة إلا بعد ثبوت نائب الفاعل والرفع ونوع الاسم.`,
     naib_mabni_type: `بعد تحديد نوع المبني نصوغ النتيجة: مبني في محل رفع نائب فاعل.`,
   };
-  return cues[id] || `ارجع إلى ما أثبتناه في الخطوة السابقة، ثم أجب عن هذه الخطوة فقط.`;
+  return cues[id] || "";
 }
 
 export function extendedTopicStudentHintText(
@@ -62,15 +62,19 @@ export function extendedTopicStudentHintText(
   const chosen = pickedText(picked);
   const pickedDiagnostic = String(picked?.hint || "").replace(/^💡\s*/, "").trim();
 
-  if (chosen && pickedDiagnostic) {
-    return `اختيار «${chosen}» لا يطابق هذه الخطوة في الجملة «${sentence}». ${pickedDiagnostic} ${nextStepCue(id, target)}`;
+  const genericDiagnostic = /انظر إلى (?:العنصر المؤثر|الجملة)|اختر ما يناسب هذه الخطوة|افحص الخيارات/u.test(pickedDiagnostic);
+  if (chosen && pickedDiagnostic && !genericDiagnostic) {
+    const cue = nextStepCue(id, target);
+    return `اختيار «${chosen}» لا يطابق هذه الخطوة في الجملة «${sentence}». ${pickedDiagnostic}${cue ? ` ${cue}` : ""}`;
   }
 
   if (id === "hal_relation") {
     const owner = textFact(facts, "owner", "صاحب الحال");
     const question = textFact(facts, "howQuestion", `كيف كان ${owner} وقت وقوع الفعل؟`);
+    if (sentence.includes("في هدوء"))
+      return `اسأل: ${question} ثم عبّر عن المعنى بكلمة واحدة: «جاء الضيف هادئًا». بما أن «في هدوء» تبين هيئة الضيف وقت مجيئه، فهي حال.`;
     const paraphrase = textFact(facts, "halParaphrase", `ضع «وهو/وهي» قبل معنى (${target})`);
-    return `اسأل من معنى الجملة: ${question} إذا كانت (${target}) تجيب عن «كيف؟» وتبين هيئة ${owner} وقت الفعل، فهذا هو الدليل المطلوب. جرّب أيضًا: ${paraphrase}. إذا استقام المعنى، فهذه قرينة قوية على وظيفة الكلمة.`;
+    return `اسأل من معنى الجملة: ${question} إذا كانت (${target}) تجيب عن «كيف؟» وتبين هيئة ${owner} وقت الفعل، فهذا دليل الحال. جرّب أيضًا: ${paraphrase}.`;
   }
   if (id === "hal_kind") {
     const kind = String(facts.halKind || "");
@@ -91,36 +95,48 @@ export function extendedTopicStudentHintText(
   }
   if (id === "tamyiz_kind") {
     const kind = String(facts.tamyizKind || "");
-    return kind === "malfuz"
-      ? `الإبهام هنا موجود في اسم مذكور قبل (${target}) مثل عدد أو مقدار أو وزن؛ لذلك هو تمييز ملفوظ. حدّد موضع الإبهام أولًا ولا تعتمد على حفظ الاسم.`
-      : `الإبهام هنا ليس في اسم مقدار بعينه، بل في معنى النسبة كلها: ما الذي ازداد أو امتلأ أو فُضِّل من جهته؟ لذلك هو تمييز ملحوظ.`;
+    if (sentence.includes("امتلأ") && String(target).includes("ماء"))
+      return `لا يوجد قبل (${target}) عدد أو مقدار يحتاج تفسيرًا. الإبهام في معنى الجملة كلها: «امتلأ الكأس»؛ بماذا امتلأ؟ جاءت (${target}) لتزيل هذا الإبهام، لذلك فهي تمييز ملحوظ.`;
+    if (kind === "malfuz")
+      return `انظر إلى الاسم قبل (${target}): هل هو عدد أو مقدار أو وزن أو مساحة يحتاج إلى تفسير؟ إذا نعم فالإبهام في اسم ملفوظ قبله، لذلك التمييز ملفوظ.`;
+    return `لا يوجد اسم مقدار بعينه قبل (${target})؛ الإبهام في معنى النسبة كلها، والكلمة تزيله، لذلك هو تمييز ملحوظ.`;
   }
   if (id === "tamyiz_mark") {
     return `بعد أن أثبتنا أن (${target}) تمييز، نصل إلى الحكم: التمييز في هذا المثال منصوب. والكلمة مفردة نكرة ظاهرة، فعلامة نصبها الفتحة. لا تبدأ بالفتحة قبل إثبات وظيفة التمييز.`;
   }
 
   if (id === "munada_tool") {
-    return `انظر إلى «${sentence}». ابحث عن أداة النداء ثم اسأل: من الذي أُناديه؟ إذا كانت الإجابة هي (${target}) فقد ثبت موقع المنادى.`;
+    return `انظر إلى «${sentence}». ابحث عن أداة النداء مثل «يا»، ثم اسأل: من الذي أناديه؟ إذا كانت الإجابة هي (${target}) فقد ثبت أنه منادى.`;
   }
   if (id === "munada_kind") {
     const kind = String(facts.munadaKind || "");
-    const explanation =
-      kind === "alam" ? "اسم علم مفرد مقصود بذاته؛ فيبنى على ما يرفع به في محل نصب" :
-      kind === "nakira_maqsuda" ? "نكرة يقصد بها شخص معين؛ فتبنى على ما ترفع به في محل نصب" :
-      kind === "mudaf" ? "أضيفت إلى اسم بعدها يتمم معناها؛ فهي مضاف ومعربة منصوبة" :
-      kind === "shibh_mudaf" ? "تعلق بها ما يتمم معناها من غير إضافة صريحة؛ فهي شبيه بالمضاف ومنصوبة" :
-      "نكرة لا يقصد بها شخص معين؛ فهي نكرة غير مقصودة ومنصوبة";
-    return `لقد ثبت أن (${target}) منادى. الآن نوعه هو الذي يحكم الطريق: ${explanation}. عد إلى السؤال واختر النوع الذي يصف المثال نفسه.`;
+    if (kind === "alam") return `لا تحفظ المصطلح أولًا. افحص (${target}): هل هو اسم علم معيّن بذاته مثل «محمد»؟ إذا نعم ننتقل بعد ذلك إلى اسم هذا النوع.`;
+    if (kind === "nakira_maqsuda" || kind === "nakira_ghayr_maqsuda") return `(${target}) نكرة لم يتصل بها ما يتمم معناها. بقي أن نسأل: هل يقصد المتكلم شخصًا معيّنًا حاضرًا، أم أي فرد من الجنس؟`;
+    return `انظر إلى ما بعد (${target}): هل جاء شيء يتمم معناها؟ إذا نعم نميّز بعد ذلك بين الإضافة الصريحة والشبيه بالمضاف.`;
+  }
+  if (id === "munada_nakira_intent") {
+    return String(facts.munadaKind || "") === "nakira_maqsuda"
+      ? `المنادى نكرة، لكن المتكلم يقصد به شخصًا معيّنًا حاضرًا؛ هذه القرينة ستقودنا إلى مصطلح «نكرة مقصودة».`
+      : `المنادى نكرة ولا يقصد المتكلم فردًا بعينه؛ النداء موجّه إلى أي فرد من الجنس، وهذه قرينة «النكرة غير المقصودة».`;
+  }
+  if (id === "munada_completion_kind") {
+    return String(facts.munadaKind || "") === "mudaf"
+      ? `اسأل: (${target}) ماذا؟ إذا جاء بعدها اسم مجرور بالإضافة يتمم معناها، مثل «طالبَ العلمِ»، فالعلاقة إضافة صريحة.`
+      : `ما بعد (${target}) يتمم معناها لكنه ليس مضافًا إليه مجرورًا؛ قد يكون جارًا ومجرورًا أو معمولًا، مثل «طالبًا للعلمِ».`;
+  }
+  if (/^munada_(alam|maqsuda|ghayr|mudaf|shibh)_term$/.test(id)) {
+    const kind = String(facts.munadaKind || "");
+    const term = kind === "alam" ? "مفرد علم" : kind === "nakira_maqsuda" ? "نكرة مقصودة" : kind === "nakira_ghayr_maqsuda" ? "نكرة غير مقصودة" : kind === "mudaf" ? "مضاف" : "شبيه بالمضاف";
+    return `لقد اكتشفنا الخاصية من المثال أولًا. المصطلح النحوي الذي يطابقها هنا هو: ${term}.`;
   }
   if (id === "munada_shape" || id === "munada_mark") {
     const shape = String(facts.shape || "");
     const mark = String(facts.nasbMark || "");
-    if (shape === "five") {
-      return `(${target}) من الأسماء الخمسة. لا يكفي الاسم وحده؛ تحقق من شروط الإعراب بالحروف: مفرد، مكبر، مضاف، ومضاف إلى غير ياء المتكلم؛ ومع «ذو» تكون بمعنى صاحب، ومع «فو» تكون خالية من الميم. بعد تحقق الشروط تكون علامة النصب الألف.`;
-    }
+    if (shape === "five")
+      return `(${target}) من الأسماء الخمسة. استخدم التلميح المعتمد: هي مفردة من حيث العدد، لكنها تُعرب بالحروف إذا كانت مكبرة، مضافة، ومضافة إلى غير ياء المتكلم؛ وعند النصب تكون العلامة الألف.`;
     const label = shape === "dual" ? "مثنى" : shape === "jms" ? "جمع مذكر سالم" : "مفرد";
     const markLabel = mark === "yaa" ? "الياء" : "الفتحة";
-    return `عرفنا أن هذا النوع من المنادى منصوب. (${target}) ${label}، ولذلك علامة نصبه ${markLabel}.`;
+    return `ثبت أن المنادى هنا معرب منصوب. صورته ${label}، ولذلك علامة نصبه ${markLabel}.`;
   }
 
   if (id === "istithna_tool") {
@@ -145,8 +161,10 @@ export function extendedTopicStudentHintText(
   }
   if (id === "istithna_mufarragh_role") {
     const role = String(facts.mufarraghRole || "");
-    const label = role === "fael" ? "فاعلًا" : role === "mafool" ? "مفعولًا به" : "اسمًا مجرورًا";
-    return `الاستثناء مفرغ، فاحذف «إلا» ذهنيًا مع بقاء النفي واسأل عن العامل: ما الموقع الذي يحتاجه؟ في هذا المثال تؤدي (${target}) وظيفة ${label}. لذلك لا تسمها مستثنى.`;
+    if (role === "majrur")
+      return `ثبت أن الاستثناء مفرغ، لذلك ما بعد «إلا» يعرب حسب موقعه. احذف «إلا» ذهنيًا: تبقى عبارة مثل «ما مررتُ بخالدٍ». الباء حرف جر، لذلك (${target}) اسم مجرور؛ حرف الجر لم يغيّر قاعدة الاستثناء، بل كشف الموقع الإعرابي.`;
+    const label = role === "fael" ? "فاعلًا" : "مفعولًا به";
+    return `ثبت أن الاستثناء مفرغ، فاحذف «إلا» ذهنيًا مع بقاء النفي، ثم أعرب (${target}) كما لو لم توجد «إلا». في هذا المثال موقعها ${label}.`;
   }
   if (id === "istithna_shape" || id === "istithna_mark") {
     const shape = String(facts.shape || "");
@@ -195,13 +213,13 @@ export function extendedTopicStudentHintText(
   }
   if (id === "naib_form") {
     const kind = String(facts.roleKind || "");
-    const label = kind === "connected" ? "ضمير متصل" : kind === "mabni" ? "اسم مبني" : "اسم ظاهر معرب";
-    return `عرفنا أن (${target}) نائب فاعل وحكمه الرفع. الآن نحدد صورته فقط: هو ${label}. هذه الخطوة هي التي تقودنا إلى علامة الرفع أو إلى قولنا «في محل رفع».`;
+    const built = kind === "connected" || kind === "mabni";
+    return `ثبت أن (${target}) نائب فاعل وحكمه الرفع. الآن نسأل أولًا: هل هو اسم معرب فتظهر له علامة رفع، أم اسم مبني فنقول «في محل رفع»؟ في هذا المثال هو ${built ? "اسم مبني" : "اسم معرب"}.`;
   }
   if (id === "naib_shape" || id === "naib_mark") {
     const shape = String(facts.shape || "");
     if (shape === "five") {
-      return `(${target}) من الأسماء الخمسة. كرر شروط الإعراب بالحروف: مفرد، مكبر، مضاف، ومضاف إلى غير ياء المتكلم؛ ومع «ذو» بمعنى صاحب، ومع «فو» خالية من الميم. إذا تحققت الشروط فعلامة الرفع الواو.`;
+      return `(${target}) مفرد من حيث العدد، لكنه من الأسماء الخمسة؛ لذلك لا نكتفي بكونه مفردًا. تحقق من الشروط المعتمدة: مفرد، مكبّر، مضاف، ومضاف إلى غير ياء المتكلم. إذا تحققت أُعرب بالحروف، وهنا علامة الرفع الواو.`;
     }
     const label = shape === "dual" ? "مثنى" : shape === "jms" ? "جمع مذكر سالم" : shape === "jfs" ? "جمع مؤنث سالم" : shape === "jt" ? "جمع تكسير" : "مفرد";
     const mark = String(facts.raf3Mark || "") === "alif" ? "الألف" : String(facts.raf3Mark || "") === "waw" ? "الواو" : "الضمة";

@@ -22,12 +22,12 @@
   vertical-align: middle;
   font-weight: 950;
   transition: .25s ease;}
-.text-game-blank.is-waiting {color: rgba(255,255,255,.44);
-  background: rgba(255,255,255,.045);
-  border: 1px dashed rgba(255,255,255,.16);}
-.text-game-blank.is-active {color: #fff7cf;
-  background: rgba(224,184,76,.16);
-  border: 1px solid rgba(244,207,99,.58);
+.text-game-blank.is-waiting {color: #c8d6df;
+  background: rgba(255,255,255,.08);
+  border: 1px dashed rgba(255,255,255,.32);}
+.text-game-blank.is-active {color: #ffffff;
+  background: rgba(47,158,158,.30);
+  border: 1px solid #8fe3d9;
   box-shadow: 0 0 0 4px rgba(244,207,99,.08),0 0 24px rgba(244,207,99,.16);
   animation: textBlankPulse 1.8s ease-in-out infinite;}
 .text-game-blank.is-solved {color: #b8ffd4;
@@ -45,7 +45,7 @@
   cursor: pointer;
   transition: .18s ease;}
 .text-game-option:hover { transform: translateY(-2px); }
-.text-game-option.is-wrong { border-color: rgba(251,146,60,.55); background: rgba(251,146,60,.12); }
+.text-game-option.is-wrong { border-color: #dc2626; background: #fef2f2; color: #991b1b; }
 .text-game-feedback {margin-top: 14px;
   padding: 15px 17px;
   border-radius: 17px;
@@ -55,9 +55,9 @@
 .text-game-feedback.is-correct {background: rgba(34,197,94,.11);
   border: 1px solid rgba(74,222,128,.24);
   color: #d8ffe5;}
-.text-game-feedback.is-wrong {background: rgba(251,146,60,.11);
-  border: 1px solid rgba(251,146,60,.24);
-  color: #ffe1bf;}
+.text-game-feedback.is-wrong {background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;}
 .text-game-finished {margin-top: 18px;
   padding: 20px;
   border-radius: 20px;

@@ -42,7 +42,7 @@ const tawabiSourceTree: ExerciseTree = {
             answers: [
                 {
                     id: "coordination",
-                    text: "سبقها حرف عطف فأشركها مع ما قبلها في الحكم",
+                    text: "حرف العطف أشرك الكلمة مع ما قبلها في الحكم",
                     next: "tawabi_case",
                     eval: { fact: "relationKind", equals: "coordination" },
                     hint: "حدّد حرف العطف في المثال، ثم لاحظ أن الكلمة بعده شاركت الاسم السابق في الحكم."
@@ -103,7 +103,7 @@ const tawabiSourceTree: ExerciseTree = {
                 {
                     id: "substitution",
                     text: "توضح المقصود منه أو تذكر جزءًا أو معنى مرتبطًا به",
-                    next: "tawabi_case",
+                    next: "tawabi_badal_kind",
                     eval: { fact: "relationKind", equals: "substitution" },
                     hint: "اختبر العلاقة: أهي الاسم المقصود نفسه، أم جزء منه، أم معنى يشتمل عليه؟ هذه صور البدل الأساسية."
                 },
@@ -123,7 +123,19 @@ const tawabiSourceTree: ExerciseTree = {
                 }
             ]
         },
-        tawabi_entry: {
+        tawabi_badal_kind: {
+            id: "tawabi_badal_kind",
+            type: "question",
+            context: "ثبت أن الكلمة بدل. نحدد الآن نوع العلاقة قبل نقل الحالة الإعرابية من المبدل منه.",
+            text: "ما نوع البدل في هذا المثال؟",
+            hint: "إذا كانت الكلمة الثانية هي المقصودة نفسها ويمكن أن تحل محل الأولى فهي بدل مطابق. وإذا كانت جزءًا حقيقيًا منها فهي بعض من كل. وإذا كانت معنى أو صفة تشتمل عليها وليست جزءًا ماديًا فهي بدل اشتمال.",
+            answers: [
+                { id: "matched", text: "بدل مطابق", next: "tawabi_case", eval: { fact: "badalKind", equals: "مطابق" }, hint: "جرّب حذف المبدل منه ووضع البدل مكانه؛ إذا بقي المعنى مستقيمًا وكانت الكلمة الثانية هي المقصودة نفسها، فهو بدل مطابق." },
+                { id: "part", text: "بدل بعض من كل", next: "tawabi_case", eval: { fact: "badalKind", equals: "بعض من كل" }, hint: "ابحث عن جزء حقيقي من المبدل منه، وغالبًا يتصل بالبدل ضمير يعود عليه." },
+                { id: "inclusion", text: "بدل اشتمال", next: "tawabi_case", eval: { fact: "badalKind", equals: "اشتمال" }, hint: "ابحث عن معنى أو صفة تتعلق بالمبدل منه وليست جزءًا ماديًا منه، وغالبًا يتصل بها ضمير يعود عليه." },
+            ]
+        },
+                tawabi_entry: {
             id: "tawabi_entry",
             type: "question",
             context: "في الجملة قد تكون الكلمة ركنًا مستقلًا، وقد تكون راجعة إلى اسم قبلها تكمله أو تؤكده أو تشاركه أو تفسره. نبدأ من هذا الفرق قبل المصطلح.",
@@ -207,7 +219,7 @@ const tawabiSourceTree: ExerciseTree = {
                 { id: "naat", text: "نعت", next: "tawabi_case", eval: { fact: "tawabiTerm", equals: "naat" }, hint: "النعت تابع يصف منعوته. وقد يكون مفردًا، أو جملة فيها رابط، أو شبه جملة متعلقًا بتقدير مثل: كائن أو موجود." },
                 { id: "atf", text: "معطوف", next: "tawabi_case", eval: { fact: "tawabiTerm", equals: "atf" }, hint: "المعطوف تابع يقع بعد حرف عطف ويشارك المعطوف عليه في الحكم والإعراب." },
                 { id: "tawkid", text: "توكيد", next: "tawabi_tawkid_kind", eval: { fact: "tawabiTerm", equals: "tawkid" }, hint: "التوكيد لا يضيف صفة جديدة، بل يرسّخ المعنى أو يرفع احتمال المجاز أو النقص. بعد اكتشافه نحدد: هل كان التوكيد بتكرار اللفظ أم بأحد ألفاظ التوكيد المعنوي؟" },
-                { id: "badal", text: "بدل", next: "tawabi_case", eval: { fact: "tawabiTerm", equals: "badal" }, hint: "البدل يزيل الغموض عن المبدل منه. قد يكون مطابقًا، أو بعضًا من كل، أو اشتمالًا." }
+                { id: "badal", text: "بدل", next: "tawabi_badal_kind", eval: { fact: "tawabiTerm", equals: "badal" }, hint: "البدل يزيل الغموض عن المبدل منه. قد يكون مطابقًا، أو بعضًا من كل، أو اشتمالًا." }
             ]
         },
         tawabi_tawkid_kind: {
@@ -253,12 +265,23 @@ const tawabiSourceTree: ExerciseTree = {
             hint: "قد يكون التابع اسمًا ظاهرًا معربًا، أو اسمًا مبنيًا في محل إعراب، وقد يأتي النعت خاصة جملة أو شبه جملة في محل رفع أو نصب أو جر.",
             answers: [
                 { id: "mu3rab", text: "اسم ظاهر معرب", next: "tawabi_shape", eval: { fact: "roleKind", equals: "mu3rab" }, hint: "الاسم الظاهر المعرب تتغير علامته بحسب موقعه، مثل: المجتهدُ، المجتهدَ، المجتهدِ." },
-                { id: "sentence", text: "جملة", next: "R_tawabi_sentence", eval: { fact: "roleKind", equals: "sentence" }, hint: "النعت الجملة يأتي بعد نكرة، ويحتاج رابطًا يعود على المنعوت؛ مثل: خطيبٍ يرفعُ صوتَهُ." },
+                { id: "sentence", text: "جملة", next: "tawabi_sentence_type", eval: { fact: "roleKind", equals: "sentence" }, hint: "النعت الجملة يأتي بعد نكرة، ويحتاج رابطًا يعود على المنعوت؛ مثل: خطيبٍ يرفعُ صوتَهُ." },
                 { id: "shibh", text: "شبه جملة", next: "R_tawabi_shibh", eval: { fact: "roleKind", equals: "shibh" }, hint: "النعت شبه الجملة يكون جارًا ومجرورًا أو ظرفًا، ويتعلق بتقدير مثل: كائن أو موجود." },
                 { id: "verb", text: "فعل وحده", next: "tawabi_form", correct: false, hint: "إذا كان المحدد جملة فعلية فلا نعرب الفعل وحده تابعًا؛ بل نعرب الجملة كلها في محل إعراب تابع، إذا تحققت شروط النعت الجملة." }
             ]
         },
-        tawabi_shape: {
+        tawabi_sentence_type: {
+            id: "tawabi_sentence_type",
+            type: "question",
+            context: "بما أن المحدد جملة تابعة، نحدد نوع الجملة من أولها قبل صياغة المحل الإعرابي.",
+            text: "ما نوع الجملة المحددة؟",
+            hint: "إذا بدأت الجملة بفعل فهي جملة فعلية، وإذا بدأت باسم وفيها مبتدأ وخبر فهي جملة اسمية.",
+            answers: [
+                { id: "verbal", text: "جملة فعلية", next: "R_tawabi_sentence", eval: { fact: "phraseKind", equals: "جملة فعلية" }, hint: "مثل «يرفع صوته»: بدأت بالفعل «يرفع»، وفيها فاعل ومتممات؛ فهي جملة فعلية." },
+                { id: "nominal", text: "جملة اسمية", next: "R_tawabi_sentence", eval: { fact: "phraseKind", equals: "جملة اسمية" }, hint: "مثل «أخلاقه حسنة»: بدأت باسم وفيها مبتدأ وخبر؛ فهي جملة اسمية." },
+            ]
+        },
+                tawabi_shape: {
             id: "tawabi_shape",
             type: "question",
             context: "بما أن التابع اسم ظاهر معرب، نحدد صورته لنصل إلى العلامة الصحيحة.",
@@ -289,7 +312,7 @@ const tawabiSourceTree: ExerciseTree = {
             ]
         },
         R_tawabi_mu3rab: { id: "R_tawabi_mu3rab", type: "result", coverage: "tawabi.mu3rab", text: "تابع معرب يتبع متبوعه في الحالة الإعرابية، وتحدد علامته من صورته." },
-        R_tawabi_sentence: { id: "R_tawabi_sentence", type: "result", coverage: "tawabi.sentence", text: "جملة في محل إعراب تابع لما قبلها." },
+        R_tawabi_sentence: { id: "R_tawabi_sentence", type: "result", coverage: "tawabi.sentence", text: "جملة فعلية أو اسمية في محل إعراب تابع لما قبلها بحسب المثال." },
         R_tawabi_shibh: { id: "R_tawabi_shibh", type: "result", coverage: "tawabi.shibh", text: "شبه جملة في محل إعراب تابع لما قبلها." }
     }
 };

@@ -7,10 +7,17 @@ import { MARKATI_ROUNDS, type MarkatiChoice } from "../../content/games/markati"
 
 type Feedback = { choice: MarkatiChoice; correct: boolean } | null;
 
-function sentenceWithTarget(sentence: string, target: string) {
+const FINAL_I3RAB_MARKS = /[\u064B-\u0652\u0670]+$/u;
+
+function concealedI3rab(target: string) {
+  return target.replace(FINAL_I3RAB_MARKS, "");
+}
+
+function sentenceWithTarget(sentence: string, target: string, revealI3rab: boolean) {
   const index = sentence.indexOf(target);
   if (index < 0) return sentence;
-  return <>{sentence.slice(0, index)}<mark className="markati-target" style={gameTargetStyle}>{target}</mark>{sentence.slice(index + target.length)}</>;
+  const shownTarget = revealI3rab ? target : concealedI3rab(target);
+  return <>{sentence.slice(0, index)}<mark className="markati-target" style={gameTargetStyle}>{shownTarget}</mark>{sentence.slice(index + target.length)}</>;
 }
 
 export default function MarkatiGame() {
@@ -92,11 +99,11 @@ export default function MarkatiGame() {
           <section className="place-game-stage" aria-live="polite">
             <div className="place-game-word-card markati-sentence-card" style={{ ...gameWarmCardStyle, padding: "14px 16px" }}>
               <span>في الجملة:</span>
-              <strong style={{ fontSize: "clamp(21px, 3.5vw, 31px)" }}>{sentenceWithTarget(challenge.sentence, challenge.target)}</strong>
+              <strong style={{ fontSize: "clamp(21px, 3.5vw, 31px)" }}>{sentenceWithTarget(challenge.sentence, challenge.target, feedback?.correct === true)}</strong>
             </div>
             <div className="place-game-word-card markati-speaking-card" style={{ ...gameWarmCardStyle, padding: "19px 18px" }}>
               <span aria-hidden="true" style={{ color: "var(--game-accent)", fontSize: 32, opacity: .28 }}>❞</span>
-              <p>تقول <strong>{challenge.target}</strong>:</p>
+              <p>تقول <strong>{feedback?.correct === true ? challenge.target : concealedI3rab(challenge.target)}</strong>:</p>
               <h2 style={{ margin: 0, fontSize: "clamp(19px, 3vw, 25px)", lineHeight: 1.8 }}>{challenge.prompt}</h2>
               <small style={{ color: "var(--game-accent-strong)", fontWeight: 750 }}>{challenge.roleLabel} — {challenge.caseLabel} — {challenge.kindLabel}</small>
             </div>

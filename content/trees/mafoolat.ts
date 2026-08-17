@@ -126,38 +126,24 @@ export const mafoolatTree: ExerciseTree = {
     mafoolat_form: {
       id: "mafoolat_form",
       type: "question",
-      context: "اكتشفنا الموقع النحوي، وعرفنا أن حكم المفاعيل النصب. بقي أن نحدد صورة الكلمة؛ لأن الصورة هي التي تحدد العلامة أو المحل.",
-      text: "ما صورة الكلمة المحددة؟",
-      hint: "لا تختَر العلامة قبل تحديد صورة الكلمة. افحص: أهي اسم ظاهر معرب، أم اسم مبني، أم ضمير متصل، أم مصدر مؤول؟",
+      context: "اكتشفنا الموقع النحوي وحكمه. قبل العلامة أو المحل نميز هل المحدد كلمة مفردة أم تركيبًا في تأويل اسم.",
+      text: "هل المحدد كلمة مفردة أم تركيب في تأويل اسم؟",
+      hint: "إذا أمكن تأويل التركيب بمصدر صريح، مثل «أن تنجح» = «نجاحك»، فهو تركيب في تأويل اسم. أما الاسم أو الضمير فهو كلمة مفردة في هذا المستوى.",
       answers: [
-        {
-          id: "visible",
-          text: "اسم ظاهر معرب",
-          next: "mafoolat_shape",
-          eval: { fact: "roleKind", equals: "visible" },
-          hint: "الاسم الظاهر المعرب تظهر عليه علامة النصب أو علامة تنوب عنها؛ لذلك نحدد نوعه بعد ذلك.",
-        },
-        {
-          id: "mabni",
-          text: "اسم مبني",
-          next: "mafoolat_mabni_type",
-          eval: { fact: "roleKind", equals: "mabni" },
-          hint: "الاسم المبني لا تتغير حركة آخره بتغير الموقع؛ لذلك نذكر أنه في محل نصب.",
-        },
-        {
-          id: "connected",
-          text: "ضمير متصل",
-          next: "R_mafoolat_connected",
-          eval: { fact: "roleKind", equals: "connected" },
-          hint: "الضمير المتصل مبني، وإذا شغل موقع المفعول به يكون في محل نصب.",
-        },
-        {
-          id: "masdar",
-          text: "مصدر مؤول",
-          next: "R_mafoolat_masdar",
-          eval: { fact: "roleKind", equals: "masdar" },
-          hint: "المصدر المؤول تركيب في معنى اسم، ويكون في محل نصب إذا شغل موقعًا منصوبًا.",
-        },
+        { id: "word", text: "كلمة مفردة", next: "mafoolat_word_inflection", eval: { fact: "roleKind", anyOf: ["visible", "mabni", "connected"] }, hint: "إذا كان المحدد اسمًا أو ضميرًا مفردًا ننتقل إلى تحديد: معرب أم مبني." },
+        { id: "masdar", text: "تركيب في تأويل اسم", next: "mafoolat_masdar_term", eval: { fact: "roleKind", equals: "masdar" }, hint: "إذا أمكن تأويل التركيب بمصدر صريح فقد ثبت أنه تركيب في تأويل اسم؛ نحدد اسمه النحوي في الخطوة التالية." },
+      ],
+    },
+
+    mafoolat_word_inflection: {
+      id: "mafoolat_word_inflection",
+      type: "question",
+      context: "بما أن المحدد كلمة مفردة، نحدد هل الاسم معرب أم مبني قبل العلامة أو المحل.",
+      text: "هل الكلمة اسم معرب أم اسم مبني؟",
+      hint: "الاسم المعرب تتغير علامته بحسب موقعه، أما الاسم المبني ـ ومنه الضمائر ـ فيلزم صورة واحدة.",
+      answers: [
+        { id: "visible", text: "اسم معرب", next: "mafoolat_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم المعرب تظهر عليه علامة النصب أو علامة تنوب عنها؛ لذلك نحدد صورته بعد ذلك." },
+        { id: "mabni", text: "اسم مبني", next: "mafoolat_mabni_type", eval: { fact: "roleKind", anyOf: ["mabni", "connected"] }, hint: "الضمائر وأسماء الإشارة والأسماء الموصولة من المبنيات؛ نحدد نوع المبني في الخطوة التالية." },
       ],
     },
 
@@ -200,12 +186,24 @@ export const mafoolatTree: ExerciseTree = {
       answers: [
         { id: "ishara", text: "اسم إشارة", next: "R_mafoolat_mabni", eval: { fact: "mabniType", equals: "ishara" }, hint: "اسم الإشارة مثل: هذا، هذه، هؤلاء." },
         { id: "mawsool", text: "اسم موصول", next: "R_mafoolat_mabni", eval: { fact: "mabniType", equals: "mawsool" }, hint: "الاسم الموصول مثل: الذي، التي، الذين." },
+        { id: "connected", text: "ضمير متصل", next: "R_mafoolat_connected", eval: { fact: "roleKind", equals: "connected" }, hint: "الضمير المتصل من الأسماء المبنية، وإذا شغل موقع المفعول به يكون في محل نصب مفعول به." },
       ],
     },
 
     R_mafoolat_mu3rab: { id: "R_mafoolat_mu3rab", type: "result", text: "اسم منصوب؛ وتحدد الوظيفة والعلامة في النتيجة الكاملة." },
     R_mafoolat_mabni: { id: "R_mafoolat_mabni", type: "result", text: "اسم مبني في محل نصب بحسب الوظيفة المكتشفة." },
     R_mafoolat_connected: { id: "R_mafoolat_connected", type: "result", text: "ضمير متصل مبني في محل نصب مفعول به." },
+    mafoolat_masdar_term: {
+      id: "mafoolat_masdar_term",
+      type: "question",
+      context: "ثبت أن المحدد تركيب في تأويل اسم؛ بقي أن نسمي هذا النوع قبل الإعراب النهائي.",
+      text: "ماذا يسمى هذا التركيب؟",
+      hint: "التركيب الذي يؤول بمصدر صريح يسمى مصدرًا مؤولًا، ثم يأخذ محل الموقع النحوي الذي شغله.",
+      answers: [
+        { id: "source", text: "مصدر مؤول", next: "R_mafoolat_masdar", correct: true },
+        { id: "word", text: "اسم ظاهر معرب", next: "mafoolat_masdar_term", correct: false, hint: "المحدد ليس كلمة اسمية مفردة؛ هو تركيب كامل يؤول بمصدر صريح." },
+      ],
+    },
     R_mafoolat_masdar: { id: "R_mafoolat_masdar", type: "result", text: "مصدر مؤول في محل نصب مفعول به." },
     R_mafoolat_remaining_accusatives: {
       id: "R_mafoolat_remaining_accusatives",

@@ -437,7 +437,7 @@ body.platform-body :where(button, .btn, a)[disabled], body.platform-body :where(
   border: 1px solid var(--clean-border);
   color: var(--clean-muted);
   font-size: 13px;}
-.sequential-live-result, .step-transform-chip, .next-step-focus-cue, .practice-reward-burst, .practice-success-pulse {width: min(760px, 100%);
+.practice-success-pulse {width: min(760px, 100%);
   margin: 10px auto 0;
   padding: 9px 12px;
   border-radius: 8px;

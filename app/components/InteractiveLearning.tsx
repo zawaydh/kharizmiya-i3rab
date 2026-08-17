@@ -90,7 +90,7 @@ function shuffle(arr: readonly string[]): string[] {
 function getStepLead(stepIndex: number, step?: StartLearningStep): string {
   const q = String(step?.question || "");
   if (q.includes("اسم") && q.includes("فعل") && q.includes("حرف")) return "تحديد نوع الكلمة";
-  if (q.includes("زمن")) return "تحديد زمن الفعل";
+  if (q.includes("زمن")) return "تحديد نوع الفعل";
   if (q.includes("أداة") || q.includes("العامل")) return "تحديد العامل";
   if (q.includes("الأفعال الخمسة") || q.includes("علامة")) return "تحديد العلامة";
   if (q.includes("مبني أم معرب")) return "تحديد نوع الاسم";
@@ -110,8 +110,8 @@ function refinedQuestion(example: StartLearningExample, step: StartLearningStep 
     return `ما نوع كلمة «${target}»؟`;
   }
 
-  if (q.includes("زمن الفعل")) {
-    return `ما زمن الفعل «${target}»؟`;
+  if (q.includes("نوع الفعل")) {
+    return `ما نوع الفعل «${target}»؟`;
   }
 
   if (q.includes("أداة تؤثر")) {
@@ -175,7 +175,7 @@ function wrongFeedbackFor(choice: string, step: StartLearningStep, example: Star
     return `راجع معنى «${target}»، ثم حدّد هل هي اسم أم فعل أم حرف.`;
   }
 
-  if (q.includes("زمن الفعل")) {
+  if (q.includes("نوع الفعل")) {
     return `حدّد زمن الحدث في الجملة، ثم أعد الاختيار.`;
   }
 

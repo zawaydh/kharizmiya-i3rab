@@ -2,6 +2,7 @@ import { getTopicByCode } from "../../lib/topics";
 import AuthLockGate from "./AuthLockGate";
 import ExercisePlayer from "./ExercisePlayer";
 import StageAccessGate from "./StageAccessGate";
+import { stageExampleVariants } from "../../lib/exercise/stageExampleVariants";
 
 type ExercisePageMode = "learn" | "practice" | "quiz";
 
@@ -33,12 +34,14 @@ function buildStageTitle(mode: ExercisePageMode, topicName: string) {
 export default function TopicExercisePage({ topicCode, mode }: Props) {
   const topic = getTopicByCode(topicCode);
   const isQuiz = mode === "quiz";
-  const examples = isQuiz ? topic?.quizExamples : topic?.examples;
+  const sourceExamples = isQuiz ? topic?.quizExamples : topic?.examples;
   const coverageKeys = isQuiz ? topic?.quizCoverageKeysOrdered : topic?.coverageKeysOrdered;
 
-  if (!topic || !topic.isReady || !topic.tree || !examples || !coverageKeys) {
+  if (!topic || !topic.isReady || !topic.tree || !sourceExamples || !coverageKeys) {
     return <div className="card">هذا الموضوع غير متاح بعد.</div>;
   }
+
+  const examples = stageExampleVariants(sourceExamples, mode);
 
   const topicIntro = topic.code === "mafoolat" ? (
     <section className="card" dir="rtl" style={{ marginBottom: 16, textAlign: "right" }}>

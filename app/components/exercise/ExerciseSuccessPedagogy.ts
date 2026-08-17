@@ -45,29 +45,44 @@ export function teacherSuccessText(node: PedagogyNode | null | undefined, picked
         if (id === "mubtada_word_type")
             return "صحيح؛ ثبتنا نوع الكلمة المطلوبة أولًا قبل تحديد وظيفتها النحوية.";
         if (id === "mubtada_function_gate")
-            return "صحيح؛ حددنا أن الكلمة اسم بدأنا الحديث عنه، وبذلك نصل إلى وظيفة المبتدأ.";
+            return `بما أن «${String(state?.currentTarget || "الكلمة")}» اسم بدأنا به الكلام وبدأنا الحديث عنه، فهو مبتدأ.`;
         if (id === "mubtada_start")
-            return "صحيح؛ حددنا صورة المبتدأ: معرب، مبني، أو مصدر مؤول.";
+            return "ثبتت صورة المحدد، وننتقل الآن إلى الحكم الإعرابي الذي يناسبها.";
         if (id === "mubtada_built")
             return "صحيح؛ الاسم المبني يعرب في محل رفع مبتدأ، ونوعه يذكر في الإعراب النهائي.";
         if (id === "mubtada_number")
             return "صحيح؛ صورة الاسم هي التي تقودنا إلى علامة الرفع المناسبة.";
         if (id === "mubtada_ending")
             return "صحيح؛ آخر الكلمة يحدد ظهور الضمة أو تقديرها.";
-        return piece ? `صحيح؛ أضفنا إلى مسار المبتدأ: ${piece}` : "صحيح؛ نكمل مسار المبتدأ خطوة خطوة.";
+        return piece ? String(piece) : "ثبتت خطوة المبتدأ؛ ننتقل إلى ما يترتب عليها مباشرة.";
     }
     if (id.includes("khabar")) {
+        const target = String(state?.currentTarget || "المحدد");
+        const facts = state?.facts || {};
         if (id === "khabar_meaning_gate")
-            return "صحيح؛ المحدد أخبر عن المبتدأ وأتم معنى الجملة، إذن وظيفته خبر.";
-        if (id === "khabar_kind")
-            return "صحيح؛ حددنا صورة الخبر، فنكمل بحسب هذه الصورة دون قفز إلى النتيجة.";
-        if (id === "khabar_sentence_type")
-            return "صحيح؛ الجملة كلها هي الخبر، لا كلمة واحدة منها فقط.";
-        if (id.includes("shibh"))
-            return "صحيح؛ شبه الجملة قد يكون خبرًا، وقد يتقدم على مبتدأ نكرة في المرحلة المتوسطة.";
-        return piece ? `صحيح؛ أضفنا إلى مسار الخبر: ${piece}` : "صحيح؛ نكمل مسار الخبر خطوة خطوة.";
+            return `«${target}» أخبرت عن المبتدأ وأتمت معنى الجملة؛ لذلك فهي خبر.`;
+        if (id === "khabar_kind") {
+            const kind = String(facts.khabarKind || "");
+            if (kind === "single") return `«${target}» ليست جملة ولا شبه جملة؛ لذلك هي خبر مفرد.`;
+            if (kind === "sentence") return `«${target}» جملة كاملة أتمت المعنى عن المبتدأ؛ لذلك الخبر هنا جملة.`;
+            if (kind === "shibh") return `«${target}» جار ومجرور أو ظرف أتم المعنى عن المبتدأ؛ لذلك الخبر هنا شبه جملة.`;
+        }
+        if (id === "khabar_single_start") {
+            return String(facts.nounKind || "") === "masdar"
+                ? `«${target}» تركيب يمكن تأويله بمصدر صريح؛ لذلك هو تركيب في تأويل اسم.`
+                : `«${target}» خبر مفرد من جهة نوع الخبر، وهو هنا كلمة اسمية مفردة في البنية.`;
+        }
+        if (id === "khabar_sentence_type") {
+            const type = String(facts.sentenceType || "") === "verbal" ? "جملة فعلية" : "جملة اسمية";
+            return `المحدد «${target}» كله هو الخبر، وقد ثبت أنه ${type}.`;
+        }
+        if (id.includes("shibh")) {
+            const shibh = String(facts.shibhType || "") === "zarf" ? "شبه جملة ظرفية" : "شبه جملة من الجار والمجرور";
+            return `ثبت أن «${target}» ${shibh} يؤدي وظيفة الخبر في هذا المثال.`;
+        }
+        return piece ? String(piece) : `ثبتت وظيفة «${target}» وصورته، وننتقل إلى الحكم والعلامة المناسبة.`;
     }
-    return piece ? `صحيح؛ هذه الخطوة أضافت إلى التفكير: ${piece}` : "صحيح؛ نكمل خطوة التفكير التالية.";
+    return piece ? String(piece) : "ثبتت هذه النتيجة؛ ننتقل إلى الخطوة التي تبني عليها مباشرة.";
 }
 export function builtNounTypeHintByValue(value?: string) {
     switch (value) {

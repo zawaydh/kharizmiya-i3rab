@@ -9,6 +9,7 @@ import { safeFinalLabel, type QuizExampleLike } from "../../../lib/exercise/quiz
 import {
   buildPracticeCorrectRoute,
   buildPracticeDirectOptions,
+  practiceExpectedLabelForExample,
 } from "./ExercisePracticeFlow";
 import type { QuestionCardPhase } from "./useQuestionMotion";
 import type { ExerciseUiState } from "./useExerciseUiState";
@@ -18,7 +19,6 @@ type Args = {
   tree: ExerciseTree;
   mode: Mode;
   example?: ExerciseExample;
-  examples: ExerciseExample[];
   state: RunnerState;
   setState: Dispatch<SetStateAction<RunnerState>>;
   cardPhase: QuestionCardPhase;
@@ -31,7 +31,6 @@ export function useExercisePracticeFlow({
   tree,
   mode,
   example,
-  examples,
   state,
   setState,
   cardPhase,
@@ -42,7 +41,10 @@ export function useExercisePracticeFlow({
   const isPracticeMode = mode === "practice";
   const expectedCoverage = isPracticeMode ? (getExampleCoverageKeys(example)[0] || "") : "";
   const expectedLabel = isPracticeMode
-    ? safeFinalLabel(tree, example as QuizExampleLike | undefined, expectedCoverage)
+    ? practiceExpectedLabelForExample(
+        safeFinalLabel(tree, example as QuizExampleLike | undefined, expectedCoverage),
+        example,
+      )
     : "";
   const context = React.useMemo(() => ({
     tree,
@@ -54,8 +56,8 @@ export function useExercisePracticeFlow({
 
   const directOptions = React.useMemo(() => {
     if (!isPracticeMode) return [];
-    return buildPracticeDirectOptions({ ...context, examples });
-  }, [context, examples, isPracticeMode]);
+    return buildPracticeDirectOptions(context);
+  }, [context, isPracticeMode]);
 
   React.useEffect(() => {
     nextLockRef.current = false;

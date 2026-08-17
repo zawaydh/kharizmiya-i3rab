@@ -57,7 +57,8 @@ describe("تسلسل تحديد نوع المفعول", () => {
 
   it("يحدد العلامة بعد الموقع من نوع الاسم", () => {
     const dualMutlaq = example("mfs-05");
-    expect(correctNext("mafoolat_form", dualMutlaq)).toBe("mafoolat_shape");
+    expect(correctNext("mafoolat_form", dualMutlaq)).toBe("mafoolat_word_inflection");
+    expect(correctNext("mafoolat_word_inflection", dualMutlaq)).toBe("mafoolat_shape");
     expect(correctNext("mafoolat_shape", dualMutlaq)).toBe("mafoolat_mark");
     expect(correctNext("mafoolat_mark", dualMutlaq)).toBe("R_mafoolat_mu3rab");
     expect(String(dualMutlaq.facts?.finalI3rab)).toContain("الياء لأنه مثنى");

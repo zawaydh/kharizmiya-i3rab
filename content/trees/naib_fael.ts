@@ -28,13 +28,12 @@ export const naibFaelTree: ExerciseTree = {
     naib_form: {
       id: "naib_form",
       type: "question",
-      context: "عرفنا أن الكلمة نائب فاعل، وحكمه الرفع؛ نحدد الآن صورتها.",
-      text: "ما صورة نائب الفاعل في هذا المثال؟",
-      hint: "افحص: أهو اسم ظاهر معرب، أم اسم مبني، أم ضمير متصل؟",
+      context: "بما أن الكلمة نائب فاعل وحكمه الرفع، نحدد أولًا هل الاسم معرب أم مبني قبل تحديد نوعه.",
+      text: "هل نائب الفاعل اسم معرب أم اسم مبني؟",
+      hint: "الاسم المعرب تتغير علامته بحسب موقعه، أما الاسم المبني ـ ومنه الضمائر ـ فيلزم صورة واحدة ويكون هنا في محل رفع نائب فاعل.",
       answers: [
-        { id: "visible", text: "اسم ظاهر معرب", next: "naib_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم الظاهر المعرب تظهر عليه علامة الرفع أو ما ينوب عنها، لذلك نحدد نوعه بعد ذلك." },
-        { id: "mabni", text: "اسم مبني", next: "naib_mabni_type", eval: { fact: "roleKind", equals: "mabni" }, hint: "الاسم المبني لا تتغير حركة آخره، فنقول: مبني في محل رفع نائب فاعل." },
-        { id: "connected", text: "ضمير متصل", next: "R_naib_connected", eval: { fact: "roleKind", equals: "connected" }, hint: "الضمير المتصل مبني، وإذا أُسند إليه الفعل المبني للمجهول يكون في محل رفع نائب فاعل." },
+        { id: "visible", text: "اسم معرب", next: "naib_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم المعرب تظهر عليه علامة الرفع أو ما ينوب عنها، لذلك نحدد صورته بعد ذلك." },
+        { id: "mabni", text: "اسم مبني", next: "naib_mabni_type", eval: { fact: "roleKind", anyOf: ["mabni", "connected"] }, hint: "الضمائر وأسماء الإشارة والأسماء الموصولة من المبنيات؛ لذلك نحدد نوع الاسم المبني في الخطوة التالية." },
       ],
     },
     naib_shape: {
@@ -69,10 +68,11 @@ export const naibFaelTree: ExerciseTree = {
       type: "question",
       context: "عرفنا أن نائب الفاعل اسم مبني؛ نحدد نوعه قبل النتيجة.",
       text: "ما نوع الاسم المبني؟",
-      hint: "مثل اسم الإشارة أو الاسم الموصول. المبني يكون في محل رفع نائب فاعل.",
+      hint: "بعد أن ثبت أن نائب الفاعل اسم مبني، نحدد نوعه من الكلمة نفسها: اسم إشارة، اسم موصول، أم ضمير متصل.",
       answers: [
         { id: "ishara", text: "اسم إشارة", next: "R_naib_mabni", eval: { fact: "mabniType", equals: "ishara" }, hint: "اسم الإشارة مثل «هذا» مبني، فإذا أُسند إليه الفعل المبني للمجهول يكون في محل رفع نائب فاعل." },
-        { id: "mawsool", text: "اسم موصول", next: "R_naib_mabni", eval: { fact: "mabniType", equals: "mawsool" }, hint: "الاسم الموصول مبني، ويكون في محل رفع نائب فاعل إذا أُسند إليه الفعل المبني للمجهول." },
+        { id: "mawsool", text: "اسم موصول", next: "R_naib_mabni", eval: { fact: "mabniType", equals: "mawsool" }, hint: "الاسم الموصول مبني، وتأتي بعده صلة توضحه؛ فإذا أُسند إليه الفعل المبني للمجهول يكون في محل رفع نائب فاعل." },
+        { id: "connected", text: "ضمير متصل", next: "R_naib_connected", eval: { fact: "roleKind", equals: "connected" }, hint: "الضمير المتصل من الأسماء المبنية، مثل واو الجماعة؛ وإذا أُسند إليه الفعل المبني للمجهول يكون في محل رفع نائب فاعل." },
       ],
     },
     R_naib_visible: { id: "R_naib_visible", type: "result", text: "نائب فاعل مرفوع، وتحدد العلامة بحسب صورة الاسم." },

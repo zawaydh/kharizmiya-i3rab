@@ -196,7 +196,7 @@ export const faelExamples: Example[] = [
     id: "fa-18b",
     sentence: "نساعدُ المحتاجينَ.",
     target: "نساعدُ",
-    facts: { ...verbalHidden, hiddenPronoun: "نحن", actionQuestion: "من الذين يساعدون؟", finalI3rab: `نساعدُ: فعل مضارع مرفوع، وعلامة رفعه الضمة الظاهرة.
+    facts: { ...verbalHidden, hiddenPronoun: "نحن", actionQuestion: "من الذي يساعد المحتاجين؟", finalI3rab: `نساعدُ: فعل مضارع مرفوع، وعلامة رفعه الضمة الظاهرة.
 والفاعل: ضمير مستتر تقديره نحن.
 سبب الاختيار: لأن الفعل بدأ بالنون الدالة على المتكلمين.` },
     covers: ["fael.hidden_nahnu"]
@@ -214,7 +214,7 @@ export const faelExamples: Example[] = [
     id: "fa-20",
     sentence: "يسرُّني أن تنجحَ.",
     target: "أن تنجحَ",
-    facts: { ...verbal, roleKind: "masdar", finalI3rab: `أن تنجحَ: مصدر مؤول في محل رفع فاعل.
+    facts: { ...verbal, roleKind: "masdar", actionQuestion: "ما الذي يسرّني؟", finalI3rab: `أن تنجحَ: مصدر مؤول في محل رفع فاعل.
 والتقدير: يسرُّني نجاحُك.
 سبب الاختيار: لأن الذي سرّني هو نجاحك، لا كلمة مفردة ظاهرة.` },
     covers: ["fael.masdar_an"]
@@ -223,7 +223,7 @@ export const faelExamples: Example[] = [
     id: "fa-21",
     sentence: "أعجبني ما فعلتَ.",
     target: "ما فعلتَ",
-    facts: { ...verbal, roleKind: "masdar", finalI3rab: `ما فعلتَ: مصدر مؤول في محل رفع فاعل.
+    facts: { ...verbal, roleKind: "masdar", actionQuestion: "ما الذي أعجبني؟", finalI3rab: `ما فعلتَ: مصدر مؤول في محل رفع فاعل.
 والتقدير: أعجبني فعلُك.
 سبب الاختيار: لأن الذي أعجبني هو فعلك.` },
     covers: ["fael.masdar_ma"]

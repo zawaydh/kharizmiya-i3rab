@@ -25,7 +25,6 @@ describe("مسار التدريب السريع المفصول", () => {
       tree: imperativeVerbTree,
       mode: "practice",
       example,
-      examples: imperativeVerbExamples,
       state,
       practiceExpectedLabel: expected,
     });

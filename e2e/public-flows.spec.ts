@@ -271,7 +271,7 @@ test.describe("public and protected flows", () => {
 
     const steps = [
       { question: "ما نوع كلمة «يأتوا»؟", answer: "فعل" },
-      { question: "ما زمن الفعل «يأتوا»؟", answer: "مضارع" },
+      { question: "ما نوع الفعل «يأتوا»؟", answer: "مضارع" },
       { question: "ما العامل الذي سبق الفعل «يأتوا»؟", answer: "سبق بأداة جزم" },
       { question: "هل الفعل «يأتوا» من الأفعال الخمسة؟", answer: "نعم، من الأفعال الخمسة" },
     ];

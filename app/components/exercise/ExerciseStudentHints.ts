@@ -1,6 +1,6 @@
 import type { ExerciseAnswer } from "../../../lib/exercise/model";
 import type { PedagogyNode, PedagogyState } from "./ExercisePedagogyTypes";
-import { isFiveNounFact } from "./ExerciseHintShared";
+import { fiveNounWrongSingularHint, isFiveNounFact } from "./ExerciseHintShared";
 import { tawabiStudentHintText } from "./TawabiStudentHints";
 import { mafoolStudentHintText } from "./MafoolStudentHints";
 import { mafoolatStudentHintText } from "./MafoolatStudentHints";
@@ -47,7 +47,7 @@ function firstWordStudentHintText(
       return `اخترتَ «مضارع»، لكن المضارع يدل على حدث يقع أو يتجدد. «${target}» ${actual === "past" ? "تحكي حدثًا وقع وانتهى، فهي ماضٍ." : "تطلب حصول الحدث من المخاطب، فهي أمر."}`;
     if (pickedText.includes("أمر") && actual !== "imperative")
       return `اخترتَ «أمر»، لكن الأمر يطلب حصول الحدث. «${target}» ${actual === "past" ? "تحكي حدثًا وقع وانتهى، فهي ماضٍ." : "تدل على حدث يقع أو يتجدد، فهي مضارع."}`;
-    return `حدّد زمن «${target}»: أوقع الحدث وانتهى، أم يقع أو يتجدد، أم هو طلب حصول الحدث؟`;
+    return `حدّد نوع الفعل «${target}»: أيدل على حدث وقع وانتهى، أم على حدث يقع أو يتجدد، أم على طلب حصول الحدث؟`;
   }
 
   if (id === "fw_particle_after") {
@@ -65,6 +65,13 @@ export function studentHintText(
   picked?: ExerciseAnswer,
   state?: PedagogyState,
 ): string {
+  const id = String(node?.id || "");
+  const target = String(state?.currentTarget || "الكلمة المحددة");
+  const pickedText = String(picked?.text || "").trim();
+  if (pickedText.includes("مفرد") && isFiveNounFact(state?.facts) && /(number|shape|ending|mark|form)/u.test(id)) {
+    return fiveNounWrongSingularHint(target);
+  }
+
   const topicHint = firstDefined(
     firstWordStudentHintText(node, picked, state),
     node?.id?.startsWith("tawabi_") ? tawabiStudentHintText(node, picked, state) : undefined,

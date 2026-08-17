@@ -8,14 +8,13 @@ import type {
 } from "../../../lib/exercise/model";
 import { buildRunnerState, type RunnerState } from "../../../lib/exercise/runner";
 import { isHintAnswerOption, resolveAnswerAttempt } from "../../../lib/exercise/answerSession";
-import { exampleFinalLabel, type QuizExampleLike } from "../../../lib/exercise/quiz";
+import { buildI3rabDistractors, localQuizExpectedLabel, type QuizExampleLike } from "../../../lib/exercise/quiz";
 import {
   cleanPracticeTeacherPart,
   normalizeBuildPiece,
   normalizeThinkingNode,
   teacherSuccessText,
 } from "./ExercisePedagogy";
-import { firstLine } from "./exercisePresentationText";
 
 type PracticeFlowContext = {
   tree: ExerciseTree;
@@ -31,46 +30,36 @@ type PracticeRouteStep = {
   state: RunnerState;
 };
 
+function firstSentence(label: string): string {
+  const normalized = String(label || "").replace(/\s+/g, " ").trim();
+  const match = normalized.match(/^(.+?[.!؟])(?:\s|$)/u);
+  return (match?.[1] || normalized).trim();
+}
+
+export function practiceExpectedLabelForExample(
+  label: string,
+  example?: ExerciseExample,
+): string {
+  const localized = localQuizExpectedLabel(label, example as QuizExampleLike | undefined);
+  return firstSentence(localized);
+}
+
+function contextualPracticeDistractors(correct: string): string[] {
+  return buildI3rabDistractors(correct).slice(0, 2);
+}
+
 export function buildPracticeDirectOptions({
-  tree,
-  examples,
   example,
   state,
   practiceExpectedLabel,
-}: PracticeFlowContext & { examples: ExerciseExample[] }): string[] {
+}: PracticeFlowContext): string[] {
   if (!practiceExpectedLabel) return [];
-
-  const exampleLabels = examples
-    .filter((candidate) => candidate.id !== example?.id)
-    .map((candidate) => exampleFinalLabel(candidate as QuizExampleLike))
-    .filter((label): label is string => Boolean(label && label !== practiceExpectedLabel && !label.includes(".")));
-
-  const resultLabels = Object.values(tree.nodes)
-    .filter((node) => node.type === "result")
-    .map((node) => firstLine(node.text))
-    .filter((label): label is string => Boolean(label && label !== practiceExpectedLabel && !label.startsWith("tawabi.")));
-
-  const unique = Array.from(new Set([...exampleLabels, ...resultLabels]));
-  let hash = String(example?.id || state.currentTarget || "")
-    .split("")
-    .reduce((value, character) => ((value * 31 + character.charCodeAt(0)) >>> 0), 7);
-  const distractors: string[] = [];
-
-  while (unique.length && distractors.length < 2) {
-    const index = hash % unique.length;
-    const [distractor] = unique.splice(index, 1);
-    if (distractor) distractors.push(distractor);
-    hash = (hash * 1664525 + 1013904223) >>> 0;
-  }
-
-  return [practiceExpectedLabel, ...distractors].sort((first, second) => {
-    const firstHash = (first + String(example?.id || ""))
-      .split("")
-      .reduce((value, character) => value + character.charCodeAt(0), 0) % 17;
-    const secondHash = (second + String(example?.id || ""))
-      .split("")
-      .reduce((value, character) => value + character.charCodeAt(0), 0) % 17;
-    return firstHash - secondHash;
+  const distractors = contextualPracticeDistractors(practiceExpectedLabel);
+  const options = [practiceExpectedLabel, ...distractors];
+  const seed = String(example?.id || state.currentTarget || "practice");
+  return options.sort((first, second) => {
+    const score = (value: string) => Array.from(`${seed}-${value}`).reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 17;
+    return score(first) - score(second);
   });
 }
 
@@ -165,6 +154,7 @@ export function buildPracticeSequenceSteps(context: PracticeFlowContext): string
       const attached = attachedMap[String(facts.attached || "")] || "ضمير أو نون";
       push(`آخره اتصل بـ${attached}.`);
       if (["waw", "alif2", "yaa"].includes(String(facts.attached))) {
+        if (facts.attached === "yaa") push("نرد الأمر إلى مضارعه مع المخاطبة: «أنتِ تكتبين». تظهر النون في المضارع، ثم نلاحظ حذفها في الأمر «اكتبي».");
         push("هذا الاتصال من مواضع بناء فعل الأمر على حذف النون.");
       } else if (facts.attached === "niswa") {
         push("نون النسوة لا تجعل فعل الأمر مبنيًا على حذف النون، بل يبنى معها على السكون.");

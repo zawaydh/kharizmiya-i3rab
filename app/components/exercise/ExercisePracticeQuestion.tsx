@@ -5,7 +5,7 @@ import { toStudentArabicOption } from "../../../lib/studentOptionText";
 import type { QuestionCardPhase } from "./useQuestionMotion";
 import type { PracticeWrongPanel } from "./ExerciseQuestionStageTypes";
 import { renderSmartText } from "./ExerciseTextViews";
-import { practiceTeacherNarrative } from "./ExercisePedagogy";
+import { cleanPracticeTeacherPart } from "./ExercisePedagogy";
 
 type Props = {
   target?: string;
@@ -39,14 +39,20 @@ export function ExercisePracticeQuestion({
         <div className="practice-wrong-sequence is-primary-panel" role="alert" aria-live="assertive">
           <div className="practice-wrong-title">دعنا نراجعها معًا</div>
           <div className="practice-wrong-subtitle">
-            سأربط لك الفكرة حتى تصل إلى الإعراب الصحيح:
+            اتبع المسار نفسه خطوةً خطوة، ثم عد إلى السؤال:
           </div>
-          <div className="practice-teacher-explanation">
-            {renderSmartText(
-              practiceTeacherNarrative(wrongPanel.steps, currentTarget),
-              onGlossary,
-            )}
+          <div className="practice-wrong-picked">
+            {renderSmartText(toStudentArabicOption(wrongPanel.wrongLabel), onGlossary, { interactiveTerms: false })}
           </div>
+          <ol className="practice-teacher-steps">
+            {wrongPanel.steps
+              .map(cleanPracticeTeacherPart)
+              .filter(Boolean)
+              .map((step, index) => (
+                <li key={`${step}-${index}`}>{renderSmartText(step, onGlossary)}</li>
+              ))}
+          </ol>
+          <div className="practice-return-cue">عد إلى السؤال، ثم اختر الإجابة الصحيحة لنكمل الإعراب.</div>
           <div className="practice-wrong-actions">
             <button type="button" onClick={onRetry}>أعد المحاولة</button>
             <button

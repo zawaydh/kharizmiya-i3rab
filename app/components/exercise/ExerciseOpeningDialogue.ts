@@ -3,6 +3,7 @@ import { innaIsConnectedPronounTarget, innaParticleMeaningLabel, innaParticleNam
 import { isFiveVerbDecision } from "./ExerciseDecisionHelpers";
 import { cleanQuestionText } from "./ExerciseNodePedagogy";
 import { mafoolatOpeningDialogueLine } from "./MafoolatOpeningDialogue";
+import { tawabiOpeningDialogueLine } from "./TawabiOpeningDialogue";
 import { extendedTopicOpeningDialogueLine } from "./ExtendedTopicOpeningDialogue";
 import {
     sentenceForDialogue,
@@ -22,7 +23,7 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
         return `ما نوع كلمة «${target}»؟`;
     }
     if (nodeId === "fw_verb_tense") {
-        return `عرفنا أن «${target}» فعل. ما زمنه؟`;
+        return `عرفنا أن «${target}» فعل. ما نوعه؟`;
     }
     if (nodeId === "fw_particle_after") {
         const sentenceWords = sentence.replace(/[.؟!،]/g, " ").trim().split(/\s+/).filter(Boolean);
@@ -36,7 +37,7 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
         if (nodeId === "present_word_kind")
             return `ما نوع كلمة «${target}»؟`;
         if (nodeId === "present_tense")
-            return `عرفنا أن (${target}) فعل. ما زمنه؟`;
+            return `عرفنا أن (${target}) فعل. ما نوعه؟`;
         if (nodeId === "present_build_check")
             return `هل اتصل بالفعل «${target}» ما يجعله مبنيًّا؟`;
         if (nodeId === "present_niswa_position" || nodeId === "present_tawkid_position")
@@ -79,7 +80,7 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
         if (nodeId === "past_word_kind")
             return `انظر إلى الكلمة المحددة (${target}): ما نوعها؟`;
         if (nodeId === "past_tense")
-            return `عرفنا أن (${target}) فعل. ما زمنه؟`;
+            return `عرفنا أن (${target}) فعل. ما نوعه؟`;
         if (nodeId === "past_has_attachment")
             return `بما أن (${target}) فعل ماضٍ، والفعل الماضي مبني، نحتاج الآن إلى تحديد علامة بنائه حسب ما يتصل به. هل اتصل بآخره شيء؟`;
         if (nodeId === "past_connector_kind")
@@ -148,11 +149,10 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
             return `المطلوب إعراب (${targetText}) في جملة ${sentenceText}. ما علاقة الكلمة بما قبلها؟ هل أتمت المعنى عنه، أم قامت بفعل، أم وقع عليها فعل؟`;
         }
         if (nodeId === "kana_ism_start") {
-            if (targetText.includes("ت"))
-                return `عرفنا أن التاء دلت على صاحب المعنى بعد الفعل الناسخ. الآن نحدد طبيعتها: هل هي اسم معرب، أم اسم مبني، أم مصدر مؤول؟`;
-            if (String(facts.ending || "") === "attached_ya")
-                return `بعد أن عرفنا أن (${targetText}) اسم الفعل الناسخ، نفكك الكلمة قبل الحكم على آخرها: هل هي اسم معرب، أم اسم مبني، أم مصدر مؤول؟`;
-            return `بما أننا عرفنا علاقة (${targetText}) بالفعل الناسخ، نحدد طبيعته الآن: هل هو اسم معرب، أم اسم مبني، أم مصدر مؤول؟`;
+            return `ثبت أن (${targetText}) شغل موقع اسم الفعل الناسخ. هل المحدد كلمة مفردة، أم تركيب من حرف مصدري وفعل يمكن تأويله باسم؟`;
+        }
+        if (nodeId === "kana_ism_inflection") {
+            return `عرفنا أن (${targetText}) كلمة اسمية مفردة في البنية. الآن نحدد: هل هي اسم معرب أم اسم مبني؟`;
         }
         if (nodeId === "kana_ism_built") {
             if (targetText.includes("ت"))
@@ -175,9 +175,7 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
             return `بعد أن عرفنا أن (${targetText}) أتم المعنى بعد اسم الفعل الناسخ، ما طبيعته في هذا المثال؟`;
         }
         if (nodeId === "kana_khabar_single_start") {
-            if (facts.nounKind === "masdar")
-                return `بما أن (${targetText}) يؤول باسم، نحدد طبيعته: هل هو مصدر مؤول، أم اسم ظاهر معرب، أم اسم مبني؟`;
-            return `بما أن (${targetText}) أتم المعنى باسم أو تركيب يؤول باسم، نحدد الآن: هل هو اسم معرب، أم اسم مبني، أم مصدر مؤول؟`;
+            return `ثبت أن (${targetText}) خبر مفرد في اصطلاح الباب، أي ليس جملة ولا شبه جملة. هل هو كلمة مفردة، أم تركيب يمكن تأويله بمصدر صريح؟`;
         }
         if (nodeId === "kana_khabar_single_number") {
             return `بما أن (${targetText}) اسم معرب، نفحص صورة الاسم قبل علامة النصب. أيُّ الخيارات الآتية يصف صورة هذا الاسم؟`;
@@ -197,6 +195,12 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
         const judgmentText = String(facts.meaningJudgment || "الجملة الأصلية").replace(/\.$/, "");
         const subjectText = String(facts.meaningSubject || "الاسم الأول").replace(/\.$/, "");
         const particleLabel = String(facts.particleLabel || "إن");
+        if (nodeId === "inna_kaffa_gate") {
+            return `قبل أن نعرب «${targetText}»، نتحقق أولًا: هل اتصل الحرف الناسخ «${particleLabel}» بـ«ما» الكافة فكفَّته عن العمل؟`;
+        }
+        if (nodeId === "inna_kaffa_effect") {
+            return `ثبت أن «ما» الكافة اتصلت بالحرف الناسخ «${particleLabel}». ما أثرها في عمله؟`;
+        }
         if (nodeId === "inna_meaning") {
             return semanticQuestion;
         }
@@ -204,16 +208,14 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
             const particleName = innaParticleName(state);
             const meaningLabel = innaParticleMeaningLabel(state);
             return `${particleLabel} تفيد ${meaningLabel}، وهي حرف ناسخ دخل على الجملة الاسمية: ${judgmentText}؛ فيجعل المبتدأ اسم ${particleName} منصوبًا، والخبر خبر ${particleName} مرفوعًا.
-الكلمة المطلوبة إعرابها: ${targetText}
+الكلمة المطلوب إعرابها: ${targetText}
 هل هي بعد دخول ${particleLabel}:`;
         }
         if (nodeId === "inna_factor_gate") {
             return `ننظر إلى الحرف الناسخ في جملة ${sentenceText}. نريد أن نعرف أثره قبل العلامة النهائية: ما الحكم الذي فرضته إن وأخواتها على الاسم والخبر؟`;
         }
         if (nodeId === "inna_ism_start") {
-            if (innaIsConnectedPronounTarget(targetText))
-                return `عرفنا أن الضمير المتصل صار اسم ${particleLabel}. والضمير من الأسماء المبنية، لا من الحروف. الآن نحدد طبيعته قبل الإعراب النهائي.`;
-            return `عرفنا أن (${targetText}) صار اسم ${particleLabel}. الآن نحدد صورته قبل الإعراب النهائي.`;
+            return `عرفنا أن «${targetText}» صار اسم ${particleLabel}. نحدد أولًا: هل هذا الاسم معرب أم مبني؟`;
         }
         if (nodeId === "inna_ism_built") {
             if (innaIsConnectedPronounTarget(targetText))
@@ -230,7 +232,13 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
             return `عرفنا أن (${targetText}) خبر ${particleLabel}. ما صورة هذا الخبر في المثال: مفرد، أم جملة، أم شبه جملة؟`;
         }
         if (nodeId === "inna_khabar_single_start") {
-            return `عرفنا أن (${targetText}) خبر إن مفرد؛ أي ليس جملة ولا شبه جملة. الآن نحدد طبيعته قبل الإعراب النهائي.`;
+            return `عرفنا أن (${targetText}) خبر ${particleLabel} وليس جملة ولا شبه جملة. نحدد الآن: أهو كلمة مفردة أم تركيب في تأويل اسم؟`;
+        }
+        if (nodeId === "inna_khabar_masdar_term") {
+            return `ثبت أن (${targetText}) تركيب في تأويل اسم وقع خبرًا لـ${particleLabel}. ما الاسم النحوي لهذا التركيب؟`;
+        }
+        if (nodeId === "inna_khabar_single_inflection") {
+            return `بما أن (${targetText}) كلمة مفردة وقعت خبرًا لـ${particleLabel}، نحدد أولًا: هل هي اسم معرب أم اسم مبني؟`;
         }
         if (nodeId === "inna_khabar_single_built") {
             return `بما أن (${targetText}) اسم مبني في محل رفع خبر إن، نحدد نوع المبني من الكلمة نفسها.`;
@@ -253,10 +261,13 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
             return `لكي نعرب (${target}) نبدأ بالسؤال: ما وظيفة الكلمة أو التركيب المحدد بالنسبة إلى المبتدأ؟`;
         }
         if (nodeId === "khabar_kind") {
-            return `بما أننا عرفنا أن (${target}) أخبرت عن المبتدأ وأتمت المعنى، فهي خبر. نسأل الآن: هل الخبر كلمة واحدة، أم جملة، أم شبه جملة؟`;
+            return `بما أننا عرفنا أن (${target}) أخبرت عن المبتدأ وأتمت المعنى، فهي خبر. نسأل الآن: هل الخبر مفرد؛ أي ليس جملة ولا شبه جملة، أم جملة، أم شبه جملة؟`;
         }
         if (nodeId === "khabar_single_start") {
-            return `بما أننا عرفنا أن الخبر هنا كلمة واحدة، والخبر مرفوع أو في محل رفع، نسأل: هل هو اسم معرب، أم اسم مبني، أم مصدر مؤول؟`;
+            return `بما أننا عرفنا أن (${target}) خبر مفرد؛ أي ليس جملة ولا شبه جملة، نحدد الآن: أهو كلمة مفردة أم تركيب في تأويل اسم؟`;
+        }
+        if (nodeId === "khabar_single_inflection") {
+            return `بما أن (${target}) كلمة مفردة وقعت خبرًا، نحدد: أهي اسم معرب أم اسم مبني؟`;
         }
         if (nodeId === "khabar_single_built") {
             return `بما أننا عرفنا أن الخبر اسم مبني، نحدد نوع الاسم المبني قبل الإعراب النهائي: أهو ضمير، أم اسم إشارة، أم اسم موصول؟`;
@@ -289,7 +300,7 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
             return `ما نوع كلمة «${target}»؟`;
         }
         if (nodeId === "present_tense") {
-            return `عرفنا أن (${target}) فعل. ما زمنه؟`;
+            return `عرفنا أن (${target}) فعل. ما نوعه؟`;
         }
         if (nodeId === "present_build_check") {
             return `هل اتصل بالفعل «${target}» ما يجعله مبنيًّا؟`;
@@ -326,9 +337,9 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
                 return `بما أن الجملة بدأت باسم فهي جملة اسمية، وخبرها جملة فعلية: (${verbalKhabar || "الفعل وما بعده"}). لنحدد دور (${target}) داخل جملة الخبر. اختر الدور المناسب:`;
             }
             if (roleKind === "masdar") {
-                return `بما أن التركيب (${target}) ورد في جملة فعلية، فلنحدد دوره في المعنى. اختر الدور المناسب:`;
+                return `ننظر إلى معنى الجملة نفسه: ${actionQuestion || `ما الذي يرتبط بالفعل هنا؟`} الجواب هو (${target})، فنحدد وظيفته من هذا السؤال قبل الانتقال إلى صورته.`;
             }
-            return `بما أن الكلمة وردت في جملة فعلية، فلنحدد دورها في هذه الجملة. ما دور (${target}) في الجملة؟`;
+            return `${actionQuestion || `من الذي قام بالفعل؟`} استخدم جواب هذا السؤال لتحديد دور (${target}) في الجملة.`;
         }
         if (nodeId === "fael_role_hidden") {
             return `عرفنا أن الفعل (${target}) يحتاج إلى فاعل. فإذا لم يظهر بعده اسم قام بالفعل، نبحث عن ضمير مستتر داخل الفعل. ${actionQuestion || "من الذي فعل؟"}`;
@@ -340,7 +351,13 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
             return `بما أن (${target}) فاعل، فالفاعل يكون:`;
         }
         if (nodeId === "fael_form") {
-            return `بما أن المحدد (${target}) هو الفاعل، فلنحدد صورته لنستطيع تحديد طريقة إعرابه. اختر الصورة المناسبة للمحدد (${target}):`;
+            return `بما أن (${target}) فاعل، نحدد الآن مستوى الصورة أولًا: هل المحدد كلمة مفردة أم تركيب في تأويل اسم؟`;
+        }
+        if (nodeId === "fael_masdar_term") {
+            return `ثبت أن (${target}) تركيب يمكن تأويله بمصدر صريح. ما الاسم النحوي لهذا التركيب؟`;
+        }
+        if (nodeId === "fael_word_inflection") {
+            return `ثبت أن (${target}) كلمة مفردة وقعت فاعلًا. هل هي اسم معرب أم اسم مبني؟`;
         }
         if (nodeId === "fael_mu3rab_shape") {
             return `بما أن (${target}) هو الفاعل المعرب، فلنحدد صورته لنستطيع تحديد علامة رفعه. اختر الصورة المناسبة لكلمة (${target}):`;
@@ -364,15 +381,21 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
         }
         if (nodeId === "mafool_role") {
             if (roleKind === "masdar") {
-                return `بما أن التركيب (${target}) ورد في جملة فعلية، فلنحدد دوره في المعنى. اختر الدور المناسب:`;
+                return `اسأل من معنى الجملة: ${objectQuestion} إذا كان الجواب هو (${target}) فقد ثبتت وظيفته قبل أن نحدد صورته.`;
             }
-            return `بما أن الكلمة وردت في جملة فعلية، فلنحدد دورها في هذه الجملة. ما دور (${target}) في الجملة؟`;
+            return `اسأل: ${objectQuestion} واستخدم الجواب لتحديد دور (${target}) في الجملة.`;
         }
         if (nodeId === "mafool_hukm") {
             return `بما أن (${target}) مفعول به، فالمفعول به يكون:`;
         }
         if (nodeId === "mafool_form") {
-            return `بما أن المحدد (${target}) هو المفعول به، فلنحدد صورته لنستطيع تحديد طريقة إعرابه. اختر الصورة المناسبة للمحدد (${target}):`;
+            return `بما أن (${target}) مفعول به، نحدد الآن: هل المحدد كلمة مفردة أم تركيب في تأويل اسم؟`;
+        }
+        if (nodeId === "mafool_masdar_term") {
+            return `ثبت أن (${target}) تركيب يمكن تأويله بمصدر صريح. ما الاسم النحوي لهذا التركيب؟`;
+        }
+        if (nodeId === "mafool_word_inflection") {
+            return `ثبت أن (${target}) كلمة مفردة وقعت مفعولًا به. هل هي اسم معرب أم اسم مبني؟`;
         }
         if (nodeId === "mafool_mu3rab_shape") {
             return `بما أن (${target}) هو المفعول به المعرب، فلنحدد صورته لنستطيع تحديد علامة نصبه. اختر الصورة المناسبة لكلمة (${target}):`;
@@ -385,40 +408,23 @@ export function openingDialogueLine(tree: PedagogyTree, node: PedagogyNode | nul
         }
     }
     if (start.includes("tawabi")) {
-        if (nodeId === "tawabi_entry") {
-            return `ننظر إلى (${target}). قبل أن نسميها نعتًا أو عطفًا أو توكيدًا أو بدلًا: هل هي مرتبطة باسم قبلها أم تؤدي وظيفة أخرى؟`;
-        }
-        if (nodeId === "tawabi_relation") {
-            return `بما أن (${target}) مرتبطة باسم قبلها، نحدد نوع العلاقة: هل وصفت الاسم، أم شاركته بحرف عطف، أم أكدته، أم أوضحت المقصود منه؟`;
-        }
-        if (nodeId === "tawabi_term") {
-            return `عرفنا العلاقة بالمعنى. الآن نسمّيها نحويًا: ما المصطلح المناسب لعلاقة (${target}) بما قبلها؟`;
-        }
-        if (nodeId === "tawabi_tawkid_kind") {
-            return `عرفنا أن (${target}) أكدت ما قبلها. كيف أكدت الكلمة ما قبلها؟ اختر الإجابة الصحيحة:`;
-        }
-        if (nodeId === "tawabi_case") {
-            return `ننظر إلى المتبوع قبل (${target}). ما الحالة الإعرابية التي أخذها التابع من متبوعه؟`;
-        }
-        if (nodeId === "tawabi_form") {
-            return `عرفنا حالة (${target}) من المتبوع. الآن نحدد صورته: هل هو اسم ظاهر معرب، أم اسم مبني، أم جملة، أم شبه جملة؟`;
-        }
-        if (nodeId === "tawabi_shape") {
-            return `بما أن (${target}) تابع معرب، نحدد صورته قبل العلامة: مفرد، مثنى، جمع، أم من الأسماء الخمسة؟`;
-        }
-        if (nodeId === "tawabi_mark") {
-            return `عرفنا الحالة والصورة. ما علامة الإعراب المناسبة لـ(${target})؟`;
-        }
+        const tawabiLine = tawabiOpeningDialogueLine(node, target);
+        if (tawabiLine) return tawabiLine;
     }
     if (start.includes("mubtada")) {
         if (nodeId === "mubtada_word_type") {
-            return `ما نوع (${target}) في الجملة: اسم أو ما في معنى الاسم، أم فعل، أم حرف؟`;
+            return state?.facts?.nounKind === "masdar"
+                ? `انظر إلى المحدد «${target}» كاملًا: أهو تركيب في تأويل اسم، أم فعل مستقل، أم حرف؟`
+                : `ما نوع كلمة «${target}»؟`;
         }
         if (nodeId === "mubtada_function_gate") {
-            return `عرفنا أن (${target}) اسم أو في معنى الاسم. ما دوره في هذه الجملة؟`;
+            return `عرفنا أن «${target}» اسم أو تركيب يؤدي وظيفة الاسم. ما دوره في هذه الجملة؟`;
+        }
+        if (nodeId === "mubtada_masdar_term") {
+            return `ثبت أن (${target}) تركيب في تأويل اسم، وبدأنا به الكلام وبدأنا الحديث عنه. ما الاسم النحوي لهذا التركيب؟`;
         }
         if (nodeId === "mubtada_start") {
-            return `ثبت أن (${target}) مبتدأ. ما صورته هنا: اسم معرب، اسم مبني، أم مصدر مؤول؟`;
+            return `بما أن (${target}) اسم بدأنا به الكلام وبدأنا الحديث عنه، فهو مبتدأ. هل هذا الاسم معرب أم مبني؟`;
         }
         if (nodeId === "mubtada_built") {
             return `عرفنا أن (${target}) اسم مبني في موقع المبتدأ. ما نوع هذا الاسم المبني؟`;

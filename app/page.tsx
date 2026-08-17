@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import "./styles/83-home-glossary.css";
+import { PLATFORM_TAGLINE } from "../lib/brand";
 
 export default function HomePage() {
   return (
@@ -22,7 +23,7 @@ export default function HomePage() {
             />
             <div style={{ display: "grid", gap: "3px", textAlign: "right" }}>
               <strong style={{ color: "#0B2942", fontSize: "clamp(28px, 3.3vw, 42px)", lineHeight: 1.25, fontWeight: 900 }}>إِعْرَابُكَ</strong>
-              <span style={{ color: "#2F8F8F", fontSize: "clamp(13px, 1.5vw, 18px)", fontWeight: 700 }}>مدرّب التفكير النحوي</span>
+              <span style={{ color: "#2F8F8F", fontSize: "clamp(13px, 1.5vw, 18px)", fontWeight: 700 }}>{PLATFORM_TAGLINE}</span>
             </div>
           </div>
         </div>

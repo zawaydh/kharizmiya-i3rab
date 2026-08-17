@@ -384,8 +384,8 @@ export const tawabiExamples: Example[] = [
       mark: "kasra",
       matbu3: "أخيكَ",
       matbu3Role: "اسم مجرور بعلى",
-      relationReason: "لأن خالدًا يوضح من الأخ المقصود، ويصح أن نقول: سلمتُ على خالدٍ.",
-      finalI3rab: makeFinal("خالدٍ", "badal", "jarr", "kasra", "أخيكَ", "اسم مجرور بعلى", "لأن خالدًا يوضح الأخ المقصود، ويمكن أن نقول: سلَّمتُ على خالدٍ.", "singular", "نوع البدل: بدل مطابق.")
+      relationReason: "لأن «خالد» هي المقصودة بـ«أخيك»، ويمكن الاستغناء عن «أخيك» ووضع «خالد» مكانها دون اختلال المعنى: سلّمتُ على خالدٍ.",
+      finalI3rab: makeFinal("خالدٍ", "badal", "jarr", "kasra", "أخيكَ", "اسم مجرور بعلى", "لأن «خالد» هي المقصودة بـ«أخيك»، ويمكن الاستغناء عن «أخيك» ووضع «خالد» مكانها دون اختلال المعنى.", "singular", "نوع البدل: بدل مطابق.")
     },
     covers: ["tawabi.badal", "tawabi.jarr", "tawabi.singular", "tawabi.kasra"]
   },
@@ -445,8 +445,8 @@ export const tawabiExamples: Example[] = [
   },
   {
     id: "tw-16",
-    sentence: "كرّمتُ الطالباتِ المجتهداتِ.",
-    target: "المجتهداتِ",
+    sentence: "رأيتُ نساءً نشيطاتٍ.",
+    target: "نشيطاتٍ",
     facts: {
       ...base,
       relationKind: "description",
@@ -454,10 +454,10 @@ export const tawabiExamples: Example[] = [
       case: "nasb",
       shape: "jfs",
       mark: "kasra",
-      matbu3: "الطالباتِ",
-      matbu3Role: "مفعول به منصوب بالكسرة لأنه جمع مؤنث سالم",
-      relationReason: "لأن المجتهدات وصف للطالبات، وعلامة النصب هنا الكسرة لا الفتحة لأنه جمع مؤنث سالم.",
-      finalI3rab: makeFinal("المجتهداتِ", "naat", "nasb", "kasra", "الطالباتِ", "مفعول به منصوب بالكسرة لأنه جمع مؤنث سالم", "لأنه وصف للطالبات وتابع لهن في النصب.", "jfs")
+      matbu3: "نساءً",
+      matbu3Role: "مفعول به منصوب بالفتحة الظاهرة",
+      relationReason: "لأن «نشيطاتٍ» وصفت «نساءً» وتبعتها في حالة النصب، مع اختلاف العلامة: المنعوت منصوب بالفتحة، والنعت منصوب بالكسرة نيابة عن الفتحة لأنه جمع مؤنث سالم.",
+      finalI3rab: makeFinal("نشيطاتٍ", "naat", "nasb", "kasra", "نساءً", "مفعول به منصوب بالفتحة الظاهرة", "لأنها وصفت نساءً وتبعتها في حالة النصب، ولا يشترط أن تتطابق علامة التابع مع علامة المتبوع.", "jfs")
     },
     covers: ["tawabi.naat", "tawabi.nasb", "tawabi.jfs", "tawabi.kasra"]
   },

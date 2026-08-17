@@ -412,7 +412,13 @@ describe("CSS architecture", () => {
       "algorithm-card-result",
       "answer-drag-mini",
       "paths-activity-frame",
-      "sequential-live-result.is-bad",
+      "sequential-live-result",
+      "step-transform-chip",
+      "step-transform-check",
+      "next-step-focus-cue",
+      "practice-reward-burst",
+      "practice-reward-star",
+      "practice-teacher-explanation",
     ];
     for (const className of removedClasses) {
       expect(combined, `${className} عاد إلى CSS`).not.toContain(`.${className}`);

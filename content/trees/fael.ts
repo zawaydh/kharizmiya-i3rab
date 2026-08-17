@@ -124,14 +124,24 @@ export const faelTree: ExerciseTree = {
     fael_form: {
       id: "fael_form",
       type: "question",
-      context: "لكي نحدد هل نعرب الفاعل مرفوعًا بعلامة رفع أم في محل رفع، نحدد صورته.",
-      text: "ما صورة الكلمة المحددة؟",
-      hint: "انظر إلى الكلمة المحددة نفسها: الاسم الظاهر المعرب نكمل معه إلى علامة الرفع. أما الاسم المبني والضمير المتصل فنقول: في محل رفع فاعل. وأما المصدر المؤول فليس اسمًا مبنيًا؛ بل نقول: مصدر مؤول في محل رفع فاعل.",
+      context: "ثبتت وظيفة الفاعل. قبل أن نحدد العلامة أو المحل، نميز هل المحدد كلمة مفردة أم تركيبًا في تأويل اسم.",
+      text: "هل المحدد كلمة مفردة أم تركيب في تأويل اسم؟",
+      hint: "إذا أمكن تأويل التركيب بمصدر صريح، مثل «أن تنجح» = «نجاحك»، فهو تركيب في تأويل اسم. أما الاسم أو الضمير فهو كلمة مفردة في هذا المستوى من المسار.",
       answers: [
-        { id: "a", text: "اسم ظاهر معرب", next: "fael_mu3rab_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم الظاهر المعرب كلمة مستقلة تظهر عليها علامة رفع أو تكون مقدرة، مثل: الطالبُ والوالدانِ والمعلمونَ." },
-        { id: "b", text: "اسم مبني", next: "fael_mabni_type", eval: { fact: "roleKind", equals: "mabni" }, hint: "الاسم المبني مثل اسم الإشارة والاسم الموصول، ولا تظهر عليه علامة رفع، بل يكون في محل رفع فاعل." },
-        { id: "c", text: "ضمير متصل", next: "R_fael_connected", eval: { fact: "roleKind", equals: "connected" }, hint: "الضمير المتصل بالفعل من الأسماء المبنية، ويكون في محل رفع فاعل إذا دل على من قام بالفعل." },
-        { id: "d", text: "مصدر مؤول", next: "R_fael_masdar", eval: { fact: "roleKind", equals: "masdar" }, hint: "المصدر المؤول تركيب يؤول بمصدر في معنى اسم، مثل: أن تنجحَ = نجاحك، وما فعلتَ = فعلك." },
+        { id: "word", text: "كلمة مفردة", next: "fael_word_inflection", eval: { fact: "roleKind", anyOf: ["visible", "mabni", "connected"] }, hint: "إذا كان المحدد اسمًا أو ضميرًا مفردًا ننتقل إلى تحديد: معرب أم مبني." },
+        { id: "masdar", text: "تركيب في تأويل اسم", next: "fael_masdar_term", eval: { fact: "roleKind", equals: "masdar" }, hint: "جرّب التأويل بمصدر صريح: «أن تنجح» = «نجاحك»، و«ما فعلت» = «فعلك». إذا استقام المعنى نسمّي هذا التركيب في الخطوة التالية." },
+      ]
+    },
+
+    fael_word_inflection: {
+      id: "fael_word_inflection",
+      type: "question",
+      context: "بما أن الفاعل كلمة مفردة، نحدد أولًا هل الاسم معرب أم مبني.",
+      text: "هل الفاعل اسم معرب أم اسم مبني؟",
+      hint: "الاسم المعرب تتغير علامته بحسب موقعه، أما الاسم المبني ـ ومنه الضمائر ـ فيلزم صورة واحدة ويكون هنا في محل رفع فاعل.",
+      answers: [
+        { id: "mu3rab", text: "اسم معرب", next: "fael_mu3rab_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم المعرب تظهر عليه علامة رفع أو تكون مقدرة، لذلك نحدد صورته بعد ذلك." },
+        { id: "mabni", text: "اسم مبني", next: "fael_mabni_type", eval: { fact: "roleKind", anyOf: ["mabni", "connected"] }, hint: "الضمائر وأسماء الإشارة والأسماء الموصولة من الأسماء المبنية؛ نحدد نوع المبني في الخطوة التالية." },
       ]
     },
 
@@ -182,6 +192,17 @@ export const faelTree: ExerciseTree = {
     R_fael_mabni: { id: "R_fael_mabni", type: "result", coverage: "fael.mabni", text: "اسم مبني في محل رفع فاعل." },
     R_fael_connected: { id: "R_fael_connected", type: "result", coverage: "fael.connected", text: "ضمير متصل مبني في محل رفع فاعل." },
     R_fael_hidden: { id: "R_fael_hidden", type: "result", coverage: "fael.hidden", text: "الفاعل ضمير مستتر." },
+    fael_masdar_term: {
+      id: "fael_masdar_term",
+      type: "question",
+      context: "ثبت أن المحدد تركيب يمكن تأويله بمصدر صريح؛ نربط الآن الخاصية بالمصطلح النحوي.",
+      text: "ماذا يسمى هذا التركيب؟",
+      hint: "التركيب من حرف مصدري وفعل، أو ما يقوم مقامه، إذا أمكن تأويله بمصدر صريح يسمى مصدرًا مؤولًا.",
+      answers: [
+        { id: "source", text: "مصدر مؤول", next: "R_fael_masdar", correct: true },
+        { id: "word", text: "اسم مفرد معرب", next: "fael_masdar_term", correct: false, hint: "المحدد ليس كلمة مفردة؛ هو تركيب كامل أمكن تأويله بمصدر صريح." },
+      ],
+    },
     R_fael_masdar: { id: "R_fael_masdar", type: "result", coverage: "fael.masdar", text: "مصدر مؤول في محل رفع فاعل." }
   }
 };

@@ -14,6 +14,8 @@ import {
 } from "./ExercisePedagogy";
 import { ExerciseChoiceAnswers } from "./ExerciseChoiceAnswers";
 import { ExercisePracticeQuestion } from "./ExercisePracticeQuestion";
+import { exerciseRuleHelpText } from "./ExerciseRuleHelp";
+import { ExerciseRuleHelpView } from "./ExerciseRuleHelpView";
 import type {
   DialogueBubble,
   DroppedChoice,
@@ -44,7 +46,6 @@ type Props = {
   practiceDirectOptions: string[];
   currentChoiceAnswers: ExerciseAnswer[];
   feedback: AnswerFeedbackState | null;
-  latestStepResult: string;
   droppedChoice: DroppedChoice | null;
   successNudge: string | null;
   onDropOverChange: (value: boolean) => void;
@@ -56,6 +57,8 @@ type Props = {
   onPickPracticeOption: (option: string, optionIndex: number) => void;
   onPickAnswer: (answer: ExerciseAnswer, event: React.MouseEvent<HTMLButtonElement>) => void;
   onOpenHint: () => void;
+  canPreviousExample: boolean;
+  onPreviousExample: () => void;
   onReset: () => void;
 };
 
@@ -77,8 +80,6 @@ export function ExerciseQuestionStage({
   practiceDirectOptions,
   currentChoiceAnswers,
   feedback,
-  latestStepResult,
-  droppedChoice,
   successNudge,
   onDropOverChange,
   onLearnDrop,
@@ -89,8 +90,11 @@ export function ExerciseQuestionStage({
   onPickPracticeOption,
   onPickAnswer,
   onOpenHint,
+  canPreviousExample,
+  onPreviousExample,
   onReset,
 }: Props) {
+  const ruleHelp = exerciseRuleHelpText(thinkingNode, state, title);
   return (
     <div
       ref={activeCardRef}
@@ -185,44 +189,18 @@ export function ExerciseQuestionStage({
                   >
                     أحتاج تلميحًا
                   </button>
+                  <ExerciseRuleHelpView text={ruleHelp} onGlossary={onGlossary} />
                 </div>
               ) : null}
             </>
           )}
-
-          {latestStepResult && dialogBubble?.tone !== "hint" ? (
-            <div className={`sequential-live-result ${droppedChoice?.tone === "ok" ? "is-ok" : ""}`} aria-live="polite">
-              <span>{latestStepResult}</span>
-            </div>
-          ) : null}
-
-          {cardPhase !== "idle" ? (
-            <div className="step-transform-chip" aria-live="polite">
-              <span className="step-transform-check">✓</span>
-              <span>{successNudge || "أضفنا إلى المسار:"}</span>
-              <strong>{latestStepResult}</strong>
-            </div>
-          ) : null}
-
-          {cardPhase !== "idle" ? (
-            isPracticeMode ? (
-              <div className="practice-reward-burst" aria-live="polite">
-                <span className="practice-reward-star">★</span>
-                <div>
-                  <strong>{successNudge || "نجمة جديدة ✓"}</strong>
-                  <p>{latestStepResult ? `أضفنا للمسار: ${latestStepResult}` : "نكمل التحدي."}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="next-step-focus-cue quick-success-cue" aria-live="polite">
-                <span>أحسنت ✓ ننتقل للخطوة التالية.</span>
-              </div>
-            )
-          ) : null}
         </div>
       </div>
 
       <div className="clean-question-nav">
+        {canPreviousExample ? (
+          <button type="button" onClick={onPreviousExample} style={ghostBtn}>المثال السابق</button>
+        ) : null}
         <button type="button" onClick={onReset} style={ghostBtn}>إعادة المثال</button>
       </div>
     </div>

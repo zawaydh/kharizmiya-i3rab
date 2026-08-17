@@ -51,7 +51,7 @@ export const imperativeVerbTree: ExerciseTree = {
                 { id: "b", text: "نون التوكيد", next: "R_imperative_fath_tawkid", eval: { fact: "attached", equals: "tawkid" }, hint: "نون التوكيد تؤكد الفعل وتقوّي معناه، مثل: اكتبَنَّ، ولا تدل على مؤنث." },
                 { id: "c", text: "ألف الاثنين", next: "R_imperative_delete_noon_alif2", eval: { fact: "attached", equals: "alif2" }, hint: "ألف الاثنين تدل على مخاطبَين اثنين، وفعل الأمر معها مبني على حذف النون." },
                 { id: "d", text: "واو الجماعة", next: "R_imperative_delete_noon_waw", eval: { fact: "attached", equals: "waw" }, hint: "واو الجماعة تدل على جماعة المخاطبين، وفعل الأمر معها مبني على حذف النون." },
-                { id: "e", text: "ياء المخاطبة", next: "R_imperative_delete_noon_yaa", eval: { fact: "attached", equals: "yaa" }, hint: "ياء المخاطبة تدل على المخاطبة المؤنثة، وفعل الأمر معها مبني على حذف النون." },
+                { id: "e", text: "ياء المخاطبة", next: "R_imperative_delete_noon_yaa", eval: { fact: "attached", equals: "yaa" }, hint: "ياء المخاطبة تدل على المخاطبة المؤنثة. أعد الفعل إلى مضارعه مع المخاطبة: «أنتِ تكتبين»؛ تظهر النون في المضارع، ثم تُحذف في الأمر «اكتبي»، لذلك يبنى الأمر على حذف النون." },
             ]
         },
         imperative_ending: {

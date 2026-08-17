@@ -40,6 +40,9 @@ export function nominalStudentHintText(node: PedagogyNode | null | undefined, pi
             }
             return `انظر إلى موقع (${currentTarget}) ومعناه في الجملة: هل بدأنا الحديث عنه؟ إذا نعم فهو يؤدي وظيفة المبتدأ.`;
         }
+        if (id === "mubtada_masdar_term") {
+            return `لقد ثبت أن (${currentTarget}) تركيب يمكن تأويله بمصدر صريح، مثل «أن تتعلم» = «تعلّمك». هذا النوع يسمى مصدرًا مؤولًا، ويأخذ هنا موقع المبتدأ.`;
+        }
         if (id === "mubtada_start") {
             if (pickedText.includes("معرب")) {
                 return `الاسم المعرب تتغير علامة آخره بحسب موقعه، مثل: طالبٌ، طالبًا، طالبٍ. اختبر (${currentTarget}): هل يتغير آخره بهذه الطريقة، أم يبقى على صورة واحدة مثل أسماء الإشارة والضمائر والموصولات؟`;
@@ -107,11 +110,18 @@ export function nominalStudentHintText(node: PedagogyNode | null | undefined, pi
                 return `اخترتَ «خبر شبه جملة». شبه الجملة هنا يكون جارًا ومجرورًا مثل «في البيت»، أو ظرفًا مثل «فوق الشجرة». افحص (${currentTarget}): هل هو واحد من هذين التركيبين؟`;
         }
         if (id === "khabar_single_start") {
-            if (pickedText.includes("مبني"))
-                return "الاسم المبني يلزم صورة واحدة، مثل: هو، هذا، الذي. إن كانت الكلمة ليست من هذه الأمثلة غالبًا فهي اسم معرب.";
-            if (pickedText.includes("مصدر"))
-                return "المصدر المؤول تركيب مثل: أن تنجح، ويؤول إلى مصدر صريح: نجاحك. أما الكلمة الواحدة مثل شجاع أو فتى فليست مصدرًا مؤولًا.";
-            return "الاسم المعرب تتغير علامة آخره بحسب موقعه، مثل شجاعٌ، شجاعًا، شجاعٍ.";
+            if (pickedText.includes("كلمة") && state?.facts?.nounKind === "masdar")
+                return `(${currentTarget}) تركيب يمكن تأويله بمصدر صريح مثل: «أن تنجح» = «نجاحك»؛ لذلك لا نعامله كلمة مفردة.`;
+            if (pickedText.includes("تركيب") && state?.facts?.nounKind !== "masdar")
+                return `(${currentTarget}) كلمة واحدة في هذا المستوى، وليست تركيبًا يؤول بمصدر؛ وبعد ذلك نحدد هل هي معربة أم مبنية.`;
+            return `انظر إلى (${currentTarget}) كاملة: هل هي كلمة واحدة، أم تركيب يمكن تأويله باسم صريح؟`;
+        }
+        if (id === "khabar_single_inflection") {
+            if (pickedText.includes("مبني") && state?.facts?.nounKind === "mu3rab")
+                return `(${currentTarget}) اسم معرب تتغير علامته بحسب موقعه؛ لذلك نكمل إلى صورة الاسم وعلامة رفعه.`;
+            if (pickedText.includes("معرب") && state?.facts?.nounKind === "mabni")
+                return `(${currentTarget}) اسم مبني يلزم صورة واحدة، مثل الضمير واسم الإشارة والاسم الموصول؛ لذلك يكون في محل رفع خبر.`;
+            return `الاسم المعرب تتغير علامته بحسب موقعه، أما الاسم المبني فيلزم صورة واحدة.`;
         }
         if (id === "khabar_single_number") {
             const isFiveNounTarget = String(currentTarget || "").includes("أبو") || String(currentTarget || "").includes("أبا") || String(currentTarget || "").includes("أبي") || String(currentTarget || "").includes("أخو") || String(currentTarget || "").includes("أخا") || String(currentTarget || "").includes("أخي") || String(currentTarget || "").includes("حمو") || String(currentTarget || "").includes("فوك") || String(currentTarget || "").includes("فو") || String(currentTarget || "").includes("ذو") || String(currentTarget || "").includes("ذا") || String(currentTarget || "").includes("ذي");

@@ -18,8 +18,8 @@ export const pastVerbTree: ExerciseTree = {
         past_tense: {
             id: "past_tense",
             type: "question",
-            context: "عرفنا أنها فعل؛ والآن نحدد زمنه قبل الانتقال إلى علامة البناء.",
-            text: "ما زمن هذا الفعل؟",
+            context: "عرفنا أنها فعل؛ والآن نحدد نوعه قبل الانتقال إلى علامة البناء.",
+            text: "ما نوع هذا الفعل؟",
             hint: "الفعل الماضي يدل على حدث وقع وانتهى، مثل: كتبَ، قرأَ، خرجَ. المضارع يدل على الحاضر أو المستقبل، والأمر يدل على طلب حدوث الفعل.",
             answers: [
                 { id: "past", text: "ماضٍ", next: "past_has_attachment", eval: { fact: "verbTense", equals: "past" }, hint: "الفعل الماضي يدل على حدث وقع وانتهى." },

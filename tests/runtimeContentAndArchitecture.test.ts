@@ -240,6 +240,7 @@ describe("سلامة المحتوى التشغيلي والبنية", () => {
       "ExerciseDialogueUtils.ts",
       "ExerciseOpeningDialogue.ts",
       "ExtendedTopicOpeningDialogue.ts",
+      "TawabiOpeningDialogue.ts",
       "ExercisePracticePedagogy.ts",
       "ExerciseSuccessPedagogy.ts",
       "KanaFinalIntro.ts",

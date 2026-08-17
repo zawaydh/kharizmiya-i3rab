@@ -25,6 +25,8 @@ type ExerciseResultStageProps = {
   onPickFollowUp: (label: string) => void;
   resultWouldCompleteStage: boolean;
   onPrepareStageComplete: () => void;
+  canPreviousExample: boolean;
+  onPreviousExample: () => void;
   onNextExample: () => void;
 };
 
@@ -48,9 +50,13 @@ export function ExerciseResultStage({
   onPickFollowUp,
   resultWouldCompleteStage,
   onPrepareStageComplete,
+  canPreviousExample,
+  onPreviousExample,
   onNextExample,
 }: ExerciseResultStageProps) {
   const chosenFollowUp = followUp?.options.find((option) => option.label === followUpChoice);
+  const targetIsPhrase = Boolean(currentTarget?.trim().includes(" "));
+  const resultSubject = targetIsPhrase ? (finalText.includes("جملة") ? "جملة" : "التركيب") : finalSubject;
 
   if (pendingStageComplete) {
     return (
@@ -84,7 +90,7 @@ export function ExerciseResultStage({
           <strong className="final-result-heading">
             {finalText.startsWith("لم تكن الكلمة من المفاعيل الخمسة")
               ? "افحص بقية المنصوبات"
-              : <>إعراب {finalSubject} {renderText(currentTarget || "")}:</>}
+              : <>إعراب {resultSubject} {renderText(currentTarget || "")}:</>}
           </strong>
           <span className="final-i3rab-line">{renderText(finalText)}</span>
           {kanaNote ? (
@@ -123,15 +129,20 @@ export function ExerciseResultStage({
         </div>
       ) : null}
 
-      <button
-        type="button"
-        onClick={resultWouldCompleteStage ? onPrepareStageComplete : onNextExample}
-        className="next-example-glow"
-        style={{ ...primaryNavBtn, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
-        disabled={!canMoveAfterResult}
-      >
-        {resultWouldCompleteStage ? "انتقل إلى المرحلة التالية" : "انتقل إلى المثال التالي"}
-      </button>
+      <div className="result-example-navigation">
+        {canPreviousExample ? (
+          <button type="button" onClick={onPreviousExample} className="result-previous-example">المثال السابق</button>
+        ) : null}
+        <button
+          type="button"
+          onClick={resultWouldCompleteStage ? onPrepareStageComplete : onNextExample}
+          className="next-example-glow"
+          style={{ ...primaryNavBtn, cursor: canMoveAfterResult ? "pointer" : "not-allowed" }}
+          disabled={!canMoveAfterResult}
+        >
+          {resultWouldCompleteStage ? "انتقل إلى المرحلة التالية" : "انتقل إلى المثال التالي"}
+        </button>
+      </div>
     </>
   );
 }

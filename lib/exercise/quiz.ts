@@ -149,7 +149,7 @@ function quizExpectedCause(expected?: string | null, example?: QuizExampleLike |
 
   if (expectedText.includes("مفعول به")) return `وقع الفعل على «${target}»، فهي مفعول به، والمفعول به منصوب؛ ثم نحدد علامة النصب من نوع الاسم.`;
   if (expectedText.includes("فاعل")) return `«${target}» هو من قام بالفعل أو اتصف به، فهو فاعل، والفاعل مرفوع؛ ثم نحدد علامة الرفع من نوع الاسم.`;
-  if (expectedText.includes("مبتدأ")) return `بدأت الجملة الاسمية بالحديث عن «${target}»، فهو مبتدأ، والمبتدأ مرفوع.`;
+  if (expectedText.includes("مبتدأ")) return `«${target}» اسم بدأنا به الكلام وبدأنا الحديث عنه، فهو مبتدأ، والمبتدأ مرفوع.`;
   if (expectedText.includes("خبر")) return `«${target}» أتم المعنى عن الاسم قبله، فهو خبر، ثم نطبق حكم الباب وعلامته.`;
   if (expectedText.includes("توكيد")) return `أكد «${target}» ما قبله، فهو توكيد يتبع المؤكَّد في الحالة الإعرابية والعلامة المناسبة لنوعه.`;
   if (expectedText.includes("نعت")) return `وصف «${target}» الاسم قبله، فهو نعت يتبعه في الإعراب والتعريف والعدد والجنس.`;
@@ -179,7 +179,7 @@ export function explainDistractor(
 
   if (expectedText.includes("فعل ماض")) {
     if (actualText.includes("معرب")) return `سبب الخطأ أنك عاملت «${target}» فعلًا معربًا، بينما الفعل الماضي مبني دائمًا. ${cause}`;
-    if (!actualText.includes("فعل ماض")) return `سبب الخطأ في تحديد زمن الفعل؛ «${target}» فعل ماضٍ، والفعل الماضي مبني دائمًا. ${cause}`;
+    if (!actualText.includes("فعل ماض")) return `سبب الخطأ في تحديد نوع الفعل؛ «${target}» فعل ماضٍ، والفعل الماضي مبني دائمًا. ${cause}`;
     return `نوع الفعل صحيح، لكن علامة البناء أو الضمير المتصل في اختيارك لا يوافقان المثال. ${cause}`;
   }
 
@@ -303,14 +303,38 @@ export function localQuizExpectedLabel(label: string, example?: QuizExampleLike 
   return localizeQuizOptionToExample(label, example);
 }
 
-function swapOne(text: string, pairs: ReadonlyArray<readonly [string, string]>) {
-  for (const [from, to] of pairs) {
-    if (text.includes(from)) return text.replace(from, to);
-  }
-  return "";
+function swapCandidates(text: string, pairs: ReadonlyArray<readonly [string, string]>) {
+  const candidates: string[] = [];
+  pairs.forEach(([from, to]) => {
+    if (text.includes(from)) candidates.push(text.replace(from, to));
+  });
+  return candidates;
 }
 
-function fallbackCloseQuizDistractors(correct: string) {
+function fallbackRoleParses(correct: string) {
+  const separatorIndex = correct.indexOf(":");
+  const prefix = separatorIndex > 0 ? `${correct.slice(0, separatorIndex + 1)} ` : "";
+  const body = separatorIndex > 0 ? correct.slice(separatorIndex + 1) : correct;
+  const options: string[] = [];
+  const pushBody = (candidate: string, marker: string) => {
+    if (!body.includes(marker)) options.push(`${prefix}${candidate}`.trim());
+  };
+
+  if (/فعل\s+(?:ماض|مضارع|أمر)/u.test(body)) {
+    pushBody("فعل ماضٍ مبني على السكون.", "فعل ماض");
+    pushBody("فعل مضارع مرفوع وعلامة رفعه الضمة الظاهرة على آخره.", "فعل مضارع");
+    pushBody("فعل أمر مبني على السكون.", "فعل أمر");
+    return options;
+  }
+
+  pushBody("فاعل مرفوع وعلامة رفعه الضمة الظاهرة على آخره.", "فاعل");
+  pushBody("مفعول به منصوب وعلامة نصبه الفتحة الظاهرة على آخره.", "مفعول به");
+  pushBody("اسم مجرور وعلامة جره الكسرة الظاهرة على آخره.", "اسم مجرور");
+  pushBody("حال منصوب وعلامة نصبه الفتحة الظاهرة على آخره.", "حال");
+  return options;
+}
+
+export function buildI3rabDistractors(correct: string) {
   const output: string[] = [];
   const push = (candidate?: string) => {
     const value = String(candidate || "").trim();
@@ -318,11 +342,53 @@ function fallbackCloseQuizDistractors(correct: string) {
       output.push(value);
     }
   };
+  const pushMany = (candidates: readonly string[]) => candidates.forEach(push);
 
-  push(swapOne(correct, [["توكيد لفظي", "توكيد معنوي"], ["توكيد معنوي", "توكيد لفظي"], ["نعت", "بدل"], ["بدل", "نعت"], ["معطوف", "توكيد معنوي"], ["فاعل", "مفعول به"], ["مفعول به", "فاعل"], ["مبتدأ", "خبر"], ["خبر", "مبتدأ"]]));
-  push(swapOne(correct, [["مرفوع", "منصوب"], ["منصوب", "مجرور"], ["مجرور", "مرفوع"], ["مجزوم", "مرفوع"], ["مبني", "معرب"]]));
-  push(swapOne(correct, [["الضمة", "الفتحة"], ["الفتحة", "الكسرة"], ["الكسرة", "الضمة"], ["الياء", "الألف"], ["الألف", "الياء"], ["الواو", "الياء"], ["السكون", "الفتحة"]]));
-  return output;
+  if (correct.includes("حرف العلة المحذوف:")) {
+    ["الألف", "الواو", "الياء"].forEach((letter) => {
+      push(correct.replace(/حرف العلة المحذوف:\s*(الألف|الواو|الياء)/u, `حرف العلة المحذوف: ${letter}`));
+    });
+    push(firstLine(correct).replace("حذف حرف العلة", "السكون"));
+    return output.slice(0, 3);
+  }
+
+  pushMany(swapCandidates(correct, [
+    ["نائب فاعل", "فاعل"], ["فاعل", "مفعول به"], ["مفعول به", "فاعل"],
+    ["مفعول مطلق مبين للعدد", "مفعول به"], ["مفعول مطلق", "مفعول به"], ["مفعول معه", "معطوف"],
+    ["تمييز ملحوظ", "حال"], ["تمييز ملفوظ", "حال"], ["تمييز", "حال"], ["حال", "نعت"],
+    ["بدل اشتمال", "نعت"], ["بدل بعض من كل", "نعت"], ["بدل", "نعت"], ["نعت", "حال"],
+    ["معطوف", "توكيد"], ["توكيد لفظي", "توكيد معنوي"], ["توكيد معنوي", "توكيد لفظي"],
+    ["مبتدأ", "خبر"], ["خبر", "مبتدأ"], ["اسم كان", "خبر كان"], ["خبر كان", "اسم كان"],
+    ["اسم إن", "خبر إن"], ["خبر إن", "اسم إن"], ["اسم لا", "خبر لا"], ["خبر لا", "اسم لا"],
+    ["منادى مضاف", "نكرة مقصودة"], ["نكرة مقصودة", "نكرة غير مقصودة"], ["نكرة غير مقصودة", "مفرد علم"],
+  ]));
+  pushMany(swapCandidates(correct, [
+    ["في محل رفع", "في محل نصب"], ["في محل رفع", "في محل جر"],
+    ["في محل نصب", "في محل رفع"], ["في محل نصب", "في محل جر"],
+    ["في محل جر", "في محل رفع"], ["في محل جر", "في محل نصب"],
+    ["مرفوع", "منصوب"], ["مرفوع", "مجرور"], ["منصوب", "مرفوع"], ["منصوب", "مجرور"],
+    ["مجرور", "مرفوع"], ["مجرور", "منصوب"], ["مجزوم", "مرفوع"], ["مجزوم", "منصوب"],
+    ["مبني", "معرب"], ["معرب", "مبني"],
+  ]));
+  pushMany(swapCandidates(correct, [
+    ["الضمة المقدرة", "الضمة الظاهرة"], ["الضمة المقدرة", "الفتحة المقدرة"],
+    ["الضمة الظاهرة", "الفتحة الظاهرة"], ["الضمة الظاهرة", "الواو"],
+    ["الفتحة المقدرة", "الفتحة الظاهرة"], ["الفتحة الظاهرة", "الكسرة الظاهرة"],
+    ["الكسرة نيابة عن الفتحة", "الفتحة الظاهرة"], ["الكسرة الظاهرة", "الضمة الظاهرة"],
+    ["بالواو", "بالياء"], ["بالواو", "بالضمة"], ["بالياء", "بالألف"], ["بالياء", "بالكسرة"],
+    ["بالألف", "بالياء"], ["بالألف", "بالفتحة"], ["حذف النون", "ثبوت النون"],
+    ["ثبوت النون", "حذف النون"], ["حذف حرف العلة", "السكون"], ["السكون", "الفتح"], ["الفتح", "السكون"],
+  ]));
+  pushMany(swapCandidates(correct, [
+    ["فعل ماض", "فعل مضارع"], ["فعل ماض", "فعل أمر"], ["فعل مضارع", "فعل ماض"],
+    ["فعل مضارع", "فعل أمر"], ["فعل أمر", "فعل مضارع"], ["فعل أمر", "فعل ماض"],
+    ["جملة فعلية", "جملة اسمية"], ["جملة اسمية", "جملة فعلية"], ["شبه جملة", "جملة فعلية"],
+    ["اسم موصول", "اسم إشارة"], ["اسم إشارة", "اسم موصول"], ["ضمير متصل", "ضمير منفصل"],
+    ["ضمير منفصل", "ضمير متصل"], ["مصدر مؤول", "اسم ظاهر"],
+  ]));
+
+  fallbackRoleParses(correct).forEach(push);
+  return output.slice(0, 3);
 }
 
 export function buildCloseQuizOptions(
@@ -330,22 +396,18 @@ export function buildCloseQuizOptions(
   seed: string,
   cursor: number
 ) {
-  const raw = buildBalancedQuizOptions(example, seed, cursor);
   const correct = localQuizExpectedLabel(example?.correctI3rab || example?.facts?.finalI3rab || "", example);
-  if (!correct) return raw.map((option) => localizeQuizOptionToExample(option, example));
+  if (!correct) {
+    return buildBalancedQuizOptions(example, seed, cursor)
+      .map((option) => localizeQuizOptionToExample(option, example));
+  }
 
-  const localized = Array.from(new Set(raw.map((option) => localizeQuizOptionToExample(option, example)).filter(Boolean)));
-  const distractors = localized.filter((option) => !isSameQuizAnswer(option, correct));
-  fallbackCloseQuizDistractors(correct).forEach((option) => {
-    if (!distractors.some((candidate) => isSameQuizAnswer(candidate, option))) distractors.push(option);
-  });
-
-  const orderedDistractors = stableShuffle(distractors, `${seed}-distractors`).slice(0, 3);
+  const distractors = buildI3rabDistractors(correct);
+  const orderedDistractors = stableShuffle(distractors, `${seed}-${example?.id || "quiz"}-distractors`).slice(0, 3);
   const targetPositions = [1, 2, 3, 1, 2, 3, 0];
   const finalOptions = [...orderedDistractors];
   const targetPosition = targetPositions[cursor % targetPositions.length] ?? 0;
-  const target = Math.min(targetPosition, finalOptions.length);
-  finalOptions.splice(target, 0, correct);
+  finalOptions.splice(Math.min(targetPosition, finalOptions.length), 0, correct);
   return finalOptions.slice(0, 4);
 }
 
@@ -394,7 +456,7 @@ export function buildRemedialTeacherExplanation(
 
   if (label.includes("فاعل")) return `نبحث عمّن قام بالفعل في الجملة؛ فنجد أن «${target}» هو القائم به، لذلك وظيفته فاعل، والفاعل مرفوع دائمًا. ثم ننظر إلى صورة الكلمة لتحديد علامة الرفع، فنصل إلى: ${label}.`;
   if (label.includes("مفعول به")) return `نبحث عمّا وقع عليه الفعل؛ فنجد أن «${target}» وقع عليه الحدث، لذلك وظيفته مفعول به، والمفعول به منصوب دائمًا. ثم ننظر إلى نوع الكلمة لتحديد علامة النصب، فنصل إلى: ${label}.`;
-  if (label.includes("مبتدأ")) return `نبدأ بالجملة الاسمية ونحدد الاسم الذي بدأ به الحديث؛ وهو «${target}»، لذلك هو مبتدأ مرفوع. ثم ننظر إلى نوعه لتحديد علامة الرفع، فنصل إلى: ${label}.`;
+  if (label.includes("مبتدأ")) return `نبدأ بـ«${target}»: هو اسم بدأنا به الكلام وبدأنا الحديث عنه، لذلك هو مبتدأ مرفوع. ثم ننظر إلى صورته لتحديد علامة الرفع، فنصل إلى: ${label}.`;
   if (label.includes("خبر")) return `بعد تحديد المبتدأ أو الاسم الناسخ، نسأل: ما المعلومة التي أتمت المعنى؟ الجواب هو «${target}»، لذلك نحدد نوع الخبر وحكمه ثم علامته، فنصل إلى: ${label}.`;
   if (label.includes("نعت")) return `نربط «${target}» بالاسم الذي قبله؛ فهو يصفه، لذلك هو نعت. والنعت يتبع منعوته في الإعراب، ثم نحدد العلامة من صورة الكلمة، فنصل إلى: ${label}.`;
   if (label.includes("توكيد")) return `نلاحظ أن «${target}» أعاد اللفظ أو قوّى معنى الاسم قبله، لذلك هو توكيد. والتوكيد يتبع المؤكَّد في الإعراب، فننقل حكمه ثم نحدد العلامة، ونصل إلى: ${label}.`;

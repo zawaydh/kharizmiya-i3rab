@@ -41,5 +41,8 @@ describe("لعبة علامتي", () => {
     expect(page).toContain("MarkatiGame");
     expect(component).toContain("game-theme-mark");
     expect(component).toContain("GameSuccessPop");
+    expect(component).toContain("FINAL_I3RAB_MARKS");
+    expect(component).toContain("concealedI3rab");
+    expect(component).toContain("feedback?.correct === true");
   });
 });

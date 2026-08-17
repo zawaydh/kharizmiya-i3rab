@@ -171,7 +171,7 @@ export const pastVerbQuizExamples = pastVerbExamples.map((ex, i) => {
     prompt: "بعد تتبّع القرارات، ما الإعراب الصحيح للفعل الماضي المحدد؟",
     options,
     correctI3rab: correct,
-    whyCorrect: "اتبعنا التسلسل: نوع الكلمة، زمن الفعل، هل اتصل بالفعل شيء، نوع المتصل، ثم أثره في علامة البناء. وإذا حُذف حرف علة رددنا الفعل إلى الماضي مع الضمير هو.",
+    whyCorrect: "اتبعنا التسلسل: نوع الكلمة، نوع الفعل، هل اتصل بالفعل شيء، نوع المتصل، ثم أثره في علامة البناء. وإذا حُذف حرف علة رددنا الفعل إلى الماضي مع الضمير هو.",
     optionReasons: Object.fromEntries(options.map((o) => [
       o,
       o === correct

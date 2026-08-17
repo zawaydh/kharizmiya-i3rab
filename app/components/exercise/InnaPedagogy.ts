@@ -3,7 +3,7 @@ import type { PedagogyNode, PedagogyState } from "./ExercisePedagogyTypes";
 function stripArabicTashkeel(value: string) {
     return String(value || "").replace(/[\u064B-\u065F\u0670]/g, "").trim();
 }
-export function innaParticleName(state: PedagogyState) {
+export function innaParticleName(state?: PedagogyState) {
     const raw = stripArabicTashkeel(String(state?.facts?.particleLabel || "إن"));
     if (raw.includes("إنما"))
         return "إنما";

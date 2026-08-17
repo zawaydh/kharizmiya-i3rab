@@ -48,7 +48,7 @@ export function buildRunnerState(
   const configuredStart = mode === "practice"
     ? tree.practiceStartNodeId || tree.startNodeId
     : tree.learnStartNodeId || tree.startNodeId;
-  const startNodeId = example?.facts?.hasKaffa ? "inna_kaffa_effect" : configuredStart;
+  const startNodeId = configuredStart;
   const base = createInitialState({
     mode: mode === "practice" ? "practice" : "learn",
     level: 2,

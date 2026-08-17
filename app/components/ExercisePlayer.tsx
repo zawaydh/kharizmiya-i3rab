@@ -49,7 +49,6 @@ import { ExerciseQuestionStage } from "./exercise/ExerciseQuestionStage";
 
 import {
   buildStageProgressMeta,
-  buildVisibleResultDraft,
   finalI3rabSubject,
   finalThinkingTextForDisplay,
   innaNasikhFinalIntro,
@@ -252,10 +251,7 @@ export default function ExercisePlayer({
   } = stageMetrics;
   const quizFinished = quizSession.finished;
 
-  const visibleResultPieces = buildVisibleResultDraft(tree, state, thinkingNode, droppedChoice);
-  const latestStepResult = droppedChoice?.text || visibleResultPieces[visibleResultPieces.length - 1] || "";
   const stageMetaProgress = buildStageProgressMeta(tree, state);
-  const estimatedStepTotal = stageMetaProgress.total;
   const currentStageStep = stageMetaProgress.current;
   const stageProgressPercent = stageMetaProgress.completedPercent;
   const currentChoiceAnswers = node?.type === "question"
@@ -304,7 +300,6 @@ export default function ExercisePlayer({
     tree,
     mode,
     example,
-    examples,
     state,
     setState,
     cardPhase,
@@ -364,7 +359,7 @@ export default function ExercisePlayer({
             {node?.type === "question" ? (
               <div className="solution-step-progress solution-step-progress-sticky" aria-label="تقدم خطوات حل المثال">
                 <div className="solution-step-progress-head">
-                  <strong>خطوة {currentStageStep} من {estimatedStepTotal}</strong>
+                  <strong>الخطوة {currentStageStep}</strong>
                   <span>{stageProgressPercent}%</span>
                 </div>
                 <div className="solution-step-progress-track" aria-hidden="true">
@@ -392,7 +387,6 @@ export default function ExercisePlayer({
                 practiceDirectOptions={practice.directOptions}
                 currentChoiceAnswers={currentChoiceAnswers}
                 feedback={feedback}
-                latestStepResult={latestStepResult}
                 droppedChoice={droppedChoice}
                 successNudge={successNudge}
                 onDropOverChange={setDropOver}
@@ -412,6 +406,8 @@ export default function ExercisePlayer({
                 onPickPracticeOption={practice.pickDirectOption}
                 onPickAnswer={questionActions.pickAnswer}
                 onOpenHint={questionActions.openCurrentHint}
+                canPreviousExample={stageSession.canPrevious}
+                onPreviousExample={navigation.goPreviousExample}
                 onReset={navigation.resetCurrentExample}
               />
             ) : node?.type === "result" ? (
@@ -437,6 +433,8 @@ export default function ExercisePlayer({
                 onPickFollowUp={setFollowUpChoice}
                 resultWouldCompleteStage={resultWouldCompleteStage}
                 onPrepareStageComplete={() => setPendingStageComplete(true)}
+                canPreviousExample={stageSession.canPrevious}
+                onPreviousExample={navigation.goPreviousExample}
                 onNextExample={navigation.goNextExample}
               />
             ) : (

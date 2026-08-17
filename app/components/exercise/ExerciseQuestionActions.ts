@@ -27,6 +27,16 @@ import type { PedagogyNode } from "./ExercisePedagogyTypes";
 import type { QuestionCardPhase } from "./useQuestionMotion";
 import type { ExerciseUiState } from "./useExerciseUiState";
 
+
+const RETURN_TO_QUESTION_CUE = "عد إلى السؤال، ثم اختر الإجابة الصحيحة لنكمل الإعراب.";
+
+function withReturnToQuestionCue(text: string) {
+  const cleaned = String(text || "")
+    .replace(/\s+(?:عد إلى السؤال|عد للسؤال|عد واختر)[\s\S]*$/u, "")
+    .trim();
+  return `${cleaned}\n\n${RETURN_TO_QUESTION_CUE}`;
+}
+
 type Args = {
   ui: ExerciseUiState;
   node?: ExerciseNode;
@@ -89,9 +99,7 @@ export function createExerciseQuestionActions({
       const visibleHint = isPracticeMode
         ? practiceTeacherHint(String(smartHint), state.currentTarget)
         : smartHint;
-      ui.setDialogBubble({ tone: "hint", text: `${visibleHint}
-
-اضغط «فهمت» ثم اختر الإجابة المناسبة لنكمل الإعراب.` });
+      ui.setDialogBubble({ tone: "hint", text: withReturnToQuestionCue(String(visibleHint)) });
       ui.setDroppedChoice(null);
       return;
     }
@@ -117,9 +125,7 @@ export function createExerciseQuestionActions({
       const visibleHint = isPracticeMode
         ? practiceTeacherHint(cleanedHint, state.currentTarget)
         : cleanedHint;
-      ui.setDialogBubble({ tone: "hint", text: `${isPracticeMode ? "محاولة جيدة؛ دعنا نراجع الفكرة معًا.\n" : ""}${visibleHint}
-
-عد إلى السؤال، ثم اختر الإجابة الصحيحة لنكمل الإعراب.` });
+      ui.setDialogBubble({ tone: "hint", text: withReturnToQuestionCue(String(visibleHint)) });
       ui.setDroppedChoice(null);
       ui.setFeedback(buildWrongFeedback({
         mode: isPracticeMode ? "practice" : "learn",
@@ -205,9 +211,7 @@ export function createExerciseQuestionActions({
     const visibleHint = isPracticeMode
       ? practiceTeacherHint(smartHint, state.currentTarget)
       : smartHint;
-    ui.setDialogBubble({ tone: "hint", text: `${visibleHint}
-
-عد إلى السؤال، ثم اختر الإجابة الصحيحة مما يأتي لنكمل الإعراب.` });
+    ui.setDialogBubble({ tone: "hint", text: withReturnToQuestionCue(String(visibleHint)) });
     ui.setDroppedChoice(null);
     ui.bringWorkAreaIntoView("soft", 40);
   }

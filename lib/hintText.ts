@@ -103,8 +103,16 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
         return `انظر إلى الجزء المتصل بآخر ${quoted}: أي ضمير رفع هو؟`;
     if (id === "imperative_connection")
         return `قارن ${quoted} بأصله: هل انتهى الفعل وحده أم اتصل به ضمير أو نون؟`;
-    if (id === "imperative_attached_kind")
-        return `حدّد المتصل بآخر ${quoted}: نون النسوة، نون التوكيد، ألف الاثنين، واو الجماعة، أم ياء المخاطبة؟`;
+    if (id === "imperative_attached_kind") {
+        const clean = String(target || "");
+        const choices = "نون النسوة، نون التوكيد، ألف الاثنين، واو الجماعة، ياء المخاطبة";
+        if (/وا(?:$|[ًٌٍَُِّْ])/u.test(clean)) return `قارن آخر ${quoted} بهذه المتصلات: ${choices}. ركّز على الواو: على مَن تدل في صيغة الأمر؟`;
+        if (/ي(?:$|[ًٌٍَُِّْ])/u.test(clean)) return `قارن آخر ${quoted} بهذه المتصلات: ${choices}. ركّز على الياء: هل تدل على مخاطبة مؤنثة؟`;
+        if (/ا(?:$|[ًٌٍَُِّْ])/u.test(clean)) return `قارن آخر ${quoted} بهذه المتصلات: ${choices}. ركّز على الألف: هل تدل على مخاطبَين اثنين؟`;
+        if (/نَّ/u.test(clean)) return `قارن آخر ${quoted} بهذه المتصلات: ${choices}. ركّز على النون المشددة: هل جاءت لتوكيد الطلب؟`;
+        if (/نَ/u.test(clean)) return `قارن آخر ${quoted} بهذه المتصلات: ${choices}. ركّز على النون: على أي جماعة تدل؟`;
+        return `قارن الجزء المتصل بآخر ${quoted} بهذه الصور: ${choices}، ثم حدّد دلالته في صيغة الأمر.`;
+    }
     if (id === "imperative_ending")
         return `انظر إلى أصل آخر ${quoted}: أهو حرف صحيح أم حرف علة؟`;
     if (id === "mubtada_start" || id === "kana_ism_start")
@@ -118,7 +126,7 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     if (id === "mubtada_ending" || id.includes("single_ending") || id === "inna_ism_ending")
         return `افحص آخر ${quoted}: أهو صحيح الآخر، مقصور بألف لازمة، أم منقوص بياء لازمة قبلها كسرة؟`;
     if (id === "inna_kaffa_gate")
-        return `قارن الحرف الناسخ في المثال بصورته دون «ما»: هل بقي عمله كما هو؟`;
+        return `ابدأ من الحرف الناسخ نفسه في المثال: هل اتصلت به «ما» الكافة أم لم تتصل؟`;
     if (id === "inna_kaffa_effect")
         return `انظر إلى ما بعد «إنما»: هل ظهرت علامة نصب الاسم أم عادت الجملة إلى أصلها؟`;
     if (id === "inna_meaning")
@@ -135,10 +143,14 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
         return `بعد «إنما» عاد التركيب إلى جملة اسمية عادية: هل ${quoted} هي الاسم الذي بدأنا الحديث عنه، أم المعلومة التي أتمت معناه؟`;
     if (id === "inna_compact_role")
         return `بعد الحرف الناسخ، هل ${quoted} هي الاسم أو الضمير الذي نتحدث عنه، أم الخبر الذي أتم المعنى عنه؟`;
-    if (id === "kana_target")
-        return `بعد الفعل الناسخ، هل ${quoted} هي صاحبة المعنى، أم المعلومة التي أتمت المعنى عنها، أم أن اسم الناسخ ضمير مستتر يعود على اسم متقدم؟`;
-    if (id === "kana_hidden_ism_site")
-        return `افحص الجملة كلها بعد الفعل الناسخ: هل ظهر اسم صريح يصلح أن يكون اسمه، ولو جاء بعد خبر مقدم، أم لم يظهر اسم وعاد المعنى على اسم متقدم؟`;
+    if (id === "kana_hidden_ism_site") {
+        if (String(rawHint || "").trim()) return diagnosticHintText(rawHint, target);
+        return `افحص الجملة كلها بعد الفعل الناسخ، لا الكلمة التالية فقط؛ فقد يأتي خبر مقدم ثم يظهر اسم الناسخ في آخر الجملة، مثل: كان في البيت رجلٌ.`;
+    }
+    if (id === "kana_target") {
+        if (String(rawHint || "").trim()) return diagnosticHintText(rawHint, target);
+        return `اربط ${quoted} بالفعل الناسخ الظاهر في المثال، ثم اسأل: أهي صاحبة المعنى أم المعلومة التي أتمت المعنى عنها؟`;
+    }
     if (id === "kana_hidden_ism_estimate")
         return `طابق الضمير المقدر مع جنس الاسم المتقدم وعدده.`;
     if (id === "kana_khabar_nominal_starter" || id === "kana_khabar_sentence_type")
@@ -174,27 +186,28 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     if (id === "munada_tool")
         return `انظر قبل ${quoted} مباشرة: هل سبقتها أداة نداء مثل «يا»؟`;
     if (id === "munada_kind")
-        return `بعد ثبوت النداء، افحص ${quoted}: أعلم مفرد هو، أم نكرة مقصودة، أم نكرة غير مقصودة، أم مضاف، أم شبيه بالمضاف؟`;
+        return `بعد ثبوت النداء، لا تحفظ المصطلح بعد: هل ${quoted} اسم علم معيّن، أم نكرة مستقلة، أم اتصل بما بعدها ليتم معناه؟`;
     if (id === "istithna_mufarragh_role")
         return `احذف «إلا» مؤقتًا، ثم اقرأ الجملة: ما الموقع الذي تشغله ${quoted} من الفعل أو حرف الجر؟`;
     if (id === "naib_role")
         return `الفعل مبني للمجهول؛ اسأل: ما الشيء أو الشخص الذي وقع عليه الفعل ثم ناب عن الفاعل؟`;
     if (id === "mafoolat_bih_check")
         return `بعد استبعاد المفعول معه وفيه والمطلق ولأجله، اسأل: على من أو على ماذا وقع الفعل مباشرة؟`;
-    if (id === "fael_hukm" || id === "mafool_hukm")
-        return `بعد تحديد وظيفة ${quoted}، ما الحالة الإعرابية الأصلية لهذه الوظيفة؟`;
+    if (id === "fael_hukm")
+        return `ثبت أن ${quoted} فاعل، والفاعل من المرفوعات: إن كان اسمًا معربًا فهو مرفوع، وإن كان اسمًا مبنيًا فهو في محل رفع. ما الحكم المناسب هنا؟`;
+    if (id === "mafool_hukm")
+        return `ثبت أن ${quoted} مفعول به، والمفعول به من المنصوبات: إن كان اسمًا معربًا فهو منصوب، وإن كان اسمًا مبنيًا فهو في محل نصب. ما الحكم المناسب هنا؟`;
     if (id === "fael_role_verbal")
         return `اسأل عن ${quoted}: من الذي قام بالفعل؟`;
     if (id === "mafool_role")
         return `بعد معرفة الفعل والفاعل، اسأل: على من أو على ماذا وقع الفعل؟`;
     if (id === "tawabi_entry")
         return `هل ${quoted} تؤدي معنى مستقلًا في الجملة، أم ترجع إلى اسم قبلها فتصفه أو تشاركه أو تؤكده أو توضحه؟`;
-    if (id === "tawabi_relation")
-        return `ما علاقة ${quoted} بالاسم السابق: وصف، مشاركة بحرف عطف، توكيد، أم بدل يوضح المقصود؟ في البدل المطابق يمكن الإحلال، أما بدل البعض والاشتمال فيرتبطان غالبًا بضمير يعود على المبدل منه.`;
-    if (id === "tawabi_case")
-        return `حدد حالة الاسم المتبوع قبل ${quoted}؛ فالـتابع يأخذ الحالة نفسها.`;
-    if (id === "tawabi_mark")
-        return `خذ الحالة من المتبوع، ثم اختر العلامة من صورة ${quoted}.`;
+    if (id === "tawabi_relation" || id === "tawabi_case" || id === "tawabi_mark") {
+        const cleanedTawabi = diagnosticHintText(rawHint, target);
+        if (cleanedTawabi) return cleanedTawabi;
+        return `ارجع إلى الاسم الذي قبل ${quoted}: اثبت العلاقة بينهما أولًا، ثم انقل الحالة الإعرابية، وبعدها اختر علامة ${quoted} من صورتها هي.`;
+    }
     if (id === "pronoun_relation_gate" || id === "pronoun_position")
         return `ضع اسمًا ظاهرًا مكان ${quoted}: ما الموقع الذي يشغله الاسم البديل؟`;
     if (id === "pronoun_form_raf3" || id === "pronoun_form_nasb")
@@ -206,9 +219,9 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     if (id === "manqous_relation_gate")
         return `أي قرار يسبق النظر إلى بقاء الياء في ${quoted}: تحديد الموقع أم الحكم على الصورة؟`;
     if (id === "mubtada_word_type")
-        return `صنّف ${quoted} كاملة: أهي اسم أو في معنى الاسم، أم فعل يدل على حدث وزمن، أم حرف لا يستقل معناه؟`;
+        return `انظر إلى ${quoted}: أهي اسم أو في معنى الاسم، أم فعل يدل على حدث وزمن، أم حرف لا يستقل معناه؟`;
     if (id === "inna_ism_start")
-        return `افحص ${quoted} كاملة: أهي اسم معرب، أم ضمير متصل بالحرف الناسخ، أم اسم مبني مستقل، أم تركيب يؤول بمصدر؟`;
+        return `ثبت أن ${quoted} اسم الحرف الناسخ. إن كانت كلمة مفردة فاسأل: أهي اسم معرب، أم اسم مبني مثل ضمير متصل أو اسم إشارة أو اسم موصول؟ أمّا إن كانت تركيبًا يؤول بمصدر صريح فنسلك مسار المصدر المؤول.`;
     if (id === "kana_khabar_entry") {
         if (/يؤول/.test(q))
             return `ابحث في ${quoted} عن حرف مصدري مع فعل، ثم جرّب تحويل التركيب إلى مصدر صريح.`;
@@ -226,7 +239,7 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     if (["inna_ism_number", "inna_khabar_single_number"].includes(id))
         return `افحص صورة ${quoted}: مفرد أو جمع تكسير، مثنى، جمع مذكر سالم، جمع مؤنث سالم، أم من الأسماء الخمسة؟`;
     if (["fael_form", "mafool_form", "mafoolat_form", "naib_form"].includes(id))
-        return `افحص ${quoted} نفسها: أهي اسم ظاهر تتغير علامته، أم اسم مبني يلزم صورة واحدة، أم ضمير متصل، أم تركيب يمكن تأويله باسم؟`;
+        return `افحص المحدد كله: أهو كلمة مفردة، أم تركيب يمكن تأويله باسم صريح؟ إذا كان كلمة مفردة ننتقل بعد ذلك إلى سؤال: أهي معربة أم مبنية؟`;
     if (["mafoolat_shape", "naib_shape", "munada_shape", "la_nasb_shape", "tawabi_shape"].includes(id))
         return `افحص صورة ${quoted} من لفظها: مفرد، مثنى، جمع، أم من الأسماء الخمسة؟`;
     if (id === "hal_shape")
@@ -248,8 +261,13 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
         return `حدد موقع ${quoted} في الجملة قبل اختيار العلامة.`;
     if (/_role$|_target$|_entry$/.test(id))
         return `ما الدور الذي أدته ${quoted} في معنى الجملة؟`;
-    if (/_built$|_built_type$|_mabni/.test(id))
-        return `هل ${quoted} ضمير، اسم إشارة، اسم موصول، أم اسم مبني آخر؟`;
+    if (/_built$|_built_type$|_mabni/.test(id)) {
+        const clean = String(target || "");
+        if (/الذي|التي|الذين|اللذ/u.test(clean)) return `لاحظ أن ${quoted} تحتاج جملة بعدها تتم معناها وتوضح المقصود؛ ما الخاصية التي تكشف نوع هذا المبني؟`;
+        if (/هذا|هذه|هؤلاء|ذلك|تلك/u.test(clean)) return `لاحظ أن ${quoted} تستعمل للإشارة إلى معيّن؛ ما نوع الاسم المبني الذي وظيفته الإشارة؟`;
+        if (/التاء|نون|واو|ألف|ياء|نا/u.test(clean)) return `لاحظ أن ${quoted} جزء متصل بالفعل ويدل على متكلم أو مخاطب أو غائب؛ ما نوع هذا المبني؟`;
+        return `بعد أن ثبت أن ${quoted} مبنية، ابحث عن الخاصية المميزة لها: أتدل على متكلم أو مخاطب أو غائب، أم تشير إلى معيّن، أم تحتاج صلة بعدها؟`;
+    }
     const cleaned = diagnosticHintText(rawHint, target);
     if (!cleaned)
         return `انظر إلى ${quoted} في المثال، وحدد الدليل المرتبط بالسؤال الحالي.`;

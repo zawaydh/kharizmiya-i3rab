@@ -221,10 +221,10 @@ export function verbStudentHintText(node: PedagogyNode | null | undefined, picke
         if (id === "imperative_connection") {
             const baseHuwa = String(facts.presentBase || (targetNow.includes("ادع") ? "يدعو" : targetNow.includes("ارم") ? "يرمي" : targetNow.includes("اسع") ? "يسعى" : "يكتب"));
             if (facts.attached === "none" && pickedText.includes("نعم"))
-                return `أسند (${targetNow}) إلى المضارع مع الضمير هو: هو ${baseHuwa}. لا يظهر بعد أصل الفعل ضمير أو نون، لذلك لم يتصل بآخره شيء.`;
+                return `رُدَّ فعل الأمر (${targetNow}) إلى مضارعه مع «هو»: «هو ${baseHuwa}». لا يظهر بعد أصل الفعل ضمير أو نون، لذلك لم يتصل بآخره شيء.`;
             if (facts.attached !== "none" && pickedText.includes("لا"))
-                return `أسند (${targetNow}) إلى المضارع مع الضمير هو: هو ${baseHuwa}. ثم انظر إلى الزائد بعد أصل الفعل؛ ستجد أن آخر الأمر اتصل به شيء.`;
-            return `نسند الفعل إلى المضارع مع الضمير هو لنعرف أصل آخره، ثم ننظر هل زاد بعد الأصل شيء.`;
+                return `رُدَّ فعل الأمر (${targetNow}) إلى مضارعه مع «هو»: «هو ${baseHuwa}». ثم انظر إلى الزائد بعد أصل الفعل؛ ستجد أن آخر الأمر اتصل به شيء.`;
+            return `نرد فعل الأمر إلى مضارعه مع «هو» لنعرف أصل آخره، ثم ننظر: هل زاد بعد أصل الفعل ضمير أو نون؟`;
         }
         if (id === "imperative_attached_kind") {
             const attached = String(facts.attached || "");
@@ -245,10 +245,10 @@ export function verbStudentHintText(node: PedagogyNode | null | undefined, picke
         }
         if (id === "imperative_ending") {
             if (facts.ending === "weak" && pickedText.includes("صحيح"))
-                return `أسند (${targetNow}) إلى المضارع مع الضمير هو: هو ${presentBase}. نلاحظ أن آخر الأصل حرف علة، لذلك هو معتل الآخر.`;
+                return `رُدَّ (${targetNow}) إلى مضارعه مع «هو»: «هو ${presentBase}». آخر الأصل حرف علة، وحروف العلة هي الألف والواو والياء؛ لذلك هو معتل الآخر.`;
             if (facts.ending === "sahih" && pickedText.includes("معتل"))
-                return `أسند (${targetNow}) إلى المضارع مع الضمير هو: هو ${presentBase || "يكتب"}. آخر الأصل ليس ألفًا ولا واوًا ولا ياءً، لذلك هو صحيح الآخر.`;
-            return `نسند الأمر إلى المضارع مع الضمير هو: ادعُ ← هو يدعو، ارمِ ← هو يرمي، اسعَ ← هو يسعى.`;
+                return `رُدَّ (${targetNow}) إلى مضارعه مع «هو»: «هو ${presentBase || "يكتب"}». آخر الأصل ليس ألفًا ولا واوًا ولا ياءً؛ لذلك هو صحيح الآخر.`;
+            return `نرد الأمر إلى مضارعه مع «هو»: ادعُ ← هو يدعو، ارمِ ← هو يرمي، اسعَ ← هو يسعى. حروف العلة هي: الألف والواو والياء.`;
         }
         if (id === "imperative_weak_letter") {
             const expected = facts.weakLetter === "alif" ? "الألف" : facts.weakLetter === "waw" ? "الواو" : facts.weakLetter === "ya" ? "الياء" : "حرف العلة";

@@ -76,14 +76,24 @@ export const mafoolTree: ExerciseTree = {
     mafool_form: {
       id: "mafool_form",
       type: "question",
-      context: "لكي نحدد هل نعرب المفعول به منصوبًا بعلامة نصب أم في محل نصب، نحدد صورته.",
-      text: "ما صورة الكلمة المحددة؟",
-      hint: "انظر إلى الكلمة المحددة نفسها: الاسم الظاهر المعرب نكمل معه إلى علامة النصب. أما الاسم المبني والضمير المتصل فنقول: في محل نصب مفعول به. وأما المصدر المؤول فليس اسمًا مبنيًا؛ بل نقول: مصدر مؤول في محل نصب مفعول به.",
+      context: "ثبت أن المحدد مفعول به. قبل العلامة أو المحل نميز هل المحدد كلمة مفردة أم تركيبًا في تأويل اسم.",
+      text: "هل المحدد كلمة مفردة أم تركيب في تأويل اسم؟",
+      hint: "إذا أمكن تأويل المحدد بمصدر صريح مثل «أن تنجح» = «نجاحك»، فهو تركيب في تأويل اسم. أما الاسم أو الضمير فهو كلمة مفردة في هذا المستوى.",
       answers: [
-        { id: "visible", text: "اسم ظاهر معرب", next: "mafool_mu3rab_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم الظاهر المعرب كلمة مستقلة تظهر عليها علامة نصب أو علامة نيابة، مثل: الواجبَ والطالبينِ والمعلمينَ." },
-        { id: "mabni", text: "اسم مبني", next: "mafool_mabni_type", eval: { fact: "roleKind", equals: "mabni" }, hint: "الاسم المبني مثل اسم الإشارة والاسم الموصول، ولا تظهر عليه علامة نصب، بل يكون في محل نصب مفعول به." },
-        { id: "connected", text: "ضمير متصل", next: "R_mafool_connected", eval: { fact: "roleKind", equals: "connected" }, hint: "الضمير المتصل من الأسماء المبنية، ويكون في محل نصب مفعول به إذا وقع عليه الفعل." },
-        { id: "masdar", text: "مصدر مؤول", next: "R_mafool_masdar", eval: { fact: "roleKind", equals: "masdar" }, hint: "المصدر المؤول تركيب يؤول بمصدر في معنى اسم، مثل: أن تنجحَ = نجاحَك، وما فعلتَ = فعلَك." },
+        { id: "word", text: "كلمة مفردة", next: "mafool_word_inflection", eval: { fact: "roleKind", anyOf: ["visible", "mabni", "connected"] }, hint: "إذا كان المحدد اسمًا أو ضميرًا مفردًا ننتقل إلى تحديد: معرب أم مبني." },
+        { id: "masdar", text: "تركيب في تأويل اسم", next: "mafool_masdar_term", eval: { fact: "roleKind", equals: "masdar" }, hint: "جرّب التأويل: «أن تنجح» = «نجاحك»، و«ما فعلت» = «فعلك». إذا استقام المعنى نسمّي هذا التركيب في الخطوة التالية." },
+      ]
+    },
+
+    mafool_word_inflection: {
+      id: "mafool_word_inflection",
+      type: "question",
+      context: "بما أن المفعول به كلمة مفردة، نحدد أولًا هل الاسم معرب أم مبني.",
+      text: "هل المفعول به اسم معرب أم اسم مبني؟",
+      hint: "الاسم المعرب تتغير علامته بحسب موقعه، أما الاسم المبني ـ ومنه الضمائر ـ فيلزم صورة واحدة ويكون هنا في محل نصب مفعول به.",
+      answers: [
+        { id: "mu3rab", text: "اسم معرب", next: "mafool_mu3rab_shape", eval: { fact: "roleKind", equals: "visible" }, hint: "الاسم المعرب تظهر عليه علامة نصب أو ما ينوب عنها، لذلك نحدد صورته بعد ذلك." },
+        { id: "mabni", text: "اسم مبني", next: "mafool_mabni_type", eval: { fact: "roleKind", anyOf: ["mabni", "connected"] }, hint: "الضمائر وأسماء الإشارة والأسماء الموصولة من المبنيات؛ نحدد نوع المبني في الخطوة التالية." },
       ]
     },
 
@@ -133,6 +143,17 @@ export const mafoolTree: ExerciseTree = {
     R_mafool_mu3rab: { id: "R_mafool_mu3rab", type: "result", coverage: "mafool.mu3rab", text: "مفعول به منصوب." },
     R_mafool_mabni: { id: "R_mafool_mabni", type: "result", coverage: "mafool.mabni", text: "اسم مبني في محل نصب مفعول به." },
     R_mafool_connected: { id: "R_mafool_connected", type: "result", coverage: "mafool.connected", text: "ضمير متصل مبني في محل نصب مفعول به." },
+    mafool_masdar_term: {
+      id: "mafool_masdar_term",
+      type: "question",
+      context: "ثبت أن المحدد تركيب يمكن تأويله باسم صريح؛ نحدد الآن اسم هذا التركيب.",
+      text: "ماذا يسمى هذا التركيب؟",
+      hint: "إذا أمكن تأويل «أن + فعل» أو التركيب المصدري بمصدر صريح، فهو مصدر مؤول ويأخذ موقع الاسم في الجملة.",
+      answers: [
+        { id: "source", text: "مصدر مؤول", next: "R_mafool_masdar", correct: true },
+        { id: "word", text: "اسم مفرد معرب", next: "mafool_masdar_term", correct: false, hint: "المحدد تركيب كامل لا كلمة مفردة، وقد استطعنا تأويله بمصدر صريح." },
+      ],
+    },
     R_mafool_masdar: { id: "R_mafool_masdar", type: "result", coverage: "mafool.masdar", text: "مصدر مؤول في محل نصب مفعول به." }
   }
 };

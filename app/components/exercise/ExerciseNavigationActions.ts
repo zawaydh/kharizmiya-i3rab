@@ -123,6 +123,14 @@ export function createExerciseNavigationActions({
     releaseNavLock();
   }
 
+  function goPreviousExample() {
+    if (ui.exampleNavLockRef.current || !stageSession.canPrevious) return;
+    ui.exampleNavLockRef.current = true;
+    const previousIndex = stageSession.previous();
+    if (previousIndex !== null) resetStageVisualState(previousIndex);
+    releaseNavLock();
+  }
+
   function resetTraining() {
     stageSession.reset();
     resetInteractiveUi();
@@ -143,6 +151,7 @@ export function createExerciseNavigationActions({
   }
 
   return {
+    goPreviousExample,
     goNextExample,
     completeCurrentAndGoNextStage,
     resetTraining,

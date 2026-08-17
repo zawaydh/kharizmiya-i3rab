@@ -108,7 +108,8 @@ describe("تقليل الخطوات المتكررة", () => {
       "tawabi-naat": { learn: 5, practice: 4 },
       "tawabi-atf": { learn: 4, practice: 3 },
       "tawabi-tawkid": { learn: 5, practice: 4 },
-      "tawabi-badal": { learn: 4, practice: 3 },
+      // البدل يحتاج خطوة دلالية صريحة حتى لا يقفز الطالب من العلاقة إلى الحالة.
+      "tawabi-badal": { learn: 5, practice: 3 },
     };
 
     for (const [code, limit] of Object.entries(limits)) {

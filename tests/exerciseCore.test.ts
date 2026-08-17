@@ -56,7 +56,7 @@ describe("النواة المفصولة من ExercisePlayer", () => {
     expect(buildRunnerState(tree, "practice", { id: "a", facts: {} }).currentNodeId).toBe("practice-start");
   });
 
-  test("يبني حالة البداية الخاصة بإن المكفوفة دون تغيير بقية الأمثلة", () => {
+  test("يبقي فحص ما الكافة أول خطوة في أمثلة إن وأخواتها", () => {
     const tree: ExerciseTree = {
       startNodeId: "start",
       nodes: {
@@ -67,7 +67,7 @@ describe("النواة المفصولة من ExercisePlayer", () => {
     expect(buildRunnerState(tree, "learn", { id: "a", facts: {} }).currentNodeId).toBe("start");
     expect(
       buildRunnerState(tree, "learn", { id: "b", facts: { hasKaffa: true } }).currentNodeId
-    ).toBe("inna_kaffa_effect");
+    ).toBe("start");
   });
 
   test("تقيّم الإجابة والانتقال الديناميكي ومتطلبات الأعلام", () => {

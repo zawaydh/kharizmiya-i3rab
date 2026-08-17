@@ -13,7 +13,7 @@ describe("هوية المنصة", () => {
     expect(brand).toContain('PLATFORM_NAME = "إِعْرَابُكَ"');
     expect(navbar).toContain("PLATFORM_NAME");
     expect(certificate).toContain("PLATFORM_NAME");
-    expect(manifest).toContain('"name": "إِعْرَابُكَ — مدرّب التفكير النحوي"');
+    expect(manifest).toContain('"name": "إِعْرَابُكَ — تعلّم الإعراب عبر التفكير التفاعلي لا التلقين"');
   });
 
   it("يستخدم الشعار النصي الجديد ويحافظ على خوارزمية الإعراب بوصفها منهجًا", () => {
@@ -21,7 +21,7 @@ describe("هوية المنصة", () => {
     const layout = read("app/layout.tsx");
 
     expect(wordmark).toContain("إِعْرَابُكَ");
-    expect(wordmark).toContain("مدرّب التفكير النحوي");
+    expect(wordmark).toContain("تعلّم الإعراب عبر التفكير التفاعلي لا التلقين");
     expect(layout).toContain('"خوارزمية الإعراب"');
   });
 });

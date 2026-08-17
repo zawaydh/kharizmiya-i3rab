@@ -46,7 +46,7 @@ export function bridgeKickerText(tree: PedagogyTree, node: PedagogyNode | null |
     let next = "نكمل خطوة إعراب جديدة";
     if (start.includes("present")) {
         if (nodeId === "present_tense")
-            next = "عرفنا أنها فعل؛ نحدد زمنها الآن";
+            next = "عرفنا أنها فعل؛ نحدد نوع الفعل الآن";
         else if (nodeId === "present_build_check")
             next = "بما أنه فعل مضارع، نحدد أولًا: هل هو مبني أم معرب";
         else if (nodeId === "present_tool_presence")
@@ -60,7 +60,7 @@ export function bridgeKickerText(tree: PedagogyTree, node: PedagogyNode | null |
     }
     else if (start.includes("past")) {
         if (nodeId === "past_tense")
-            next = "عرفنا أنه فعل؛ نحدد زمنه الآن";
+            next = "عرفنا أنه فعل؛ نحدد نوع الفعل الآن";
         else if (nodeId === "past_has_attachment")
             next = "بما أن الفعل ماضٍ، والفعل الماضي مبني، نحدد علامة البناء حسب ما يتصل به";
         else if (nodeId === "past_connector_kind")

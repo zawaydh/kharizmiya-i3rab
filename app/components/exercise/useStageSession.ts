@@ -58,6 +58,21 @@ export function useStageSession({
   const usedExampleIdsRef = React.useRef<string[]>([]);
   const savedResultKeysRef = React.useRef(new Set<string>());
   const saveInFlightRef = React.useRef(new Map<string, Promise<StageSaveState>>());
+  const historyRef = React.useRef<number[]>([]);
+  const historySessionKey = React.useMemo(
+    () => [
+      mode,
+      topicId ?? "",
+      String(level),
+      orderedKeys.join("\u001f"),
+      examples.map((example) => String(example.id)).join("\u001f"),
+    ].join("\u001e"),
+    [examples, level, mode, orderedKeys, topicId]
+  );
+  const [historyState, setHistoryState] = React.useState(() => ({
+    key: historySessionKey,
+    depth: 0,
+  }));
 
   const updateCovered = React.useCallback((nextCovered: Record<string, boolean>) => {
     coveredRef.current = nextCovered;
@@ -69,6 +84,7 @@ export function useStageSession({
     usedExampleIdsRef.current = [];
     savedResultKeysRef.current.clear();
     saveInFlightRef.current.clear();
+    historyRef.current = [];
 
     async function loadProgress() {
       const empty = hydrateStageProgress(mode, orderedKeys, null);
@@ -241,13 +257,25 @@ export function useStageSession({
       };
     }
 
+    if (nextIndex !== params.currentIndex) {
+      historyRef.current.push(params.currentIndex);
+      setHistoryState({ key: historySessionKey, depth: historyRef.current.length });
+    }
     setExampleIndex(nextIndex);
     return {
       status: "next",
       nextIndex,
       ...saved,
     };
-  }, [examples, mode, orderedKeys, recordResult]);
+  }, [examples, historySessionKey, mode, orderedKeys, recordResult]);
+
+  const previous = React.useCallback(() => {
+    const previousIndex = historyRef.current.pop();
+    if (previousIndex === undefined) return null;
+    setHistoryState({ key: historySessionKey, depth: historyRef.current.length });
+    setExampleIndex(previousIndex);
+    return previousIndex;
+  }, [historySessionKey]);
 
   const reset = React.useCallback(() => {
     updateCovered(buildEmptyCovered(orderedKeys));
@@ -257,7 +285,9 @@ export function useStageSession({
     usedExampleIdsRef.current = [];
     savedResultKeysRef.current.clear();
     saveInFlightRef.current.clear();
-  }, [orderedKeys, updateCovered]);
+    historyRef.current = [];
+    setHistoryState({ key: historySessionKey, depth: 0 });
+  }, [historySessionKey, orderedKeys, updateCovered]);
 
   return {
     covered,
@@ -267,6 +297,8 @@ export function useStageSession({
     metrics,
     recordResult,
     advance,
+    previous,
+    canPrevious: historyState.key === historySessionKey && historyState.depth > 0,
     reset,
   };
 }

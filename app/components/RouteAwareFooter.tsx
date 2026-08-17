@@ -17,8 +17,7 @@ export default function RouteAwareFooter() {
 
   return (
     <footer className="footer">
-      <strong>جميع الحقوق محفوظة © 2026 {PLATFORM_NAME}</strong>
-      <span>فكرة وإعداد وتطوير: فاطمة علي الزوايدة</span>
+      <strong>© 2026 منصة {PLATFORM_NAME} — فاطمة علي الزوايدة</strong>
     </footer>
   );
 }

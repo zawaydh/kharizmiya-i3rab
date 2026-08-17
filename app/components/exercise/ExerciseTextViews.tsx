@@ -77,24 +77,51 @@ function SentenceSmartTerm({
   );
 }
 
-function renderTargetInsideToken(token: string, target?: string) {
-  if (!target) return token;
-  let shownTarget = target;
-  let idx = token.indexOf(shownTarget);
-  if (idx < 0) {
-    const match = String(target).match(/\(([^)]+)\)/);
-    const nestedTarget = match?.[1];
-    if (nestedTarget && token.includes(nestedTarget)) {
-      shownTarget = nestedTarget;
-      idx = token.indexOf(shownTarget);
-    }
-  }
-  if (idx < 0) return token;
+const TARGET_SKIP_RE = /[\u064B-\u065F\u0670\u06D6-\u06EDـ]/u;
+
+function targetCandidate(target?: string): string {
+  if (!target) return "";
+  const nested = String(target).match(/\(([^)]+)\)/)?.[1];
+  return String(nested || target).trim();
+}
+
+function normalizedWithMap(value: string) {
+  let normalized = "";
+  const map: number[] = [];
+  Array.from(value).forEach((character, index) => {
+    if (TARGET_SKIP_RE.test(character)) return;
+    normalized += character;
+    map.push(index);
+  });
+  return { normalized, map };
+}
+
+function targetRange(sentence: string, target?: string): { start: number; end: number } | null {
+  const wanted = targetCandidate(target);
+  if (!wanted) return null;
+  const sentenceView = normalizedWithMap(sentence);
+  const targetView = normalizedWithMap(wanted);
+  const index = sentenceView.normalized.indexOf(targetView.normalized);
+  if (index < 0 || !targetView.normalized) return null;
+  const start = sentenceView.map[index];
+  const last = sentenceView.map[index + targetView.normalized.length - 1];
+  if (start == null || last == null) return null;
+  return { start, end: last + 1 };
+}
+
+function renderTokenRange(token: string, tokenStart: number, range: { start: number; end: number } | null) {
+  if (!range) return token;
+  const tokenEnd = tokenStart + token.length;
+  const overlapStart = Math.max(tokenStart, range.start);
+  const overlapEnd = Math.min(tokenEnd, range.end);
+  if (overlapStart >= overlapEnd) return token;
+  const localStart = overlapStart - tokenStart;
+  const localEnd = overlapEnd - tokenStart;
   return (
     <>
-      {token.slice(0, idx)}
-      <span className="exercise-target-word">{shownTarget}</span>
-      {token.slice(idx + shownTarget.length)}
+      {token.slice(0, localStart)}
+      <span className="exercise-target-word">{token.slice(localStart, localEnd)}</span>
+      {token.slice(localEnd)}
     </>
   );
 }
@@ -102,12 +129,16 @@ function renderTargetInsideToken(token: string, target?: string) {
 export function renderSentence(sentence?: string, target?: string, onTerm?: (term: string) => void) {
   if (!sentence) return null;
   const parts = sentence.split(/(\s+)/);
+  const range = targetRange(sentence, target);
   let previousWord: string | undefined;
+  let offset = 0;
 
   return parts.map((part, index) => {
+    const partStart = offset;
+    offset += part.length;
     if (/^\s+$/u.test(part)) return <React.Fragment key={`space-${index}`}>{part}</React.Fragment>;
     const helpTerm = onTerm ? sentenceHelpTerm(part, previousWord) : null;
-    const rendered = renderTargetInsideToken(part, target);
+    const rendered = renderTokenRange(part, partStart, range);
     const currentWord = bareArabicToken(part) ? part : undefined;
     if (currentWord) previousWord = currentWord;
     if (helpTerm) {

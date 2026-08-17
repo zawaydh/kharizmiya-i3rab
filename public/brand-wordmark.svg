@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 260" role="img" aria-label="إِعْرَابُكَ — مدرّب التفكير النحوي">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 260" role="img" aria-label="إِعْرَابُكَ — تعلّم الإعراب عبر التفكير التفاعلي لا التلقين">
   <title>إِعْرَابُكَ</title>
-  <desc>مدرّب التفكير النحوي بخوارزميات الإعراب التفاعلية</desc>
+  <desc>تعلّم الإعراب عبر التفكير التفاعلي لا التلقين</desc>
   <defs>
     <linearGradient id="teal" x1="0" x2="1">
       <stop offset="0" stop-color="#39F0DE"/>
@@ -42,8 +42,8 @@
     direction="rtl"
     unicode-bidi="bidi-override"
     font-family="Segoe UI, Tahoma, Arial, sans-serif"
-    font-size="27"
+    font-size="20"
     font-weight="700"
     fill="#2F8F8F"
-  >مدرّب التفكير النحوي</text>
+  >تعلّم الإعراب عبر التفكير التفاعلي لا التلقين</text>
 </svg>
