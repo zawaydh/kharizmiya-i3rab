@@ -6,6 +6,8 @@ import type { QuestionCardPhase } from "./useQuestionMotion";
 import type { PracticeWrongPanel } from "./ExerciseQuestionStageTypes";
 import { renderSmartText } from "./ExerciseTextViews";
 import { cleanPracticeTeacherPart } from "./ExercisePedagogy";
+import { practiceOptionScope } from "./ExercisePracticeFlow";
+import { practiceTargetUnit } from "../../../lib/exercise/practiceGrammarPolicy";
 
 type Props = {
   target?: string;
@@ -13,11 +15,13 @@ type Props = {
   wrongPanel: PracticeWrongPanel | null;
   retryReady: boolean;
   directOptions: string[];
+  facts?: Record<string, unknown>;
   successNudge: string | null;
   onGlossary: (term: string) => void;
   onRetry: () => void;
   onContinue: (nextState: RunnerState) => void;
   onPickOption: (option: string, optionIndex: number) => void;
+  onOpenHint: () => void;
 };
 
 export function ExercisePracticeQuestion({
@@ -26,23 +30,42 @@ export function ExercisePracticeQuestion({
   wrongPanel,
   retryReady,
   directOptions,
+  facts,
   successNudge,
   onGlossary,
   onRetry,
-  onContinue,
   onPickOption,
+  onOpenHint,
 }: Props) {
   const currentTarget = target || "الكلمة المحددة";
+  const routingChallenge =
+    directOptions.length > 0 &&
+    directOptions.every((option) => practiceOptionScope(option) === "routing");
+  const targetUnit = practiceTargetUnit(facts || {}, directOptions[0] || "");
+  const targetHasMultipleWords = currentTarget.trim().split(/\s+/u).length > 1;
+
+  const structurePrompt =
+    targetUnit === "verbal-sentence"
+      ? targetHasMultipleWords
+        ? <>أي تحليل إعرابي كامل صحيح للجملة الفعلية <strong>«{currentTarget}»</strong>؟</>
+        : <>أي تحليل إعرابي كامل صحيح للجملة الفعلية التي تبدأ بـ <strong>«{currentTarget}»</strong>؟</>
+      : targetUnit === "nominal-sentence"
+        ? targetHasMultipleWords
+          ? <>أي تحليل إعرابي كامل صحيح للجملة الاسمية <strong>«{currentTarget}»</strong>؟</>
+          : <>أي تحليل إعرابي كامل صحيح للجملة الاسمية التي تبدأ بـ <strong>«{currentTarget}»</strong>؟</>
+        : targetUnit === "shibh-jar" || targetUnit === "shibh-zarf"
+          ? <>أي تحليل إعرابي كامل صحيح لشبه الجملة <strong>«{currentTarget}»</strong>؟</>
+          : null;
+
   return (
     <div className="practice-direct-board" aria-label="تحدي الإعراب السريع">
       {wrongPanel ? (
         <div className="practice-wrong-sequence is-primary-panel" role="alert" aria-live="assertive">
           <div className="practice-wrong-title">دعنا نراجعها معًا</div>
           <div className="practice-wrong-subtitle">
-            اتبع المسار نفسه خطوةً خطوة، ثم عد إلى السؤال:
-          </div>
-          <div className="practice-wrong-picked">
-            {renderSmartText(toStudentArabicOption(wrongPanel.wrongLabel), onGlossary, { interactiveTerms: false })}
+            {routingChallenge
+              ? "راجع طريقة الوصول، ثم عد واختر القرار بنفسك:"
+              : "راجع طريقة الوصول، ثم عد واختر النتيجة النهائية بنفسك:"}
           </div>
           <ol className="practice-teacher-steps">
             {wrongPanel.steps
@@ -52,28 +75,35 @@ export function ExercisePracticeQuestion({
                 <li key={`${step}-${index}`}>{renderSmartText(step, onGlossary)}</li>
               ))}
           </ol>
-          <div className="practice-return-cue">عد إلى السؤال، ثم اختر الإجابة الصحيحة لنكمل الإعراب.</div>
+          <div className="practice-return-cue">
+            {routingChallenge
+              ? "لم نكشف القرار الصحيح. عد إلى السؤال وطبّق الخطوات."
+              : "لم نكشف الإجابة النهائية. عد إلى السؤال وطبّق الخطوات."}
+          </div>
           <div className="practice-wrong-actions">
-            <button type="button" onClick={onRetry}>أعد المحاولة</button>
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => onContinue(wrongPanel.nextState)}
-            >
-              أكمل بعد التصحيح
-            </button>
+            <button type="button" onClick={onRetry}>عد إلى السؤال</button>
           </div>
         </div>
       ) : (
         <>
           <div className="practice-direct-kicker">طبّق ما تعلّمته</div>
           <div className="practice-direct-prompt">
-            ما الإعراب الصحيح لـ <strong>«{currentTarget}»</strong>؟
+            {routingChallenge ? (
+              <>ما القرار الصحيح التالي لـ <strong>«{currentTarget}»</strong>؟</>
+            ) : structurePrompt ? (
+              structurePrompt
+            ) : (
+              <>أي نتيجة إعرابية كاملة صحيحة لـ <strong>«{currentTarget}»</strong>؟</>
+            )}
           </div>
-          <div className="practice-direct-note">فكّر سريعًا، ثم اختر النتيجة النهائية.</div>
+          <div className="practice-direct-note">
+            {routingChallenge
+              ? "حدّد النوع والمسار، ثم اختر القرار المناسب."
+              : "طبّق المسار، ثم اختر النتيجة النهائية."}
+          </div>
           {retryReady ? (
             <div className="practice-retry-message">
-              عدت إلى السؤال نفسه. طبّق الآن التسلسل الذي صححناه.
+              عدت إلى السؤال نفسه. استخدم ما راجعته ثم اختر بنفسك.
             </div>
           ) : null}
           <div className="practice-direct-options">
@@ -86,9 +116,25 @@ export function ExercisePracticeQuestion({
                 onClick={() => onPickOption(option, index)}
               >
                 <span>{index + 1}</span>
-                <strong>{renderSmartText(toStudentArabicOption(option), onGlossary, { interactiveTerms: false })}</strong>
+                <strong>
+                  {renderSmartText(
+                    toStudentArabicOption(option),
+                    onGlossary,
+                    { interactiveTerms: false },
+                  )}
+                </strong>
               </button>
             ))}
+          </div>
+          <div className="hint-after-options practice-hint-inline">
+            <button
+              type="button"
+              className="hint-after-options-btn"
+              onClick={onOpenHint}
+              disabled={cardPhase !== "idle"}
+            >
+              أحتاج تلميحًا
+            </button>
           </div>
         </>
       )}

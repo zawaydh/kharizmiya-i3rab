@@ -43,10 +43,10 @@ export const naibFaelTree: ExerciseTree = {
       text: "ما نوع الاسم المحدد؟",
       hint: "حدد صورة الاسم: مفرد، مثنى، جمع مذكر سالم، جمع مؤنث سالم، جمع تكسير، أم من الأسماء الخمسة.",
       answers: [
-        { id: "singular", text: "مفرد", next: "naib_mark", eval: { fact: "shape", equals: "singular" }, hint: "المفرد يرفع في الأصل بالضمة." },
-        { id: "dual", text: "مثنى", next: "naib_mark", eval: { fact: "shape", equals: "dual" }, hint: "المثنى يرفع بالألف." },
-        { id: "jms", text: "جمع مذكر سالم", next: "naib_mark", eval: { fact: "shape", equals: "jms" }, hint: "جمع المذكر السالم يرفع بالواو." },
-        { id: "jfs", text: "جمع مؤنث سالم", next: "naib_mark", eval: { fact: "shape", equals: "jfs" }, hint: "جمع المؤنث السالم يرفع بالضمة." },
+        { id: "singular", text: "مفرد", next: "naib_mark", eval: { fact: "shape", equals: "singular" }, hint: "إذا كانت الكلمة مفردة وليست من الأسماء الخمسة، فعلامة رفعها الأصلية الضمة." },
+        { id: "dual", text: "مثنى", next: "naib_mark", eval: { fact: "shape", equals: "dual" }, hint: "إذا دلت الكلمة على اثنين وكانت مثنى، فعلامة رفعها الألف، لا الضمة ولا الواو." },
+        { id: "jms", text: "جمع مذكر سالم", next: "naib_mark", eval: { fact: "shape", equals: "jms" }, hint: "إذا كانت الكلمة جمع مذكر سالم، فعلامة رفعها الواو؛ افحص صيغة الجمع قبل اختيار العلامة." },
+        { id: "jfs", text: "جمع مؤنث سالم", next: "naib_mark", eval: { fact: "shape", equals: "jfs" }, hint: "إذا كانت الكلمة جمع مؤنث سالم، فالرفع يكون بالضمة؛ جمعها لا يجعل علامة الرفع واوًا." },
         { id: "jt", text: "جمع تكسير", next: "naib_mark", eval: { fact: "shape", equals: "jt" }, hint: "جمع التكسير يرفع في الأصل بالضمة." },
         { id: "five", text: "من الأسماء الخمسة", next: "naib_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة ترفع بالواو إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم؛ ومع «ذو» تكون بمعنى صاحب، ومع «فو» تكون خالية من الميم." },
       ],
@@ -59,7 +59,7 @@ export const naibFaelTree: ExerciseTree = {
       hint: "الضمة للمفرد وجمع التكسير وجمع المؤنث السالم، والألف للمثنى، والواو لجمع المذكر السالم والأسماء الخمسة المستوفية للشروط.",
       answers: [
         { id: "damma", text: "الضمة الظاهرة", next: "R_naib_visible", eval: { fact: "raf3Mark", equals: "damma" }, hint: "الضمة علامة الرفع الأصلية للمفرد وجمع التكسير وجمع المؤنث السالم." },
-        { id: "alif", text: "الألف", next: "R_naib_visible", eval: { fact: "raf3Mark", equals: "alif" }, hint: "الألف علامة رفع المثنى." },
+        { id: "alif", text: "الألف", next: "R_naib_visible", eval: { fact: "raf3Mark", equals: "alif" }, hint: "الألف علامة رفع المثنى؛ فإذا ثبت أن نائب الفاعل مثنى مرفوع فهذه هي العلامة التي تناسب صورته." },
         { id: "waw", text: "الواو", next: "R_naib_visible", eval: { fact: "raf3Mark", equals: "waw" }, hint: "الواو علامة رفع جمع المذكر السالم، وعلامة رفع الأسماء الخمسة إذا استوفت شروط الإعراب بالحروف." },
       ],
     },

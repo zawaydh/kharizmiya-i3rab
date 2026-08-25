@@ -10,19 +10,7 @@ export const box: CSSProperties = {
   boxShadow: "0 16px 40px rgba(0,0,0,.18)",
 };
 
-export const answerBtn: CSSProperties = {
-  display: "block",
-  width: "100%",
-  marginBottom: 8,
-  padding: 12,
-  borderRadius: 14,
-  border: "1px solid #d8dee7",
-  textAlign: "right",
-  cursor: "pointer",
-  background: "#ffffff",
-  color: "#172033",
-  fontWeight: 800,
-};
+
 
 export const ghostBtn: CSSProperties = {
   marginTop: 12,

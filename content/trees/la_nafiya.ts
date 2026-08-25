@@ -56,8 +56,8 @@ export const laNafiyaTree: ExerciseTree = {
       hint: "حدد صورة الاسم نفسه قبل العلامة: مفرد، مثنى، جمع مذكر سالم، أم من الأسماء الخمسة؟",
       answers: [
         { id: "singular", text: "مفرد", next: "la_nasb_mark", eval: { fact: "shape", equals: "singular" }, hint: "المفرد المعرب المنصوب علامته الفتحة." },
-        { id: "dual", text: "مثنى", next: "la_nasb_mark", eval: { fact: "shape", equals: "dual" }, hint: "المثنى المنصوب علامته الياء." },
-        { id: "jms", text: "جمع مذكر سالم", next: "la_nasb_mark", eval: { fact: "shape", equals: "jms" }, hint: "جمع المذكر السالم ينصب بالياء." },
+        { id: "dual", text: "مثنى", next: "la_nasb_mark", eval: { fact: "shape", equals: "dual" }, hint: "إذا كان اسم «لا» المعرب مثنى، فعلامة نصبه الياء؛ لأن المثنى ينصب بالياء." },
+        { id: "jms", text: "جمع مذكر سالم", next: "la_nasb_mark", eval: { fact: "shape", equals: "jms" }, hint: "إذا كان اسم «لا» المعرب جمع مذكر سالم، فعلامة نصبه الياء؛ لا تعامل الجمع السالم معاملة المفرد." },
         { id: "five", text: "من الأسماء الخمسة", next: "la_nasb_mark", eval: { fact: "shape", equals: "five" }, hint: "الأسماء الخمسة تنصب بالألف إذا كانت مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم؛ ومع «ذو» تكون بمعنى صاحب، ومع «فو» تكون خالية من الميم." },
       ],
     },

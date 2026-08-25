@@ -35,8 +35,8 @@ export const halTree: ExerciseTree = {
       hint: "افحص الكلمة نفسها: مفرد، مثنى، جمع مذكر سالم، جمع مؤنث سالم، أم جمع تكسير؟",
       answers: [
         { id: "singular", text: "مفرد", next: "hal_mark", eval: { fact: "shape", equals: "singular" }, hint: "المفرد المنصوب علامته الأصلية الفتحة." },
-        { id: "dual", text: "مثنى", next: "hal_mark", eval: { fact: "shape", equals: "dual" }, hint: "المثنى ينصب بالياء." },
-        { id: "jms", text: "جمع مذكر سالم", next: "hal_mark", eval: { fact: "shape", equals: "jms" }, hint: "جمع المذكر السالم ينصب بالياء." },
+        { id: "dual", text: "مثنى", next: "hal_mark", eval: { fact: "shape", equals: "dual" }, hint: "إذا دلت الكلمة على اثنين وكانت مثنى، فالنصب لا يكون بالفتحة؛ علامة نصب المثنى الياء." },
+        { id: "jms", text: "جمع مذكر سالم", next: "hal_mark", eval: { fact: "shape", equals: "jms" }, hint: "إذا كانت الكلمة جمع مذكر سالم، فعلامة نصبها الياء؛ لا تنقل إليها علامة المفرد." },
         { id: "jfs", text: "جمع مؤنث سالم", next: "hal_mark", eval: { fact: "shape", equals: "jfs" }, hint: "جمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة." },
         { id: "jt", text: "جمع تكسير", next: "hal_mark", eval: { fact: "shape", equals: "jt" }, hint: "جمع التكسير ينصب في الأصل بالفتحة." },
       ],

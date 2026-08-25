@@ -5,7 +5,6 @@ import type { ExerciseAnswer, ExerciseTree, Mode } from "../../../lib/exercise/m
 import type { AnswerFeedbackState } from "../../../lib/exercise/answerSession";
 import { toStudentArabicOption } from "../../../lib/studentOptionText";
 import type { QuestionCardPhase } from "./useQuestionMotion";
-import { answerBtn } from "./ExercisePlayerStyles";
 import { renderSmartText } from "./ExerciseTextViews";
 
 type Props = {
@@ -33,7 +32,6 @@ export function ExerciseChoiceAnswers({
         const answerClass = [
           "exercise-answer-btn",
           "clean-answer-btn",
-          mode === "learn" && feedback?.correctId === answer.id ? "is-correct" : "",
           feedback?.wrongId === answer.id ? "is-wrong" : "",
         ].filter(Boolean).join(" ");
         return (
@@ -49,7 +47,6 @@ export function ExerciseChoiceAnswers({
             }}
             onClick={(event) => onPickAnswer(answer, event)}
             className={answerClass}
-            style={answerBtn}
           >
             <span className="answer-main-text">
               {String(tree.startNodeId || "").includes("past")

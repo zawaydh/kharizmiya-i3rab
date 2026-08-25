@@ -57,6 +57,54 @@ describe("UI readability regressions", () => {
     expect(css).not.toContain("color:#fff3b0");
   });
 
+
+  it("shows the hint in the same work area and keeps the wrong choice red after returning", () => {
+    const choices = read("app/components/exercise/ExerciseChoiceAnswers.tsx");
+    const questionStage = read("app/components/exercise/ExerciseQuestionStage.tsx");
+    const player = read("app/components/ExercisePlayer.tsx");
+    const cleanCss = readCleanSystemCss();
+    expect(choices).toContain('feedback?.wrongId === answer.id ? "is-wrong"');
+    expect(choices).not.toContain("correctId");
+    expect(choices).not.toContain("style={answerBtn}");
+    expect(cleanCss).toContain(".exercise-answer-btn.is-wrong");
+    expect(cleanCss).toContain("background: var(--clean-danger-soft);");
+    expect(cleanCss).toContain("border-color: var(--clean-danger);");
+    expect(questionStage).toContain('dialogBubble?.tone === "hint" ? (');
+    expect(questionStage).toContain('className="inline-correction-hint"');
+    expect(questionStage).not.toContain("hint-below-options");
+    expect(questionStage).toContain("<ExerciseChoiceAnswers");
+    expect(player).toContain("setDialogBubble(null);");
+    expect(player).not.toMatch(/onDismissHint=\{\(\) => \{[^}]*setFeedback\(null\)/s);
+  });
+
+  it("removes the redundant rule-review control from the question flow", () => {
+    const questionStage = read("app/components/exercise/ExerciseQuestionStage.tsx");
+    const feedbackCss = read("app/styles/61-exercise-feedback.css");
+    expect(questionStage).not.toContain("ExerciseRuleHelp");
+    expect(questionStage).not.toContain("راجع الشرح");
+    expect(feedbackCss).not.toContain("exercise-rule-review");
+  });
+
+  it("uses one restrained typography scale across exercises and games", () => {
+    const cleanCss = readCleanSystemCss();
+    const feedbackCss = read("app/styles/61-exercise-feedback.css");
+    const gamesCss = read("app/styles/74-speech-game.css");
+    const textGameCss = read("app/styles/72-text-game.css");
+    expect(cleanCss).toContain("--clean-text-question:");
+    expect(cleanCss).toContain("--clean-text-option: clamp(16px, 1.35vw, 18px);");
+    expect(cleanCss).toContain("--clean-game-target: clamp(30px, 3.6vw, 36px);");
+    expect(feedbackCss).toContain("font-size: var(--clean-text-question);");
+    expect(feedbackCss).toContain("font-size: var(--clean-text-option);");
+    expect(feedbackCss).not.toContain("font-size: 11.5px;");
+    expect(gamesCss).toContain(".place-game-word-card>strong{color:var(--clean-gold-text);font-size:var(--clean-game-target)");
+    expect(gamesCss).not.toContain(".place-game-word-card strong{color:var(--clean-gold-text)");
+    expect(gamesCss).toContain(".markati-speaking-line strong");
+    expect(textGameCss).toContain("font-size: var(--clean-game-question);");
+    expect(textGameCss).toContain("font-size: var(--clean-sentence);");
+    expect(textGameCss).toContain("font-size: var(--clean-text-option);");
+    expect(textGameCss).not.toContain("font-size: clamp(24px,3.8vw,34px);");
+  });
+
   it("has one authoritative start-page layer", () => {
     const cssFiles = [
       "30-start-learning-core.css",

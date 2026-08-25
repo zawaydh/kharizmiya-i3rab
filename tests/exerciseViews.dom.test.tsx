@@ -76,6 +76,7 @@ describe("exercise views in a real DOM", () => {
         onRetry={() => undefined}
         onContinue={() => undefined}
         onPickOption={() => undefined}
+        onOpenHint={() => undefined}
       />,
     );
 

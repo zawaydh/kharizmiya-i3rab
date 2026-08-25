@@ -42,7 +42,11 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
             return `ثبت أنها كلمة اسمية. افحص (${currentTarget}): هل تتغير علامتها بحسب الموقع، أم تلزم صورة واحدة؟`;
         }
         if (id === "kana_masdar_name") {
-            return `(${currentTarget}) تركيب من حرف مصدري وفعل ويمكن تأويله بمصدر صريح؛ لذلك يسمى مصدرًا مؤولًا.`;
+            if (pickedText.includes("ظاهر"))
+                return `اخترتَ «اسم ظاهر معرب»، لكن (${currentTarget}) ليست كلمة اسمية واحدة يظهر عليها الإعراب؛ هي تركيب يبدأ بحرف مصدري ويتلوه فعل ويمكن تأويله باسم صريح. سمِّ هذا التركيب من هذه الخاصية.`;
+            if (pickedText.includes("مبني"))
+                return `اخترتَ «اسم مبني»، والاسم المبني كلمة تلزم صورة واحدة مثل «هذا» أو «الذي». أمّا (${currentTarget}) فتركيب من حرف مصدري مع ما بعده ويؤول باسم صريح؛ ابحث عن المصطلح الذي يصف هذا البناء.`;
+            return `أعد (${currentTarget}) إلى اسم صريح يؤدي معناها، مثل «أن أتميّز» ← «تميّزي». المطلوب مصطلح يصف تركيبًا من حرف مصدري مع ما بعده حين يؤدي وظيفة الاسم.`;
         }
         if (id === "kana_masdar_site") {
             const role = String(state?.facts?.targetRole || "");
@@ -52,8 +56,8 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
         }
         if (id === "kana_khabar_kind") {
             if (pickedText.includes("مفرد")) return `اخترتَ «خبر مفرد». اختبر (${currentTarget}): الخبر المفرد هنا ليس جملة ولا شبه جملة، ولو كان مثنى أو جمعًا. هل المحدد كلمة/اسمًا واحدًا لا إسناد فيه ولا جارًا ومجرورًا ولا ظرفًا؟`;
-            if (pickedText.includes("جملة")) return `اخترتَ «خبر جملة». اختبر (${currentTarget}): هل فيه إسناد كامل من فعل وفاعل أو مبتدأ وخبر؟ إن لم يوجد فليس خبر جملة.`;
             if (pickedText.includes("شبه")) return `اخترتَ «خبر شبه جملة». شبه الجملة يكون جارًا ومجرورًا مثل «في الحقيبة»، أو ظرفًا مثل «عند المعلم». افحص (${currentTarget}): هل هو واحد من هذين التركيبين؟`;
+            if (pickedText.includes("جملة")) return `اخترتَ «خبر جملة». اختبر (${currentTarget}): هل فيه إسناد كامل من فعل وفاعل أو مبتدأ وخبر؟ إن لم يوجد فليس خبر جملة.`;
         }
         if (id === "kana_ism_number" || id === "kana_khabar_single_number") {
             if (pickedText.includes("مثنى")) return `المثنى يدل على اثنين وينتهي غالبًا بـ(ان) أو (ين). انظر إلى (${currentTarget}): هل يدل على اثنين؟ وهل يحمل علامة التثنية؟`;
@@ -234,9 +238,9 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
             if (pickedText.includes("مفرد") && state?.facts?.shibhType === "zarf") return `صحيح أن (${currentTarget}) كلمة واحدة، لكنها هنا ظرف زمان/مكان. والظرف في باب الخبر يعامل كشبه جملة؛ لأنه متعلق بمحذوف تقديره: موجود أو كائن. لذلك في: ليت اللقاء غدًا، تكون (غدًا) شبه جملة ظرفية في محل رفع خبر ${innaParticleName(state)}.`;
             if (pickedText.includes("مفرد") && state?.facts?.shibhType === "jar") return `الجار والمجرور مثل (${currentTarget}) ليس خبرًا مفردًا، بل شبه جملة؛ لأنه تركيب يبدأ بحرف جر ويتعلق بمحذوف خبر.`;
             if (pickedText.includes("مفرد")) return `اخترتَ «خبر مفرد». الخبر المفرد في النحو يعني: ليس جملة ولا شبه جملة، ولو كان مثنى أو جمعًا أو مضافًا. افحص (${currentTarget}) على هذا الأساس.`;
+            if (pickedText.includes("شبه")) return `اخترتَ «خبر شبه جملة»، لكن شبه الجملة لا بد أن يكون جارًا ومجرورًا أو ظرفًا مثل: في الحقيبة، عند المعلم، غدًا. افحص (${currentTarget}) نفسه.`;
             if (pickedText.includes("جملة") && state?.facts?.nounKind === "masdar") return `اخترتَ «خبر جملة». صحيح أن داخل (${currentTarget}) فعلًا، لكن التركيب سبق بـ«أن»، فصار مصدرًا مؤولًا يؤول باسم مثل «نجاحك»؛ لذلك لا نعربه خبر جملة، بل مصدرًا مؤولًا في محل رفع خبر ${innaParticleName(state)}.`;
             if (pickedText.includes("جملة")) return `اخترتَ «خبر جملة». الجملة لا بد أن يكون فيها إسناد كامل: فعل وفاعل، أو مبتدأ وخبر. افحص (${currentTarget}): هل يوجد فيه هذا الإسناد، أم أنه كلمة واحدة أو جار ومجرور أو ظرف؟`;
-            if (pickedText.includes("شبه")) return `اخترتَ «خبر شبه جملة»، لكن شبه الجملة لا بد أن يكون جارًا ومجرورًا أو ظرفًا مثل: في الحقيبة، عند المعلم، غدًا. افحص (${currentTarget}) نفسه.`;
         }
         if (id === "inna_ism_number" || id === "inna_khabar_single_number") {
             if (pickedText.includes("مثنى")) return `المثنى يدل على اثنين وينتهي غالبًا بـ(ان) أو (ين). انظر إلى (${currentTarget}): هل يدل على اثنين؟`;

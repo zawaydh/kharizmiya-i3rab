@@ -79,6 +79,26 @@
   gap: 12px;
   text-align: center;}
 .auth-logged-box h2 { margin: 0; }
+.auth-modern-page .section-kicker {
+  color: #0f6f68;
+}
+.auth-modern-page .auth-logged-box .pill-accent {
+  background: #e8f7f5;
+  border-color: #9bcfc9;
+  color: #124f4c;
+}
+.auth-modern-page .auth-actions-stack .btn-soft {
+  background: #f3f8f9;
+  border-color: #aebfc6;
+  color: #173845;
+  box-shadow: none;
+}
+.auth-modern-page .auth-actions-stack .btn-danger {
+  background: #fff1f2;
+  border-color: #efb2ba;
+  color: #9f1239;
+  box-shadow: none;
+}
 .auth-logged-icon {width: 58px;
   height: 58px;
   border-radius: 18px;

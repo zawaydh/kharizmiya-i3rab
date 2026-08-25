@@ -3,7 +3,7 @@
 import React from "react";
 import type { Mode } from "../../../lib/exercise/model";
 import type { FollowUp } from "../../../lib/exercise/quiz";
-import { answerBtn, primaryNavBtn } from "./ExercisePlayerStyles";
+import { primaryNavBtn } from "./ExercisePlayerStyles";
 
 type ExerciseResultStageProps = {
   activeCardRef: React.RefObject<HTMLDivElement>;
@@ -114,7 +114,6 @@ export function ExerciseResultStage({
                 key={option.label}
                 onClick={() => onPickFollowUp(option.label)}
                 className={`exercise-answer-btn clean-answer-btn ${className}`}
-                style={answerBtn}
               >
                 {option.label}
               </button>

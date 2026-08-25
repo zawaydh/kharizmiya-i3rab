@@ -180,17 +180,17 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     if (id === "manqous_y_raf3" || id === "manqous_y_jar")
         return `هل ${quoted} معرفة بـ«أل» أو مضافة، أم نكرة غير مضافة؟`;
     if (id === "hal_relation")
-        return `اسأل عن ${quoted} في الجملة: كيف كان صاحبها وقت وقوع الفعل؟ هل تصف هيئته في تلك اللحظة؟`;
+        return `ابحث عن صاحب ${quoted} ثم حوّل المعنى إلى صيغة «وهو/وهي ...». إذا عبّرت ${quoted} عن هيئة صاحبها وقت وقوع الفعل، فهذه قرينة الحال؛ مثل «جاء الضيف في هدوء» = «جاء الضيف هادئًا».`;
     if (id === "hal_kind")
         return `بعد أن ثبتت وظيفة الحال، افحص ${quoted}: أهي كلمة واحدة، أم جملة كاملة، أم شبه جملة؟`;
     if (id === "munada_tool")
-        return `انظر قبل ${quoted} مباشرة: هل سبقتها أداة نداء مثل «يا»؟`;
+        return `ابدأ بأداة النداء: أشهرها «يا». اقرأ الاسم الذي تتجه إليه المناداة بعدها، واسأل: من الذي يخاطبه المتكلم مباشرة؟ هذه القرينة تحدد المنادى قبل الدخول في أنواعه.`;
     if (id === "munada_kind")
         return `بعد ثبوت النداء، لا تحفظ المصطلح بعد: هل ${quoted} اسم علم معيّن، أم نكرة مستقلة، أم اتصل بما بعدها ليتم معناه؟`;
     if (id === "istithna_mufarragh_role")
         return `احذف «إلا» مؤقتًا، ثم اقرأ الجملة: ما الموقع الذي تشغله ${quoted} من الفعل أو حرف الجر؟`;
     if (id === "naib_role")
-        return `الفعل مبني للمجهول؛ اسأل: ما الشيء أو الشخص الذي وقع عليه الفعل ثم ناب عن الفاعل؟`;
+        return `بعد ثبوت البناء للمجهول لا تبحث عن فاعل ظاهر؛ الفاعل حُذف. ابحث عن الاسم الذي أُسنِد إليه الفعل بعد الحذف، فهو الذي أخذ موقع الرفع بدل الفاعل.`;
     if (id === "mafoolat_bih_check")
         return `بعد استبعاد المفعول معه وفيه والمطلق ولأجله، اسأل: على من أو على ماذا وقع الفعل مباشرة؟`;
     if (id === "fael_hukm")
@@ -198,9 +198,9 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     if (id === "mafool_hukm")
         return `ثبت أن ${quoted} مفعول به، والمفعول به من المنصوبات: إن كان اسمًا معربًا فهو منصوب، وإن كان اسمًا مبنيًا فهو في محل نصب. ما الحكم المناسب هنا؟`;
     if (id === "fael_role_verbal")
-        return `اسأل عن ${quoted}: من الذي قام بالفعل؟`;
+        return `ابدأ بالفعل في الجملة، ثم ابحث عن صاحبه: الاسم الذي أُسنِد إليه الحدث هو الفاعل. إن لم يظهر اسم صريح بعد الفعل، فتش عن ضمير متصل بالفعل أو ضمير مستتر يدل عليه التصريف.`;
     if (id === "mafool_role")
-        return `بعد معرفة الفعل والفاعل، اسأل: على من أو على ماذا وقع الفعل؟`;
+        return `ثبّت الفاعل أولًا حتى لا تختلط الوظيفتان: الفاعل قام بالحدث، أمّا المفعول به فهو الاسم الذي وقع عليه أثر الفعل مباشرة. اختبر ${quoted} بهذه العلاقة في الجملة.`;
     if (id === "tawabi_entry")
         return `هل ${quoted} تؤدي معنى مستقلًا في الجملة، أم ترجع إلى اسم قبلها فتصفه أو تشاركه أو تؤكده أو توضحه؟`;
     if (id === "tawabi_relation" || id === "tawabi_case" || id === "tawabi_mark") {
@@ -255,12 +255,21 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
         if (cleanedShapeHint) return cleanedShapeHint;
         return `افحص صورة ${quoted} من المثال نفسه قبل اختيار العلامة.`;
     }
-    if (/_mark$/.test(id))
-        return `بعد معرفة الحالة وصورة ${quoted}، ما العلامة التي تناسبهما؟`;
-    if (/_case$/.test(id))
-        return `حدد موقع ${quoted} في الجملة قبل اختيار العلامة.`;
-    if (/_role$|_target$|_entry$/.test(id))
-        return `ما الدور الذي أدته ${quoted} في معنى الجملة؟`;
+    if (/_mark$/.test(id)) {
+        const cleanedMarkHint = diagnosticHintText(rawHint, target);
+        if (cleanedMarkHint) return cleanedMarkHint;
+        return `اربط القرارين السابقين: الحالة الإعرابية تحدد مجموعة العلامات الممكنة، وصورة ${quoted} تحدد العلامة داخل هذه المجموعة. لا تنقل علامة كلمة مجاورة إليها.`;
+    }
+    if (/_case$/.test(id)) {
+        const cleanedCaseHint = diagnosticHintText(rawHint, target);
+        if (cleanedCaseHint) return cleanedCaseHint;
+        return `استخرج وظيفة ${quoted} أولًا، ثم استدع حكم هذه الوظيفة: المرفوعات لها مواقع معروفة، والمنصوبات والمجرورات كذلك. الحالة نتيجة الوظيفة وليست تخمينًا من الحركة الظاهرة.`;
+    }
+    if (/_role$|_target$|_entry$/.test(id)) {
+        const cleanedRoleHint = diagnosticHintText(rawHint, target);
+        if (cleanedRoleHint) return cleanedRoleHint;
+        return `اربط ${quoted} بالعامل أو الاسم الذي قبله في الجملة: اسأل من قام بالفعل، أو ما الذي وقع عليه، أو ما الذي وصف/أتم معنى ما قبله. العلاقة هي التي تكشف الوظيفة النحوية.`;
+    }
     if (/_built$|_built_type$|_mabni/.test(id)) {
         const clean = String(target || "");
         if (/الذي|التي|الذين|اللذ/u.test(clean)) return `لاحظ أن ${quoted} تحتاج جملة بعدها تتم معناها وتوضح المقصود؛ ما الخاصية التي تكشف نوع هذا المبني؟`;
@@ -270,7 +279,7 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     }
     const cleaned = diagnosticHintText(rawHint, target);
     if (!cleaned)
-        return `انظر إلى ${quoted} في المثال، وحدد الدليل المرتبط بالسؤال الحالي.`;
+        return `ارجع إلى ${quoted} داخل الجملة، واربطها بما ثبت في الخطوة السابقة: العامل قبلها، أو علاقتها بالاسم السابق، أو صورتها الصرفية. استخدم هذه القرينة لاستبعاد الخيارات التي لا تنسجم مع المثال.`;
     // نكتفي بأول جملة قصيرة في المستوى الأول.
     const firstSentence = cleaned.split(/(?<=[.؟!])\s+/)[0] || cleaned;
     const words = firstSentence.split(/\s+/).filter(Boolean);

@@ -2,13 +2,13 @@ import { requireCoverageResult, requirePrimaryCoverage } from "./exampleCoverage
 export type Example = { id: string; sentence: string; target: string; facts: Record<string, unknown>; covers: string[] };
 export const firstWordCoverageKeysOrdered = ["first.noun", "first.verb.past", "first.verb.present", "first.verb.imperative", "first.particle.verb", "first.particle.noun"];
 export const firstWordExamples: Example[] = [
-  { id: "fw-01", sentence: "الطالبُ مجتهدٌ.", target: "الطالبُ", facts: { wordType: "noun" }, covers: ["first.noun"] },
+  { id: "fw-01", sentence: "الطالبُ مجتهدٌ.", target: "الطالبُ", facts: { wordType: "noun", finalI3rab: "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره." }, covers: ["first.noun"] },
   { id: "fw-02", sentence: "كتبَ الطالبُ الدرسَ.", target: "كتبَ", facts: { wordType: "verb", verbType: "past" }, covers: ["first.verb.past"] },
   { id: "fw-03", sentence: "يقرأُ الولدُ القصةَ.", target: "يقرأُ", facts: { wordType: "verb", verbType: "present" }, covers: ["first.verb.present"] },
   { id: "fw-04", sentence: "اكتبْ بخطٍّ جميلٍ.", target: "اكتبْ", facts: { wordType: "verb", verbType: "imperative" }, covers: ["first.verb.imperative"] },
   { id: "fw-05", sentence: "لن يضيعَ الحقُّ.", target: "لن", facts: { wordType: "particle", afterParticle: "verb" }, covers: ["first.particle.verb"] },
   { id: "fw-06", sentence: "في المدرسةِ طلابٌ.", target: "في", facts: { wordType: "particle", afterParticle: "noun" }, covers: ["first.particle.noun"] },
-  { id: "fw-07", sentence: "العلمُ نورٌ.", target: "العلمُ", facts: { wordType: "noun" }, covers: ["first.noun"] },
+  { id: "fw-07", sentence: "العلمُ نورٌ.", target: "العلمُ", facts: { wordType: "noun", finalI3rab: "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره." }, covers: ["first.noun"] },
   { id: "fw-08", sentence: "نجحَ الفريقُ.", target: "نجحَ", facts: { wordType: "verb", verbType: "past" }, covers: ["first.verb.past"] },
   { id: "fw-09", sentence: "تشرقُ الشمسُ صباحًا.", target: "تشرقُ", facts: { wordType: "verb", verbType: "present" }, covers: ["first.verb.present"] },
   { id: "fw-10", sentence: "احفظْ وقتَكَ.", target: "احفظْ", facts: { wordType: "verb", verbType: "imperative" }, covers: ["first.verb.imperative"] },

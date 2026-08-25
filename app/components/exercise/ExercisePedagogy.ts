@@ -9,7 +9,7 @@ export {
 export { kanaNasikhFinalIntro } from "./KanaPedagogy";
 export { innaNasikhFinalIntro } from "./InnaPedagogy";
 export { isFiveVerbDecision } from "./ExerciseDecisionHelpers";
-export { studentHintText } from "./ExerciseStudentHints";
+export { nonRevealingWrongChoiceHint, studentHintText } from "./ExerciseStudentHints";
 export { finalThinkingTextForDisplay, normalizeThinkingNode } from "./ExerciseNodePedagogy";
 export {
   answerEffectLabel,

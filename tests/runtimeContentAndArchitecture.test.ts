@@ -240,7 +240,6 @@ describe("سلامة المحتوى التشغيلي والبنية", () => {
       "ExerciseDialogueUtils.ts",
       "ExerciseOpeningDialogue.ts",
       "ExtendedTopicOpeningDialogue.ts",
-      "TawabiOpeningDialogue.ts",
       "ExercisePracticePedagogy.ts",
       "ExerciseSuccessPedagogy.ts",
       "KanaFinalIntro.ts",
@@ -273,6 +272,10 @@ describe("سلامة المحتوى التشغيلي والبنية", () => {
       process.cwd(),
       "app/components/exercise/ExerciseStudentHints.ts"
     );
+    const firstLevelHintsPath = path.join(
+      process.cwd(),
+      "app/components/exercise/ExerciseFirstLevelHints.ts"
+    );
     const topicHintPaths = [
       "TawabiStudentHints.ts",
       "MafoolStudentHints.ts",
@@ -283,6 +286,7 @@ describe("سلامة المحتوى التشغيلي والبنية", () => {
       "MafoolatStudentHints.ts",
       "ExtendedTopicStudentHints.ts",
       "ExerciseHintShared.ts",
+      "FirstWordStudentHints.ts",
     ].map((file) => path.join(process.cwd(), "app/components/exercise", file));
     const decisionHelpersPath = path.join(
       process.cwd(),
@@ -333,6 +337,7 @@ describe("سلامة المحتوى التشغيلي والبنية", () => {
     const kanaLines = fs.readFileSync(kanaPedagogyPath, "utf8").split(/\r?\n/).length;
     const innaLines = fs.readFileSync(innaPedagogyPath, "utf8").split(/\r?\n/).length;
     const studentHintLines = fs.readFileSync(studentHintsPath, "utf8").split(/\r?\n/).length;
+    const firstLevelHintLines = fs.readFileSync(firstLevelHintsPath, "utf8").split(/\r?\n/).length;
     const topicHintLineCounts = topicHintPaths.map((file) =>
       fs.readFileSync(file, "utf8").split(/\r?\n/).length
     );
@@ -343,6 +348,7 @@ describe("سلامة المحتوى التشغيلي والبنية", () => {
     expect(kanaLines).toBeLessThan(50);
     expect(innaLines).toBeLessThan(180);
     expect(studentHintLines).toBeLessThan(100);
+    expect(firstLevelHintLines).toBeLessThan(420);
     expect(Math.max(...topicHintLineCounts)).toBeLessThan(350);
     expect(fs.existsSync(stagePresentationPath)).toBe(true);
     expect(fs.existsSync(decisionHelpersPath)).toBe(true);
@@ -364,6 +370,7 @@ describe("سلامة المحتوى التشغيلي والبنية", () => {
       kanaPedagogyPath,
       innaPedagogyPath,
       studentHintsPath,
+      firstLevelHintsPath,
       ...topicHintPaths,
       decisionHelpersPath,
       questionMotionPath,
@@ -385,7 +392,9 @@ describe("سلامة المحتوى التشغيلي والبنية", () => {
     expect(pedagogyEntry).toContain("./ExerciseDecisionHelpers");
 
     const studentHintsEntry = fs.readFileSync(studentHintsPath, "utf8");
+    expect(studentHintsEntry).toContain("./ExerciseFirstLevelHints");
     for (const moduleName of [
+      "FirstWordStudentHints",
       "TawabiStudentHints",
       "MafoolStudentHints",
       "FaelStudentHints",

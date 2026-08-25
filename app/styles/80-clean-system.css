@@ -56,11 +56,18 @@
   --clean-space-5: 24px;
   --clean-text-xs: 12px;
   --clean-text-sm: 14px;
+  --clean-text-meta: 14px;
   --clean-text-base: 16px;
+  --clean-text-help: clamp(15px, 1.2vw, 16px);
+  --clean-text-option: clamp(16px, 1.35vw, 18px);
   --clean-text-md: 18px;
   --clean-text-lg: 21px;
   --clean-text-xl: 27px;
-  --clean-sentence: clamp(27px, 3vw, 33px);}
+  --clean-text-question: clamp(21px, 2.2vw, 24px);
+  --clean-sentence: clamp(28px, 3vw, 32px);
+  --clean-game-target: clamp(30px, 3.6vw, 36px);
+  --clean-game-question: clamp(21px, 2.4vw, 24px);
+}
 html { scroll-padding-top: 12px; }
 html, body {margin: 0;
   min-height: 100%;
@@ -205,7 +212,7 @@ body.platform-body :where(button, .btn, a)[disabled], body.platform-body :where(
   box-shadow: none;
   text-align: center;}
 .dialogue-label, .quiz-workspace-sentence > span {color: var(--clean-muted);
-  font-size: 13px;
+  font-size: var(--clean-text-meta);
   font-weight: 500;}
 .start-example-sentence, .dialogue-sentence-text, .exercise-sentence, .sequential-sentence-line, .text-game-passage {color: var(--clean-text);
   font-size: var(--clean-sentence);
@@ -237,14 +244,14 @@ body.platform-body :where(button, .btn, a)[disabled], body.platform-body :where(
 .clean-question-title,
 .practice-direct-prompt,
 .quiz-question-with-instruction {color: var(--clean-text);
-  font-size: clamp(19px, 2vw, 22px);
+  font-size: var(--clean-text-question);
   font-weight: 600;
   line-height: 1.75;
   text-align: center;
   text-shadow: none;
   opacity: 1;}
 .start-choice-instruction, .question-choice-prompt, .dialogue-question-note, .practice-direct-note {color: var(--clean-muted);
-  font-size: 13px;
+  font-size: var(--clean-text-help);
   font-weight: 400;}
 .clean-answer-grid,
 .practice-direct-options,
@@ -270,9 +277,9 @@ body.platform-body :where(button, .btn, a)[disabled], body.platform-body :where(
   border-radius: 4px;
   background: #fff;
   color: var(--clean-text);
-  font-size: 16px;
+  font-size: var(--clean-text-option);
   font-weight: 500;
-  line-height: 1.55;
+  line-height: 1.6;
   text-align: right;
   box-shadow: none;
   opacity: 1;
@@ -299,7 +306,7 @@ body.platform-body :where(button, .btn, a)[disabled], body.platform-body :where(
   color: var(--clean-primary-text);}
 .answer-main-text,
 .practice-direct-option strong {color: inherit;
-  font-size: 16px;
+  font-size: var(--clean-text-option);
   font-weight: 500;}
 .quiz-option-dot {width: 24px;
   height: 24px;
@@ -321,7 +328,7 @@ body.platform-body :where(button, .btn, a)[disabled], body.platform-body :where(
   border-radius: 8px;
   background: #fff;
   color: var(--clean-primary-text);
-  font-size: 13px;
+  font-size: var(--clean-text-meta);
   box-shadow: none;}
 .start-visible-hint,
 .feedback-pop.inline-feedback,
@@ -332,8 +339,8 @@ body.platform-body :where(button, .btn, a)[disabled], body.platform-body :where(
   margin: 0 auto;
   padding: 11px 13px;
   border-radius: 8px;
-  font-size: 14px;
-  line-height: 1.75;
+  font-size: var(--clean-text-help);
+  line-height: 1.8;
   box-shadow: none;}
 .start-visible-hint, .inline-correction-hint, .thinking-bubble.hint {background: var(--clean-warning-soft);
   border: 1px solid var(--clean-warning);

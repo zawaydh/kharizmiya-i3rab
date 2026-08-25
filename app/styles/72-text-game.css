@@ -82,7 +82,7 @@
   padding: 6px;}
 .text-game-empty { text-align: center; padding: 30px; }
 @media (max-width:760px) {
-  .text-game-passage {font-size: 22px;
+  .text-game-passage {font-size: var(--clean-sentence);
   line-height: 2.1;
   padding: 17px 13px;}
   .text-game-blank {min-width: 78px;
@@ -91,7 +91,7 @@
   .text-game-options { display: grid; grid-template-columns: 1fr; }
   .text-game-option {width: 100%;
   min-width: 0;
-  font-size: 17px;}
+  font-size: var(--clean-text-option);}
   .text-game-actions { display: grid; grid-template-columns: 1fr; }
   .text-game-actions .btn { width: 100%; justify-content: center; }
 }
@@ -134,10 +134,10 @@
 .text-game-direct-question {margin-bottom: 14px;
   text-align: center;
   color: #f6fbff;
-  font-size: clamp(17px,2.3vw,21px);
+  font-size: var(--clean-game-question);
   font-weight: 950;}
 .text-game-card-clean .text-game-passage {padding: clamp(20px,3.5vw,30px);
-  font-size: clamp(24px,3.8vw,34px);
+  font-size: var(--clean-sentence);
   line-height: 2.05;
   border-radius: 18px;
   text-align: center;}

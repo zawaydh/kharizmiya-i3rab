@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { pastVerbTree } from "../content/trees/verb_past";
 import { pastVerbExamples } from "../content/examples/verb_past.examples";
 import { buildRunnerState } from "../lib/exercise/runner";
-import { isSameQuizAnswer, safeFinalLabel, type QuizExampleLike } from "../lib/exercise/quiz";
+import { isSameQuizAnswer, safePracticeFinalLabel, type QuizExampleLike } from "../lib/exercise/quiz";
 import { stageExampleVariant } from "../lib/exercise/stageExampleVariants";
 import {
   buildPracticeDirectOptions,
@@ -24,7 +24,7 @@ describe("عزل خيارات تدرّب عن الأمثلة الأخرى", () =
       const example = stageExampleVariant(source, "practice");
       const state = buildRunnerState(pastVerbTree, "practice", example);
       const coverage = example.covers[0] || "";
-      const rawExpected = safeFinalLabel(pastVerbTree, example as QuizExampleLike, coverage);
+      const rawExpected = safePracticeFinalLabel(pastVerbTree, example as QuizExampleLike, coverage);
       const expected = practiceExpectedLabelForExample(rawExpected, example);
       const options = buildPracticeDirectOptions({
         tree: pastVerbTree,

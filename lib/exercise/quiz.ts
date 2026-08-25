@@ -303,14 +303,28 @@ export function localQuizExpectedLabel(label: string, example?: QuizExampleLike 
   return localizeQuizOptionToExample(label, example);
 }
 
-function swapCandidates(text: string, pairs: ReadonlyArray<readonly [string, string]>) {
+function swapCandidates(
+  text: string,
+  pairs: ReadonlyArray<readonly [string, string]>,
+) {
   const candidates: string[] = [];
+
+  const escapePattern = (value: string) =>
+    value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
   pairs.forEach(([from, to]) => {
-    if (text.includes(from)) candidates.push(text.replace(from, to));
+    const pattern = new RegExp(
+      `(?<![\\p{L}\\p{M}])${escapePattern(from)}(?![\\p{L}\\p{M}])`,
+      "u",
+    );
+
+    if (pattern.test(text)) {
+      candidates.push(text.replace(pattern, to));
+    }
   });
+
   return candidates;
 }
-
 function fallbackRoleParses(correct: string) {
   const separatorIndex = correct.indexOf(":");
   const prefix = separatorIndex > 0 ? `${correct.slice(0, separatorIndex + 1)} ` : "";
@@ -338,7 +352,37 @@ export function buildI3rabDistractors(correct: string) {
   const output: string[] = [];
   const push = (candidate?: string) => {
     const value = String(candidate || "").trim();
-    if (value && !isSameQuizAnswer(value, correct) && !output.some((item) => isSameQuizAnswer(item, value))) {
+    if (!value) return;
+
+    const impossibleVerb =
+      /فعل\s+(?:ماض|أمر)[^.!]*\bمعرب\b/u.test(value);
+
+    const contradictoryRaf3Pronoun =
+      /ضمير\s+رفع/u.test(value) &&
+      (
+        /في محل نصب/u.test(value) ||
+        /مفعول به/u.test(value)
+      );
+
+    const contradictoryNasbPronoun =
+      /ضمير\s+نصب/u.test(value) &&
+      (
+        /في محل رفع/u.test(value) ||
+        /فاعل/u.test(value)
+      );
+
+    if (
+      impossibleVerb ||
+      contradictoryRaf3Pronoun ||
+      contradictoryNasbPronoun
+    ) {
+      return;
+    }
+
+    if (
+      !isSameQuizAnswer(value, correct) &&
+      !output.some((item) => isSameQuizAnswer(item, value))
+    ) {
       output.push(value);
     }
   };
@@ -522,6 +566,78 @@ export function safeFinalLabel(
   if (fromExample && !looksLikeProgrammingOption(fromExample)) return toStudentArabicOption(fromExample);
   const fromResult = findResultLabelByCoverage(tree, fallbackCoverage);
   if (fromResult && !looksLikeProgrammingOption(fromResult)) return toStudentArabicOption(fromResult);
+  return coverageDisplayLabel(fallbackCoverage);
+}
+
+
+function stripPracticeResultHeading(text: string, target?: string) {
+  const lines = String(text || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length) return "";
+
+  const normalize = (value: string) =>
+    String(value || "")
+      .normalize("NFKC")
+      .replace(/[\u064B-\u065F\u0670\u0640]/gu, "")
+      .replace(/[.:：؛،]+$/gu, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const targetKey = normalize(String(target || ""));
+  const firstKey = normalize(lines[0] || "");
+
+  if (targetKey && firstKey === targetKey) {
+    lines.shift();
+  }
+
+  return lines.join("\n").trim();
+}
+
+export function safePracticeFinalLabel(
+  tree: ExerciseTree | null | undefined,
+  example: QuizExampleLike | null | undefined,
+  fallbackCoverage?: string,
+) {
+  const practiceFinal = String(
+    (example?.facts as (QuizFacts & { practiceFinalI3rab?: string }) | undefined)
+      ?.practiceFinalI3rab || "",
+  ).trim();
+
+  if (practiceFinal && !looksLikeProgrammingOption(practiceFinal)) {
+    return toStudentArabicOption(practiceFinal);
+  }
+
+  const factsFinal = String(example?.facts?.finalI3rab || "").trim();
+  if (factsFinal && !looksLikeProgrammingOption(factsFinal)) {
+    return toStudentArabicOption(factsFinal);
+  }
+
+  const resultNode = Object.values(tree?.nodes || {}).find(
+    (node) =>
+      node.type === "result" &&
+      (
+        node.coverage === fallbackCoverage ||
+        resultIdToCoverage(node.id) === fallbackCoverage
+      ),
+  );
+
+  const fullResult = stripPracticeResultHeading(
+    resultNode?.type === "result" ? String(resultNode.text || "") : "",
+    example?.target,
+  );
+
+  if (fullResult && !looksLikeProgrammingOption(fullResult)) {
+    return toStudentArabicOption(fullResult);
+  }
+
+  const quizFallback = String(example?.correctI3rab || "").trim();
+  if (quizFallback && !looksLikeProgrammingOption(quizFallback)) {
+    return toStudentArabicOption(quizFallback);
+  }
+
   return coverageDisplayLabel(fallbackCoverage);
 }
 

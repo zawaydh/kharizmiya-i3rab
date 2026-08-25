@@ -9,7 +9,6 @@ import type { RunnerState } from "./runner";
 
 export type AnswerFeedbackState = {
   wrongId?: string;
-  correctId?: string;
   hint?: string;
 };
 
@@ -78,15 +77,11 @@ export function resolveAnswerAttempt(params: {
 }
 
 export function buildWrongFeedback(params: {
-  mode: "learn" | "practice";
   answerId: string;
-  correctAnswerId?: string;
   hint?: string;
 }): AnswerFeedbackState {
-  const { mode, answerId, correctAnswerId, hint } = params;
-  return mode === "practice"
-    ? { wrongId: answerId, hint }
-    : { wrongId: answerId, correctId: correctAnswerId, hint };
+  const { answerId, hint } = params;
+  return { wrongId: answerId, hint };
 }
 
 export function deterministicPraise(params: {

@@ -135,7 +135,7 @@
   transition: width .45s ease;}
 .solution-step-progress p {margin: 6px 0 0;
   color: #475569;
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.65;
   text-align: center;
   font-weight: 750;}
@@ -143,10 +143,10 @@
   .solution-step-progress {margin: 0 auto 9px;
   padding: 9px 10px 8px;
   border-radius: 15px;}
-  .solution-step-progress-head strong { font-size: 12.5px; }
+  .solution-step-progress-head strong { font-size: 13px; }
   .solution-step-progress-head span { font-size: 11px; padding: 3px 8px; }
   .solution-step-progress-track { height: 7px; }
-  .solution-step-progress p { font-size: 10.5px; margin-top: 5px; }
+  .solution-step-progress p { font-size: 12px; margin-top: 5px; }
   .exercise-page-shell .global-example-progress-wrap.global-example-progress-bottom { margin: 14px auto 4px; gap: 6px; }
 }
 @media (max-width:700px) {
@@ -169,7 +169,7 @@
 .solution-step-progress.solution-step-progress-sticky .solution-step-progress-head span {padding: 0;
   background: transparent;
   color: #64748b;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 900;}
 .solution-step-progress.solution-step-progress-sticky .solution-step-progress-track {height: 6px;
   background: #e5f3f0;
@@ -190,7 +190,7 @@
   justify-content: space-between;
   gap: 10px;
   color: #dffdfa;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 850;
   line-height: 1.4;}
 .global-example-progress-topline strong {color: #ffe89a;
@@ -221,7 +221,7 @@
   padding: 7px 9px;
   border-radius: 13px;}
   .solution-step-progress.solution-step-progress-sticky .solution-step-progress-head strong { font-size: 12px; }
-  .solution-step-progress.solution-step-progress-sticky .solution-step-progress-head span { font-size: 10.5px; }
+  .solution-step-progress.solution-step-progress-sticky .solution-step-progress-head span { font-size: 12px; }
   .solution-step-progress.solution-step-progress-sticky .solution-step-progress-track { height: 5px; }
   .exercise-page-shell .global-example-progress-wrap.global-example-progress-bottom { bottom: 6px; }
   .algorithm-active-card.sequential-active-card,.sequential-active-card.clean-question-block,.clean-thinking-card .sequential-active-card.clean-question-block { min-height: min(68vh,560px); }
@@ -266,15 +266,15 @@
   text-align: center;
   display: grid;
   gap: 5px;}
-.exercise-page-shell .dialogue-label { font-size: 11.5px; line-height: 1.4; }
-.exercise-page-shell .dialogue-sentence-text {font-size: clamp(23px,4vw,32px);
+.exercise-page-shell .dialogue-label { font-size: var(--clean-text-meta); line-height: 1.5; }
+.exercise-page-shell .dialogue-sentence-text {font-size: var(--clean-sentence);
   line-height: 1.7;
   font-weight: 900;}
 .exercise-page-shell .clean-question-title,.exercise-page-shell .exercise-question-title {max-width: 700px;
   margin: 0 auto 9px;
   padding: 0;
   text-align: right;
-  font-size: clamp(18px,2.55vw,24px);
+  font-size: var(--clean-text-question);
   line-height: 1.85;
   font-weight: 850;}
 .exercise-page-shell .clean-answer-grid,
@@ -286,7 +286,7 @@
   padding: 10px 13px;
   border-radius: 15px;
   text-align: right;
-  font-size: 15.5px;
+  font-size: var(--clean-text-option);
   line-height: 1.65;}
 .exercise-page-shell .hint-after-options {display: flex;
   justify-content: center;
@@ -316,23 +316,23 @@
   .exercise-page-shell .exercise-hero-card {margin-bottom: 7px;
   padding: 7px 9px;
   border-radius: 13px;}
-  .exercise-page-shell .stage-learning-badge { font-size: 11.5px; }
+  .exercise-page-shell .stage-learning-badge { font-size: 13px; }
   .exercise-page-shell .exercise-core-card.clean-thinking-card {padding: 8px;
   margin-bottom: 8px;
   border-radius: 17px;}
   .exercise-page-shell .solution-step-progress.solution-step-progress-sticky {margin-bottom: 7px;
   padding: 6px 8px;
   border-radius: 12px;}
-  .exercise-page-shell .solution-step-progress-head strong { font-size: 11.5px; }
-  .exercise-page-shell .solution-step-progress-head span { font-size: 10px; }
+  .exercise-page-shell .solution-step-progress-head strong { font-size: 13px; }
+  .exercise-page-shell .solution-step-progress-head span { font-size: 13px; }
   .exercise-page-shell .solution-step-progress-track { height: 5px; }
   .exercise-page-shell .algorithm-active-card.sequential-active-card,.exercise-page-shell .sequential-active-card.clean-question-block,.exercise-page-shell .clean-thinking-card .sequential-active-card.clean-question-block {padding: 11px 9px 12px;
   border-radius: 16px;}
   .exercise-page-shell .sequential-sentence-line {margin-bottom: 10px;
   padding: 10px 9px;
   border-radius: 13px;}
-  .exercise-page-shell .dialogue-sentence-text { font-size: clamp(21px,7vw,27px); line-height: 1.65; }
-  .exercise-page-shell .clean-question-title,.exercise-page-shell .exercise-question-title {font-size: 17px;
+  .exercise-page-shell .dialogue-sentence-text { font-size: var(--clean-sentence); line-height: 1.65; }
+  .exercise-page-shell .clean-question-title,.exercise-page-shell .exercise-question-title {font-size: var(--clean-text-question);
   line-height: 1.75;
   margin-bottom: 7px;}
 .exercise-page-shell .clean-answer-btn,
@@ -340,18 +340,18 @@
 .exercise-page-shell .practice-direct-option {min-height: 44px;
   padding: 8px 10px;
   border-radius: 13px;
-  font-size: 14px;
-  line-height: 1.55;}
+  font-size: var(--clean-text-option);
+  line-height: 1.65;}
   .exercise-page-shell .hint-after-options { margin-top: 9px; }
   .exercise-page-shell .hint-after-options-btn {min-width: 160px;
   min-height: 39px;
   padding: 7px 14px;
-  font-size: 13px;}
+  font-size: var(--clean-text-meta);}
   .exercise-page-shell .global-example-progress-wrap.global-example-progress-bottom {width: 100%;
   margin-top: 8px;
   padding: 7px 9px;
   border-radius: 12px;}
-  .global-example-progress-topline { font-size: 10.5px; }
+  .global-example-progress-topline { font-size: 13px; }
 }
 
 /* تحافظ خيارات الاختبار متعددة الأسطر على السطر الذي يميز العلامة أو الضمير. */
@@ -363,62 +363,29 @@
 }
 
 /* 2026-08 educational review: readable correction path and on-demand rule review. */
-.practice-wrong-picked {
-  margin: 10px 0 12px;
-  padding: 10px 12px;
-  border: 1px solid #dc2626;
-  border-radius: 14px;
-  background: #fef2f2;
-  color: #991b1b;
-  font-weight: 900;
-  line-height: 1.75;
-  text-align: right;
-}
 .practice-teacher-steps {
-  margin: 0;
-  padding: 14px 34px 14px 14px;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 14px 34px 14px 16px;
   border: 1px solid #d8e7e5;
   border-radius: 16px;
   background: #ffffff;
   color: #173845;
   direction: rtl;
   text-align: right;
+  box-sizing: border-box;
 }
 .practice-teacher-steps li {
-  padding: 4px 0;
-  line-height: 1.9;
+  padding: 5px 0;
+  line-height: 1.8;
   font-weight: 780;
+  text-align: right;
+  overflow-wrap: break-word;
 }
 .practice-teacher-steps li::marker { color: #0f766e; font-weight: 950; }
 .exercise-page-shell .hint-after-options { gap: 10px; flex-wrap: wrap; align-items: flex-start; }
-.exercise-rule-review { min-width: 150px; max-width: min(520px, 100%); }
-.exercise-rule-review summary {
-  min-height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  border-radius: 14px;
-  border: 1px solid #bfdbd7;
-  background: #ffffff;
-  color: #0f766e;
-  font-weight: 900;
-  cursor: pointer;
-  list-style: none;
-}
-.exercise-rule-review summary::-webkit-details-marker { display: none; }
-.exercise-rule-review[open] { width: min(520px, 100%); }
-.exercise-rule-review-body {
-  margin-top: 8px;
-  padding: 12px 14px;
-  border: 1px solid #d9e7ec;
-  border-radius: 14px;
-  background: #f8fbfc;
-  color: #183846;
-  line-height: 1.85;
-  text-align: right;
-  direction: rtl;
-}
+
 .result-example-navigation { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 .result-previous-example {
   min-height: 42px;
@@ -432,9 +399,19 @@
   cursor: pointer;
 }
 @media (max-width:700px) {
-  .practice-teacher-steps { padding: 12px 29px 12px 10px; font-size: 14px; }
-  .exercise-rule-review, .exercise-rule-review[open] { width: 100%; max-width: 100%; }
-  .exercise-rule-review summary { width: 100%; }
+  .practice-teacher-steps {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 14px 34px 14px 16px;
+  border: 1px solid #d8e7e5;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #173845;
+  direction: rtl;
+  text-align: right;
+  box-sizing: border-box;
+}
 }
 
 .practice-return-cue {

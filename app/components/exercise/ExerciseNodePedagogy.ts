@@ -134,13 +134,24 @@ function makeDecisionHint(answerText?: string, nodeText?: string) {
         return "اسأل: هل تتغير حركة آخر الكلمة أم هي ثابتة؟";
     if (q.includes("آخر") || a.includes("معتل"))
         return "انظر إلى آخر الكلمة فقط، ولا تقفز للإعراب النهائي.";
-    return "انظر إلى العنصر المؤثر في المثال نفسه، ثم اختر ما يناسب هذه الخطوة.";
+    return a
+        ? `اختيار «${a}» يحتاج قرينة نحوية واضحة من المثال. ابحث عن العامل أو العلاقة أو صورة الكلمة التي تجعل هذا الاختيار ممكنًا؛ إن لم تجد هذه القرينة فاستبعده.`
+        : "اربط الخطوة بما ثبت قبلها، ثم استخرج من المثال العامل أو العلاقة أو صورة الكلمة التي تحسم القرار.";
 }
 export function finalThinkingTextForDisplay(node: PedagogyNode | null | undefined, state: PedagogyState) {
     const base = String(node?.text || "");
     const target = String(state?.currentTarget || "");
     const sentence = String(state?.currentSentence || state?.sentence || "");
     const haystack = `${target} ${sentence}`;
+    const explicitFinalI3rab = String(state?.facts?.finalI3rab || "").trim();
+
+    if (
+        node?.type === "result" &&
+        explicitFinalI3rab &&
+        /ننتقل|الخطوة التالية|مسار الاسم|شجرة الاسم/u.test(base)
+    ) {
+        return explicitFinalI3rab;
+    }
     if (node?.type === "result") {
         if (haystack.includes("أطرافه") || haystack.includes("أطرافُه")) {
             return `أطرافُه: مبتدأ ثانٍ مرفوع، وهو مضاف.
@@ -324,7 +335,7 @@ export function normalizeThinkingNode(node: PedagogyNode | null | undefined, sta
         return {
             ...a,
             text: isFive ? (yesLike && !noLike ? "نعم" : "لا") : a.text,
-            hint: diagnosticHintText(a.hint || makeDecisionHint(a.text, text), state?.currentTarget),
+            hint: diagnosticHintText(a.hint || node.hint || makeDecisionHint(a.text, text), state?.currentTarget),
         };
     });
     if (id === "inna_meaning") {

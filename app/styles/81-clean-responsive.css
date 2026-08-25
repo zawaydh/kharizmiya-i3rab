@@ -1,6 +1,6 @@
 @layer clean-responsive {
 @media (max-width: 960px) {
-  :root { --clean-sentence: clamp(24px, 7vw, 28px); }
+  :root { --clean-sentence: clamp(26px, 7vw, 30px); }
   .home-clean-page { gap: 10px; }
   .home-balanced-hero {min-height: 0;
   padding: 18px 14px;
@@ -51,14 +51,14 @@
 .exercise-question-title,
 .clean-question-title,
 .practice-direct-prompt,
-.quiz-question-with-instruction {font-size: 18px;
+.quiz-question-with-instruction {font-size: var(--clean-text-question);
   line-height: 1.75;}
 .exercise-answer-btn,
 .clean-answer-btn,
 .practice-direct-option,
 .quiz-form-option,
 .text-game-option,
-.answer-main-text { font-size: 15px; }
+.answer-main-text { font-size: var(--clean-text-option); }
   .exercise-hero-card {min-height: 56px;
   padding: 8px 10px;
   grid-template-columns: 1fr;
@@ -435,11 +435,11 @@
   .start-learning-refined .start-page-header { min-height: 50px; }
   .start-learning-refined .start-page-intro { font-size: 12px; }
   .start-learning-refined .start-example-card { min-height: 88px; padding: 10px 7px; }
-  .start-learning-refined .start-example-sentence { font-size: 21px; line-height: 1.75; }
+  .start-learning-refined .start-example-sentence { font-size: clamp(24px, 7vw, 28px); line-height: 1.75; }
   .start-learning-refined .compact-step-zone.refined-step-zone { padding: 10px 8px; gap: 7px; }
-  .start-learning-refined .step-lead { font-size: 12px; }
-  .start-learning-refined .start-question-card h1 { font-size: 17px; line-height: 1.65; }
-  .start-learning-refined .drag-choice { min-height: 40px; font-size: 14px; }
+  .start-learning-refined .step-lead { font-size: 13px; }
+  .start-learning-refined .start-question-card h1 { font-size: 20px; line-height: 1.7; }
+  .start-learning-refined .drag-choice { min-height: 42px; font-size: 16px; }
 }
 .exercise-page-shell .next-example-glow, .exercise-page-shell .stage-focus-next-btn {position: relative;
   z-index: 2;

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { firstLevelHintText } from "../lib/hintText";
-import { studentHintText } from "../app/components/exercise/ExercisePedagogy";
+import { nonRevealingWrongChoiceHint, studentHintText } from "../app/components/exercise/ExercisePedagogy";
 import { cleanKanaTree } from "../content/trees/clean_kana";
 import { firstWordTree } from "../content/trees/first_word";
 import { presentVerbTree } from "../content/trees/verb_present";
@@ -8,6 +8,7 @@ import { pastVerbTree } from "../content/trees/verb_past";
 import { imperativeVerbTree } from "../content/trees/verb_imperative";
 import { ismManqousTree } from "../content/trees/ism_manqous";
 import { tawabiTree } from "../content/trees/tawabi";
+import { faelTree } from "../content/trees/fael";
 import startExamples from "../data/interactive_examples.json";
 import type { QuestionNode } from "../lib/exercise/model";
 
@@ -94,6 +95,84 @@ describe("دقة التلميحات وارتباطها بالعقد", () => {
     expect(mubtada).toContain("فعل");
     expect(mubtada).toContain("حرف");
     expect(mubtada).not.toContain("…");
+  });
+
+
+  test("لا يعيد التلميح السؤال بل يضيف أداة تفكير", () => {
+    const fael = firstLevelHintText("fael_role_verbal", "", "المعلمون", "من الذي قام بالفعل؟");
+    expect(fael).toContain("أُسنِد إليه الحدث");
+    expect(fael).toContain("ضمير");
+    expect(fael).not.toBe("من الذي قام بالفعل؟");
+
+    const mafool = firstLevelHintText("mafool_role", "", "الدرس", "على من أو على ماذا وقع الفعل؟");
+    expect(mafool).toContain("الفاعل قام بالحدث");
+    expect(mafool).toContain("وقع عليه أثر الفعل");
+
+    const hal = firstLevelHintText("hal_relation", "", "في هدوء", "كيف جاء الضيف؟");
+    expect(hal).toContain("وهو/وهي");
+    expect(hal).toContain("هادئًا");
+
+    const munada = firstLevelHintText("munada_tool", "", "طالب", "هل سبقه نداء؟");
+    expect(munada).toContain("من الذي يخاطبه المتكلم مباشرة");
+  });
+
+  test("يستخدم تلميح العقدة التفصيلي في العلامة والحالة بدل عبارة عامة", () => {
+    const mark = firstLevelHintText("naib_mark", "ثبت أن «الكتاب» نائب فاعل مرفوع، وهو اسم مفرد صحيح الآخر. علامة رفع المفرد الضمة.", "الكتاب", "ما علامة الرفع؟");
+    expect(mark).toContain("نائب فاعل مرفوع");
+    expect(mark).toContain("المفرد");
+    expect(mark).not.toContain("ما العلامة التي تناسبهما");
+  });
+
+
+  test("يجعل التلميح الأول قرينة من المثال لا إعادة للسؤال أو كشفًا آليًا للعلامة", () => {
+    const firstWord = studentHintText(firstWordTree.nodes.fw_decision_1 as QuestionNode, undefined, {
+      currentTarget: "العلمُ",
+      currentSentence: "العلمُ نورٌ.",
+      facts: { wordType: "noun" },
+    });
+    expect(firstWord).toContain("«الـ»");
+    expect(firstWord).toContain("العلمُ");
+    expect(firstWord).not.toContain("أهي اسم");
+
+    const weak = studentHintText(presentVerbTree.nodes.present_raf3_weak_letter as QuestionNode, undefined, {
+      currentTarget: "يسعى",
+      currentSentence: "يسعى الطالبُ إلى النجاحِ.",
+      facts: { weakLetter: "alif" },
+    });
+    expect(weak).toContain("هو يسعى");
+    expect(weak).not.toContain("اخترتَ «»");
+    expect(weak).not.toContain("الحرف المطلوب هو الألف");
+
+    const faelShape = studentHintText(faelTree.nodes.fael_mu3rab_shape as QuestionNode, undefined, {
+      currentTarget: "الوالدانِ",
+      currentSentence: "حضرَ الوالدانِ الاجتماعَ.",
+      facts: { shape: "dual", raf3Mark: "alif", roleKind: "visible" },
+    });
+    expect(faelShape).toContain("تدل على اثنين");
+    expect(faelShape).not.toContain("علامة رفع المثنى الألف");
+  });
+
+
+  test("لا يحول التلميح بعد الخطأ إلى كشف مباشر للإجابة الصحيحة", () => {
+    const node = faelTree.nodes.fael_mu3rab_shape as QuestionNode;
+    const picked = node.answers.find((answer) => answer.text === "مفرد");
+    expect(picked).toBeTruthy();
+    if (!picked) throw new Error("خيار المفرد غير موجود في عقدة صورة الفاعل");
+
+    const hint = nonRevealingWrongChoiceHint(
+      node,
+      picked,
+      {
+        currentTarget: "الوالدانِ",
+        currentSentence: "حضرَ الوالدانِ الاجتماعَ.",
+        facts: { shape: "dual", raf3Mark: "alif", roleKind: "visible" },
+      },
+      "الصورة الصحيحة هي مثنى، وعلامة رفع المثنى الألف.",
+    );
+    expect(hint).toContain("اختيار «مفرد»");
+    expect(hint).toContain("تدل على اثنين");
+    expect(hint).not.toContain("الصورة الصحيحة");
+    expect(hint).not.toContain("علامة رفع المثنى الألف");
   });
 
   test("يربط تلميح الحرف بما بعده", () => {

@@ -283,6 +283,7 @@ export default function ExercisePlayer({
   });
   const questionActions = createExerciseQuestionActions({
     ui,
+    topicId,
     node,
     thinkingNode,
     mode,
@@ -297,6 +298,7 @@ export default function ExercisePlayer({
   });
   const practice = useExercisePracticeFlow({
     ui,
+    topicId,
     tree,
     mode,
     example,

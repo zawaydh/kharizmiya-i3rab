@@ -3,19 +3,19 @@
 import React from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { ExerciseExample, ExerciseTree, Mode } from "../../../lib/exercise/model";
-import { getExampleCoverageKeys } from "../../../lib/exercise/progress";
 import type { RunnerState } from "../../../lib/exercise/runner";
-import { safeFinalLabel, type QuizExampleLike } from "../../../lib/exercise/quiz";
+import { isSameQuizAnswer } from "../../../lib/exercise/quiz";
 import {
   buildPracticeCorrectRoute,
   buildPracticeDirectOptions,
-  practiceExpectedLabelForExample,
+  practiceExpectedLabelFromRoute,
 } from "./ExercisePracticeFlow";
 import type { QuestionCardPhase } from "./useQuestionMotion";
 import type { ExerciseUiState } from "./useExerciseUiState";
 
 type Args = {
   ui: ExerciseUiState;
+  topicId?: string;
   tree: ExerciseTree;
   mode: Mode;
   example?: ExerciseExample;
@@ -28,6 +28,7 @@ type Args = {
 
 export function useExercisePracticeFlow({
   ui,
+  topicId,
   tree,
   mode,
   example,
@@ -39,12 +40,8 @@ export function useExercisePracticeFlow({
 }: Args) {
   const nextLockRef = React.useRef(false);
   const isPracticeMode = mode === "practice";
-  const expectedCoverage = isPracticeMode ? (getExampleCoverageKeys(example)[0] || "") : "";
   const expectedLabel = isPracticeMode
-    ? practiceExpectedLabelForExample(
-        safeFinalLabel(tree, example as QuizExampleLike | undefined, expectedCoverage),
-        example,
-      )
+    ? practiceExpectedLabelFromRoute({ tree, mode, example })
     : "";
   const context = React.useMemo(() => ({
     tree,
@@ -52,7 +49,8 @@ export function useExercisePracticeFlow({
     example,
     state,
     practiceExpectedLabel: expectedLabel,
-  }), [example, expectedLabel, mode, state, tree]);
+    topicId,
+  }), [example, expectedLabel, mode, state, topicId, tree]);
 
   const directOptions = React.useMemo(() => {
     if (!isPracticeMode) return [];
@@ -81,12 +79,13 @@ export function useExercisePracticeFlow({
 
   function pickDirectOption(option: string, optionIndex: number) {
     if (cardPhase !== "idle" || nextLockRef.current) return;
-    const route = buildPracticeCorrectRoute(context);
-
-    if (option !== expectedLabel) {
+    if (!isSameQuizAnswer(option, expectedLabel)) {
+      const route = buildPracticeCorrectRoute({
+        ...context,
+        wrongOption: option,
+      });
       ui.setFeedback({ wrongId: String(optionIndex) });
       ui.setPracticeWrongPanel({
-        wrongLabel: option,
         steps: route.steps,
         nextState: route.nextState,
       });
@@ -96,6 +95,7 @@ export function useExercisePracticeFlow({
       return;
     }
 
+    const route = buildPracticeCorrectRoute(context);
     nextLockRef.current = true;
     ui.setSuccessNudge(
       ui.practiceRetryReady

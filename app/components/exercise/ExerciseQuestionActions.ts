@@ -20,25 +20,42 @@ import {
   answerEffectLabel,
   builtNounTypeHintByValue,
   normalizeBuildPiece,
-  practiceTeacherHint,
+  nonRevealingWrongChoiceHint,
   studentHintText,
 } from "./ExercisePedagogy";
+import { buildPracticeDirectHint } from "./ExercisePracticeFlow";
 import type { PedagogyNode } from "./ExercisePedagogyTypes";
 import type { QuestionCardPhase } from "./useQuestionMotion";
 import type { ExerciseUiState } from "./useExerciseUiState";
 
 
-const RETURN_TO_QUESTION_CUE = "عد إلى السؤال، ثم اختر الإجابة الصحيحة لنكمل الإعراب.";
+const LEARN_RETURN_TO_QUESTION_CUE =
+  "عد إلى السؤال ثم اختر الإجابة الصحيحة لنكمل الإعراب.";
 
-function withReturnToQuestionCue(text: string) {
+const PRACTICE_RETURN_TO_QUESTION_CUE =
+  "عد إلى السؤال ثم اختر الإجابة الصحيحة.";
+
+function withReturnToQuestionCue(
+  text: string,
+  isPracticeMode = false,
+) {
   const cleaned = String(text || "")
-    .replace(/\s+(?:عد إلى السؤال|عد للسؤال|عد واختر)[\s\S]*$/u, "")
+    .replace(
+      /\s+(?:عد إلى السؤال|عد للسؤال|عد واختر)[\s\S]*$/u,
+      "",
+    )
     .trim();
-  return `${cleaned}\n\n${RETURN_TO_QUESTION_CUE}`;
+
+  const cue = isPracticeMode
+    ? PRACTICE_RETURN_TO_QUESTION_CUE
+    : LEARN_RETURN_TO_QUESTION_CUE;
+
+  return `${cleaned}\n\n${cue}`;
 }
 
 type Args = {
   ui: ExerciseUiState;
+  topicId?: string;
   node?: ExerciseNode;
   thinkingNode?: PedagogyNode | null;
   mode: Mode;
@@ -54,6 +71,7 @@ type Args = {
 
 export function createExerciseQuestionActions({
   ui,
+  topicId,
   node,
   thinkingNode,
   mode,
@@ -94,12 +112,42 @@ export function createExerciseQuestionActions({
     if (attempt.kind === "missing") return;
 
     if (attempt.kind === "help") {
-      const rawHint = studentHintText(activeNode, undefined, state) || activeNode.hint || "فكّر في السؤال الحالي فقط.";
-      const smartHint = firstLevelHintText(activeNode.id, String(rawHint), state.currentTarget, activeNode.text);
-      const visibleHint = isPracticeMode
-        ? practiceTeacherHint(String(smartHint), state.currentTarget)
-        : smartHint;
-      ui.setDialogBubble({ tone: "hint", text: withReturnToQuestionCue(String(visibleHint)) });
+      if (isPracticeMode) {
+        const hint = buildPracticeDirectHint(
+          {
+            tree,
+            mode,
+            state,
+            topicId,
+          },
+          1,
+        );
+
+        ui.setDialogBubble({
+          tone: "hint",
+          text: hint,
+          hintLevel: 1,
+        });
+        ui.setDroppedChoice(null);
+        return;
+      }
+
+      const rawHint =
+        studentHintText(activeNode, undefined, state) ||
+        activeNode.hint ||
+        "فكر في السؤال الحالي فقط.";
+
+      const smartHint = firstLevelHintText(
+        activeNode.id,
+        String(rawHint),
+        state.currentTarget,
+        activeNode.text,
+      );
+
+      ui.setDialogBubble({
+        tone: "hint",
+        text: withReturnToQuestionCue(String(smartHint)),
+      });
       ui.setDroppedChoice(null);
       return;
     }
@@ -118,20 +166,19 @@ export function createExerciseQuestionActions({
       const smartHint = isBuiltTypeNode
         ? builtNounTypeHintByValue(typeof expectedBuiltType === "string" ? expectedBuiltType : undefined)
         : targetedDiagnostic || studentHintText(thinkingNode, picked, state);
-      const cleanedHint = diagnosticHintText(
-        String(smartHint || "فكّر في السؤال الحالي فقط."),
-        state.currentTarget,
+      const safeHint = nonRevealingWrongChoiceHint(
+        activeNode,
+        picked,
+        state,
+        String(smartHint || "اربط اختيارك بالقرينة الظاهرة في المثال وبما ثبت في الخطوة السابقة."),
       );
-      const visibleHint = isPracticeMode
-        ? practiceTeacherHint(cleanedHint, state.currentTarget)
-        : cleanedHint;
+      const cleanedHint = diagnosticHintText(safeHint, state.currentTarget);
+      const visibleHint = cleanedHint;
       ui.setDialogBubble({ tone: "hint", text: withReturnToQuestionCue(String(visibleHint)) });
       ui.setDroppedChoice(null);
       ui.setFeedback(buildWrongFeedback({
-        mode: isPracticeMode ? "practice" : "learn",
         answerId,
-        correctAnswerId: attempt.correctAnswer?.id,
-        hint: smartHint,
+        hint: safeHint,
       }));
       return;
     }
@@ -196,22 +243,55 @@ export function createExerciseQuestionActions({
 
   function openCurrentHint() {
     if (!node || node.type !== "question" || cardPhase !== "idle") return;
+
+    if (isPracticeMode) {
+      const nextLevel: 1 | 2 =
+        ui.dialogBubble?.tone === "hint" &&
+        ui.dialogBubble.hintLevel === 1
+          ? 2
+          : 1;
+
+      const hint = buildPracticeDirectHint(
+        {
+          tree,
+          mode,
+          state,
+          topicId,
+        },
+        nextLevel,
+      );
+
+      ui.setDialogBubble({
+        tone: "hint",
+        text:
+          nextLevel === 2
+            ? withReturnToQuestionCue(hint, true)
+            : hint,
+        hintLevel: nextLevel,
+      });
+      ui.setDroppedChoice(null);
+      ui.bringWorkAreaIntoView("soft", 40);
+      return;
+    }
+
     const rawHint = String(
       currentHintAnswer?.hint ||
       studentHintText(thinkingNode, undefined, state) ||
       thinkingNode?.hint ||
-      "فكّر في السؤال الحالي فقط."
+      "فكر في السؤال الحالي فقط."
     ).trim();
+
     const smartHint = firstLevelHintText(
       thinkingNode?.id,
       rawHint,
       state.currentTarget,
       thinkingNode?.text,
     );
-    const visibleHint = isPracticeMode
-      ? practiceTeacherHint(smartHint, state.currentTarget)
-      : smartHint;
-    ui.setDialogBubble({ tone: "hint", text: withReturnToQuestionCue(String(visibleHint)) });
+
+    ui.setDialogBubble({
+      tone: "hint",
+      text: withReturnToQuestionCue(String(smartHint)),
+    });
     ui.setDroppedChoice(null);
     ui.bringWorkAreaIntoView("soft", 40);
   }

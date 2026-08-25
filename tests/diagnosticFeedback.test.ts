@@ -63,6 +63,21 @@ function auditQuizReasons(questions: Array<Record<string, any>>) {
 }
 
 describe("choice-specific diagnostic feedback", () => {
+
+  it("explains a first-word mistake without naming the correct choice", () => {
+    const message = diagnosticFeedbackForChoice({
+      nodeId: "fw_decision_1",
+      pickedText: "فعل",
+      facts: { wordType: "noun" },
+      target: "العلمُ",
+      sentence: "العلمُ نورٌ.",
+    });
+    expect(message).toContain("العلمُ");
+    expect(message).toContain("«الـ»");
+    expect(message).not.toMatch(/لذلك نوعها\s+اسم/u);
+    expect(message).not.toMatch(/فهي\s+اسم/u);
+  });
+
   it("diagnoses every reachable wrong choice in the first-word path", () => {
     auditWrongDiagnostics(firstWordTree as ExerciseTree, firstWordExamples);
   });

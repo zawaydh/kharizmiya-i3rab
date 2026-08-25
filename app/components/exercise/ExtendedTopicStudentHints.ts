@@ -229,5 +229,5 @@ export function extendedTopicStudentHintText(
     return `الاسم المبني لا نبحث له عن ضمة أو ألف أو واو. حدّد نوع (${target})، ثم تكون النتيجة: اسم مبني في محل رفع نائب فاعل.`;
   }
 
-  return chosen ? `راجع اختيارك «${chosen}» في ضوء الجملة «${sentence}»، وطبّق خطوة السؤال الحالية فقط.` : undefined;
+  return undefined;
 }

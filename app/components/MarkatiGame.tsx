@@ -99,12 +99,12 @@ export default function MarkatiGame() {
           <section className="place-game-stage" aria-live="polite">
             <div className="place-game-word-card markati-sentence-card" style={{ ...gameWarmCardStyle, padding: "14px 16px" }}>
               <span>في الجملة:</span>
-              <strong style={{ fontSize: "clamp(21px, 3.5vw, 31px)" }}>{sentenceWithTarget(challenge.sentence, challenge.target, feedback?.correct === true)}</strong>
+              <strong className="markati-sentence-text">{sentenceWithTarget(challenge.sentence, challenge.target, feedback?.correct === true)}</strong>
             </div>
             <div className="place-game-word-card markati-speaking-card" style={{ ...gameWarmCardStyle, padding: "19px 18px" }}>
-              <span aria-hidden="true" style={{ color: "var(--game-accent)", fontSize: 32, opacity: .28 }}>❞</span>
-              <p>تقول <strong>{feedback?.correct === true ? challenge.target : concealedI3rab(challenge.target)}</strong>:</p>
-              <h2 style={{ margin: 0, fontSize: "clamp(19px, 3vw, 25px)", lineHeight: 1.8 }}>{challenge.prompt}</h2>
+              <span className="markati-quote" aria-hidden="true">❞</span>
+              <p className="markati-speaking-line">تقول <strong>{feedback?.correct === true ? challenge.target : concealedI3rab(challenge.target)}</strong>:</p>
+              <h2 className="markati-prompt">{challenge.prompt}</h2>
               <small style={{ color: "var(--game-accent-strong)", fontWeight: 750 }}>{challenge.roleLabel} — {challenge.caseLabel} — {challenge.kindLabel}</small>
             </div>
 

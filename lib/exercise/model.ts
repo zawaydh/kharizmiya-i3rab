@@ -21,6 +21,33 @@ export type AnswerNextByFact = {
   default?: string;
 };
 
+export type PracticeSemanticRole =
+  | "word-kind"
+  | "verb-time"
+  | "attachment"
+  | "syntactic-role"
+  | "predicate-form"
+  | "declinability"
+  | "nominal-form"
+  | "case"
+  | "case-marker"
+  | "weak-ending"
+  | "routing"
+  | "other";
+
+export type PracticeNodeMeta = {
+  role?: PracticeSemanticRole;
+  clue?: string;
+  decision?: string;
+  correction?: string;
+};
+
+export type PracticeResultMeta = {
+  kind?: "i3rab" | "routing";
+  scope?: "word" | "phrase" | "sentence";
+  finalText?: string;
+};
+
 export type ExerciseAnswer = {
   id: string;
   text: string;
@@ -39,6 +66,7 @@ export type QuestionNode = {
   type: "question";
   text: string;
   hint?: string;
+  practice?: PracticeNodeMeta;
   answers: ExerciseAnswer[];
   requires?: string[];
   [key: string]: unknown;
@@ -48,6 +76,7 @@ export type ResultNode = {
   id: string;
   type: "result";
   text: string;
+  practice?: PracticeResultMeta;
   coverage?: string;
   requires?: string[];
   [key: string]: unknown;
@@ -71,6 +100,7 @@ export type ExerciseExample = {
   facts?: Facts & {
     hasKaffa?: boolean;
     finalI3rab?: string;
+    practiceFinalI3rab?: string;
     [key: string]: unknown;
   };
   [key: string]: unknown;

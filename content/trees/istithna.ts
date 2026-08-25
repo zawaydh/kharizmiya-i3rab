@@ -66,9 +66,9 @@ export const istithnaTree: ExerciseTree = {
       text: "ما صورة المستثنى المنصوب؟",
       hint: "حدد صورة الاسم نفسه قبل اختيار العلامة.",
       answers: [
-        { id: "singular", text: "مفرد", next: "istithna_mark", eval: { fact: "shape", equals: "singular" }, hint: "المفرد المنصوب علامته الفتحة." },
-        { id: "dual", text: "مثنى", next: "istithna_mark", eval: { fact: "shape", equals: "dual" }, hint: "المثنى المنصوب علامته الياء." },
-        { id: "jms", text: "جمع مذكر سالم", next: "istithna_mark", eval: { fact: "shape", equals: "jms" }, hint: "جمع المذكر السالم ينصب بالياء." },
+        { id: "singular", text: "مفرد", next: "istithna_mark", eval: { fact: "shape", equals: "singular" }, hint: "إذا كان المستثنى المنصوب مفردًا، فعلامة نصبه الأصلية الفتحة؛ لا تستخدم علامة المثنى أو الجمع." },
+        { id: "dual", text: "مثنى", next: "istithna_mark", eval: { fact: "shape", equals: "dual" }, hint: "إذا كان المستثنى يدل على اثنين وكان مثنى، فعلامة نصبه الياء، لا الفتحة." },
+        { id: "jms", text: "جمع مذكر سالم", next: "istithna_mark", eval: { fact: "shape", equals: "jms" }, hint: "إذا كان المستثنى جمع مذكر سالم، فعلامة نصبه الياء؛ افحص صورة الاسم قبل اختيار العلامة." },
       ],
     },
     istithna_mark: {

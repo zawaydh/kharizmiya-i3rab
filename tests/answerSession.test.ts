@@ -67,10 +67,8 @@ describe("جلسة إجابة السؤال", () => {
     expect(resolveAnswerAttempt({ tree, node, state, answerId: "help" }).kind).toBe("help");
   });
 
-  test("تبني تغذية راجعة مختلفة للتعلّم والتدريب", () => {
-    expect(buildWrongFeedback({ mode: "learn", answerId: "a", correctAnswerId: "b", hint: "راجع" }))
-      .toEqual({ wrongId: "a", correctId: "b", hint: "راجع" });
-    expect(buildWrongFeedback({ mode: "practice", answerId: "a", correctAnswerId: "b", hint: "راجع" }))
+  test("لا يكشف الإجابة الصحيحة عند الخطأ بل يميز الاختيار الخاطئ فقط", () => {
+    expect(buildWrongFeedback({ answerId: "a", hint: "راجع" }))
       .toEqual({ wrongId: "a", hint: "راجع" });
   });
 

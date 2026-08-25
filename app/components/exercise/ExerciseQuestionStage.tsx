@@ -14,8 +14,6 @@ import {
 } from "./ExercisePedagogy";
 import { ExerciseChoiceAnswers } from "./ExerciseChoiceAnswers";
 import { ExercisePracticeQuestion } from "./ExercisePracticeQuestion";
-import { exerciseRuleHelpText } from "./ExerciseRuleHelp";
-import { ExerciseRuleHelpView } from "./ExerciseRuleHelpView";
 import type {
   DialogueBubble,
   DroppedChoice,
@@ -86,7 +84,6 @@ export function ExerciseQuestionStage({
   onDismissHint,
   onGlossary,
   onRetryPractice,
-  onContinuePractice,
   onPickPracticeOption,
   onPickAnswer,
   onOpenHint,
@@ -94,7 +91,6 @@ export function ExerciseQuestionStage({
   onPreviousExample,
   onReset,
 }: Props) {
-  const ruleHelp = exerciseRuleHelpText(thinkingNode, state, title);
   return (
     <div
       ref={activeCardRef}
@@ -133,25 +129,55 @@ export function ExerciseQuestionStage({
         >
           {dialogBubble?.tone === "hint" ? (
             <div className="inline-correction-hint" role="note" aria-live="polite">
-              <span className="inline-correction-hint-title">فكّر معي</span>
+              <span className="inline-correction-hint-title">
+                {isPracticeMode && dialogBubble.hintLevel === 2
+                  ? "لنوضّحها أكثر"
+                  : "فكّر معي"}
+              </span>
               <div className="inline-correction-hint-text">
                 {renderSmartText(dialogBubble.text, onGlossary)}
               </div>
-              <button type="button" className="inline-correction-hint-btn" onClick={onDismissHint}>
-                فهمت
-              </button>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                }}
+              >
+                {isPracticeMode && dialogBubble.hintLevel === 1 ? (
+                  <button
+                    type="button"
+                    className="inline-correction-hint-btn"
+                    onClick={onOpenHint}
+                  >
+                    ما زلت لا أفهم
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="inline-correction-hint-btn"
+                  onClick={onDismissHint}
+                >
+                  {isPracticeMode ? "سأحاول" : "فهمت"}
+                </button>
+              </div>
             </div>
           ) : (
             <>
-              <div className="exercise-question-title clean-question-title">
-                {renderSmartText(
-                  dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title),
-                  onGlossary,
-                )}
-                <span className="question-choice-prompt"> اختر الإجابة الصحيحة مما يأتي:</span>
-              </div>
-              {dialogueQuestionNote(thinkingNode) ? (
-                <div className="dialogue-question-note">{dialogueQuestionNote(thinkingNode)}</div>
+              {!isPracticeMode ? (
+                <>
+                  <div className="exercise-question-title clean-question-title">
+                    {renderSmartText(
+                      dialogueQuestionText(thinkingNode, state.currentTarget, mode, state, tree, title),
+                      onGlossary,
+                    )}
+                    <span className="question-choice-prompt"> اختر الإجابة الصحيحة مما يأتي:</span>
+                  </div>
+                  {dialogueQuestionNote(thinkingNode) ? (
+                    <div className="dialogue-question-note">{dialogueQuestionNote(thinkingNode)}</div>
+                  ) : null}
+                </>
               ) : null}
 
               {isPracticeMode ? (
@@ -161,11 +187,13 @@ export function ExerciseQuestionStage({
                   wrongPanel={practiceWrongPanel}
                   retryReady={practiceRetryReady}
                   directOptions={practiceDirectOptions}
+                  facts={state.facts as Record<string, unknown>}
                   successNudge={successNudge}
                   onGlossary={onGlossary}
                   onRetry={onRetryPractice}
-                  onContinue={onContinuePractice}
+                  onContinue={() => undefined}
                   onPickOption={onPickPracticeOption}
+                  onOpenHint={onOpenHint}
                 />
               ) : (
                 <ExerciseChoiceAnswers
@@ -179,7 +207,7 @@ export function ExerciseQuestionStage({
                 />
               )}
 
-              {!practiceWrongPanel ? (
+              {!isPracticeMode && !practiceWrongPanel ? (
                 <div className="hint-after-options">
                   <button
                     type="button"
@@ -189,7 +217,6 @@ export function ExerciseQuestionStage({
                   >
                     أحتاج تلميحًا
                   </button>
-                  <ExerciseRuleHelpView text={ruleHelp} onGlossary={onGlossary} />
                 </div>
               ) : null}
             </>

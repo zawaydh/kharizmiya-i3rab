@@ -3,6 +3,7 @@ import type { RunnerState } from "../../../lib/exercise/runner";
 export type DialogueBubble = {
   tone: "success" | "hint" | "celebrate";
   text: string;
+  hintLevel?: 1 | 2;
 };
 
 export type DroppedChoice = {
@@ -11,7 +12,6 @@ export type DroppedChoice = {
 };
 
 export type PracticeWrongPanel = {
-  wrongLabel: string;
   steps: string[];
   nextState: RunnerState;
 };
