@@ -77,6 +77,9 @@
 .practice-wrong-subtitle {font-weight: 900;
   color: #415866;
   margin-bottom: 8px;}
+.practice-correction-result {margin: 12px 0; padding: 12px 14px; border-radius: 15px; background: #fff; border: 1px solid rgba(15,119,117,.24); display: grid; gap: 5px;}
+.practice-correction-result span {color: #0f7775; font-size: 12px; font-weight: 950;}
+.practice-correction-result strong {color: #102b3a; font-size: 16px; line-height: 1.85; font-weight: 900;}
 .practice-wrong-actions { flex-wrap: wrap; }
 .practice-wrong-actions button {border: 0;
   border-radius: 999px;

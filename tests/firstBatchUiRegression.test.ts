@@ -45,11 +45,13 @@ describe("first local-review correction batch", () => {
     expect(questionStage).toContain("onClick={onReset}");
   });
 
-  it("renders the certificate without the application navigation or footer", () => {
+  it("renders the certificate without application navigation while keeping the global footer", () => {
     const nav = read("app/components/Navbar.tsx");
     const footer = read("app/components/RouteAwareFooter.tsx");
     expect(nav).toContain('pathname === "/certificate"');
     expect(nav).toContain("if (certificateRoute) return null");
-    expect(footer).toContain('"/certificate"');
+    expect(footer).not.toContain('"/certificate"');
+    expect(footer).toContain("https://www.youtube.com/");
+    expect(footer).toContain("https://wa.me/962799127434");
   });
 });

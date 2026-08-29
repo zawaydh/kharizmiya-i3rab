@@ -57,9 +57,9 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     const quoted = quoteTarget(target);
     const q = String(question || "");
     if (id === "fw_decision_1")
-        return `هل تدل ${quoted} على اسم أو معنى بلا زمن، أم على حدث وزمن، أم لا يظهر معناها كاملًا إلا مع غيرها؟`;
+        return `ابدأ بـ${quoted} فقط. إذا دلّت الكلمة على مسمّى أو معنى بلا زمن فهي اسم، وإذا دلّت على حدث مرتبط بزمن أو على طلب حدوثه فهي فعل، وإذا كانت أداة تؤدي معنى مع غيرها من غير أن تكون اسمًا أو فعلًا فهي حرف. طبّق هذا المفتاح على ${quoted}.`;
     if (id === "fw_verb_tense")
-        return `هل يدل ${quoted} على حدث وقع وانتهى، أم على حدث يقع أو يتجدد، أم على طلب حصول الحدث؟`;
+        return `ثبت أن ${quoted} فعل. الآن حدّد نوعه من المعنى: حدث وقع وانتهى = ماضٍ، حدث يقع أو يتجدد = مضارع، طلب حصول الحدث = أمر.`;
     if (id === "present_word_kind" || id === "past_word_kind" || id === "imperative_word_kind")
         return `هل تدل ${quoted} على حدث وزمن، أم على معنى بلا زمن، أم لا يظهر معناها إلا مع غيرها؟`;
     if (id === "present_tense" || id === "past_tense" || id === "imperative_meaning")
@@ -287,4 +287,3 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
         return firstSentence;
     return `${words.slice(0, 22).join(" ")}…`;
 }
-

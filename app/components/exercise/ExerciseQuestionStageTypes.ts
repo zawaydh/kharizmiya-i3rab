@@ -13,5 +13,6 @@ export type DroppedChoice = {
 
 export type PracticeWrongPanel = {
   steps: string[];
+  finalAnswer: string;
   nextState: RunnerState;
 };

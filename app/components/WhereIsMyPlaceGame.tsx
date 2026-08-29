@@ -140,7 +140,7 @@ export default function WhereIsMyPlaceGame() {
           <div>
             <span className="place-game-kicker" style={gameKickerStyle}>مهمّة إنقاذ الكلمة</span>
             <h1>أين مكاني؟</h1>
-            <p>كل كلمة تحمل علامة تدل على مكانها. أنقذ كلمات الدورة، واجمع سلسلة صحيحة لفتح الأوسمة.</p>
+
           </div>
           <Link href="/games" className="place-game-back-link" style={gameBackLinkStyle}>كل الألعاب</Link>
         </header>
@@ -163,7 +163,7 @@ export default function WhereIsMyPlaceGame() {
             })}
           </div>
           <div className="place-game-progress-track" aria-hidden="true"><span style={{ width: `${completed ? 100 : progress}%`, ...gameProgressStyle }} /></div>
-          <small>{cycle.title} — {cycle.theme}</small>
+
         </div>
 
         {!completed && challenge ? (

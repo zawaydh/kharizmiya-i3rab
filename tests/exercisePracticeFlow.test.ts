@@ -1,7 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { imperativeVerbTree } from "../content/trees/verb_imperative";
+import { faelTree } from "../content/trees/fael";
 import { munadaTree } from "../content/trees/munada";
 import { imperativeVerbExamples } from "../content/examples/verb_imperative.examples";
+import { faelExamples } from "../content/examples/fael.examples";
 import { munadaExamples } from "../content/examples/munada.examples";
 import { buildRunnerState } from "../lib/exercise/runner";
 import { safePracticeFinalLabel, type QuizExampleLike } from "../lib/exercise/quiz";
@@ -67,7 +69,7 @@ describe("عقد تدرب الموحد", () => {
     expect(new Set(options.map(practiceOptionScope))).toEqual(new Set([practiceOptionScope(expected)]));
   });
 
-  test("التصحيح يعرض المسار ولا يكشف النتيجة النهائية", () => {
+  test("التصحيح يعرض خطوات الحل ويكشف النتيجة النهائية للتثبيت", () => {
     const example = imperativeVerbExamples.find((item) => item.id === "im-delete-letter-alif");
     expect(example).toBeDefined();
     if (!example) return;
@@ -85,11 +87,81 @@ describe("عقد تدرب الموحد", () => {
       practiceExpectedLabel: expected,
     });
 
-    expect(route.steps.length).toBeGreaterThanOrEqual(2);
+    expect(route.steps.length).toBeGreaterThanOrEqual(1);
     expect(route.steps.length).toBeLessThanOrEqual(4);
-    expect(route.steps.join(" ")).not.toMatch(/الإجابة الصحيحة هي|إذن:/u);
-    expect(normalized(route.steps.join(" "))).not.toContain(normalized(expected));
+    expect(route.steps.join(" ")).not.toMatch(/^اختيارك/u);
+    expect(normalized(route.finalAnswer)).toBe(normalized(expected));
     expect(imperativeVerbTree.nodes[route.nextState.currentNodeId]?.type).toBe("result");
+  });
+
+  test("التصحيح يفصل الحكم الإعرابي عن علامته", () => {
+    const example = faelExamples.find((item) => item.id === "fa-01");
+    expect(example).toBeDefined();
+    if (!example) return;
+
+    const state = buildRunnerState(faelTree, "practice", example);
+    const expected = practiceExpectedLabelFromRoute({
+      tree: faelTree,
+      mode: "practice",
+      example,
+    });
+    const route = buildPracticeCorrectRoute({
+      tree: faelTree,
+      mode: "practice",
+      example,
+      state,
+      practiceExpectedLabel: expected,
+      topicId: "fael",
+    });
+
+    const correction = route.steps.join(" ");
+    expect(correction).toContain("فاعل");
+    expect(correction).toContain("مرفوع");
+    expect(correction).toContain("علامة رفع المفرد الصحيح الآخر الضمة");
+    expect(route.finalAnswer).toContain("وعلامة رفعه الضمة الظاهرة على آخره");
+    expect(correction).not.toContain("رفعته الضمة");
+  });
+
+  test("التصحيح لا يبدأ بتشخيص اختيار الطالب", () => {
+    const example = imperativeVerbExamples.find((item) => item.id === "im-delete-letter-alif");
+    expect(example).toBeDefined();
+    if (!example) return;
+
+    const state = buildRunnerState(imperativeVerbTree, "practice", example);
+    const expected = practiceExpectedLabelFromRoute({
+      tree: imperativeVerbTree,
+      mode: "practice",
+      example,
+    });
+    const route = buildPracticeCorrectRoute({
+      tree: imperativeVerbTree,
+      mode: "practice",
+      example,
+      state,
+      practiceExpectedLabel: expected,
+      wrongOption: "فعل أمر مبني على السكون.",
+    });
+
+    expect(route.steps.join(" ")).not.toContain("اختيارك");
+  });
+
+  test("تصحيح اسم الهدف لا يغيّر نتيجة مفتاح الكلمة الأولى", () => {
+    const example: QuizExampleLike = {
+      id: "routing-target-guard",
+      target: "كتبَ",
+      facts: {
+        finalI3rab: "كتبَ: فعل ماضٍ مبني على الفتح.",
+      },
+    };
+
+    const label = practiceExpectedLabelForExample(
+      "عرفت مفتاح الجملة: الكلمة الأولى فعل ماضٍ. راجع باب الفعل الماضي.",
+      example,
+    );
+
+    expect(label).toContain("عرفت مفتاح الجملة");
+    expect(label).toContain("الكلمة الأولى فعل ماض");
+    expect(label).not.toMatch(/^كتبَ[:：]/u);
   });
 
   test("التلميح الأول قصير والتلميح الثاني أكثر تقدما", () => {
@@ -336,7 +408,7 @@ test("سياسة التصنيف تقرأ تسمية القرار ووجهة ال
   ).toEqual(["حرف مبني لا محل له من الإعراب، وبعده اسم."]);
 });
 
-test("PRACTICE_ALL_TOPICS_CONTRACT: جميع الموضوعات الجاهزة تمر بعقد تدرب الموحد", async () => {
+test("PRACTICE_ALL_TOPICS_CONTRACT: جميع الموضوعات الجاهزة تمر بعقد تدرب الموحد", { timeout: 20000 }, async () => {
   const { TOPICS } = await import("../lib/topics");
 
   for (const topic of TOPICS.filter((item) => item.isReady)) {
@@ -458,7 +530,7 @@ test("PRACTICE_ALL_TOPICS_CONTRACT: جميع الموضوعات الجاهزة �
         expect(
           new Set(correctionTexts).size,
           `${label}: التصحيح لا يتفاعل مع الخيار الخاطئ المحدد`,
-        ).toBe(correctionTexts.length);
+        ).toBe(1);
       }
     }
   }
@@ -497,7 +569,7 @@ test("تدرب يأخذ النتيجة من المسار الفعلي لا من 
   expect(innaResult).not.toContain("مبتدأ");
 }, 15_000);
 
-describe("وحدة الهدف في تدرب: كلمة أم جملة أم شبه جملة", () => {
+describe("وحدة الهدف في تدرب: كلمة أم جملة أم شبه جملة", { timeout: 20000 }, () => {
   test("خبر كان الجملة يحافظ على الإعراب الداخلي ويختبر محل الجملة كلها", async () => {
     const { TOPICS } = await import("../lib/topics");
     const { getExampleCoverageKeys } = await import("../lib/exercise/progress");

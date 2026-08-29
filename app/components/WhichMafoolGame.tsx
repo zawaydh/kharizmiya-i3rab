@@ -81,7 +81,7 @@ export default function WhichMafoolGame() {
           <div>
             <span className="place-game-kicker" style={gameKickerStyle}>تطبيق خوارزمية المفاعيل</span>
             <h1>أيُّ مفعول؟</h1>
-            <p>ثلاث جولات متدرجة. اقرأ الجملة كاملة، ثم طبّق الفحوص بالترتيب حتى تثبت النوع من القرينة.</p>
+
           </div>
           <Link href="/games" className="place-game-back-link" style={gameBackLinkStyle}>كل الألعاب</Link>
         </header>
@@ -95,7 +95,7 @@ export default function WhichMafoolGame() {
         <div className="place-game-compass" style={gameCompassStyle} aria-label={`تقدم اللعبة ${Math.round(progress)} بالمئة`}>
           <div className="place-game-compass-copy"><span>{completed ? "اكتملت اللعبة" : round?.title}</span><strong>{Math.round(progress)}%</strong></div>
           <div className="place-game-progress-track" aria-hidden="true"><span style={{ width: `${progress}%`, ...gameProgressStyle }} /></div>
-          <small>{completed ? "معه ← فيه ← مطلق ← لأجله ← به" : round?.subtitle}</small>
+
         </div>
 
         {!completed && roundComplete ? (

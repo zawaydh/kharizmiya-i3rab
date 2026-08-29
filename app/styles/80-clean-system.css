@@ -3,7 +3,7 @@
 /* START PAGE — authoritative readable layout */
 /* RESULT ACTION — always legible */
 
-:root {--clean-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, "Noto Sans Arabic", sans-serif;
+:root {--clean-font: "Segoe UI", Tahoma, Arial, sans-serif;
   --clean-page: #1d222a;
   --clean-page-deep: #151a21;
   --clean-page-text: #eef3f7;
@@ -67,6 +67,10 @@
   --clean-sentence: clamp(28px, 3vw, 32px);
   --clean-game-target: clamp(30px, 3.6vw, 36px);
   --clean-game-question: clamp(21px, 2.4vw, 24px);
+  --clean-game-title: clamp(26px, 3vw, 32px);
+  --clean-game-meta: 14px;
+  --clean-game-body: 16px;
+  --clean-game-option: 17px;
 }
 html { scroll-padding-top: 12px; }
 html, body {margin: 0;
@@ -74,9 +78,10 @@ html, body {margin: 0;
   background: var(--clean-page);}
 body.platform-body, body.platform-body * { box-sizing: border-box; }
 body.platform-body, body.platform-body button, body.platform-body input, body.platform-body select, body.platform-body textarea {font-family: var(--clean-font);
-  font-kerning: normal;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;}
+  font-kerning: auto;
+  text-rendering: auto;
+  -webkit-font-smoothing: auto;
+  font-synthesis: none;}
 body.platform-body {
   /* Navigation owns padding-inline-start so desktop pages always reserve the live sidebar width. */
   padding-block: 0;
@@ -427,9 +432,9 @@ body.platform-body :where(button, .btn, a)[disabled], body.platform-body :where(
   opacity: 1;
   filter: none;
   box-sizing: border-box;
-  backface-visibility: hidden;
-  transform: translate3d(0, 0, 0);
-  will-change: transform, opacity;
+  backface-visibility: visible;
+  transform: none;
+  will-change: auto;
   contain: none;
 }
 .exercise-question-title, .clean-question-title { width: min(780px, 100%); margin: 0 auto 10px; }

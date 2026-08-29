@@ -87,6 +87,7 @@ export function useExercisePracticeFlow({
       ui.setFeedback({ wrongId: String(optionIndex) });
       ui.setPracticeWrongPanel({
         steps: route.steps,
+        finalAnswer: route.finalAnswer,
         nextState: route.nextState,
       });
       ui.setPracticeRetryReady(false);

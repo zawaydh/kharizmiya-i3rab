@@ -21,6 +21,7 @@ import { isHintAnswerOption, resolveAnswerAttempt } from "../../../lib/exercise/
 import {
   buildI3rabDistractors,
   isSameQuizAnswer,
+  safePracticeFinalLabel,
   type QuizExampleLike,
 } from "../../../lib/exercise/quiz";
 import {
@@ -96,7 +97,10 @@ function practiceFinalAnswerText(text?: string | null): string {
 function cleanPracticeLine(text?: string | null): string {
   return cleanPracticeTeacherPart(text)
     .replace(/\s+(?:وننتقل|ننتقل|وسننتقل|سننتقل|والآن ننتقل|ثم ننتقل)[\s\S]*$/u, "")
-    .replace(/\s+(?:عد إلى السؤال|عد للسؤال|عد واختر)[\s\S]*$/u, "")
+    .replace(
+      /(?:^|[.،؛]\s*|\s+)(?:ثم\s+)?(?:عد إلى السؤال|عد للسؤال|عد واختر|ارجع إلى السؤال|راجع السؤال)[\s\S]*$/u,
+      "",
+    )
     .replace(/[،؛]?\s*ثم\s*$/u, "")
     .replace(/\*\*|__/g, "")
     .replace(/\s+/g, " ")
@@ -218,7 +222,44 @@ export function practiceExpectedLabelForExample(
           ? explicitPrimary
           : rawTreeLabel || explicitPrimary || quizFallback;
 
-  return practiceTargetOnlyResult(chosen, example?.target);
+  return alignPracticeResultTarget(
+    practiceTargetOnlyResult(chosen, example?.target),
+    example?.target,
+  );
+}
+
+function alignPracticeResultTarget(
+  result: string,
+  target?: string,
+): string {
+  const value = oneLine(result);
+  const rawTarget = String(target || "").trim();
+  if (!value || !rawTarget) return value;
+
+  // Routing results are guidance sentences, not lexical i'rab labels.
+  // Never rewrite their introductory phrase with the target word.
+  if (
+    policyPracticeOptionScope(value) === "routing" ||
+    /عرفت مفتاح الجملة|الكلمة الأولى/u.test(value)
+  ) {
+    return value;
+  }
+
+  // Only repair simple lexical targets. Compound targets such as
+  // "التاء في (فهمتُ)" legitimately begin with a shorter grammatical label.
+  if (/\s|[()]/u.test(rawTarget)) return value;
+
+  const firstLabel = value.match(/^([^:：]{1,40})[:：]\s*/u)?.[1]?.trim() || "";
+  if (!firstLabel) return value;
+
+  if (
+    normalizePracticeComparable(firstLabel) ===
+    normalizePracticeComparable(rawTarget)
+  ) {
+    return value;
+  }
+
+  return value.replace(/^([^:：]{1,40})([:：]\s*)/u, `${rawTarget}$2`);
 }
 
 export function practiceOptionScope(label: string): PracticeOptionScope {
@@ -379,7 +420,27 @@ export function practiceExpectedLabelFromRoute(args: {
   });
   const node = args.tree.nodes[finalState.currentNodeId];
   const routeResult = node?.type === "result" ? String(node.text || "") : "";
-  return practiceExpectedLabelForExample(routeResult, args.example);
+  const routeLabel = practiceExpectedLabelForExample(routeResult, args.example);
+
+  // Some trees intentionally keep the terminal node concise. If that concise
+  // label is too generic for a direct-practice question, recover the canonical
+  // coverage result. Never replace a meaningful routing/role/verb result.
+  if (policyPracticeOptionScope(routeLabel) !== "generic") {
+    return routeLabel;
+  }
+
+  const quizExample = args.example as QuizExampleLike | undefined;
+  const primaryCoverage = String(quizExample?.covers?.[0] || "");
+  if (!quizExample || !primaryCoverage) return routeLabel;
+
+  const coverageLabel = practiceExpectedLabelForExample(
+    safePracticeFinalLabel(args.tree, quizExample, primaryCoverage),
+    args.example,
+  );
+
+  return policyPracticeOptionScope(coverageLabel) !== "generic"
+    ? coverageLabel
+    : routeLabel;
 }
 
 function compactPracticeQuestion(text: string, target: string): string {
@@ -613,7 +674,7 @@ function canonicalPracticeCorrection(
     const huwaForm = practicePresentHuwaForm(target, weakLetter);
 
     if (letterLabel && huwaForm) {
-      return `لنعرف حرف العلة المحذوف نعيد الفعل إلى صورته مع «هو»: هو ${huwaForm}؛ تأمل آخر هذه الصورة وحدد حرف العلة الأصلي بنفسك.`;
+      return `لنعرف حرف العلة المحذوف نعيد الفعل إلى صورته مع «هو»: هو ${huwaForm}؛ آخره ${letterLabel}، إذن حرف العلة المحذوف هو ${letterLabel}.`;
     }
   }
 
@@ -897,6 +958,207 @@ function buildPracticeCorrectionSteps(
   return output.slice(0, 4).map((item) => item.text);
 }
 
+function practiceRoutingReasonStep(
+  expected: string,
+  target: string,
+): string {
+  const value = practiceSemanticText(expected);
+  const quoted = `«${target}»`;
+
+  if (/الكلمة الأولى فعل ماض/u.test(value)) {
+    return `ثبت أن ${quoted} فعل ماضٍ؛ لذلك نكمل من باب الفعل الماضي.`;
+  }
+  if (/الكلمة الأولى فعل مضارع/u.test(value)) {
+    return `ثبت أن ${quoted} فعل مضارع؛ لذلك نكمل من باب الفعل المضارع.`;
+  }
+  if (/الكلمة الأولى فعل أمر/u.test(value)) {
+    return `ثبت أن ${quoted} فعل أمر؛ لذلك نكمل من باب فعل الأمر.`;
+  }
+  if (/الكلمة الأولى اسم/u.test(value)) {
+    return `ثبت أن ${quoted} اسم؛ لذلك نبدأ بفحص موقعه في الجملة ثم نكمل من الباب المناسب.`;
+  }
+  return "";
+}
+
+function practiceRoleCaseReasonStep(
+  expected: string,
+  target: string,
+): string {
+  const value = practiceSemanticText(expected);
+  const role = value.match(
+    /(اسم الفعل الناسخ|خبر الفعل الناسخ|اسم كان|خبر كان|اسم إن|خبر إن|نائب فاعل|فاعل|مبتدأ|خبر|مفعول معه|مفعول فيه|مفعول مطلق|مفعول لأجله|مفعول به|حال|تمييز|مستثنى|مضاف إليه|نعت|معطوف|توكيد|بدل)(?=\s+(?:مرفوع|منصوب|مجرور|مجزوم)|$)/u,
+  )?.[1] || "";
+  const grammaticalCase = value.match(
+    /(?:^|\s)(مرفوع|منصوب|مجرور|مجزوم)(?=$|[\s،.;؛])/u,
+  )?.[1] || "";
+
+  if (!role || !grammaticalCase) return "";
+
+  const roleRule =
+    role === "فاعل" || role === "نائب فاعل" || role === "مبتدأ" || role === "خبر" ||
+    role === "اسم الفعل الناسخ" || role === "اسم كان"
+      ? "مرفوع"
+      : role === "خبر الفعل الناسخ" || role === "خبر كان" ||
+        role === "اسم إن" || role.startsWith("مفعول") || role === "حال" ||
+        role === "تمييز" || role === "مستثنى"
+        ? "منصوب"
+        : role === "مضاف إليه"
+          ? "مجرور"
+          : grammaticalCase;
+
+  return `ثبت أن «${target}» ${role}، وحكم ${role} هنا ${roleRule}.`;
+}
+
+function practiceBuiltPresentReasonStep(
+  expected: string,
+  target: string,
+): string {
+  const value = practiceSemanticText(expected);
+  const quoted = `«${target}»`;
+
+  if (/فعل مضارع مبني على السكون.*نون النسوة/u.test(value)) {
+    const mahal =
+      value.match(/في محل (رفع|نصب|جزم)/u)?.[1] || "";
+    const mahalPart = mahal
+      ? ` وحالته في الجملة: في محل ${mahal}.`
+      : "";
+    return `اتصل ${quoted} بنون النسوة؛ لذلك هو فعل مضارع مبني على السكون.${mahalPart}`;
+  }
+
+  if (/فعل مضارع مبني على الفتح.*نون التوكيد/u.test(value)) {
+    const mahal =
+      value.match(/في محل (رفع|نصب|جزم)/u)?.[1] || "";
+    const mahalPart = mahal
+      ? ` وحالته في الجملة: في محل ${mahal}.`
+      : "";
+    return `اتصل ${quoted} بنون التوكيد اتصالًا مباشرًا؛ لذلك هو فعل مضارع مبني على الفتح.${mahalPart}`;
+  }
+
+  return "";
+}
+
+function practicePastBuildReasonStep(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+): string {
+  const value = practiceSemanticText(expected);
+  if (!/فعل ماض/u.test(value)) return "";
+
+  const build =
+    value.match(/فعل ماض مبني على ([^،.;]+)/u)?.[1]?.trim() || "";
+  if (!build) return "";
+
+  const connector = String(facts.connectorKind || "none");
+  const raf3Group = String(facts.raf3BuildGroup || "none");
+  const quoted = `«${target}»`;
+
+  if (connector === "none") {
+    return `ثبت أن ${quoted} فعل ماضٍ، ولم يتصل به شيء؛ لذلك هو مبني على ${build}.`;
+  }
+
+  if (connector === "taa_tanith") {
+    return `اتصل ${quoted} بتاء التأنيث الساكنة، وهي لا تغيّر بناء الفعل الماضي على الفتح؛ لذلك هو مبني على ${build}.`;
+  }
+
+  if (connector === "nasb") {
+    return `اتصل ${quoted} بضمير نصب، وضمير النصب لا يغيّر بناء الفعل الماضي؛ لذلك هو مبني على ${build}.`;
+  }
+
+  if (connector === "raf3" && raf3Group === "sukoon") {
+    return `اتصل ${quoted} بضمير رفع يوجب بناء الماضي على السكون؛ لذلك هو مبني على ${build}.`;
+  }
+
+  if (connector === "raf3" && raf3Group === "alif") {
+    return `اتصل ${quoted} بألف الاثنين؛ لذلك يبقى الفعل الماضي مبنيًا على الفتح، وهنا هو مبني على ${build}.`;
+  }
+
+  if (connector === "raf3" && raf3Group === "waw") {
+    return `اتصل ${quoted} بواو الجماعة؛ لذلك يكون الفعل الماضي مبنيًا على الضم، وهنا هو مبني على ${build}.`;
+  }
+
+  return `${quoted} فعل ماضٍ؛ وبحسب ما اتصل به وآخره يكون مبنيًا على ${build}.`;
+}
+
+function practicePossessiveYaaReasonStep(
+  expected: string,
+  target: string,
+): string {
+  const value = practiceSemanticText(expected);
+  if (!/ياء المتكلم/u.test(value)) return "";
+
+  const marker = value.match(
+    /(الضمة|الفتحة|الكسرة) المقدرة على ما قبل ياء المتكلم/u,
+  )?.[1] || "";
+  if (!marker) return "";
+
+  return `«${target}» اسم معرب مضاف إلى ياء المتكلم؛ وتُقدَّر عليه ${marker} على ما قبل الياء لانشغال المحل بالحركة المناسبة للياء.`;
+}
+
+function practiceMarkerReasonStep(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+): string {
+  const raw = oneLine(expected);
+  const semantic = practiceSemanticText(raw);
+  const grammaticalCase =
+    semantic.match(/(?:^|\s)(مرفوع|منصوب|مجرور|مجزوم)(?=$|[\s،.;؛])/u)?.[1] || "";
+  if (!grammaticalCase) return "";
+
+  const shape = String(
+    facts.shape ||
+    facts.nounShape ||
+    facts.form ||
+    "",
+  ).toLowerCase();
+
+  const action =
+    grammaticalCase === "مرفوع"
+      ? "الرفع"
+      : grammaticalCase === "منصوب"
+        ? "النصب"
+        : grammaticalCase === "مجرور"
+          ? "الجر"
+          : "الجزم";
+
+  const markerText =
+    raw.match(/علامة (?:رفعه|نصبه|جره|جزمه)\s+([^،؛.]+)/u)?.[1]?.trim() || "";
+
+  if (!markerText) return "";
+
+  const quoted = `«${target}»`;
+
+  if (shape === "singular" && /الضمة الظاهرة/u.test(markerText) && grammaticalCase === "مرفوع") {
+    return `بعد أن ثبت أن ${quoted} مرفوع ننظر إلى صورة الاسم: هو مفرد صحيح الآخر، وعلامة رفع المفرد الصحيح الآخر الضمة؛ لذلك علامة رفعه الضمة الظاهرة على آخره.`;
+  }
+  if (shape === "singular" && /الفتحة الظاهرة/u.test(markerText) && grammaticalCase === "منصوب") {
+    return `بعد أن ثبت أن ${quoted} منصوب ننظر إلى صورة الاسم: هو مفرد صحيح الآخر، وعلامة نصب المفرد الصحيح الآخر الفتحة؛ لذلك علامة نصبه الفتحة الظاهرة على آخره.`;
+  }
+  if (shape === "singular" && /الكسرة الظاهرة/u.test(markerText) && grammaticalCase === "مجرور") {
+    return `بعد أن ثبت أن ${quoted} مجرور ننظر إلى صورة الاسم: هو مفرد صحيح الآخر، وعلامة جر المفرد الصحيح الآخر الكسرة؛ لذلك علامة جره الكسرة الظاهرة على آخره.`;
+  }
+
+  const shapeLabel =
+    shape === "dual"
+      ? "مثنى"
+      : shape === "jms"
+        ? "جمع مذكر سالم"
+        : shape === "jfs"
+          ? "جمع مؤنث سالم"
+          : shape === "jt"
+            ? "جمع تكسير"
+            : shape === "five"
+              ? "من الأسماء الخمسة"
+              : "";
+
+  if (shapeLabel) {
+    return `بعد أن ثبت ${action} ننظر إلى صورة ${quoted}: هو ${shapeLabel}؛ لذلك نختار علامة ${action} المناسبة لهذه الصورة، وهي ${markerText}.`;
+  }
+
+  return `بعد أن ثبت ${action} نختار علامته بحسب صورة ${quoted}؛ فالعلامة تدل على الحكم ولا تُنشئه. هنا علامة ${action} هي ${markerText}.`;
+}
+
 export function buildPracticeSequenceSteps(
   context: PracticeFlowContext,
 ): string[] {
@@ -917,10 +1179,91 @@ export function buildPracticeSequenceSteps(
     context.example?.sentence || context.state.currentSentence,
   );
 
-  if (steps.length) return steps;
+  const facts =
+    (context.example?.facts || context.state.facts || {}) as Record<string, unknown>;
+
+  const roleCaseReason = practiceRoleCaseReasonStep(
+    context.practiceExpectedLabel,
+    target,
+  );
+  const routingReason = practiceRoutingReasonStep(
+    context.practiceExpectedLabel,
+    target,
+  );
+  const builtPresentReason = practiceBuiltPresentReasonStep(
+    context.practiceExpectedLabel,
+    target,
+  );
+  const pastBuildReason = practicePastBuildReasonStep(
+    context.practiceExpectedLabel,
+    target,
+    facts,
+  );
+  const possessiveYaaReason = practicePossessiveYaaReasonStep(
+    context.practiceExpectedLabel,
+    target,
+  );
+  const markerReason = practiceMarkerReasonStep(
+    context.practiceExpectedLabel,
+    target,
+    facts,
+  );
+
+  const focusedSteps = steps
+    .map(cleanPracticeLine)
+    .filter(Boolean)
+    .filter((step) => !step.startsWith("اختيارك"))
+    .filter(
+      (step) =>
+        !/(?:لا تعد|طبّق|طبق|عد إلى السؤال|عد للسؤال|عد واختر|ارجع إلى السؤال|راجع السؤال)/u.test(step),
+    )
+    .filter(
+      (step) =>
+        !(
+          possessiveYaaReason &&
+          /(?:لأنه|ولأنه|فهو)\s+مبني/u.test(step)
+        ),
+    );
+
+  const essential = [
+    routingReason,
+    roleCaseReason,
+    builtPresentReason,
+    pastBuildReason,
+    possessiveYaaReason,
+    markerReason,
+  ]
+    .filter(Boolean)
+    .filter(
+      (step, index, items) =>
+        items.findIndex(
+          (item) =>
+            normalizePracticeComparable(item) ===
+            normalizePracticeComparable(step),
+        ) === index,
+    );
+
+  const support = focusedSteps.filter(
+    (step) =>
+      !essential.some(
+        (item) =>
+          normalizePracticeComparable(item) ===
+          normalizePracticeComparable(step),
+      ),
+  );
+
+  // Keep the correction short, but never lose the synthesized rule that
+  // explains role/case/marker. Route details fill only the remaining slots.
+  const supportSlots = Math.max(0, 4 - essential.length);
+  const core = [
+    ...essential,
+    ...support.slice(0, supportSlots),
+  ].slice(0, 4);
+
+  if (core.length) return core;
 
   return [
-    `أعد تتبّع علاقة «${target}» بما حولها، ثم حدّد الحكم والعلامة قبل اختيار النتيجة النهائية.`,
+    `حدّد وظيفة «${target}» أولًا، ثم حكمها الإعرابي، ثم اختر العلامة التي تدل على هذا الحكم.`,
   ];
 }
 
@@ -1239,7 +1582,11 @@ export function buildPracticeCorrectRoute(context: PracticeFlowContext) {
   const canonical = buildCanonicalThinkingRoute(context);
 
   return {
-    steps: buildPracticeSequenceSteps(context),
+    steps: buildPracticeSequenceSteps({
+      ...context,
+      wrongOption: undefined,
+    }),
+    finalAnswer: oneLine(context.practiceExpectedLabel),
     nextState: canonical.finalState,
   };
 }

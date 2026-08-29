@@ -121,7 +121,7 @@ export default function I3rabInOurSpeechGame() {
         <header className="speech-game-compact-head">
           <div>
             <h1>الإعراب في كلامنا</h1>
-            <p>أكمل الجملة باختيار الصيغة الصحيحة.</p>
+
           </div>
           <Link href="/games" className="place-game-back-link" style={gameBackLinkStyle}>كل الألعاب</Link>
         </header>

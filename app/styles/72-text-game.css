@@ -20,7 +20,7 @@
   padding: 2px 10px;
   border-radius: 12px;
   vertical-align: middle;
-  font-weight: 950;
+  font-weight: 700;
   transition: .25s ease;}
 .text-game-blank.is-waiting {color: #c8d6df;
   background: rgba(255,255,255,.08);
@@ -63,9 +63,9 @@
   border-radius: 20px;
   background: linear-gradient(145deg,rgba(124,58,237,.12),rgba(47,158,158,.08));
   border: 1px solid rgba(167,139,250,.2);}
-.text-game-finished>span {font-size: 12px;
+.text-game-finished>span {font-size: var(--clean-game-meta);
   color: #c4b5fd;
-  font-weight: 900;}
+  font-weight: 700;}
 .text-game-finished h3 { margin: 7px 0 16px; line-height: 1.7; }
 .text-game-actions {display: flex;
   flex-wrap: wrap;
@@ -77,7 +77,7 @@
   background: none;
   color: #8fe3d9;
   font: inherit;
-  font-weight: 850;
+  font-weight: 700;
   cursor: pointer;
   padding: 6px;}
 .text-game-empty { text-align: center; padding: 30px; }
@@ -103,22 +103,22 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;}
-.text-game-clean-head span {font-size: 13px;
+.text-game-clean-head span {font-size: var(--clean-game-meta);
   color: #8fe3d9;
-  font-weight: 900;}
-.text-game-clean-head h1 { margin: 4px 0 0; font-size: clamp(24px,3.5vw,36px); }
+  font-weight: 700;}
+.text-game-clean-head h1 { margin: 4px 0 0; font-size: var(--clean-game-title); }
 .text-game-clean-head>strong {flex: 0 0 auto;
   padding: 8px 12px;
   border-radius: 999px;
   background: rgba(47,158,158,.12);
   border: 1px solid rgba(94,234,212,.18);
-  font-size: 13px;}
+  font-size: var(--clean-game-meta);}
 .text-game-clean-progress {display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 14px;}
-.text-game-clean-progress>span {font-size: 13px;
-  font-weight: 900;
+.text-game-clean-progress>span {font-size: var(--clean-game-meta);
+  font-weight: 700;
   white-space: nowrap;
   color: #a9dcd6;}
 .text-game-clean-progress>i {height: 5px;
@@ -134,8 +134,8 @@
 .text-game-direct-question {margin-bottom: 14px;
   text-align: center;
   color: #f6fbff;
-  font-size: var(--clean-game-question);
-  font-weight: 950;}
+  font-size: clamp(20px, 2.2vw, 23px);
+  font-weight: 700;}
 .text-game-card-clean .text-game-passage {padding: clamp(20px,3.5vw,30px);
   font-size: var(--clean-sentence);
   line-height: 2.05;
@@ -154,7 +154,7 @@
   transform: none;}
 .text-game-next-cue {display: block;
   margin-top: 5px;
-  font-size: 12px;
+  font-size: var(--clean-game-meta);
   opacity: .72;}
 .text-game-finished-clean { padding: 17px; text-align: center; }
 .text-game-finished-clean h3 { margin: 0 0 13px; }

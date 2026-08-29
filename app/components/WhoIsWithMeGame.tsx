@@ -113,7 +113,7 @@ export default function WhoIsWithMeGame() {
           <div>
             <span className="place-game-kicker" style={gameKickerStyle}>لعبة التصنيف الإعرابي</span>
             <h1>مَنْ مَعِي؟</h1>
-            <p>في كل جولة اجمع الكلمات التي تنتمي إلى الفريق المطلوب. الكلمة الصحيحة تقفز ثم تنضم إلى فريقها، والخطأ يبقى ويشرح لك لماذا.</p>
+
           </div>
           <Link href="/games" className="place-game-back-link" style={gameBackLinkStyle}>كل الألعاب</Link>
         </header>
@@ -134,7 +134,7 @@ export default function WhoIsWithMeGame() {
               <div className="place-game-progress-track" aria-hidden="true">
                 <span style={{ width: `${((roundIndex + (roundComplete ? 1 : 0)) / WHO_WITH_ME_GROUPS.length) * 100}%`, ...gameProgressStyle }} />
               </div>
-              <small>المنصوبات ← المرفوعات ← المجرورات ← المبنيات ← المجزومات</small>
+
             </div>
 
             {!roundComplete ? (
@@ -155,9 +155,9 @@ export default function WhoIsWithMeGame() {
                   style={{
                     border: "1px dashed currentColor",
                     borderRadius: 18,
-                    padding: 14,
+                    padding: 8,
                     marginBottom: 14,
-                    minHeight: 92,
+                    minHeight: 58,
                     textAlign: "center",
                   }}
                 >

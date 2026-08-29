@@ -8,7 +8,7 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import TopicDropdown from "./TopicDropdown";
 import { useDeferredNavbarAuth } from "./useDeferredNavbarAuth";
 
-type NavIconName = "home" | "board" | "game" | "login" | "logout" | "collapse" | "expand";
+type NavIconName = "home" | "key" | "board" | "game" | "login" | "logout" | "collapse" | "expand";
 const SIDEBAR_STORAGE_KEY = "kharizmiya-sidebar-collapsed";
 const SIDEBAR_CHANGE_EVENT = "kharizmiya-sidebar-change";
 
@@ -51,6 +51,9 @@ function NavIcon({ name }: { name: NavIconName }) {
   }
   if (name === "game") {
     return <svg {...common}><path d="M8 9h8a5 5 0 0 1 4.8 6.4l-.7 2.3a2.4 2.4 0 0 1-4.1 1l-1.2-1.4H9.2L8 18.7a2.4 2.4 0 0 1-4.1-1l-.7-2.3A5 5 0 0 1 8 9Z"/><path d="M8 13v4M6 15h4M16.5 13.5h.01M18.5 15.5h.01"/></svg>;
+  }
+  if (name === "key") {
+    return <svg {...common}><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M15 12v2"/></svg>;
   }
   if (name === "login") {
     return <svg {...common}><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg>;
@@ -97,6 +100,7 @@ export default function Navbar() {
     (prefix) => pathname === prefix || pathname?.startsWith(`${prefix}/`),
   );
   const guideActive = pathname === "/guide" || pathname?.startsWith("/guide/");
+  const keysActive = pathname === "/i3rab-keys";
   const pathsActive = pathname === "/paths";
   const certificateRoute = pathname === "/certificate";
   const gamesActive = pathname === "/games" || pathname?.startsWith("/games/") || pathname === "/i3rab-in-our-speech";
@@ -210,6 +214,11 @@ export default function Navbar() {
               icon="guide"
             />
           </div>
+
+          <Link href="/i3rab-keys" className={`app-nav-item ${keysActive ? "is-active" : ""}`} onClick={closeMobile} title="مفاتيح الإعراب">
+            <span className="app-nav-icon"><NavIcon name="key" /></span>
+            <span className="app-nav-label">مفاتيح الإعراب</span>
+          </Link>
 
           <div className="app-nav-topic-wrap" onClickCapture={ensureExpanded}>
             <TopicDropdown

@@ -69,7 +69,7 @@ export default function MarkatiGame() {
           <div>
             <span className="place-game-kicker" style={gameKickerStyle}>لعبة العلامة الإعرابية</span>
             <h1>علامتي</h1>
-            <p>الكلمة تخبرك بحكمها ونوعها، وأنت تربط بينهما لتختار العلامة. هنا نتدرّب على الأصلية والفرعية والمقدرة والحالات الخاصة.</p>
+
           </div>
           <Link href="/games" className="place-game-back-link" style={gameBackLinkStyle}>كل الألعاب</Link>
         </header>
@@ -83,7 +83,7 @@ export default function MarkatiGame() {
         <div className="place-game-compass" style={gameCompassStyle}>
           <div className="place-game-compass-copy"><span>{gameComplete ? "اكتملت اللعبة" : round?.title}</span><strong>{Math.round(progress)}%</strong></div>
           <div className="place-game-progress-track" aria-hidden="true"><span style={{ width: `${progress}%`, ...gameProgressStyle }} /></div>
-          <small>{gameComplete ? "أحسنت الربط بين الحكم والصورة والعلامة." : round?.subtitle}</small>
+
         </div>
 
         {!gameComplete && roundComplete ? (

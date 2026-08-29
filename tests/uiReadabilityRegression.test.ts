@@ -96,10 +96,10 @@ describe("UI readability regressions", () => {
     expect(feedbackCss).toContain("font-size: var(--clean-text-question);");
     expect(feedbackCss).toContain("font-size: var(--clean-text-option);");
     expect(feedbackCss).not.toContain("font-size: 11.5px;");
-    expect(gamesCss).toContain(".place-game-word-card>strong{color:var(--clean-gold-text);font-size:var(--clean-game-target)");
+    expect(gamesCss).toContain(".place-game-word-card>strong{color:var(--clean-gold-text);font-size:clamp(28px,3.2vw,32px)");
     expect(gamesCss).not.toContain(".place-game-word-card strong{color:var(--clean-gold-text)");
     expect(gamesCss).toContain(".markati-speaking-line strong");
-    expect(textGameCss).toContain("font-size: var(--clean-game-question);");
+    expect(textGameCss).toContain("font-size: clamp(20px, 2.2vw, 23px);");
     expect(textGameCss).toContain("font-size: var(--clean-sentence);");
     expect(textGameCss).toContain("font-size: var(--clean-text-option);");
     expect(textGameCss).not.toContain("font-size: clamp(24px,3.8vw,34px);");

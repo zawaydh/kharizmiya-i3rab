@@ -17,6 +17,9 @@ type ExerciseResultStageProps = {
   finalSubject: string;
   currentTarget?: string;
   finalText: string;
+  resultHeadingLabel?: string;
+  referenceHref?: string;
+  referenceLabel?: string;
   kanaNote?: string;
   innaNote?: string;
   renderText: (text: string) => React.ReactNode;
@@ -42,6 +45,9 @@ export function ExerciseResultStage({
   finalSubject,
   currentTarget,
   finalText,
+  resultHeadingLabel,
+  referenceHref,
+  referenceLabel,
   kanaNote,
   innaNote,
   renderText,
@@ -88,9 +94,11 @@ export function ExerciseResultStage({
         {builtClosureNote ? <div className="built-closure-note" role="note">{builtClosureNote}</div> : null}
         <div className="exercise-result-text clean-result-text final-glow-result final-single-i3rab final-structured-i3rab" style={{ whiteSpace: "pre-line" }}>
           <strong className="final-result-heading">
-            {finalText.startsWith("لم تكن الكلمة من المفاعيل الخمسة")
-              ? "افحص بقية المنصوبات"
-              : <>إعراب {resultSubject} {renderText(currentTarget || "")}:</>}
+            {resultHeadingLabel
+              ? resultHeadingLabel
+              : finalText.startsWith("لم تكن الكلمة من المفاعيل الخمسة")
+                ? "افحص بقية المنصوبات"
+                : <>إعراب {resultSubject} {renderText(currentTarget || "")}:</>}
           </strong>
           <span className="final-i3rab-line">{renderText(finalText)}</span>
           {kanaNote ? (
@@ -101,6 +109,14 @@ export function ExerciseResultStage({
           ) : null}
         </div>
       </div>
+
+      {referenceHref ? (
+        <div className="result-example-navigation result-reference-navigation">
+          <a href={referenceHref} className="result-previous-example">
+            {referenceLabel || "راجع المرجع"}
+          </a>
+        </div>
+      ) : null}
 
       {followUp ? (
         <div className="exercise-followup-box clean-followup-box">

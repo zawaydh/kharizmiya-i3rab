@@ -63,9 +63,7 @@ export function ExercisePracticeQuestion({
         <div className="practice-wrong-sequence is-primary-panel" role="alert" aria-live="assertive">
           <div className="practice-wrong-title">دعنا نراجعها معًا</div>
           <div className="practice-wrong-subtitle">
-            {routingChallenge
-              ? "راجع طريقة الوصول، ثم عد واختر القرار بنفسك:"
-              : "راجع طريقة الوصول، ثم عد واختر النتيجة النهائية بنفسك:"}
+            اتبع خطوات الحل بالترتيب، ثم ثبّت النتيجة الصحيحة:
           </div>
           <ol className="practice-teacher-steps">
             {wrongPanel.steps
@@ -75,13 +73,18 @@ export function ExercisePracticeQuestion({
                 <li key={`${step}-${index}`}>{renderSmartText(step, onGlossary)}</li>
               ))}
           </ol>
-          <div className="practice-return-cue">
-            {routingChallenge
-              ? "لم نكشف القرار الصحيح. عد إلى السؤال وطبّق الخطوات."
-              : "لم نكشف الإجابة النهائية. عد إلى السؤال وطبّق الخطوات."}
+          <div className="practice-correction-result">
+            <span>النتيجة الصحيحة</span>
+            <strong>
+              {renderSmartText(
+                toStudentArabicOption(wrongPanel.finalAnswer),
+                onGlossary,
+                { interactiveTerms: false },
+              )}
+            </strong>
           </div>
           <div className="practice-wrong-actions">
-            <button type="button" onClick={onRetry}>عد إلى السؤال</button>
+            <button type="button" onClick={onRetry}>أعد المحاولة</button>
           </div>
         </div>
       ) : (

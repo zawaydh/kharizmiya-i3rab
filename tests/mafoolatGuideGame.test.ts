@@ -82,7 +82,6 @@ describe("دليل وألعاب المفاعيل الخمسة", () => {
       expect(challengesForMafoolRound(round)).toHaveLength(5);
     }
     const component = read("app/components/WhichMafoolGame.tsx");
-    expect(component).toContain("ثلاث جولات متدرجة");
     expect(component).toContain("GameSuccessPop");
   });
 

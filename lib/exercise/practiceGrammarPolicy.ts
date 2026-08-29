@@ -96,12 +96,19 @@ function routingClassification(text: string): RoutingClassification {
     .replace(/[.!؟،؛:]+$/gu, "")
     .trim();
 
+  // نتائج «مفتاح الكلمة الأولى» في التشطيب النهائي تبدأ بصياغة مطمئنة:
+  // «عرفت مفتاح الجملة: ...» ثم توجه الطالب إلى الباب المناسب.
+  // نحذف المقدمة لغرض التصنيف فقط، من دون تغيير النص الظاهر للطالب.
+  const routingValue = value
+    .replace(/^عرفت مفتاح الجملة[:：]?\s*/u, "")
+    .trim();
+
   const hasRoutingCue =
-    /(?:ننتقل|سننتقل|انتقل|الخطوة التالية|المسار التالي|إلى مسار|إلى شجرة|إلى خوارزمية|خوارزمية إعراب)/u.test(
-      value,
+    /(?:ننتقل|سننتقل|انتقل|الخطوة التالية|المسار التالي|إلى مسار|إلى شجرة|إلى خوارزمية|خوارزمية إعراب|راجع (?:باب|الباب|أبواب))/u.test(
+      routingValue,
     );
 
-  const direct = value.match(
+  const direct = routingValue.match(
     /^(?:الكلمة الأولى\s+)?(فعل مضارع|فعل ماض|فعل أمر|مضارع|ماض|أمر|اسم|فعل|حرف)(?=$|[؛،.])/u,
   )?.[1];
 
@@ -115,21 +122,24 @@ function routingClassification(text: string): RoutingClassification {
     return null;
   };
 
-  if (direct && (hasRoutingCue || comparable(value) === comparable(direct))) {
+  if (direct && (hasRoutingCue || comparable(routingValue) === comparable(direct))) {
     return toKind(direct);
   }
 
-  if (/^حرف مبني لا محل له من الإعراب، وبعده (?:فعل|اسم)/u.test(value)) {
+  if (
+    /^حرف مبني لا محل له من الإعراب، وبعده (?:فعل|اسم)/u.test(routingValue) ||
+    /^بدأت بحرف وبعده (?:فعل|اسم)/u.test(routingValue)
+  ) {
     return "particle";
   }
 
   if (hasRoutingCue) {
-    if (/(?:الفعل المضارع|فعل مضارع|مضارع)/u.test(value)) return "present";
-    if (/(?:الفعل الماضي|فعل ماض|ماض)/u.test(value)) return "past";
-    if (/(?:فعل الأمر|فعل أمر|الأمر)/u.test(value)) return "imperative";
-    if (/(?:مسار الاسم|شجرة الاسم|إعراب الاسم)/u.test(value)) return "noun";
-    if (/(?:مسار الحرف|شجرة الحرف|إعراب الحرف)/u.test(value)) return "particle";
-    if (/(?:مسار الفعل|شجرة الفعل|إعراب الفعل)/u.test(value)) return "verb";
+    if (/(?:الفعل المضارع|فعل مضارع|مضارع)/u.test(routingValue)) return "present";
+    if (/(?:الفعل الماضي|فعل ماض|ماض)/u.test(routingValue)) return "past";
+    if (/(?:فعل الأمر|فعل أمر|الأمر)/u.test(routingValue)) return "imperative";
+    if (/(?:مسار الاسم|شجرة الاسم|إعراب الاسم|باب المبتدأ والخبر)/u.test(routingValue)) return "noun";
+    if (/(?:مسار الحرف|شجرة الحرف|إعراب الحرف)/u.test(routingValue)) return "particle";
+    if (/(?:مسار الفعل|شجرة الفعل|إعراب الفعل)/u.test(routingValue)) return "verb";
   }
 
   return null;
@@ -334,6 +344,55 @@ function routingDistractors(correct: string, facts: Facts = {}): string[] {
     return "الكلمة الأولى فعل أمر؛ الخطوة التالية فحص الاتصال وآخر الفعل.";
   };
 
+  // الصياغة الجديدة في «مفتاح الكلمة الأولى» أطول لأنها تطمئن الطالب
+  // وتوجهه إلى الباب التالي. لذلك يجب أن تكون المشتتات بالطول والأسلوب
+  // نفسيهما حتى لا تكشف الإجابة الصحيحة بصريًا.
+  if (/^عرفت مفتاح الجملة/u.test(value)) {
+    if (kind === "noun") {
+      return [
+        "عرفت مفتاح الجملة: الكلمة الأولى فعل. راجع أبواب الأفعال لتحديد زمن الفعل واستكمال تعلّمه في الباب المناسب.",
+        "عرفت مفتاح الجملة: الكلمة الأولى حرف. حدّد أثر الحرف وما بعده، ثم راجع الباب المناسب لاستكمال التعلّم.",
+      ];
+    }
+
+    if (kind === "past") {
+      return [
+        "عرفت مفتاح الجملة: الكلمة الأولى فعل مضارع. راجع باب الفعل المضارع لاستكمال تعلّم أحكامه.",
+        "عرفت مفتاح الجملة: الكلمة الأولى فعل أمر. راجع باب فعل الأمر لاستكمال تعلّم أحكامه وعلامات بنائه.",
+      ];
+    }
+
+    if (kind === "present") {
+      return [
+        "عرفت مفتاح الجملة: الكلمة الأولى فعل ماضٍ. راجع باب الفعل الماضي لاستكمال تعلّم أحكامه وعلامات بنائه.",
+        "عرفت مفتاح الجملة: الكلمة الأولى فعل أمر. راجع باب فعل الأمر لاستكمال تعلّم أحكامه وعلامات بنائه.",
+      ];
+    }
+
+    if (kind === "imperative") {
+      return [
+        "عرفت مفتاح الجملة: الكلمة الأولى فعل ماضٍ. راجع باب الفعل الماضي لاستكمال تعلّم أحكامه وعلامات بنائه.",
+        "عرفت مفتاح الجملة: الكلمة الأولى فعل مضارع. راجع باب الفعل المضارع لاستكمال تعلّم أحكامه.",
+      ];
+    }
+
+    if (kind === "particle") {
+      const after = clean(facts.afterParticle);
+
+      if (after === "verb" || /بعده فعل/u.test(value)) {
+        return [
+          "عرفت مفتاح الجملة: بدأت بحرف وبعده اسم. في أمثلة حروف الجر تتكوّن شبه جملة؛ راجع باب الخبر لاستكمال تعلّم شبه الجملة والخبر المقدّم.",
+        ];
+      }
+
+      if (after === "noun" || /بعده اسم/u.test(value)) {
+        return [
+          "عرفت مفتاح الجملة: بدأت بحرف وبعده فعل. راجع باب الفعل المضارع لاستكمال تعلّم أثر الأداة في الفعل.",
+        ];
+      }
+    }
+  }
+
   if (/^حرف مبني لا محل له من الإعراب، وبعده (?:فعل|اسم)/u.test(value)) {
     const after = clean(facts.afterParticle);
     if (after === "verb" || /بعده فعل/u.test(value)) {
@@ -373,7 +432,6 @@ function routingDistractors(correct: string, facts: Facts = {}): string[] {
   }
   return [];
 }
-
 function structureDistractors(correct: string, facts: Facts = {}): string[] {
   const value = clean(correct);
   const unit = practiceTargetUnit(facts, correct);

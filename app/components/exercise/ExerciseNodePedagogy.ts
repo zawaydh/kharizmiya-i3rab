@@ -145,6 +145,11 @@ export function finalThinkingTextForDisplay(node: PedagogyNode | null | undefine
     const haystack = `${target} ${sentence}`;
     const explicitFinalI3rab = String(state?.facts?.finalI3rab || "").trim();
 
+    // مفتاح الكلمة الأولى باب توجيه، لذلك نظهر نتيجة المسار نفسها.
+    if (node?.type === "result" && String(node?.id || "").startsWith("R_first_")) {
+        return base;
+    }
+
     if (
         node?.type === "result" &&
         explicitFinalI3rab &&

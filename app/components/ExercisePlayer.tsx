@@ -427,6 +427,9 @@ export default function ExercisePlayer({
                 finalSubject={finalI3rabSubject(tree, title)}
                 currentTarget={state.currentTarget}
                 finalText={finalThinkingTextForDisplay(thinkingNode, state)}
+                resultHeadingLabel={topicId === "first-word-key" ? "مفتاح الجملة:" : undefined}
+                referenceHref={topicId === "first-word-key" && mode === "learn" ? "/i3rab-keys" : undefined}
+                referenceLabel="راجع مفاتيح الإعراب"
                 kanaNote={String(tree?.startNodeId || "").includes("kana") ? kanaNasikhFinalIntro(state) : undefined}
                 innaNote={String(tree?.startNodeId || "").includes("inna") ? innaNasikhFinalIntro(state) : undefined}
                 renderText={(text) => renderSmartText(text, setActiveGlossary)}
