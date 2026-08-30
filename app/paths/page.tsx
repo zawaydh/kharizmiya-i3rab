@@ -1,4 +1,3 @@
-import AuthLockGate from "../components/AuthLockGate";
 import DynamicPathTree from "../components/DynamicPathTree";
 import { getTopicByCode } from "../../lib/topics";
 import { getTopicMeta, getTopicRoutes, hasVisualPath } from "../../lib/topicCatalog";
@@ -64,13 +63,5 @@ export default async function Page({ searchParams }: PageProps) {
     ) : <section className="card"><p className="p">هذا المسار البصري غير جاهز بعد.</p></section>;
   }
 
-  return (
-    <AuthLockGate
-      title="سجّل الدخول لفتح المسار البصري"
-      text="سجّل الدخول لفتح المسار."
-      nextHref={nextHref}
-    >
-      {content}
-    </AuthLockGate>
-  );
+  return content;
 }

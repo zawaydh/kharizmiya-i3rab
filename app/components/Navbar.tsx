@@ -236,7 +236,7 @@ export default function Navbar() {
               currentCode={currentTopicCode}
               buttonLabel="المسارات البصرية"
               className={pathsActive ? "is-active" : ""}
-              locked={locked}
+              locked={false}
               mode="paths"
               onNavigate={closeMobile}
               icon="paths"
