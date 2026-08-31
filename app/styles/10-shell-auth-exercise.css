@@ -92,6 +92,11 @@
   border-color: #aebfc6;
   color: #173845;
   box-shadow: none;
+}.auth-modern-page .auth-form-modern .btn-soft {
+  background: #f3f8f9;
+  border-color: #aebfc6;
+  color: #173845;
+  box-shadow: none;
 }
 .auth-modern-page .auth-actions-stack .btn-danger {
   background: #fff1f2;

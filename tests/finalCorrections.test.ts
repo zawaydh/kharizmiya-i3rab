@@ -67,6 +67,7 @@ describe("تصحيحات الإصدار النهائي", () => {
       "app/components/InteractiveLearning.tsx",
       "app/certificate/CertificateClient.tsx",
       "app/auth/page.tsx",
+      "app/auth/reset-password/page.tsx",
       "app/components/exercise/ExerciseSharedViews.tsx",
       "app/components/exercise/QuizExperienceViews.tsx",
     ];
@@ -77,6 +78,17 @@ describe("تصحيحات الإصدار النهائي", () => {
     }
   });
 
+  it("يوفر استعادة كلمة المرور كاملة عبر Supabase", () => {
+    const auth = read("app/auth/page.tsx");
+    const reset = read("app/auth/reset-password/page.tsx");
+
+    expect(auth).toContain("resetPasswordForEmail");
+    expect(auth).toContain("نسيت كلمة المرور؟");
+    expect(auth).toContain("/auth/reset-password");
+    expect(reset).toContain("supabase.auth.updateUser({ password })");
+    expect(reset).toContain("supabase.auth.signOut()");
+    expect(reset).toContain("/auth?password_reset=success");
+  });
   it("يطابق تعريف React إصدار التشغيل", () => {
     const packageJson = JSON.parse(read("package.json"));
     expect(packageJson.dependencies.react).toBe("18.3.1");

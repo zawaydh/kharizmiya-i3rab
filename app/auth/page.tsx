@@ -43,6 +43,7 @@ function AuthForm() {
   const searchParams = useSearchParams();
   const requestedNext = searchParams.get("next");
   const nextUrl = isSafeInternalUrl(requestedNext) ? requestedNext : DEFAULT_NEXT_URL;
+  const passwordResetDone = searchParams.get("password_reset") === "success";
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,10 +60,21 @@ function AuthForm() {
     return `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`;
   }, [nextUrl]);
 
+  const passwordResetRedirectTo = useMemo(() => {
+    if (typeof window === "undefined") return undefined;
+    return `${window.location.origin}/auth/callback?next=${encodeURIComponent("/auth/reset-password")}`;
+  }, []);
+
   function showMessage(text: string | null, type: MessageType = "default") {
     setMsg(text);
     setMsgType(type);
   }
+
+  useEffect(() => {
+    if (passwordResetDone) {
+      showMessage("تم تغيير كلمة المرور. سجّل الدخول بكلمة المرور الجديدة.", "success");
+    }
+  }, [passwordResetDone]);
 
   useEffect(() => {
     let active = true;
@@ -242,6 +254,38 @@ function AuthForm() {
     }
   }
 
+  async function handleResetPassword() {
+    showMessage(null);
+    const cleanEmail = normalizeEmail(email);
+
+    if (!hasSupabaseEnv) {
+      showMessage("إعدادات Supabase غير موجودة: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY");
+      return;
+    }
+
+    if (!cleanEmail || !cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      showMessage("اكتب بريدك الإلكتروني أولًا، ثم اضغط «نسيت كلمة المرور؟».");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: passwordResetRedirectTo,
+      });
+      if (error) throw error;
+
+      showMessage(
+        "إذا كان البريد مسجلًا فستصلك رسالة لتعيين كلمة مرور جديدة. افحص البريد غير المرغوب فيه أيضًا.",
+        "success",
+      );
+    } catch (err) {
+      showMessage("تعذر إرسال رابط استعادة كلمة المرور: " + friendlyAuthError(errorMessage(err)));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleResendConfirmation() {
     showMessage(null);
     const cleanEmail = normalizeEmail(email);
@@ -416,14 +460,24 @@ function AuthForm() {
                 </button>
 
                 {mode === "login" ? (
-                  <button
-                    type="button"
-                    className="btn btn-soft auth-submit-btn"
-                    onClick={handleResendConfirmation}
-                    disabled={loading}
-                  >
-                    إعادة إرسال رابط التأكيد
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-soft auth-submit-btn"
+                      onClick={handleResetPassword}
+                      disabled={loading}
+                    >
+                      نسيت كلمة المرور؟
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-soft auth-submit-btn"
+                      onClick={handleResendConfirmation}
+                      disabled={loading}
+                    >
+                      إعادة إرسال رابط التأكيد
+                    </button>
+                  </>
                 ) : null}
 
                 {confirmationSent ? (
