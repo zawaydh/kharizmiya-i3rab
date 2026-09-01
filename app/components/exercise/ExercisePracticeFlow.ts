@@ -1159,6 +1159,206 @@ function practiceMarkerReasonStep(
   return `بعد أن ثبت ${action} نختار علامته بحسب صورة ${quoted}؛ فالعلامة تدل على الحكم ولا تُنشئه. هنا علامة ${action} هي ${markerText}.`;
 }
 
+function practiceReviewRoleAndCaseSteps(
+  expected: string,
+  target: string,
+): string[] {
+  const value = practiceSemanticText(expected);
+  const role = value.match(
+    /(اسم الفعل الناسخ|خبر الفعل الناسخ|اسم كان|خبر كان|اسم إن|خبر إن|نائب فاعل|فاعل|مبتدأ|خبر|مفعول معه|مفعول فيه|مفعول مطلق|مفعول لأجله|مفعول به|حال|تمييز|مستثنى|مضاف إليه|نعت|معطوف|توكيد|بدل)(?=\s+(?:مرفوع|منصوب|مجرور|مجزوم)|$)/u,
+  )?.[1] || "";
+  const grammaticalCase = value.match(
+    /(?:^|\s)(مرفوع|منصوب|مجرور|مجزوم)(?=$|[\s،.;؛])/u,
+  )?.[1] || "";
+
+  if (!role || !grammaticalCase) return [];
+
+  const caseName =
+    grammaticalCase === "مرفوع"
+      ? "الرفع"
+      : grammaticalCase === "منصوب"
+        ? "النصب"
+        : grammaticalCase === "مجرور"
+          ? "الجر"
+          : "الجزم";
+
+  return [
+    `ثبت أن «${target}» ${role}.`,
+    `حكم ${role} ${caseName}؛ لذلك «${target}» ${grammaticalCase}.`,
+  ];
+}
+
+function practiceReviewNominalForm(
+  facts: Record<string, unknown>,
+  target: string,
+): string {
+  const shape = String(
+    facts.number ||
+    facts.shape ||
+    facts.nounShape ||
+    facts.form ||
+    "",
+  ).toLowerCase();
+  const ending = String(facts.ending || "").toLowerCase();
+
+  const label =
+    shape === "dual"
+      ? "مثنى"
+      : shape === "jms"
+        ? "جمع مذكر سالم"
+        : shape === "jfs"
+          ? "جمع مؤنث سالم"
+          : shape === "jt"
+            ? "جمع تكسير"
+            : shape === "five"
+              ? "من الأسماء الخمسة"
+              : shape === "singular"
+                ? ending === "sahih"
+                  ? "مفرد صحيح الآخر"
+                  : ending === "moatal" || ending === "weak"
+                    ? "مفرد معتل الآخر"
+                    : "مفرد"
+                : "";
+
+  return label ? `«${target}» ${label}.` : "";
+}
+
+function practiceReviewMarkerStep(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+): string {
+  const raw = oneLine(expected);
+  const semantic = practiceSemanticText(raw);
+  const grammaticalCase =
+    semantic.match(/(?:^|\s)(مرفوع|منصوب|مجرور|مجزوم)(?=$|[\s،.;؛])/u)?.[1] || "";
+  const marker =
+    raw.match(/علامة (?:رفعه|نصبه|جره|جزمه)\s+([^،؛.]+)/u)?.[1]?.trim() || "";
+
+  if (!grammaticalCase || !marker) return "";
+
+  const caseName =
+    grammaticalCase === "مرفوع"
+      ? "الرفع"
+      : grammaticalCase === "منصوب"
+        ? "النصب"
+        : grammaticalCase === "مجرور"
+          ? "الجر"
+          : "الجزم";
+
+  const shape = String(
+    facts.number ||
+    facts.shape ||
+    facts.nounShape ||
+    facts.form ||
+    "",
+  ).toLowerCase();
+  const ending = String(facts.ending || "").toLowerCase();
+
+  // Preserve the established pedagogical wording for a sound singular noun.
+  // Existing regression tests intentionally protect this rule phrase.
+  if (shape === "singular") {
+    if (grammaticalCase === "مرفوع" && /الضمة الظاهرة/u.test(marker)) {
+      return `علامة رفع المفرد الصحيح الآخر الضمة؛ لذلك علامة رفع «${target}» ${marker}.`;
+    }
+    if (grammaticalCase === "منصوب" && /الفتحة الظاهرة/u.test(marker)) {
+      return `علامة نصب المفرد الصحيح الآخر الفتحة؛ لذلك علامة نصب «${target}» ${marker}.`;
+    }
+    if (grammaticalCase === "مجرور" && /الكسرة الظاهرة/u.test(marker)) {
+      return `علامة جر المفرد الصحيح الآخر الكسرة؛ لذلك علامة جر «${target}» ${marker}.`;
+    }
+  }
+
+  return `وبحسب صورة الاسم السابقة، علامة ${caseName} هنا ${marker}.`;
+}
+
+function practiceReviewImperativeSteps(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+): string[] {
+  const value = practiceSemanticText(expected);
+  if (!/فعل أمر/u.test(value)) return [];
+
+  const attached = String(facts.attached || "none").toLowerCase();
+  const ending = String(facts.ending || "").toLowerCase();
+  const presentBase = String(facts.presentBase || "").trim();
+
+  const output = [
+    `«${target}» فعل أمر؛ لأنه يدل على طلب حصول الحدث.`,
+  ];
+
+  const connector =
+    attached === "alif2"
+      ? "ألف الاثنين"
+      : attached === "waw"
+        ? "واو الجماعة"
+        : attached === "yaa"
+          ? "ياء المخاطبة"
+          : attached === "niswa"
+            ? "نون النسوة"
+            : attached === "tawkid"
+              ? "نون التوكيد"
+              : "";
+
+  if (connector) {
+    output.push(`اتصل بآخر «${target}» ${connector}.`);
+  } else {
+    output.push(`لم يتصل بآخر «${target}» ضمير أو نون تغيّر مسار بنائه؛ فننظر إلى آخر الفعل.`);
+  }
+
+  if (["alif2", "waw", "yaa"].includes(attached)) {
+    output.push(
+      `مضارع «${target}» مع هذا الضمير من الأفعال الخمسة، والأفعال الخمسة تُجزم بحذف النون؛ وفعل الأمر يُبنى على ما يُجزم به مضارعه، لذلك هو مبني على حذف النون.`,
+    );
+  } else if (attached === "niswa") {
+    output.push(`اتصاله بنون النسوة يقتضي بناء فعل الأمر على السكون.`);
+  } else if (attached === "tawkid") {
+    output.push(`اتصاله بنون التوكيد يقتضي بناء فعل الأمر على الفتح.`);
+  } else if (ending === "weak" && /حذف حرف العلة/u.test(value)) {
+    output.push(
+      presentBase
+        ? `هو معتل الآخر؛ نردّه إلى مضارعه مع «هو»: هو ${presentBase}، فيظهر حرف العلة الأصلي؛ لذلك يُبنى على حذف حرف العلة.`
+        : `هو معتل الآخر؛ لذلك يُبنى فعل الأمر على حذف حرف العلة.`,
+    );
+  } else if (/السكون/u.test(value)) {
+    output.push(`هو صحيح الآخر ولم يتصل به ما يغيّر بناءه؛ لذلك يُبنى على السكون.`);
+  }
+
+  return output.filter(Boolean).slice(0, 4);
+}
+
+function buildOrderedPracticeReview(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+): string[] {
+  const imperative = practiceReviewImperativeSteps(
+    expected,
+    target,
+    facts,
+  );
+  if (imperative.length) return imperative;
+
+  const roleAndCase = practiceReviewRoleAndCaseSteps(
+    expected,
+    target,
+  );
+  if (roleAndCase.length) {
+    const nominalForm = practiceReviewNominalForm(facts, target);
+    const marker = practiceReviewMarkerStep(expected, target, facts);
+
+    return [
+      ...roleAndCase,
+      nominalForm,
+      marker,
+    ]
+      .filter(Boolean)
+      .slice(0, 4);
+  }
+
+  return [];
+}
 export function buildPracticeSequenceSteps(
   context: PracticeFlowContext,
 ): string[] {
@@ -1181,6 +1381,13 @@ export function buildPracticeSequenceSteps(
 
   const facts =
     (context.example?.facts || context.state.facts || {}) as Record<string, unknown>;
+
+  const orderedReview = buildOrderedPracticeReview(
+    context.practiceExpectedLabel,
+    target,
+    facts,
+  );
+  if (orderedReview.length) return orderedReview;
 
   const roleCaseReason = practiceRoleCaseReasonStep(
     context.practiceExpectedLabel,

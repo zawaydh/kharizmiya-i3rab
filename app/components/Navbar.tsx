@@ -8,7 +8,7 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import TopicDropdown from "./TopicDropdown";
 import { useDeferredNavbarAuth } from "./useDeferredNavbarAuth";
 
-type NavIconName = "home" | "key" | "board" | "game" | "login" | "logout" | "collapse" | "expand";
+type NavIconName = "home" | "key" | "board" | "game" | "info" | "login" | "logout" | "collapse" | "expand";
 const SIDEBAR_STORAGE_KEY = "kharizmiya-sidebar-collapsed";
 const SIDEBAR_CHANGE_EVENT = "kharizmiya-sidebar-change";
 
@@ -54,6 +54,9 @@ function NavIcon({ name }: { name: NavIconName }) {
   }
   if (name === "key") {
     return <svg {...common}><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M15 12v2"/></svg>;
+  }
+  if (name === "info") {
+    return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7h.01"/></svg>;
   }
   if (name === "login") {
     return <svg {...common}><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg>;
@@ -104,6 +107,7 @@ export default function Navbar() {
   const pathsActive = pathname === "/paths";
   const certificateRoute = pathname === "/certificate";
   const gamesActive = pathname === "/games" || pathname?.startsWith("/games/") || pathname === "/i3rab-in-our-speech";
+  const aboutActive = pathname === "/about";
 
   useEffect(() => {
     document.body.classList.toggle("certificate-route", certificateRoute);
@@ -252,6 +256,11 @@ export default function Navbar() {
             <span className="app-nav-icon"><NavIcon name="game" /></span>
             <span className="app-nav-label">الألعاب</span>
           </a>
+
+          <Link href="/about" className={`app-nav-item ${aboutActive ? "is-active" : ""}`} onClick={closeMobile} title="عن المنصة">
+            <span className="app-nav-icon"><NavIcon name="info" /></span>
+            <span className="app-nav-label">عن المنصة</span>
+          </Link>
         </nav>
 
         <div className="app-sidebar-account">

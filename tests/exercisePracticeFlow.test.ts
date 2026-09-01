@@ -1,8 +1,10 @@
 import { describe, expect, test } from "vitest";
 import { imperativeVerbTree } from "../content/trees/verb_imperative";
+import { cleanKanaTree } from "../content/trees/clean_kana";
 import { faelTree } from "../content/trees/fael";
 import { munadaTree } from "../content/trees/munada";
 import { imperativeVerbExamples } from "../content/examples/verb_imperative.examples";
+import { cleanKanaExamples } from "../content/examples/clean_kana.examples";
 import { faelExamples } from "../content/examples/fael.examples";
 import { munadaExamples } from "../content/examples/munada.examples";
 import { buildRunnerState } from "../lib/exercise/runner";
@@ -94,6 +96,60 @@ describe("عقد تدرب الموحد", () => {
     expect(imperativeVerbTree.nodes[route.nextState.currentNodeId]?.type).toBe("result");
   });
 
+  test("دعنا نراجعها تعيد خطوات كان منفصلة وبالترتيب", () => {
+    const example = cleanKanaExamples.find((item) => item.id === "ka-08");
+    expect(example).toBeDefined();
+    if (!example) return;
+
+    const state = buildRunnerState(cleanKanaTree, "practice", example);
+    const expected = practiceExpectedLabelFromRoute({
+      tree: cleanKanaTree,
+      mode: "practice",
+      example,
+    });
+    const route = buildPracticeCorrectRoute({
+      tree: cleanKanaTree,
+      mode: "practice",
+      example,
+      state,
+      practiceExpectedLabel: expected,
+      topicId: "kana-wa-akhawatuha",
+    });
+
+    expect(route.steps).toHaveLength(4);
+    expect(route.steps[0]).toMatch(/خبر الفعل الناسخ|خبر كان/u);
+    expect(route.steps[1]).toMatch(/حكم .*النصب/u);
+    expect(route.steps[2]).toMatch(/جمع مذكر سالم/u);
+    expect(route.steps[3]).toMatch(/علامة النصب.*الياء/u);
+  });
+
+  test("دعنا نراجعها في فعل الأمر تذكر خطوات حذف النون", () => {
+    const example = imperativeVerbExamples.find(
+      (item) => item.id === "im-delete-noon-waw",
+    );
+    expect(example).toBeDefined();
+    if (!example) return;
+
+    const state = buildRunnerState(imperativeVerbTree, "practice", example);
+    const expected = practiceExpectedLabelFromRoute({
+      tree: imperativeVerbTree,
+      mode: "practice",
+      example,
+    });
+    const route = buildPracticeCorrectRoute({
+      tree: imperativeVerbTree,
+      mode: "practice",
+      example,
+      state,
+      practiceExpectedLabel: expected,
+    });
+
+    expect(route.steps.length).toBeGreaterThanOrEqual(3);
+    expect(route.steps[0]).toContain("فعل أمر");
+    expect(route.steps[1]).toContain("واو الجماعة");
+    expect(route.steps[2]).toContain("الأفعال الخمسة");
+    expect(route.steps[2]).toContain("حذف النون");
+  });
   test("التصحيح يفصل الحكم الإعرابي عن علامته", () => {
     const example = faelExamples.find((item) => item.id === "fa-01");
     expect(example).toBeDefined();
