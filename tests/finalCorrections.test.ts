@@ -89,6 +89,19 @@ describe("تصحيحات الإصدار النهائي", () => {
     expect(reset).toContain("supabase.auth.signOut()");
     expect(reset).toContain("/auth?password_reset=success");
   });
+  it("يعطي رابط الاستعادة أولوية على أي جلسة قديمة ويعرض الحساب المستهدف", () => {
+    const callback = read("app/auth/callback/page.tsx");
+    const reset = read("app/auth/reset-password/page.tsx");
+
+    expect(callback).toContain("let session = null");
+    expect(callback).toContain("if (hashTokens)");
+    expect(callback).toContain("else if (code)");
+    expect(callback).not.toContain("let session = await getExistingSession()");
+
+    expect(reset).toContain('autoComplete="username"');
+    expect(reset).toContain("الحساب الذي ستتغير كلمة مروره");
+    expect(reset).toContain("setRecoveryEmail(data.session.user.email");
+  });
   it("يطابق تعريف React إصدار التشغيل", () => {
     const packageJson = JSON.parse(read("package.json"));
     expect(packageJson.dependencies.react).toBe("18.3.1");

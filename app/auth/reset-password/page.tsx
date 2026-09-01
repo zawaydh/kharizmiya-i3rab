@@ -14,6 +14,7 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [ready, setReady] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,6 +41,7 @@ export default function ResetPasswordPage() {
           setMessage("رابط استعادة كلمة المرور غير صالح أو انتهت صلاحيته. اطلب رابطًا جديدًا من صفحة الدخول.");
           setReady(false);
         } else {
+          setRecoveryEmail(data.session.user.email ?? "");
           setReady(true);
         }
       } catch (error) {
@@ -108,6 +110,19 @@ export default function ResetPasswordPage() {
             </div>
           ) : ready ? (
             <form className="auth-form-modern" onSubmit={handleUpdatePassword}>
+              <div className="auth-field">
+                <label htmlFor="recovery-email">الحساب الذي ستتغير كلمة مروره</label>
+                <input
+                  id="recovery-email"
+                  className="input"
+                  type="email"
+                  autoComplete="username"
+                  readOnly
+                  value={recoveryEmail}
+                  dir="ltr"
+                />
+              </div>
+
               <div className="auth-field">
                 <label htmlFor="new-password">كلمة المرور الجديدة</label>
                 <input

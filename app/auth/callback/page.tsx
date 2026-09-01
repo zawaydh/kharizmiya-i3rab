@@ -71,29 +71,24 @@ export default function AuthCallbackPage() {
         const authError = params.get("error_description") || params.get("error");
         if (authError) throw new Error(authError);
 
-        // أحيانًا يفتح المتصفح صفحة callback بعد أن تكون الجلسة اكتملت بالفعل.
-        // لذلك نتحقق من الجلسة أولًا حتى لا تظهر رسالة خطأ كاذبة.
-        let session = await getExistingSession();
-
         const code = params.get("code");
         const hashTokens = getHashTokens();
 
-        if (!session && hashTokens) {
-          const { error: sessionError } = await supabase.auth.setSession(hashTokens);
-          if (sessionError) {
-            const recoveredSession = await getExistingSession();
-            if (recoveredSession) session = recoveredSession;
-            else throw sessionError;
-          }
-        }
+        // Credentials carried by the link must take precedence over an older
+        // session already open in this browser. This prevents a recovery link
+        // for one account from operating on another signed-in account.
+        let session = null;
 
-        if (!session && code) {
+        if (hashTokens) {
+          const { error: sessionError } = await supabase.auth.setSession(hashTokens);
+          if (sessionError) throw sessionError;
+          session = await getExistingSession();
+        } else if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          if (exchangeError) {
-            const recoveredSession = await getExistingSession();
-            if (recoveredSession) session = recoveredSession;
-            else throw exchangeError;
-          }
+          if (exchangeError) throw exchangeError;
+          session = await getExistingSession();
+        } else {
+          session = await getExistingSession();
         }
 
         if (!session) {
