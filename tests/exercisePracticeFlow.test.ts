@@ -150,6 +150,43 @@ describe("عقد تدرب الموحد", () => {
     expect(route.steps[2]).toContain("الأفعال الخمسة");
     expect(route.steps[2]).toContain("حذف النون");
   });
+  test("دعنا نراجعها تعيد مسار الجملة وشبه الجملة: الوظيفة ثم التركيب ثم الحكم ثم المحل", () => {
+    const cases = [
+      { id: "ka-11", structure: /شبه جملة من الجار والمجرور/u },
+      { id: "ka-23", structure: /شبه جملة ظرفية/u },
+      { id: "ka-10", structure: /جملة فعلية/u },
+      { id: "ka-24", structure: /جملة اسمية/u },
+    ];
+
+    for (const item of cases) {
+      const example = cleanKanaExamples.find((candidate) => candidate.id === item.id);
+      expect(example).toBeDefined();
+      if (!example) continue;
+
+      const state = buildRunnerState(cleanKanaTree, "practice", example);
+      const expected = practiceExpectedLabelFromRoute({
+        tree: cleanKanaTree,
+        mode: "practice",
+        example,
+      });
+      const route = buildPracticeCorrectRoute({
+        tree: cleanKanaTree,
+        mode: "practice",
+        example,
+        state,
+        practiceExpectedLabel: expected,
+        topicId: "kana-wa-akhawatuha",
+      });
+
+      expect(route.steps).toHaveLength(4);
+      expect(route.steps[0]).toMatch(/خبر الفعل الناسخ|خبر كان/u);
+      expect(route.steps[1]).toMatch(item.structure);
+      expect(route.steps[2]).toMatch(/حكم .*النصب/u);
+      expect(route.steps[3]).toMatch(/في محل نصب .*خبر/u);
+      expect(route.steps.join(" ")).not.toContain("لا تخلط");
+      expect(normalized(route.finalAnswer)).toBe(normalized(expected));
+    }
+  });
   test("التصحيح يفصل الحكم الإعرابي عن علامته", () => {
     const example = faelExamples.find((item) => item.id === "fa-01");
     expect(example).toBeDefined();

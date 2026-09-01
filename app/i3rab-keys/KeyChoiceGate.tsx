@@ -310,7 +310,7 @@ export default function KeyChoiceGate() {
             ))}
           </div>
         </>
-      ) : question ? (
+      ) : config && question ? (
         <>
           <div className="keys-example-focus">
             <span>المثال</span>

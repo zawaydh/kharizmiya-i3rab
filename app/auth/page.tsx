@@ -48,8 +48,14 @@ function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [msg, setMsg] = useState<string | null>(null);
-  const [msgType, setMsgType] = useState<MessageType>("default");
+  const [msg, setMsg] = useState<string | null>(() =>
+    passwordResetDone
+      ? "تم تغيير كلمة المرور. سجّل الدخول بكلمة المرور الجديدة."
+      : null,
+  );
+  const [msgType, setMsgType] = useState<MessageType>(() =>
+    passwordResetDone ? "success" : "default",
+  );
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -70,11 +76,6 @@ function AuthForm() {
     setMsgType(type);
   }
 
-  useEffect(() => {
-    if (passwordResetDone) {
-      showMessage("تم تغيير كلمة المرور. سجّل الدخول بكلمة المرور الجديدة.", "success");
-    }
-  }, [passwordResetDone]);
 
   useEffect(() => {
     let active = true;

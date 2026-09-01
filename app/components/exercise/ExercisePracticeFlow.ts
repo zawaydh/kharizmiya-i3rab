@@ -1328,11 +1328,753 @@ function practiceReviewImperativeSteps(
   return output.filter(Boolean).slice(0, 4);
 }
 
-function buildOrderedPracticeReview(
+function practiceReviewStructuredMahalSteps(
   expected: string,
   target: string,
   facts: Record<string, unknown>,
 ): string[] {
+  const value = practiceSemanticText(expected);
+  const khabarKind = String(facts.khabarKind || "").toLowerCase();
+  const shibhType = String(facts.shibhType || "").toLowerCase();
+  const sentenceType = String(facts.sentenceType || "").toLowerCase();
+
+  const mahal = value.match(
+    /في محل (رفع|نصب|جر|جزم) (اسم الفعل الناسخ|خبر الفعل الناسخ|اسم كان|خبر كان|اسم إن|خبر إن|نائب فاعل|فاعل|مبتدأ|خبر|حال|نعت|مضاف إليه|مفعول به|مفعول فيه|مفعول مطلق|مفعول لأجله|مفعول معه|تمييز|مستثنى|بدل|معطوف|توكيد)(?=$|[\s،.;؛])/u,
+  );
+
+  if (!mahal) return [];
+
+  const mahalCase = mahal[1];
+  const role = mahal[2];
+  const caseName =
+    mahalCase === "رفع"
+      ? "الرفع"
+      : mahalCase === "نصب"
+        ? "النصب"
+        : mahalCase === "جر"
+          ? "الجر"
+          : "الجزم";
+
+  let structureLabel = "";
+  let structureStep = "";
+
+  if (
+    (khabarKind === "shibh" && shibhType === "jar") ||
+    /شبه جملة (?:من )?الجار والمجرور/u.test(value)
+  ) {
+    structureLabel = "شبه الجملة من الجار والمجرور";
+    structureStep = `يتكوّن «${target}» من حرف جر واسم مجرور؛ لذلك فهو شبه جملة من الجار والمجرور.`;
+  } else if (
+    (khabarKind === "shibh" && shibhType === "zarf") ||
+    /شبه جملة ظرفية/u.test(value)
+  ) {
+    structureLabel = "شبه الجملة الظرفية";
+    structureStep = `«${target}» تركيب ظرفي؛ لذلك فهو شبه جملة ظرفية.`;
+  } else if (
+    (khabarKind === "sentence" && sentenceType === "verbal") ||
+    /جملة فعلية/u.test(value)
+  ) {
+    structureLabel = "الجملة الفعلية";
+    structureStep = `«${target}» جملة فعلية تؤدي وظيفة ${role}.`;
+  } else if (
+    (khabarKind === "sentence" && sentenceType === "nominal") ||
+    /جملة اسمية/u.test(value)
+  ) {
+    structureLabel = "الجملة الاسمية";
+    structureStep = `«${target}» جملة اسمية تؤدي وظيفة ${role}.`;
+  }
+
+  if (!structureLabel || !structureStep) return [];
+
+  return [
+    `ثبت أن «${target}» ${role}.`,
+    structureStep,
+    `حكم ${role} ${caseName}، لكن ${structureLabel} لا تظهر عليها علامة ${caseName}.`,
+    `لذلك «${target}» في محل ${mahalCase} ${role}.`,
+  ];
+}
+/* FINAL_PRACTICE_REVIEW_FAMILIES_V1
+ * Family-level solved paths for every gap found by the 358-example audit.
+ * Existing validated noun, imperative, and structured-review wording is preserved.
+ */
+
+function practiceReviewFinalReasonFromFacts(
+  facts: Record<string, unknown>,
+): string {
+  const source = String(
+    facts.practiceFinalI3rab ||
+    facts.finalI3rab ||
+    "",
+  );
+
+  const reason =
+    source.match(/سبب الاختيار:\s*([^\n\r]+)/u)?.[1]?.trim() || "";
+
+  if (!reason) return "";
+
+  const firstSentence =
+    reason.split(/(?<=[.!؟])\s+/u)[0]?.replace(/\s+/g, " ").trim() || "";
+
+  return firstSentence
+    ? `القرينة في المثال: ${firstSentence}`
+    : "";
+}
+
+function practiceReviewFinalCaseLabel(value: string): string {
+  return value === "مرفوع" || value === "رفع"
+    ? "الرفع"
+    : value === "منصوب" || value === "نصب"
+      ? "النصب"
+      : value === "مجرور" || value === "جر"
+        ? "الجر"
+        : value === "مجزوم" || value === "جزم"
+          ? "الجزم"
+          : "";
+}
+
+function practiceReviewFinalMarker(
+  expected: string,
+): string {
+  return (
+    oneLine(expected).match(
+      /علامة (?:رفعه|نصبه|جره|جزمه)\s*[:：]?\s*([^،؛.]+)/u,
+    )?.[1]?.trim() || ""
+  );
+}
+
+function practiceReviewFinalShapeLabel(
+  facts: Record<string, unknown>,
+): string {
+  const shape = String(
+    facts.number ||
+    facts.shape ||
+    facts.nounShape ||
+    facts.form ||
+    "",
+  ).toLowerCase();
+
+  return shape === "dual"
+    ? "مثنى"
+    : shape === "jms"
+      ? "جمع مذكر سالم"
+      : shape === "jfs"
+        ? "جمع مؤنث سالم"
+        : shape === "jt"
+          ? "جمع تكسير"
+          : shape === "five"
+            ? "من الأسماء الخمسة"
+            : shape === "singular"
+              ? "مفرد"
+              : "";
+}
+
+function practiceReviewFinalStructureSteps(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+): string[] {
+  const semantic = practiceSemanticText(expected);
+
+  const unit =
+    semantic.match(
+      /(مصدر مؤول|شبه جملة(?: من الجار والمجرور| جار ومجرور| ظرفية)?|جملة فعلية|جملة اسمية)/u,
+    )?.[1] || "";
+
+  const mahal = semantic.match(
+    /في محل (رفع|نصب|جر|جزم) ([^.،؛]+)/u,
+  );
+
+  if (!unit || !mahal) return [];
+
+  const mahalCase = String(mahal[1] || "").trim();
+  const role = String(mahal[2] || "").trim();
+  if (!mahalCase || !role) return [];
+
+  const caseLabel = practiceReviewFinalCaseLabel(mahalCase);
+
+  return [
+    `ثبت أن «${target}» ${role}.`,
+    `نوع التركيب في «${target}» هو ${unit}.`,
+    `حكم ${role} في هذا المثال ${caseLabel}؛ ولأن المطلوب تركيب كامل فنعبر عن الحكم بالمحل الإعرابي.`,
+    `لذلك «${target}» في محل ${mahalCase} بوصفه ${role}.`,
+  ].filter(Boolean).slice(0, 4);
+}
+
+function practiceReviewFinalHiddenNasikhSteps(
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (
+    topicId !== "kana-wa-akhawatuha" ||
+    String(facts.targetRole || "") !== "hidden_ism"
+  ) {
+    return [];
+  }
+
+  const pronoun = String(facts.hiddenPronoun || "هو").trim() || "هو";
+
+  return [
+    `«${target}» هو الفعل الناسخ نفسه، وليس اسم الفعل الناسخ.`,
+    `اسم الفعل الناسخ غير ظاهر لفظًا، والمعنى يعود على الاسم السابق؛ لذلك اسم الناسخ ضمير مستتر تقديره «${pronoun}».`,
+    `الضمير المستتر مبني في محل رفع اسم الفعل الناسخ.`,
+  ];
+}
+
+function practiceReviewFinalHiddenFaelSteps(
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (
+    topicId !== "fael" ||
+    String(facts.roleKind || "") !== "hidden"
+  ) {
+    return [];
+  }
+
+  const pronoun = String(facts.hiddenPronoun || "هو").trim() || "هو";
+  const contextType = String(facts.contextType || "");
+  const nominalSubject = String(facts.nominalSubject || "").trim();
+
+  const contextLine =
+    contextType === "nominal_with_verb" && nominalSubject
+      ? `«${nominalSubject}» مبتدأ، أمّا الفاعل داخل الجملة الفعلية فغير ظاهر لفظًا.`
+      : `لا يظهر مع «${target}» فاعل صريح؛ فالفاعل داخل الفعل ضمير مستتر.`;
+
+  return [
+    contextLine,
+    `صيغة الفعل والسياق يدلان على أن تقدير الفاعل المستتر «${pronoun}».`,
+    `الضمير المستتر مبني في محل رفع فاعل.`,
+  ];
+}
+
+function practiceReviewFinalFirstWordSteps(
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (topicId !== "first-word-key") return [];
+
+  const wordType = String(facts.wordType || "");
+  const verbType = String(facts.verbType || "");
+  const afterParticle = String(facts.afterParticle || "");
+
+  if (wordType === "noun") {
+    return [
+      `«${target}» اسم؛ فمفتاح الجملة هنا يبدأ باسم.`,
+      `المسار التالي هو باب المبتدأ والخبر لتحديد موقع الاسم وما يتمم معناه.`,
+    ];
+  }
+
+  if (wordType === "verb") {
+    const tense =
+      verbType === "past"
+        ? "ماض"
+        : verbType === "present"
+          ? "مضارع"
+          : verbType === "imperative"
+            ? "أمر"
+            : "فعل";
+
+    return [
+      `«${target}» فعل.`,
+      `زمن الفعل في هذا المثال ${tense}.`,
+      `إذن مفتاح الجملة هو باب الفعل ${tense}.`,
+    ];
+  }
+
+  if (wordType === "particle") {
+    const after =
+      afterParticle === "verb"
+        ? "فعل"
+        : afterParticle === "noun"
+          ? "اسم"
+          : "كلمة";
+
+    return [
+      `«${target}» حرف، والحرف يوجّه ما يأتي بعده.`,
+      `جاء بعده ${after}؛ لذلك يتحدد المسار التالي من أثر الحرف فيما بعده.`,
+    ];
+  }
+
+  return [];
+}
+
+function practiceReviewFinalPastSteps(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (topicId !== "past-verb") return [];
+
+  const semantic = practiceSemanticText(expected);
+  const build =
+    semantic.match(/فعل ماض(?:ٍ)? مبني على ([^،.;]+)/u)?.[1]?.trim() || "";
+
+  if (!build) return [];
+
+  const connector = String(facts.connectorKind || "none");
+  const raf3Group = String(facts.raf3BuildGroup || "none");
+
+  let connectorLine = "";
+
+  if (connector === "none") {
+    connectorLine = `لم يتصل بـ«${target}» ما يغيّر أصل بناء الفعل الماضي.`;
+  } else if (connector === "taa_tanith") {
+    connectorLine = `اتصلت بـ«${target}» تاء التأنيث الساكنة، وهي لا تغيّر أصل بناء الماضي على الفتح.`;
+  } else if (connector === "nasb") {
+    connectorLine = `اتصل بـ«${target}» ضمير نصب، وضمير النصب لا يغيّر أصل بناء الفعل الماضي.`;
+  } else if (connector === "raf3" && raf3Group === "sukoon") {
+    connectorLine = `اتصل بـ«${target}» ضمير رفع متحرك؛ لذلك يكون بناء الماضي على السكون.`;
+  } else if (connector === "raf3" && raf3Group === "alif") {
+    connectorLine = `اتصل بـ«${target}» ألف الاثنين، وهي ضمير رفع؛ ويبقى بناء الماضي معها على الفتح.`;
+  } else if (connector === "raf3" && raf3Group === "waw") {
+    connectorLine = `اتصل بـ«${target}» واو الجماعة، وهي ضمير رفع؛ ويكون بناء الماضي معها على الضم.`;
+  }
+
+  return [
+    `«${target}» فعل ماض.`,
+    connectorLine,
+    `لذلك «${target}» مبني على ${build}.`,
+  ].filter(Boolean).slice(0, 4);
+}
+
+function practiceReviewFinalPresentSteps(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (topicId !== "present-verb") return [];
+
+  const connection = String(facts.buildConnection || "none").toLowerCase();
+  const tool = String(facts.tool || "none").toLowerCase();
+  const toolWord = String(facts.toolWord || "").trim();
+  const shape = String(facts.shape || "").toLowerCase();
+  const weakLetter = String(facts.weakLetter || "").toLowerCase();
+  const attached = String(facts.attached || "").toLowerCase();
+
+  const toolLabel = toolWord ? ` «${toolWord}»` : "";
+
+  if (connection === "niswa" || connection === "tawkid") {
+    const attachment = connection === "niswa" ? "نون النسوة" : "نون التوكيد";
+    const build = connection === "niswa" ? "السكون" : "الفتح";
+    const mahal =
+      tool === "nasb" ? "نصب" : tool === "jazm" ? "جزم" : "رفع";
+
+    const factorLine =
+      tool === "nasb"
+        ? `سبق الفعل ناصب${toolLabel}؛ لذلك محل الفعل المبني هنا النصب.`
+        : tool === "jazm"
+          ? `سبق الفعل جازم${toolLabel}؛ لذلك محل الفعل المبني هنا الجزم.`
+          : `لم يسبق الفعل ناصب ولا جازم؛ لذلك محل الفعل المبني هنا الرفع.`;
+
+    return [
+      `«${target}» فعل مضارع.`,
+      `اتصلت به ${attachment}؛ لذلك انتقل من الإعراب إلى البناء، وبُنِي على ${build}.`,
+      factorLine,
+      `إذن «${target}» فعل مضارع مبني على ${build} في محل ${mahal}.`,
+    ];
+  }
+
+  const state =
+    tool === "nasb" ? "منصوب" : tool === "jazm" ? "مجزوم" : "مرفوع";
+  const action = practiceReviewFinalCaseLabel(state);
+
+  const factorLine =
+    tool === "nasb"
+      ? `سبق «${target}» ناصب${toolLabel}؛ لذلك هو منصوب.`
+      : tool === "jazm"
+        ? `سبق «${target}» جازم${toolLabel}؛ لذلك هو مجزوم.`
+        : `لم يسبق «${target}» ناصب ولا جازم؛ لذلك هو مرفوع.`;
+
+  const shapeLine =
+    shape === "five"
+      ? `«${target}» من الأفعال الخمسة${attached === "waw" ? " لاتصاله بواو الجماعة" : attached === "alif2" ? " لاتصاله بألف الاثنين" : attached === "yaa" ? " لاتصاله بياء المخاطبة" : ""}.`
+      : shape === "weak"
+        ? `«${target}» معتل الآخر${weakLetter === "alif" ? " بالألف" : weakLetter === "waw" ? " بالواو" : weakLetter === "ya" || weakLetter === "yaa" ? " بالياء" : ""}.`
+        : `«${target}» صحيح الآخر.`;
+
+  const marker = practiceReviewFinalMarker(expected);
+
+  return [
+    `«${target}» فعل مضارع معرب؛ فلم تتصل به نون النسوة ولا نون التوكيد.`,
+    factorLine,
+    shapeLine,
+    marker
+      ? `وبحسب صورة الفعل، علامة ${action} هنا ${marker}.`
+      : "",
+  ].filter(Boolean).slice(0, 4);
+}
+
+function practiceReviewFinalAttachedPronounSteps(
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (topicId !== "attached-pronouns") return [];
+
+  const position = String(facts.position || "");
+  const form = String(facts.form || "");
+  const role = String(facts.role || "");
+
+  const positionLabel =
+    position === "raf3" ? "رفع" : position === "nasb" ? "نصب" : "جر";
+
+  const roleLabel =
+    role === "fael"
+      ? "فاعل"
+      : role === "mubtada"
+        ? "مبتدأ"
+        : role === "mafool"
+          ? "مفعول به"
+          : role === "mafool_muqaddam"
+            ? "مفعول به مقدم"
+            : "مضاف إليه";
+
+  const formLabel = form === "separate" ? "منفصل" : "متصل";
+
+  const reason =
+    role === "fael"
+      ? `دل الضمير على من قام بالفعل؛ لذلك وظيفته فاعل.`
+      : role === "mubtada"
+        ? `جاء الضمير مستقلًا وأسند إليه ما بعده؛ لذلك وظيفته مبتدأ.`
+        : role === "mudaf_ileyh"
+          ? `اتصل الضمير بالاسم ودل على المضاف إليه؛ لذلك وظيفته مضاف إليه.`
+          : `دل الضمير على من وقع عليه الفعل؛ لذلك وظيفته ${roleLabel}.`;
+
+  return [
+    `«${target}» ضمير ${formLabel}، والضمائر مبنية.`,
+    reason,
+    `حكم وظيفة ${roleLabel} هنا ${practiceReviewFinalCaseLabel(positionLabel)}.`,
+    `لذلك يكون موقع «${target}» الإعرابي في محل ${positionLabel}، بوصفه ${roleLabel}.`,
+  ];
+}
+
+function practiceReviewFinalManqousSteps(
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (topicId !== "ism-manqous") return [];
+
+  const caseKey = String(facts.case || "");
+  const yStatus = String(facts.yStatus || "");
+  const hasAl = Boolean(facts.hasAl);
+  const isAdded = Boolean(facts.isAdded);
+
+  const state =
+    caseKey === "nasb" ? "منصوب" : caseKey === "raf3" ? "مرفوع" : "مجرور";
+
+  let yLine = "";
+  let markerLine = "";
+
+  if (caseKey === "nasb") {
+    yLine = `في النصب تثبت ياء الاسم المنقوص وتظهر عليها الفتحة.`;
+    markerLine = `لذلك علامة نصب «${target}» الفتحة الظاهرة على آخره.`;
+  } else if (yStatus === "kept" || hasAl || isAdded) {
+    yLine = hasAl || isAdded
+      ? `الياء ثابتة لأن الاسم معرّف بـ«الـ» أو مضاف، وتقدّر الحركة عليها للثقل.`
+      : `الياء ثابتة، وتقدّر الحركة عليها للثقل.`;
+    markerLine =
+      caseKey === "raf3"
+        ? `لذلك علامة رفع «${target}» الضمة المقدرة على الياء للثقل.`
+        : `لذلك علامة جر «${target}» الكسرة المقدرة على الياء للثقل.`;
+  } else {
+    yLine = `الاسم نكرة غير مضاف ولا معرّف بـ«الـ»؛ لذلك حذفت ياؤه وعُوِّض عنها بتنوين الكسر.`;
+    markerLine =
+      caseKey === "raf3"
+        ? `لذلك علامة رفع «${target}» الضمة المقدرة على الياء المحذوفة.`
+        : `لذلك علامة جر «${target}» الكسرة المقدرة على الياء المحذوفة.`;
+  }
+
+  return [
+    `«${target}» اسم منقوص.`,
+    `موقعه في الجملة جعله ${state}.`,
+    yLine,
+    markerLine,
+  ].filter(Boolean).slice(0, 4);
+}
+
+function practiceReviewFinalMunadaSteps(
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (topicId !== "munada") return [];
+
+  const kind = String(facts.munadaKind || "");
+  const buildMark = String(facts.buildMark || "");
+  const nasbMark = String(facts.nasbMark || "");
+
+  const kindLabel =
+    kind === "alam"
+      ? "مفرد علم"
+      : kind === "nakira_maqsuda"
+        ? "نكرة مقصودة"
+        : kind === "mudaf"
+          ? "مضاف"
+          : kind === "shibh_mudaf"
+            ? "شبيه بالمضاف"
+            : "نكرة غير مقصودة";
+
+  const reason =
+    kind === "alam"
+      ? `هو علم مفرد مقصود بالنداء.`
+      : kind === "nakira_maqsuda"
+        ? `النداء موجّه إلى شخص معيّن من أفراد النكرة؛ لذلك هو نكرة مقصودة.`
+        : kind === "mudaf"
+          ? `اتصل معناه بما بعده على صورة الإضافة؛ لذلك هو منادى مضاف.`
+          : kind === "shibh_mudaf"
+            ? `تمّ معناه بما بعده من غير إضافة صريحة؛ لذلك هو شبيه بالمضاف.`
+            : `النداء غير موجّه إلى شخص معيّن؛ لذلك هو نكرة غير مقصودة.`;
+
+  if (buildMark) {
+    const build = buildMark === "damma" ? "الضم" : buildMark;
+    return [
+      `«${target}» منادى ${kindLabel}.`,
+      reason,
+      `هذا النوع من المنادى مبني على ${build}.`,
+      `والمنادى المبني يكون في محل نصب؛ لذلك «${target}» في محل نصب.`,
+    ];
+  }
+
+  const marker =
+    nasbMark === "yaa"
+      ? "الياء"
+      : nasbMark === "alif"
+        ? "الألف"
+        : "الفتحة الظاهرة";
+
+  return [
+    `«${target}» منادى ${kindLabel}.`,
+    reason,
+    `هذا النوع معرب، والمنادى هنا منصوب.`,
+    `وعلامة نصب «${target}» ${marker}${nasbMark === "yaa" ? " لأنه مثنى أو جمع مذكر سالم بحسب صورته" : nasbMark === "alif" ? " لأنه من الأسماء الخمسة" : ""}.`,
+  ];
+}
+
+function practiceReviewFinalLaSteps(
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (topicId !== "la-nafiya") return [];
+
+  const kind = String(facts.laNameKind || "");
+  const buildMark = String(facts.buildMark || "");
+  const nasbMark = String(facts.nasbMark || "");
+
+  const kindLabel =
+    kind === "mufrad"
+      ? "مفرد في اصطلاح الباب"
+      : kind === "mudaf"
+        ? "مضاف"
+        : "شبيه بالمضاف";
+
+  const reason =
+    kind === "mufrad"
+      ? `اسم «لا» هنا غير مضاف ولا شبيه بالمضاف؛ لذلك هو مفرد في اصطلاح الباب.`
+      : kind === "mudaf"
+        ? `اسم «لا» مضاف إلى ما بعده؛ لذلك هو من النوع المضاف.`
+        : `تمّ معنى اسم «لا» بما بعده من غير إضافة صريحة؛ لذلك هو شبيه بالمضاف.`;
+
+  if (kind === "mufrad") {
+    const build =
+      buildMark === "yaa"
+        ? "الياء"
+        : buildMark === "damma"
+          ? "الضم"
+          : "الفتح";
+
+    return [
+      `«${target}» اسم «لا» النافية للجنس، ونوعه ${kindLabel}.`,
+      reason,
+      `اسم «لا» المفرد مبني على ما ينصب به؛ وهنا بُنِي على ${build}.`,
+      `لذلك «${target}» مبني على ${build} في محل نصب.`,
+    ];
+  }
+
+  const marker =
+    nasbMark === "yaa"
+      ? "الياء"
+      : nasbMark === "alif"
+        ? "الألف"
+        : "الفتحة الظاهرة";
+
+  return [
+    `«${target}» اسم «لا» النافية للجنس، ونوعه ${kindLabel}.`,
+    reason,
+    `المضاف والشبيه بالمضاف في هذا الباب معربان، واسم «لا» هنا منصوب.`,
+    `وعلامة نصب «${target}» ${marker}${nasbMark === "yaa" ? " بحسب صورة الاسم" : nasbMark === "alif" ? " لأنه من الأسماء الخمسة" : ""}.`,
+  ];
+}
+
+function practiceReviewFinalMafoolatNumberSteps(
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (
+    topicId !== "mafoolat" ||
+    String(facts.mafoolType || "") !== "mutlaq" ||
+    String(facts.mutlaqKind || "") !== "number"
+  ) {
+    return [];
+  }
+
+  const shape = practiceReviewFinalShapeLabel(facts);
+
+  return [
+    `«${target}» بيّن عدد مرات وقوع الحدث نفسه الذي دل عليه الفعل؛ لذلك هو مفعول مطلق مبين للعدد.`,
+    `المفعول المطلق منصوب.`,
+    shape ? `«${target}» ${shape}.` : "",
+    `وعلامة نصبه الياء لأنه مثنى.`,
+  ].filter(Boolean).slice(0, 4);
+}
+
+function practiceReviewFinalIstithnaMajrurSteps(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  if (
+    topicId !== "istithna" ||
+    Boolean(facts.isComplete) !== false ||
+    String(facts.mufarraghRole || "") !== "majrur"
+  ) {
+    return [];
+  }
+
+  const marker = practiceReviewFinalMarker(expected);
+
+  return [
+    `لم يُذكر المستثنى منه؛ فالاستثناء في هذا المثال مفرغ.`,
+    `في الاستثناء المفرغ يكون إعراب ما بعد «إلا» بحسب موقعه، وقد سبقت الباء «${target}».`,
+    `دخول حرف الجر جعل «${target}» في حالة الجر.`,
+    marker ? `وتظهر علامة الجر على آخره: ${marker}.` : "",
+  ].filter(Boolean).slice(0, 4);
+}
+
+function practiceReviewFinalFamilySteps(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  const hiddenNasikh = practiceReviewFinalHiddenNasikhSteps(
+    target,
+    facts,
+    topicId,
+  );
+  if (hiddenNasikh.length) return hiddenNasikh;
+
+  const hiddenFael = practiceReviewFinalHiddenFaelSteps(
+    target,
+    facts,
+    topicId,
+  );
+  if (hiddenFael.length) return hiddenFael;
+
+  const structure = practiceReviewFinalStructureSteps(
+    expected,
+    target,
+    facts,
+  );
+  if (structure.length) return structure;
+
+  const firstWord = practiceReviewFinalFirstWordSteps(
+    target,
+    facts,
+    topicId,
+  );
+  if (firstWord.length) return firstWord;
+
+  const present = practiceReviewFinalPresentSteps(
+    expected,
+    target,
+    facts,
+    topicId,
+  );
+  if (present.length) return present;
+
+  const past = practiceReviewFinalPastSteps(
+    expected,
+    target,
+    facts,
+    topicId,
+  );
+  if (past.length) return past;
+
+  const pronoun = practiceReviewFinalAttachedPronounSteps(
+    target,
+    facts,
+    topicId,
+  );
+  if (pronoun.length) return pronoun;
+
+  const manqous = practiceReviewFinalManqousSteps(
+    target,
+    facts,
+    topicId,
+  );
+  if (manqous.length) return manqous;
+
+  const munada = practiceReviewFinalMunadaSteps(
+    target,
+    facts,
+    topicId,
+  );
+  if (munada.length) return munada;
+
+  const la = practiceReviewFinalLaSteps(
+    target,
+    facts,
+    topicId,
+  );
+  if (la.length) return la;
+
+  const mafoolatNumber = practiceReviewFinalMafoolatNumberSteps(
+    target,
+    facts,
+    topicId,
+  );
+  if (mafoolatNumber.length) return mafoolatNumber;
+
+  const istithnaMajrur = practiceReviewFinalIstithnaMajrurSteps(
+    expected,
+    target,
+    facts,
+    topicId,
+  );
+  if (istithnaMajrur.length) return istithnaMajrur;
+
+  return [];
+}
+function buildOrderedPracticeReview(
+  expected: string,
+  target: string,
+  facts: Record<string, unknown>,
+  topicId?: string,
+): string[] {
+  const familyReview = practiceReviewFinalFamilySteps(
+    expected,
+    target,
+    facts,
+    topicId,
+  );
+  if (familyReview.length) return familyReview;
+
+  const structuredMahal = practiceReviewStructuredMahalSteps(
+    expected,
+    target,
+    facts,
+  );
+  if (structuredMahal.length) return structuredMahal;
+
   const imperative = practiceReviewImperativeSteps(
     expected,
     target,
@@ -1386,6 +2128,7 @@ export function buildPracticeSequenceSteps(
     context.practiceExpectedLabel,
     target,
     facts,
+    context.topicId,
   );
   if (orderedReview.length) return orderedReview;
 

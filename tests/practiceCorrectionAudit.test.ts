@@ -64,6 +64,84 @@ describe("PRACTICE_CORRECTION_AUDIT: تدقيق شامل لتصحيح تدرب",
 
         for (const route of routes) {
           const correction = route.steps.join(" ").trim();
+          // FINAL_PRACTICE_REVIEW_FAMILY_AUDIT_V1
+          const correctionSemantic = normalized(correction);
+          const reviewFacts = (example.facts || {}) as Record<string, unknown>;
+
+          expect(
+            correction,
+            `${label}: بطاقة المراجعة تحتوي توجيها للطالب بدل خطوة حل مثبتة`,
+          ).not.toMatch(
+            /(?:^|[.!؟؛]\s*)(?:حدّد|حدد|اختر|طبّق|طبق|ارجع|عد إلى|عد للسؤال|راجع|استخدم|انظر|تأمل|ميّز|ميز|افحص|ابدأ|ثبّت)/u,
+          );
+
+          if (
+            topic.code === "kana-wa-akhawatuha" &&
+            String(reviewFacts.targetRole || "") === "hidden_ism"
+          ) {
+            expect(correctionSemantic, `${label}: اسم الناسخ المستتر غير ظاهر`)
+              .toContain("ضمير مستتر");
+            expect(correctionSemantic, `${label}: محل اسم الناسخ المستتر غير مثبت`)
+              .toContain("في محل رفع اسم الفعل الناسخ");
+            expect(correctionSemantic, `${label}: الفعل الناسخ لم يميز عن اسمه`)
+              .toContain("الفعل الناسخ نفسه");
+          }
+
+          if (
+            topic.code === "fael" &&
+            String(reviewFacts.roleKind || "") === "hidden"
+          ) {
+            expect(correctionSemantic, `${label}: الفاعل المستتر غير ظاهر`)
+              .toContain("مستتر");
+            expect(correctionSemantic, `${label}: محل الفاعل المستتر غير مثبت`)
+              .toContain("في محل رفع فاعل");
+          }
+
+          if (
+            /(?:مصدر مؤول|شبه جملة|جملة فعلية|جملة اسمية)/u.test(normalized(expected)) &&
+            /في محل/u.test(normalized(expected))
+          ) {
+            expect(
+              correctionSemantic,
+              `${label}: مراجعة التركيب لم تثبت المحل الإعرابي`,
+            ).toMatch(/في محل (?:رفع|نصب|جر|جزم)/u);
+          }
+
+          if (topic.code === "past-verb") {
+            expect(correctionSemantic, `${label}: مراجعة الماضي لم تثبت نوع الفعل`)
+              .toContain("فعل ماض");
+            expect(correctionSemantic, `${label}: مراجعة الماضي لم تثبت البناء`)
+              .toMatch(/مبني|بناء/u);
+          }
+
+          if (topic.code === "present-verb") {
+            expect(correctionSemantic, `${label}: مراجعة المضارع لم تثبت نوع الفعل`)
+              .toContain("فعل مضارع");
+            expect(correctionSemantic, `${label}: مراجعة المضارع لم تفصل الإعراب عن البناء`)
+              .toMatch(/معرب|مبني|بني/u);
+          }
+
+          if (topic.code === "attached-pronouns") {
+            expect(correctionSemantic, `${label}: مراجعة الضمير لم تثبت كونه مبنيا`)
+              .toMatch(/ضمير .*مبني/u);
+            expect(correctionSemantic, `${label}: مراجعة الضمير لم تثبت محله`)
+              .toMatch(/في محل (?:رفع|نصب|جر)/u);
+          }
+
+          if (topic.code === "ism-manqous") {
+            expect(correctionSemantic, `${label}: مراجعة المنقوص لم تثبت نوع الاسم`)
+              .toContain("اسم منقوص");
+          }
+
+          if (topic.code === "munada") {
+            expect(correctionSemantic, `${label}: مراجعة المنادى لم تثبت نوع الباب`)
+              .toContain("منادى");
+          }
+
+          if (topic.code === "la-nafiya") {
+            expect(correctionSemantic, `${label}: مراجعة لا النافية لم تثبت اسم لا`)
+              .toMatch(/اسم .*لا/u);
+          }
 
           expect(route.steps.length, `${label}: لا توجد خطوات تصحيح`).toBeGreaterThan(0);
           expect(route.steps.length, `${label}: التصحيح أطول من أربع خطوات`).toBeLessThanOrEqual(4);
