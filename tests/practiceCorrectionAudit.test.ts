@@ -220,7 +220,7 @@ describe("PRACTICE_CORRECTION_AUDIT: تدقيق شامل لتصحيح تدرب",
         const target = simpleTarget(example.target);
         const scope = practiceOptionScope(expected);
         if (target && ["role", "verb", "case"].includes(scope)) {
-          const prefix = String(expected).match(/^([^:：]{1,32})[:：]\s*/u)?.[1]?.trim() || "";
+          const prefix = String(expected).match(/^([^:：.!؟،؛]{1,32})[:：]\s*/u)?.[1]?.trim() || "";
           const grammarLabels = /^(?:الفاعل|علامة|نون النسوة|نون التوكيد|ألف الاثنين|واو الجماعة|ياء المخاطبة|التاء|تاء التأنيث|الهاء)$/u;
           if (prefix && !grammarLabels.test(prefix)) {
             expect(

@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { ExerciseTree } from "../lib/exercise/model";
+import { getExampleCoverageKeys } from "../lib/exercise/progress";
+import { TOPICS } from "../lib/topics";
 import {
   QUIZ_PASS_PERCENT,
   buildCloseQuizOptions,
@@ -7,6 +9,8 @@ import {
   createQuizAnswerRow,
   createRemedialAnswerRow,
   isSameQuizAnswer,
+  localQuizExpectedLabel,
+  quizOptionDisplayText,
   safeFinalLabel,
   summarizeQuizAnswers,
   type QuizAnswerRow,
@@ -65,6 +69,87 @@ describe("منطق الاختبار النهائي المفصول", () => {
     expect(options.filter((option) => isSameQuizAnswer(option, weakImperative.correctI3rab))).toHaveLength(1);
   });
 
+  test("كل خيارات الاختبار الظاهرة مختلفة والإجابة الكاملة تُحتسب صحيحة", () => {
+    const issues: string[] = [];
+    let checked = 0;
+
+    for (const topic of TOPICS.filter((item) => item.isReady)) {
+      for (const quizExample of topic.quizExamples) {
+        checked += 1;
+        const example = quizExample as QuizExampleLike;
+        const coverage = getExampleCoverageKeys(quizExample)[0] || "";
+        const expected = localQuizExpectedLabel(
+          safeFinalLabel(topic.tree, example, coverage),
+          example,
+        );
+        const options = buildCloseQuizOptions(
+          example,
+          `quiz-visible-audit-${topic.code}-${example.id}`,
+          checked,
+        );
+
+        const visible = options.map((option) => quizOptionDisplayText(option));
+        const duplicateVisible = visible.filter(
+          (value, index) => visible.indexOf(value) !== index,
+        );
+
+        if (options.length < 2) {
+          issues.push(`${topic.code}/${example.id}: fewer than two options`);
+        }
+        if (visible.some((value) => !value.trim())) {
+          issues.push(`${topic.code}/${example.id}: empty visible option`);
+        }
+        if (duplicateVisible.length) {
+          issues.push(
+            `${topic.code}/${example.id}: duplicate visible options: ${[
+              ...new Set(duplicateVisible),
+            ].join(" | ")}`,
+          );
+        }
+
+        const matching = options.filter((option) =>
+          isSameQuizAnswer(option, expected),
+        );
+        if (matching.length !== 1) {
+          issues.push(
+            `${topic.code}/${example.id}: expected answer appears ${matching.length} times`,
+          );
+        } else {
+          const row = createQuizAnswerRow({
+            example,
+            expectedCoverage: coverage,
+            expectedLabel: expected,
+            actualLabel: matching[0]!,
+          });
+          if (!row.isCorrect) {
+            issues.push(
+              `${topic.code}/${example.id}: exact displayed correct option was scored wrong`,
+            );
+          }
+        }
+
+        if (expected.includes("\n")) {
+          const secondLine = expected
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter(Boolean)[1];
+          if (
+            secondLine &&
+            !quizOptionDisplayText(expected).includes(
+              quizOptionDisplayText(secondLine),
+            )
+          ) {
+            issues.push(
+              `${topic.code}/${example.id}: distinguishing second line is hidden`,
+            );
+          }
+        }
+      }
+    }
+
+    expect(checked).toBeGreaterThan(0);
+    expect(issues, issues.join("\n")).toEqual([]);
+  });
   test("يبني سجل الإجابة الصحيحة والخاطئة مع سبب تشخيصي", () => {
     const correctRow = createQuizAnswerRow({
       example,

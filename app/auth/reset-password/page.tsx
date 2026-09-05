@@ -17,6 +17,8 @@ export default function ResetPasswordPage() {
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -128,7 +130,7 @@ export default function ResetPasswordPage() {
                 <input
                   id="new-password"
                   className="input"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   minLength={6}
                   required
@@ -137,6 +139,15 @@ export default function ResetPasswordPage() {
                   placeholder="6 أحرف على الأقل"
                   dir="ltr"
                 />
+                <button
+                  type="button"
+                  className="btn btn-soft"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-pressed={showPassword}
+                  aria-controls="new-password"
+                >
+                  {showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                </button>
               </div>
 
               <div className="auth-field">
@@ -144,7 +155,7 @@ export default function ResetPasswordPage() {
                 <input
                   id="confirm-new-password"
                   className="input"
-                  type="password"
+                  type={showConfirmation ? "text" : "password"}
                   autoComplete="new-password"
                   minLength={6}
                   required
@@ -153,6 +164,15 @@ export default function ResetPasswordPage() {
                   placeholder="أعد كتابة كلمة المرور"
                   dir="ltr"
                 />
+                <button
+                  type="button"
+                  className="btn btn-soft"
+                  onClick={() => setShowConfirmation((visible) => !visible)}
+                  aria-pressed={showConfirmation}
+                  aria-controls="confirm-new-password"
+                >
+                  {showConfirmation ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                </button>
               </div>
 
               <button type="submit" className="btn btn-primary auth-submit-btn" disabled={loading}>

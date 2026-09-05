@@ -62,7 +62,9 @@ html,body {height: auto;
   color: #0f172a;
   min-height: auto;
   max-height: none;
-  transform: translateZ(0) scale(1.01);
+  /* EXERCISE_TEXT_CLARITY_STATIC_RENDER_V1
+     Keep settled exercise text on the normal pixel grid. */
+  transform: none;
   animation: none;}
 .exercise-page-shell .exercise-core-card::before,.exercise-page-shell .exercise-core-card::after,.exercise-page-shell .clean-thinking-card::before,.exercise-page-shell .clean-thinking-card::after,.exercise-page-shell .sequential-stage-shell::before,.exercise-page-shell .sequential-stage-shell::after {display: none;
   content: none;}

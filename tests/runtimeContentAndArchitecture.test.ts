@@ -147,6 +147,32 @@ describe("سلامة المحتوى التشغيلي والبنية", () => {
     }
   });
 
+  test("تلميحات التوابع لا تغيّر عدد خيارات القرار ولا تعيد معرّفات البنية القديمة", () => {
+    const hintSource = fs.readFileSync(
+      path.join(process.cwd(), "app/components/exercise/TawabiStudentHints.ts"),
+      "utf8",
+    );
+    const treeSource = fs.readFileSync(
+      path.join(process.cwd(), "content/trees/tawabi.ts"),
+      "utf8",
+    );
+
+    expect(hintSource).not.toContain("visibleIds");
+    expect(hintSource).not.toMatch(/\.filter\(\(answer\)/u);
+    for (const obsoleteAnswerId of [
+      "word_description",
+      "sentence_description",
+      "shibh_description",
+      "share_raf3",
+      "share_nasb",
+      "share_jarr",
+      "lafzi_evidence",
+      "manawi_evidence",
+    ]) {
+      expect(`${treeSource}\n${hintSource}`).not.toContain(obsoleteAnswerId);
+    }
+  });
+
   test("صفحات المراحل تستخدم بوابة موحدة ولا تعيد إعداد المشغّل ثلاث مرات", () => {
     const routeFiles = [
       "app/learn/[topicCode]/page.tsx",

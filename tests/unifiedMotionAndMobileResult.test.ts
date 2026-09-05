@@ -15,6 +15,14 @@ const questionMotion = fs.readFileSync(
   path.join(root, "app/components/exercise/useQuestionMotion.ts"),
   "utf8"
 );
+const exerciseStabilityCss = fs.readFileSync(
+  path.join(root, "app/styles/60-exercise-stability.css"),
+  "utf8"
+);
+const learningStabilityCss = fs.readFileSync(
+  path.join(root, "app/styles/82-learning-stability.css"),
+  "utf8"
+);
 
 describe("single-card question motion and narrow result layout", () => {
   it("moves one complete question card laterally without staggered children", () => {
@@ -44,6 +52,30 @@ describe("single-card question motion and narrow result layout", () => {
     expect(cleanCss).not.toContain("writing-mode: horizontal-tb !important");
   });
 
+  it("keeps settled exercise text off permanent GPU scaling", () => {
+    expect(exerciseStabilityCss).not.toContain(
+      "transform: translateZ(0) scale(1.01);",
+    );
+    expect(exerciseStabilityCss).toContain(
+      "EXERCISE_TEXT_CLARITY_STATIC_RENDER_V1",
+    );
+
+    const settledMotion = learningStabilityCss.match(
+      /question-text-idle,[\s\S]*?question-text-success\s*\{[\s\S]*?\}/u,
+    )?.[0] || "";
+
+    expect(settledMotion).toContain("transform: none;");
+    expect(settledMotion).toContain("will-change: auto;");
+    expect(settledMotion).toContain("backface-visibility: visible;");
+
+    // Motion itself is retained only for actual entering/leaving states.
+    expect(learningStabilityCss).toContain(
+      "animation: khSingleQuestionLeave 180ms",
+    );
+    expect(learningStabilityCss).toContain(
+      "animation: khSingleQuestionEnter 320ms",
+    );
+  });
   it("uses the broadly supported flex-end value", () => {
     expect(speechGameCss).toContain("align-items: flex-end;");
     expect(speechGameCss).not.toContain("align-items: end;");

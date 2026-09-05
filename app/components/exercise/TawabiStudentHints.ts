@@ -29,57 +29,84 @@ export function customTawabiPedagogyNode(node: PedagogyNode | null | undefined, 
     const roleKind = String(facts?.roleKind || "").trim();
     const phraseKind = String(facts?.phraseKind || "").trim();
     const tawabiTerm = String(facts?.tawabiTerm || "").trim();
+    const tawkidKind = String(facts?.tawkidKind || "").trim();
     const relation = tawabiRelationSentence(relationKind, targetText, matbu3);
 
+    // TAWABI_RELATION_FIRST_V22
     if (id === "tawabi_naat_discovery") {
-        const hint = roleKind === "sentence" || roleKind === "shibh"
-            ? `انظر إلى (${matbu3}) قبل التركيب: هو نكرة في هذا المثال، و(${targetText}) جاءت بعده لتصفه. تذكّر القاعدة المبسطة: الجمل بعد النكرات صفات، وبعد المعارف أحوال، مع وجود الرابط عند الحاجة.`
-            : `اسأل: هل (${targetText}) تصف (${matbu3})، أم تتم معنى الجملة كخبر، أم تبين هيئة وقت حدوث الفعل؟`;
+        const linkText = String(facts?.linkText || "").trim();
+        const hint = roleKind === "sentence"
+            ? `ابدأ بنوع العلاقة فقط: (${matbu3}) نكرة، وبعدها الجملة (${targetText}) جاءت لتصفها. تذكّر: الجمل وشبه الجمل بعد النكرات صفات غالبًا، وبعد المعارف أحوالًا غالبًا${linkText ? `. وفي الجملة رابط يعود على المنعوت: ${linkText}` : ". وابحث داخل الجملة عن رابط يعود على المنعوت"}.`
+            : roleKind === "shibh"
+              ? `ابدأ بنوع العلاقة فقط: شبه الجملة بعد النكرة تكون صفة غالبًا؛ وهنا (${targetText}) تصف (${matbu3}). وبعد المعارف تكون أحوالًا غالبًا.`
+              : `ابدأ بنوع العلاقة فقط: (${targetText}) تصف (${matbu3}) وتبيّن صفة فيه؛ فلا تبحث عن الحركة أو صورة النعت قبل إثبات علاقة الوصف.`;
         return {
             ...node,
-            context: `نبدأ من المعنى بين (${targetText}) والاسم السابق (${matbu3})، ثم ننقل الإعراب.`,
-            text: `ما العلاقة بين (${targetText}) و(${matbu3}) في الجملة؟`,
+            context: `نميّز أولًا علاقة (${targetText}) بـ(${matbu3})، ثم نحدد صورة النعت في خطوة مستقلة.`,
+            text: `أي قرينة تميّز علاقة (${targetText}) بـ(${matbu3}) في الجملة؟`,
+            hint,
+        };
+    }
+    if (id === "tawabi_naat_kind") {
+        const linkText = String(facts?.linkText || "").trim();
+        const hint = roleKind === "sentence"
+            ? `في (${targetText}) إسناد كامل، فهي نعت جملة. (${matbu3}) نكرة، والجملة بعدها صفة غالبًا${linkText ? `، وفيها رابط يعود على المنعوت: ${linkText}` : ""}.`
+            : roleKind === "shibh"
+              ? `(${targetText}) جار ومجرور أو ظرف بلا إسناد كامل؛ لذلك صورته نعت شبه جملة. تذكّر: شبه الجملة بعد النكرة تكون صفة غالبًا إذا جاءت لتصفها.`
+              : `(${targetText}) كلمة واحدة تصف (${matbu3}) مباشرة؛ لذلك صورته نعت مفرد.`;
+        return {
+            ...node,
+            context: `ثبت أن (${targetText}) نعت لـ(${matbu3}). نحدد الآن صورة النعت فقط.`,
+            text: `ما صورة النعت (${targetText}) في هذا المثال؟`,
             hint,
         };
     }
     if (id === "tawabi_atf_discovery") {
         return {
             ...node,
-            context: `نبدأ من الرابط الظاهر قبل (${targetText})، ثم نحدد أثره في الحكم.`,
-            text: `ما أثر (${connector}) في علاقة (${targetText}) بـ(${matbu3})؟`,
-            hint: `${connector} حرف عطف أشرك (${targetText}) مع (${matbu3}) في الحكم. بعد ثبوت العطف ننقل الحالة الإعرابية من المعطوف عليه إلى المعطوف.`,
+            context: `نميّز أولًا علاقة (${targetText}) بـ(${matbu3}) من الرابط الظاهر.`,
+            text: `أي قرينة تميّز علاقة (${targetText}) بـ(${matbu3}) في الجملة؟`,
+            hint: `قبل (${targetText}) يوجد حرف عطف، وهو (${connector})؛ ومن حروف العطف: الواو، الفاء، ثم، أو، أم، بل، لا، لكن، حتى؛ وهذه قرينتك. بعد إثبات العطف، المعطوف يتبع المعطوف عليه في الحالة الإعرابية.`,
         };
     }
     if (id === "tawabi_tawkid_discovery") {
+        const semanticWord = ["نفس", "عين", "كل", "جميع", "عامة", "كلا", "كلتا"].find((word) => targetText.includes(word)) || "لفظ توكيد معنوي";
+        const semanticPronoun = targetText.endsWith("هما") ? "هما"
+            : targetText.endsWith("هم") ? "هم"
+              : targetText.endsWith("هن") ? "هن"
+                : targetText.endsWith("ها") ? "ها"
+                  : targetText.endsWith("ه") ? "الهاء"
+                    : "ضمير متصل";
+        const hint = tawkidKind === "lafzi"
+            ? `انظر إلى (${matbu3}) الأول و(${targetText}) الثاني: تكرر اللفظ نفسه من غير حرف عطف ومن غير وصف جديد. هذه قرينة التوكيد.`
+            : `افحص (${targetText}): من ألفاظ التوكيد المعنوي: نفس، عين، كل، جميع، عامة، كلا، كلتا؛ واتصل باللفظ الضمير (${semanticPronoun}) العائد على (${matbu3}). هذه قرينة التوكيد، ثم نحدد نوعه في الخطوة التالية.`;
         return {
             ...node,
-            context: `نبدأ بما أضافته (${targetText}) إلى معنى (${matbu3})، ثم نحدد نوع التوكيد.`,
-            text: `ماذا أضافت (${targetText}) إلى معنى (${matbu3})؟`,
-            hint: `هل أضافت صفة جديدة، أم فسرت المقصود، أم قوّت معنى (${matbu3}) ورفعت الشك؟`,
+            context: `نميّز أولًا علاقة (${targetText}) بـ(${matbu3})، ثم نحدد نوع التوكيد في خطوة مستقلة.`,
+            text: `أي قرينة تميّز علاقة (${targetText}) بـ(${matbu3}) في الجملة؟`,
+            hint,
         };
     }
     if (id === "tawabi_badal_discovery") {
         const hint = badalKind === "مطابق"
-            ? `بما أن (${targetText}) هي المقصودة بـ(${matbu3})، ويمكن الاستغناء عن (${matbu3}) ووضع (${targetText}) مكانها دون اختلال المعنى، فالعلاقة بينهما علاقة بدل.`
+            ? `اسأل: من المقصود بالحكم؟ (${targetText}) هو عين (${matbu3}) نفسه، والمتبوع تمهيد له ويمكن غالبًا حذفه؛ فهذه قرينة البدل.`
             : badalKind === "بعض من كل"
-              ? `انظر إلى (${targetText}): هي جزء حقيقي من (${matbu3})، ويربطها به في هذا النوع غالبًا ضمير يعود على المبدل منه؛ لذلك العلاقة بدل بعض من كل.`
-              : badalKind === "اشتمال"
-                ? `(${targetText}) ليست جزءًا ماديًا من (${matbu3})، لكنها معنى أو صفة يشتمل عليها ويرتبط بها، وغالبًا فيها ضمير يعود على المبدل منه؛ لذلك العلاقة بدل اشتمال.`
-                : `اختبر العلاقة: هل (${targetText}) هو المقصود نفسه، أم جزء منه، أم معنى يشتمل عليه؟`;
+              ? `اسأل: من المقصود بالحكم؟ الحكم متجه إلى (${targetText}) نفسه، وهو مرتبط بـ(${matbu3}) وليس مجرد وصف له؛ والمتبوع تمهيد للتابع ويمكن غالبًا حذفه.`
+              : `اسأل: من المقصود بالحكم؟ الحكم متجه إلى (${targetText}) نفسه، وهو معنى متعلق بـ(${matbu3}) لا مجرد صفة تصفه؛ فالمتبوع تمهيد للتابع.`;
         return {
             ...node,
-            context: `نبدأ من صلة (${targetText}) بـ(${matbu3}) قبل تسمية النوع ونقل الإعراب.`,
-            text: `ما العلاقة بين (${targetText}) و(${matbu3}) في الجملة؟`,
+            context: `نميّز أولًا علاقة (${targetText}) بـ(${matbu3}) بالسؤال: من المقصود بالحكم؟`,
+            text: `أي قرينة تميّز علاقة (${targetText}) بـ(${matbu3}) في الجملة؟`,
             hint,
         };
     }
     if (id === "tawabi_badal_kind") {
         return {
             ...node,
-            context: `ثبت أن (${targetText}) بدل من (${matbu3}). نحدد نوع البدل من طبيعة العلاقة بينهما قبل نقل الحالة الإعرابية.`,
+            context: `ثبت أن (${targetText}) بدل من (${matbu3}). نحدد الآن نوع البدل من طبيعة العلاقة بينهما.`,
             text: `ما نوع البدل في (${targetText})؟`,
             hint: badalKind === "مطابق"
-                ? `(${targetText}) هي المقصودة نفسها ويمكن أن تحل محل (${matbu3}) دون اختلال المعنى؛ فهذا بدل مطابق.`
+                ? `(${targetText}) هو المقصود نفسه ويمكن أن يحل محل (${matbu3}) دون اختلال المعنى؛ فهذا بدل مطابق.`
                 : badalKind === "بعض من كل"
                   ? `(${targetText}) جزء حقيقي من (${matbu3})، لذلك هو بدل بعض من كل.`
                   : `(${targetText}) معنى أو صفة تتعلق بـ(${matbu3}) وليست جزءًا ماديًا منه؛ لذلك هو بدل اشتمال.`,
@@ -88,29 +115,73 @@ export function customTawabiPedagogyNode(node: PedagogyNode | null | undefined, 
     if (id === "tawabi_tawkid_kind") {
         return {
             ...node,
-            context: `عرفنا أن (${targetText}) أكدت معنى (${matbu3}).`,
+            context: `ثبت أن (${targetText}) توكيد لـ(${matbu3}). نحدد الآن نوع التوكيد.`,
             text: `كيف حصل التوكيد في (${targetText})؟`,
-            hint: `هل تكرر اللفظ نفسه، أم استُعمل لفظ من ألفاظ التوكيد المعنوي مثل: نفس، عين، كل، جميع، كلا، كلتا؟`,
+            hint: tawkidKind === "lafzi"
+                ? `تكرر اللفظ نفسه؛ لذلك هذا توكيد لفظي.`
+                : `استُعمل لفظ من ألفاظ التوكيد المعنوي مثل: نفس، عين، كل، جميع، عامة، كلا، كلتا، واتصل به ضمير يعود على المؤكَّد.`,
         };
     }
-    if (id === "tawabi_case") {
+    if (id === "tawabi_case" && tawabiTerm === "naat" && (roleKind === "sentence" || roleKind === "shibh")) {
+        const phraseLabel = roleKind === "sentence" ? "الجملة" : "شبه الجملة";
+        const phraseType = phraseKind || phraseLabel;
+        return {
+            ...node,
+            context: `بما أن (${targetText}) ${phraseType} وقعت نعتًا لـ(${matbu3})، فالنعت يتبع المنعوت في المحل الإعرابي.`,
+            text: `بما أن (${targetText}) ${phraseType} وقعت نعتًا لـ(${matbu3})، و(${matbu3}) ${matbu3Role}؛ فما محل ${phraseLabel} (${targetText}) من الإعراب؟`,
+            hint: `لا نعرب ${phraseLabel} كلها بضمة أو فتحة أو كسرة؛ بل نحدد محلها من إعراب المنعوت. (${matbu3}) ${matbu3Role}، لذلك تكون (${targetText}) في محل الرفع أو النصب أو الجر نفسه نعتًا.`,
+            answers: (node.answers || []).map((answer) => ({
+                ...answer,
+                text: String(answer.id) === "raf3"
+                    ? "في محل رفع نعت"
+                    : String(answer.id) === "nasb"
+                      ? "في محل نصب نعت"
+                      : String(answer.id) === "jarr"
+                        ? "في محل جر نعت"
+                        : answer.text,
+            })),
+        };
+    }    if (id === "tawabi_case") {
+        // TAWABI_BADAL_CASE_BRIDGE_V13
         const roleBridge = tawabiTerm === "badal"
-            ? `بما أن (${targetText}) بدل من (${matbu3})، فالبدل يتبع المبدل منه في الحالة الإعرابية.`
+            ? `بما أن التابع (${targetText}) هو المقصود بالحكم، والمتبوع (${matbu3}) تمهيد له ويمكن غالبًا حذفه، فهو بدل. والبدل يتبع المبدل منه في الحالة الإعرابية.`
             : tawabiTerm === "atf"
-              ? `بما أن (${targetText}) معطوف على (${matbu3})، فالمعطوف يتبع المعطوف عليه في الحالة الإعرابية.`
+              ? `بما أن التابع (${targetText}) جاء بعد حرف العطف (${connector})، فهو معطوف على (${matbu3}). والمعطوف يتبع المعطوف عليه في الحالة الإعرابية.`
               : tawabiTerm === "naat"
-                ? `بما أن (${targetText}) نعت لـ(${matbu3})، فالنعت يتبع المنعوت في الحالة الإعرابية.`
+                ? `بما أن (${targetText}) نعت لـ(${matbu3})، فالنعت يتبع المنعوت في الإعراب.`
                 : tawabiTerm === "tawkid"
-                  ? `بما أن (${targetText}) توكيد لـ(${matbu3})، فالتوكيد يتبع المؤكَّد في الحالة الإعرابية.`
+                  ? tawkidKind === "lafzi"
+                    ? `بما أن التابع (${targetText}) الثاني توكيد لفظي للمؤكَّد (${matbu3}) الأول، فالتوكيد يتبع المؤكَّد في الحالة الإعرابية.`
+                    : `بما أن التابع (${targetText}) توكيد معنوي للمؤكَّد (${matbu3})، فالتوكيد يتبع المؤكَّد في الحالة الإعرابية.`
                   : `عرفنا أن ${relation}. التابع يأخذ الحالة الإعرابية من متبوعه.`;
+        const inPosition = roleKind === "sentence" || roleKind === "shibh";
+        const positionAnswers = inPosition
+            ? (node.answers || []).map((answer) => {
+                const value = String(answer.eval?.equals || "");
+                const label = value === "raf3" ? "في محل رفع" : value === "nasb" ? "في محل نصب" : "في محل جر";
+                return { ...answer, text: label };
+            })
+            : node.answers;
         return {
             ...node,
             context: roleBridge,
-            text: `${roleBridge} و(${matbu3}) ${matbu3Role}؛ فما حالة (${targetText})؟`,
-            hint: `ابدأ بالحالة لا بالعلامة: (${matbu3}) ${matbu3Role}، إذن ينتقل إلى (${targetText}) الرفع أو النصب أو الجر نفسه، ثم نختار العلامة من صورة التابع.`,
+            text: inPosition
+                ? `(${matbu3}) ${matbu3Role}؛ ففي أي محل إعرابي يقع (${targetText}) بوصفه تابعًا له؟`
+                : tawabiTerm === "badal"
+                  ? `${roleBridge} (${matbu3}) ${matbu3Role}؛ فما الحالة الإعرابية للتابع (${targetText})؟`
+                  : tawabiTerm === "atf"
+                    ? `${roleBridge} (${matbu3}) ${matbu3Role}؛ فما الحالة الإعرابية للتابع (${targetText})؟`
+                  : tawabiTerm === "tawkid"
+                    ? tawkidKind === "lafzi"
+                      ? `${roleBridge} (${matbu3}) الأول ${matbu3Role}؛ فما الحالة الإعرابية للتابع (${targetText}) الثاني؟`
+                      : `${roleBridge} (${matbu3}) ${matbu3Role}؛ فما الحالة الإعرابية للتابع (${targetText})؟`
+                    : `${roleBridge} و(${matbu3}) ${matbu3Role}؛ فما حالة (${targetText})؟`,
+            hint: inPosition
+                ? `الجملة وشبه الجملة لا تظهر عليهما ضمة أو فتحة أو كسرة بوصفهما تركيبًا كاملًا؛ نقول: في محل رفع أو نصب أو جر بحسب المتبوع. (${matbu3}) ${matbu3Role}.`
+                : `ابدأ بالحالة لا بالعلامة: (${matbu3}) ${matbu3Role}، إذن ينتقل إلى (${targetText}) الرفع أو النصب أو الجر نفسه، ثم نختار العلامة من صورة التابع.`,
+            answers: positionAnswers,
         };
-    }
-    if (id === "tawabi_form") {
+    }    if (id === "tawabi_form") {
         return {
             ...node,
             context: `عرفنا أن (${targetText}) ${tawabiCaseAdjectiveHint(i3rabCase)} تبعًا لـ(${matbu3}). الآن نحدد صورته قبل العلامة.`,

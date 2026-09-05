@@ -470,6 +470,12 @@
   font-weight: 650;
   line-height: 1.55;}
   .home-entry-lead { display: none; }
+  .about-thinking-question {display: block;
+  max-width: 100%;
+  margin: 0 auto;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;}
   .home-entry-actions {width: 100%;
   display: grid;
   grid-template-columns: 1fr;

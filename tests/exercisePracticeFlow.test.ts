@@ -1,9 +1,11 @@
 import { describe, expect, test } from "vitest";
 import { imperativeVerbTree } from "../content/trees/verb_imperative";
+import { presentVerbTree } from "../content/trees/verb_present";
 import { cleanKanaTree } from "../content/trees/clean_kana";
 import { faelTree } from "../content/trees/fael";
 import { munadaTree } from "../content/trees/munada";
 import { imperativeVerbExamples } from "../content/examples/verb_imperative.examples";
+import { presentVerbExamples } from "../content/examples/verb_present.examples";
 import { cleanKanaExamples } from "../content/examples/clean_kana.examples";
 import { faelExamples } from "../content/examples/fael.examples";
 import { munadaExamples } from "../content/examples/munada.examples";
@@ -96,6 +98,160 @@ describe("عقد تدرب الموحد", () => {
     expect(imperativeVerbTree.nodes[route.nextState.currentNodeId]?.type).toBe("result");
   });
 
+  test("المضارع المبني يربط محل الفعل بضمير فهو في كل الخيارات", () => {
+    const examples = presentVerbExamples.filter((example) =>
+      ["niswa", "tawkid"].includes(String(example.facts.buildConnection || "")),
+    );
+
+    expect(examples.length).toBeGreaterThan(0);
+
+    for (const example of examples) {
+      const state = buildRunnerState(presentVerbTree, "practice", example);
+      const expected = practiceExpectedLabelFromRoute({
+        tree: presentVerbTree,
+        mode: "practice",
+        example,
+      });
+
+      expect(expected, example.id).toContain("فعل مضارع مبني");
+      if (/في محل (?:رفع|نصب|جزم)/u.test(expected)) {
+        expect(expected, example.id).toMatch(/فهو في محل (?:رفع|نصب|جزم)/u);
+      }
+      expect(expected, example.id).not.toContain("فهي في محل");
+
+      const options = buildPracticeDirectOptions({
+        tree: presentVerbTree,
+        mode: "practice",
+        example,
+        state,
+        practiceExpectedLabel: expected,
+        topicId: "present-verb",
+      });
+
+      expect(options.length, example.id).toBeGreaterThanOrEqual(2);
+      expect(new Set(options).size, example.id).toBe(options.length);
+
+      for (const option of options) {
+        if (!/فعل مضارع مبني/u.test(option)) continue;
+        expect(option, `${example.id}: ${option}`).not.toContain("فهي في محل");
+
+        const firstClause = option.match(
+          /^(فعل مضارع مبني.*?)(?=نون النسوة:|نون التوكيد:|$)/u,
+        )?.[1] || option;
+
+        if (/في محل (?:رفع|نصب|جزم)/u.test(firstClause)) {
+          expect(firstClause, `${example.id}: ${option}`).toMatch(
+            /فهو في محل (?:رفع|نصب|جزم)/u,
+          );
+        }
+      }
+    }
+  });
+  test("تدرب المضارع المعرب يصل دائمًا إلى العلامة في الخيارات والمراجعة", () => {
+    const examples = presentVerbExamples.filter(
+      (example) => String(example.facts.buildConnection || "none") === "none",
+    );
+
+    expect(examples.length).toBeGreaterThan(0);
+
+    for (const example of examples) {
+      const state = buildRunnerState(presentVerbTree, "practice", example);
+      const expected = practiceExpectedLabelFromRoute({
+        tree: presentVerbTree,
+        mode: "practice",
+        example,
+      });
+
+      expect(expected, example.id).toContain("فعل مضارع");
+      expect(expected, example.id).toMatch(/علامة (?:رفعه|نصبه|جزمه)/u);
+
+      const options = buildPracticeDirectOptions({
+        tree: presentVerbTree,
+        mode: "practice",
+        example,
+        state,
+        practiceExpectedLabel: expected,
+        topicId: "present-verb",
+      });
+
+      expect(options, example.id).toContain(expected);
+      expect(options.length, example.id).toBeGreaterThanOrEqual(2);
+      expect(new Set(options).size, example.id).toBe(options.length);
+
+      for (const option of options) {
+        expect(option, `${example.id}: ${option}`).toContain("فعل مضارع");
+        expect(option, `${example.id}: ${option}`).toMatch(
+          /علامة (?:رفعه|نصبه|جزمه)/u,
+        );
+        expectCoherentOption(option);
+      }
+
+      const wrongOption = options.find(
+        (option) => normalized(option) !== normalized(expected),
+      );
+      expect(wrongOption, example.id).toBeDefined();
+
+      const route = buildPracticeCorrectRoute({
+        tree: presentVerbTree,
+        mode: "practice",
+        example,
+        state,
+        practiceExpectedLabel: expected,
+        topicId: "present-verb",
+        wrongOption,
+      });
+
+      expect(route.steps, example.id).toHaveLength(4);
+      expect(route.steps[0], example.id).toContain("فعل مضارع معرب");
+      expect(route.steps[1], example.id).toMatch(/مرفوع|منصوب|مجزوم/u);
+      expect(route.steps[2], example.id).toMatch(
+        /صحيح الآخر|معتل الآخر|الأفعال الخمسة/u,
+      );
+      expect(route.steps[3], example.id).toMatch(/علامة (?:رفع|نصب|جزم)/u);
+      expect(route.finalAnswer, example.id).toMatch(
+        /علامة (?:رفعه|نصبه|جزمه)/u,
+      );
+      expect(normalized(route.finalAnswer), example.id).toBe(
+        normalized(expected),
+      );
+    }
+  });
+
+  test("ليكتبا يثبت لام الأمر والأفعال الخمسة وحذف النون", () => {
+    const example = presentVerbExamples.find(
+      (item) => item.id === "pr-jazm-five-alif2-lam-amr",
+    );
+    expect(example).toBeDefined();
+    if (!example) return;
+
+    const state = buildRunnerState(presentVerbTree, "practice", example);
+    const expected = practiceExpectedLabelFromRoute({
+      tree: presentVerbTree,
+      mode: "practice",
+      example,
+    });
+
+    expect(expected).toContain("فعل مضارع مجزوم");
+    expect(expected).toContain("حذف النون");
+    expect(expected).toContain("الأفعال الخمسة");
+
+    const route = buildPracticeCorrectRoute({
+      tree: presentVerbTree,
+      mode: "practice",
+      example,
+      state,
+      practiceExpectedLabel: expected,
+      topicId: "present-verb",
+      wrongOption: "فعل مضارع مرفوع، وعلامة رفعه ثبوت النون؛ لأنه من الأفعال الخمسة.",
+    });
+
+    expect(route.steps).toHaveLength(4);
+    expect(route.steps[1]).toContain("لام الأمر");
+    expect(route.steps[2]).toContain("ألف الاثنين");
+    expect(route.steps[2]).toContain("الأفعال الخمسة");
+    expect(route.steps[3]).toContain("تُجزم بحذف النون");
+    expect(route.steps[3]).toContain("علامة جزم");
+  });
   test("دعنا نراجعها تعيد خطوات كان منفصلة وبالترتيب", () => {
     const example = cleanKanaExamples.find((item) => item.id === "ka-08");
     expect(example).toBeDefined();

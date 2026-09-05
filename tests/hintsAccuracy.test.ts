@@ -1,13 +1,20 @@
 import { describe, expect, test } from "vitest";
 import { firstLevelHintText } from "../lib/hintText";
 import { nonRevealingWrongChoiceHint, studentHintText } from "../app/components/exercise/ExercisePedagogy";
+import { customTawabiPedagogyNode } from "../app/components/exercise/TawabiStudentHints";
 import { cleanKanaTree } from "../content/trees/clean_kana";
 import { firstWordTree } from "../content/trees/first_word";
 import { presentVerbTree } from "../content/trees/verb_present";
 import { pastVerbTree } from "../content/trees/verb_past";
 import { imperativeVerbTree } from "../content/trees/verb_imperative";
 import { ismManqousTree } from "../content/trees/ism_manqous";
-import { tawabiTree } from "../content/trees/tawabi";
+import {
+  tawabiTree,
+  tawabiNaatTree,
+  tawabiAtfTree,
+  tawabiTawkidTree,
+  tawabiBadalTree,
+} from "../content/trees/tawabi";
 import { faelTree } from "../content/trees/fael";
 import startExamples from "../data/interactive_examples.json";
 import type { QuestionNode } from "../lib/exercise/model";
@@ -205,6 +212,250 @@ describe("دقة التلميحات وارتباطها بالعقد", () => {
     expect(indef.hint).toContain("الرفع والجر فتحذف الياء");
   });
 
+  test("يفصل القرار الأول في التوابع عن التصنيف الفرعي والحالة", () => {
+    expect(tawabiNaatTree.practiceStartNodeId).toBe("tawabi_naat_discovery");
+    expect(tawabiAtfTree.practiceStartNodeId).toBe("tawabi_atf_discovery");
+    expect(tawabiTawkidTree.practiceStartNodeId).toBe("tawabi_tawkid_discovery");
+    expect(tawabiBadalTree.practiceStartNodeId).toBe("tawabi_badal_discovery");
+
+    for (const tree of [tawabiNaatTree, tawabiAtfTree, tawabiTawkidTree, tawabiBadalTree]) {
+      const opening = tree.nodes[tree.startNodeId] as QuestionNode;
+      expect(opening.answers).toHaveLength(4);
+      const labels = opening.answers.map((answer) => answer.text).join(" | ");
+      expect(labels).toMatch(/تصف|صفة/u);
+      expect(labels).toMatch(/توكيد|يكرر/u);
+      expect(labels).toMatch(/حرف عطف/u);
+      expect(labels).toMatch(/المقصود بالحكم/u);
+    }
+
+    const naatKind = tawabiNaatTree.nodes.tawabi_naat_kind as QuestionNode;
+    expect(new Set(
+      naatKind.answers.map((answer) => String(answer.eval?.equals || "")).filter(Boolean),
+    )).toEqual(new Set(["mu3rab", "sentence", "shibh"]));
+
+    const tawkidKind = tawabiTawkidTree.nodes.tawabi_tawkid_kind as QuestionNode;
+    expect(new Set(
+      tawkidKind.answers.map((answer) => String(answer.eval?.equals || "")).filter(Boolean),
+    )).toEqual(new Set(["lafzi", "manawi"]));
+    const tawkidKindText = `${tawkidKind.hint} ${tawkidKind.answers.map((answer) => `${answer.text} ${answer.hint || ""}`).join(" ")}`;
+    for (const word of ["نفس", "عين", "كل", "جميع", "عامة", "كلا", "كلتا"]) {
+      expect(tawkidKindText).toContain(word);
+    }
+    expect(tawkidKindText).toContain("ضمير");
+
+    const badalKind = tawabiBadalTree.nodes.tawabi_badal_kind as QuestionNode;
+    expect(new Set(
+      badalKind.answers.map((answer) => String(answer.eval?.equals || "")).filter(Boolean),
+    )).toEqual(new Set(["مطابق", "بعض من كل", "اشتمال"]));
+  });
+
+  test("يعوض زر أحتاج تلميح اختصار التوابع بقرينة موجهة من المثال", () => {
+    const badal = tawabiBadalTree.nodes.tawabi_badal_discovery as QuestionNode;
+    const help = studentHintText(badal, undefined, {
+      currentTarget: "نصفه",
+      facts: {
+        tawabiTerm: "badal",
+        relationKind: "substitution",
+        badalKind: "بعض من كل",
+        matbu3: "الرغيف",
+        matbu3Role: "مفعول به منصوب",
+        case: "nasb",
+      },
+    });
+    expect(help).toContain("جزء");
+    expect(help).toContain("حقيقي");
+    expect(help).toContain("الرغيف");
+
+    const badalKindNode = tawabiBadalTree.nodes.tawabi_badal_kind as QuestionNode;
+    const wrongMatched = badalKindNode.answers.find((answer) =>
+      answer.text.includes("مطابق"),
+    );
+    expect(wrongMatched).toBeTruthy();
+    const correction = studentHintText(badalKindNode, wrongMatched, {
+      currentTarget: "نصفه",
+      facts: {
+        tawabiTerm: "badal",
+        relationKind: "substitution",
+        badalKind: "بعض من كل",
+        matbu3: "الرغيف",
+        matbu3Role: "مفعول به منصوب",
+        case: "nasb",
+      },
+    });
+    expect(correction).toContain("البدل المطابق");
+    expect(correction).toContain("جزء");
+
+    const tawkid = tawabiTawkidTree.nodes.tawabi_tawkid_discovery as QuestionNode;
+    const tawkidHelp = studentHintText(tawkid, undefined, {
+      currentTarget: "نفسه",
+      facts: {
+        tawabiTerm: "tawkid",
+        relationKind: "emphasis",
+        tawkidKind: "manawi",
+        matbu3: "المدير",
+        matbu3Role: "فاعل مرفوع",
+        case: "raf3",
+      },
+    });
+    expect(tawkidHelp).toContain("نفس");
+    expect(tawkidHelp).toContain("ضمير");
+  });
+
+  test("السؤال الأول في كل تابع يعلّم تمييزه من بقية التوابع", () => {
+    const branches = [tawabiNaatTree, tawabiAtfTree, tawabiTawkidTree, tawabiBadalTree];
+    for (const tree of branches) {
+      const node = tree.nodes[tree.startNodeId] as QuestionNode;
+      const text = node.answers.map((answer) => answer.text).join(" | ");
+      expect(node.text).toContain("أي قرينة");
+      expect(text).toMatch(/تصف|صفة/u);
+      expect(text).toMatch(/حرف عطف/u);
+      expect(text).toMatch(/تكرر|توكيد/u);
+      expect(text).toMatch(/المقصود بالحكم/u);
+    }
+  });
+
+  test("تلميحات التوابع تحمل مفاتيح قصيرة وتطبيقًا على المثال", () => {
+    const naat = studentHintText(tawabiNaatTree.nodes.tawabi_naat_discovery as QuestionNode, undefined, {
+      currentTarget: "فوق الشجرة",
+      facts: { tawabiTerm: "naat", roleKind: "shibh", matbu3: "طائرًا", matbu3Role: "مفعول به منصوب", case: "nasb" },
+    });
+    expect(naat).toContain("شبه الجملة بعد النكرة");
+    expect(naat).toContain("صفة");
+
+    const atf = studentHintText(tawabiAtfTree.nodes.tawabi_atf_discovery as QuestionNode, undefined, {
+      currentTarget: "سليم",
+      facts: { tawabiTerm: "atf", connector: "الواو", matbu3: "خالد", matbu3Role: "فاعل مرفوع", case: "raf3" },
+    });
+    expect(atf).toContain("حرف عطف");
+    expect(atf).toContain("يتبع");
+
+    const badal = studentHintText(tawabiBadalTree.nodes.tawabi_badal_discovery as QuestionNode, undefined, {
+      currentTarget: "نصفه",
+      facts: { tawabiTerm: "badal", badalKind: "بعض من كل", matbu3: "الرغيف", matbu3Role: "مفعول به منصوب", case: "nasb" },
+    });
+    expect(badal).toContain("المقصود بالحكم");
+    expect(badal).toContain("تمهيد");
+    expect(badal).toContain("جزء");
+  });
+  test("يفصل في العطف بين اكتشاف حرف العطف وتحديد الحالة الإعرابية", () => {
+    const discovery = customTawabiPedagogyNode(
+      tawabiAtfTree.nodes.tawabi_atf_discovery as QuestionNode,
+      {
+        currentTarget: "المأموم",
+        facts: {
+          tawabiTerm: "atf",
+          relationKind: "coordination",
+          connector: "الفاء",
+          matbu3: "الإمام",
+          matbu3Role: "فاعل مرفوع",
+          case: "raf3",
+          roleKind: "mu3rab",
+        },
+      },
+    );
+
+    expect(discovery?.hint).toContain("الواو، الفاء، ثم، أو، أم، بل، لا، لكن، حتى");
+    expect(discovery?.hint).toContain("حرف عطف");
+    expect(discovery?.hint).toContain("(الفاء)");
+    const correct = discovery?.answers.find((answer) => answer.id === "relation_coordination");
+    expect(correct?.text).toContain("حرف عطف");
+    expect(correct?.text).not.toContain("الرفع");
+    expect(correct?.next).toBe("tawabi_case");
+
+    const caseNode = customTawabiPedagogyNode(
+      tawabiAtfTree.nodes.tawabi_case as QuestionNode,
+      {
+        currentTarget: "المأموم",
+        facts: {
+          tawabiTerm: "atf",
+          relationKind: "coordination",
+          connector: "الفاء",
+          matbu3: "الإمام",
+          matbu3Role: "فاعل مرفوع",
+          case: "raf3",
+          roleKind: "mu3rab",
+        },
+      },
+    );
+
+    expect(caseNode?.text).toContain("التابع (المأموم) جاء بعد حرف العطف (الفاء)");
+    expect(caseNode?.text).toContain("معطوف على (الإمام)");
+    expect(caseNode?.text).toContain("المعطوف يتبع المعطوف عليه في الحالة الإعرابية");
+    expect(caseNode?.text).toContain("(الإمام) فاعل مرفوع");
+    expect(caseNode?.text).toContain("فما الحالة الإعرابية للتابع (المأموم)");
+  });
+  test("يميّز النعت الجملة بعد النكرة ويذكر الرابط", () => {
+    const node = customTawabiPedagogyNode(
+      tawabiNaatTree.nodes.tawabi_naat_discovery as QuestionNode,
+      {
+        currentTarget: "أخلاقه حسنة",
+        facts: {
+          tawabiTerm: "naat",
+          roleKind: "sentence",
+          relationKind: "description",
+          case: "raf3",
+          matbu3: "طالب",
+          matbu3Role: "خبر مرفوع",
+          phraseKind: "جملة اسمية",
+          linkText: "الهاء في (أخلاقه) تعود على الطالب",
+        },
+      },
+    );
+    expect(node?.hint).toContain("نكرة");
+    expect(node?.hint).toContain("بعد النكرات صفات غالبًا");
+    expect(node?.hint).toContain("بعد المعارف");
+    expect(node?.hint).toContain("أحوال");
+    expect(node?.hint).toContain("الهاء في (أخلاقه) تعود على الطالب");
+  });
+
+  test("يجعل إعراب النعت الجملة وشبه الجملة بالمحل لا بالحركة", () => {
+    const samples = [
+      { roleKind: "sentence", target: "أخلاقه حسنة", matbu3: "طالب", matbu3Role: "خبر مرفوع", phraseKind: "جملة اسمية", case: "raf3", expected: "في محل رفع نعت" },
+      { roleKind: "shibh", target: "فوق الشجرة", matbu3: "طائرًا", matbu3Role: "مفعول به منصوب", phraseKind: "شبه جملة ظرفية", case: "nasb", expected: "في محل نصب نعت" },
+    ];
+    for (const sample of samples) {
+      const node = customTawabiPedagogyNode(
+        tawabiNaatTree.nodes.tawabi_case as QuestionNode,
+        {
+          currentTarget: sample.target,
+          facts: {
+            tawabiTerm: "naat",
+            roleKind: sample.roleKind,
+            relationKind: "description",
+            case: sample.case,
+            matbu3: sample.matbu3,
+            matbu3Role: sample.matbu3Role,
+            phraseKind: sample.phraseKind,
+          },
+        },
+      );
+      expect(node?.text).toContain("فما محل");
+      expect(node?.answers.map((answer) => answer.text)).toContain(sample.expected);
+      expect(node?.hint).toContain("نحدد محلها من إعراب المنعوت");
+    }
+  });
+  test("يربط سؤال حالة البدل بالمقصود بالحكم ثم بالمبدل منه", () => {
+    const node = customTawabiPedagogyNode(
+      tawabiBadalTree.nodes.tawabi_case as QuestionNode,
+      {
+        currentTarget: "أسلوبه",
+        facts: {
+          tawabiTerm: "badal",
+          matbu3: "الشاعر",
+          matbu3Role: "فاعل مرفوع",
+          case: "raf3",
+          roleKind: "mu3rab",
+        },
+      },
+    );
+
+    expect(node?.text).toContain("التابع (أسلوبه) هو المقصود بالحكم");
+    expect(node?.text).toContain("المتبوع (الشاعر) تمهيد له");
+    expect(node?.text).toContain("يمكن غالبًا حذفه");
+    expect(node?.text).toContain("البدل يتبع المبدل منه في الحالة الإعرابية");
+    expect(node?.text).toContain("(الشاعر) فاعل مرفوع");
+    expect(node?.text).toContain("فما الحالة الإعرابية للتابع (أسلوبه)");
+  });
   test("يقيد قاعدة الإحلال بالبدل المطابق", () => {
     const hint = tawabiTree.nodes.tawabi_relation.hint;
     expect(hint).toContain("البدل المطابق");

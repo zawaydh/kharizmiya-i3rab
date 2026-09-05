@@ -29,7 +29,7 @@ export function studentHintText(
   }
 
   if (!picked) {
-    const firstHint = firstLevelStudentHintText(node, state);
+    const firstHint = ["tawabi_naat_discovery", "tawabi_atf_discovery", "tawabi_tawkid_discovery", "tawabi_badal_discovery"].includes(id) ? tawabiStudentHintText(node, picked, state) : firstLevelStudentHintText(node, state);
     if (firstHint !== undefined) return firstHint;
   }
 

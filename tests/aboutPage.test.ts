@@ -18,6 +18,16 @@ describe("صفحة تعريف المنصة", () => {
     expect(about).not.toMatch(/Supabase|Vercel|SMTP|GitHub/u);
   });
 
+  test("يحافظ على السؤال الأساسي ظاهرًا على شاشة الهاتف", () => {
+    const about = read("app/about/page.tsx");
+    const responsive = read("app/styles/81-clean-responsive.css");
+
+    expect(about).toContain('className="home-entry-lead about-thinking-question"');
+    expect(responsive).toMatch(/\.home-entry-lead\s*\{\s*display:\s*none;\s*\}/u);
+    expect(responsive).toMatch(
+      /\.about-thinking-question\s*\{[^}]*display:\s*block;[^}]*\}/su,
+    );
+  });
   test("توجد في التنقل الرئيسي كرابط عام مستقل", () => {
     const navbar = read("app/components/Navbar.tsx");
 

@@ -25,50 +25,117 @@ export function tawabiStudentHintText(node: PedagogyNode | null | undefined, pic
     const correctShape = tawabiCorrectShapeHint(facts, targetText);
     const correctMark = tawabiCorrectMarkHint(facts, targetText);
     const roleKind = String(facts?.roleKind || "mu3rab");
+    // TAWABI_RELATION_FIRST_V22
     if (id === "tawabi_naat_discovery") {
-        if (isHelp)
-            return `انظر إلى العلاقة بين (${targetText}) و(${matbu3}): هل الكلمة وصفت الاسم السابق وبيّنت صفة فيه؟ ${correctRelation}`;
-        if (!pickedText.includes("تصف")) {
-            if (pickedText.includes("خبر"))
-                return `اخترتَ «${pickedText}»، لكن الخبر يتمم معنى مبتدأ ولا يتبع اسمًا قبله في صفته. هنا (${targetText}) وصفت (${matbu3}) وبيّنت صفة فيه؛ لذلك العلاقة نعت.`;
-            if (pickedText.includes("حال"))
-                return `اخترتَ «${pickedText}»، لكن الحال يبين هيئة صاحبه وقت وقوع الفعل ويجيب غالبًا عن «كيف؟». هنا (${targetText}) تصف (${matbu3}) نفسه؛ لذلك العلاقة نعت.`;
-            return `اخترتَ «${pickedText}»، لكن (${targetText}) تصف (${matbu3}) وتبين صفة فيه؛ لذلك تبدأ بها مسار النعت.`;
+        if (isHelp) {
+            if (roleKind === "sentence") {
+                const linkText = String(facts?.linkText || "").trim();
+                return `ابدأ بالتمييز: (${matbu3}) نكرة، وبعدها الجملة (${targetText}) جاءت لتصفها. تذكّر: الجمل وشبه الجمل بعد النكرات صفات غالبًا، وبعد المعارف أحوالًا غالبًا${linkText ? `. وفي الجملة رابط يعود على المنعوت: ${linkText}` : ""}.`;
+            }
+            if (roleKind === "shibh")
+                return `ابدأ بالتمييز: شبه الجملة بعد النكرة تكون صفة غالبًا؛ وهنا (${targetText}) تصف (${matbu3}). وبعد المعارف تكون أحوالًا غالبًا.`;
+            return `ابدأ بنوع العلاقة: (${targetText}) تصف (${matbu3}) وتبيّن صفة فيه؛ هذه قرينة النعت.`;
         }
-        return `صحيح؛ (${targetText}) تصف (${matbu3})، فالعلاقة نعت قبل أن ننقل الإعراب.`;
+        if (pickedText.includes("توكيد") || pickedText.includes("يكرر"))
+            return `هذه قرينة التوكيد، لا النعت. هنا (${targetText}) تضيف وصفًا لـ(${matbu3}).`;
+        if (pickedText.includes("حرف عطف"))
+            return `هذه قرينة عطف النسق. هنا لا يحكم العلاقة حرف عطف؛ بل (${targetText}) تصف (${matbu3}).`;
+        if (pickedText.includes("المقصود بالحكم"))
+            return `هذه قرينة البدل. هنا (${matbu3}) هو الموصوف، و(${targetText}) تبين صفة فيه؛ لذلك العلاقة نعت.`;
+        return `صحيح؛ أثبتنا علاقة الوصف أولًا، ثم نحدد صورة النعت في الخطوة التالية.`;
+    }
+    if (id === "tawabi_naat_kind") {
+        const linkText = String(facts?.linkText || "").trim();
+        if (isHelp) {
+            if (roleKind === "sentence")
+                return `في (${targetText}) إسناد كامل، فهي نعت جملة. (${matbu3}) نكرة، والجملة بعدها صفة غالبًا${linkText ? `، وفيها رابط يعود على المنعوت: ${linkText}` : ""}.`;
+            if (roleKind === "shibh")
+                return `(${targetText}) جار ومجرور أو ظرف بلا إسناد كامل؛ لذلك صورته نعت شبه جملة.`;
+            return `(${targetText}) كلمة واحدة تصف (${matbu3}) مباشرة؛ لذلك صورته نعت مفرد.`;
+        }
+        if (roleKind === "sentence" && !pickedText.includes("نعت جملة"))
+            return `في (${targetText}) إسناد كامل؛ لذلك صورته نعت جملة، لا «${pickedText}».`;
+        if (roleKind === "shibh" && !pickedText.includes("نعت شبه جملة"))
+            return `(${targetText}) جار ومجرور أو ظرف بلا إسناد كامل؛ لذلك صورته نعت شبه جملة.`;
+        if (roleKind === "mu3rab" && !pickedText.includes("نعت مفرد"))
+            return `(${targetText}) كلمة واحدة تصف المنعوت مباشرة؛ لذلك صورته نعت مفرد.`;
+        return `صحيح؛ حددت صورة النعت قبل الانتقال إلى إعرابه.`;
     }
     if (id === "tawabi_atf_discovery") {
         const connector = String(facts?.connector || "حرف العطف");
         if (isHelp)
-            return `ابحث قبل (${targetText}) عن حرف العطف. هنا الرابط هو (${connector})، وقد أشرك (${targetText}) مع (${matbu3}) في الحكم.`;
-        if (!pickedText.includes("حرف عطف"))
-            return `المؤثر هنا هو (${connector})؛ فقد ربط (${targetText}) بـ(${matbu3}) وجعلهما يشتركان في الحكم، ولذلك تبدأ مسار العطف.`;
-        return `صحيح؛ (${connector}) حرف عطف أشرك (${targetText}) مع (${matbu3}) في الحكم.`;
+            return `قبل (${targetText}) يوجد حرف عطف، وهو (${connector})؛ ومن حروف العطف: الواو، الفاء، ثم، أو، أم، بل، لا، لكن، حتى؛ وهذه قرينتك. بعد إثبات العطف، المعطوف يتبع المعطوف عليه في الحالة الإعرابية.`;
+        if (pickedText.includes("تصف"))
+            return `هذه قرينة النعت. هنا (${connector}) حرف عطف ربط (${targetText}) بما قبله وأشركه معه في الحكم.`;
+        if (pickedText.includes("توكيد") || pickedText.includes("يكرر"))
+            return `هذه قرينة التوكيد. هنا القرينة المباشرة هي (${connector})، وهو حرف عطف.`;
+        if (pickedText.includes("المقصود بالحكم"))
+            return `هذه قرينة البدل. هنا (${connector}) حرف عطف أشرك (${targetText}) مع ما قبله؛ لذلك العلاقة عطف.`;
+        return `صحيح؛ ثبت العطف من حرف العطف، وننتقل الآن إلى حالة المعطوف عليه.`;
     }
     if (id === "tawabi_tawkid_discovery") {
+        const kind = String(facts?.tawkidKind || "");
+        const semanticWord = ["نفس", "عين", "كل", "جميع", "عامة", "كلا", "كلتا"].find((word) => targetText.includes(word)) || "لفظ توكيد معنوي";
+        const semanticPronoun = targetText.endsWith("هما") ? "هما"
+            : targetText.endsWith("هم") ? "هم"
+              : targetText.endsWith("هن") ? "هن"
+                : targetText.endsWith("ها") ? "ها"
+                  : targetText.endsWith("ه") ? "الهاء"
+                    : "ضمير متصل";
         if (isHelp)
-            return `اسأل: هل أضافت (${targetText}) صفة جديدة، أم ثبتت معنى (${matbu3}) ورفعت الشك؟ ${correctRelation}`;
-        if (!pickedText.includes("أكدته")) {
-            if (pickedText.includes("وصف"))
-                return `اخترتَ «${pickedText}»، لكن (${targetText}) لم تضف صفة جديدة إلى (${matbu3})؛ بل قوّت معناه ورفعت احتمال الشك، فالعلاقة توكيد.`;
-            if (pickedText.includes("بدل") || pickedText.includes("توضح"))
-                return `اخترتَ «${pickedText}»، لكن البدل يبين المقصود من الاسم أو جزءًا منه أو معنى يشتمل عليه. هنا (${targetText}) تثبت معنى (${matbu3})؛ لذلك العلاقة توكيد.`;
-            return `اخترتَ «${pickedText}»، لكن (${targetText}) أكدت معنى (${matbu3})، ولذلك ننتقل بعد ذلك إلى نوع التوكيد.`;
-        }
-        return `صحيح؛ (${targetText}) أكدت (${matbu3})، والخطوة التالية تحديد: لفظي أم معنوي.`;
+            return kind === "lafzi"
+                ? `تكرر (${targetText}) بعد (${matbu3}) من غير حرف عطف ومن غير وصف جديد؛ هذه قرينة التوكيد.`
+                : `(${targetText}) يشتمل على (${semanticWord})، واتصل باللفظ الضمير (${semanticPronoun}) العائد على (${matbu3})؛ وهذه قرينة التوكيد المعنوي.`;
+        if (pickedText.includes("تصف"))
+            return `هذه قرينة النعت. هنا لا يضيف (${targetText}) وصفًا جديدًا؛ بل يقوّي معنى (${matbu3}).`;
+        if (pickedText.includes("حرف عطف"))
+            return `هذه قرينة العطف. هنا لا يقوم حرف عطف بالعلاقة؛ القرينة هي ${kind === "lafzi" ? "تكرار اللفظ" : `لفظ (${semanticWord}) مع الضمير العائد`}.`;
+        if (pickedText.includes("المقصود بالحكم"))
+            return `هذه قرينة البدل. التوكيد لا يجعل التابع مقصودًا بدل المؤكَّد؛ بل يثبت معناه.`;
+        return `صحيح؛ ثبتت علاقة التوكيد، ونحدد نوعه في الخطوة التالية.`;
     }
     if (id === "tawabi_badal_discovery") {
         const badalKind = String(facts?.badalKind || "");
-        if (isHelp)
-            return `اختبر العلاقة بين (${targetText}) و(${matbu3}): هل هو المقصود نفسه، أم جزء منه، أم معنى يشتمل عليه؟ هنا النوع: ${badalKind || "بدل"}. ${correctRelation}`;
-        if (!pickedText.includes("توضح")) {
-            if (pickedText.includes("وصف"))
-                return `اخترتَ «${pickedText}»، لكن (${targetText}) لا تضيف صفة إلى (${matbu3})؛ بل تبين المقصود منه أو جزءًا منه أو معنى يشتمل عليه، ولذلك هي بدل.`;
-            if (pickedText.includes("توكيد") || pickedText.includes("أكد"))
-                return `اخترتَ «${pickedText}»، لكن التوكيد يقوي معنى الاسم نفسه، أما (${targetText}) فتفسر (${matbu3}) أو تبين جزءًا أو معنى مرتبطًا به؛ لذلك هي بدل.`;
-            return `اخترتَ «${pickedText}»، لكن (${targetText}) تبين المقصود من (${matbu3}) أو جزءًا منه أو معنى مرتبطًا به؛ لذلك هي بدل.`;
+        if (isHelp) {
+            const key = `تذكّر مفتاح البدل: التابع هو المقصود بالحكم، والمتبوع (${matbu3}) تمهيد له ويمكن غالبًا حذفه.`;
+            if (badalKind === "مطابق")
+                return `${key} هنا (${targetText}) هو عين (${matbu3}) نفسه.`;
+            if (badalKind === "بعض من كل")
+                return `${key} هنا (${targetText}) جزء مادي حقيقي من (${matbu3})؛ وهذه قرينة تربطه بالمبدل منه من غير أن تجعله مجرد وصف.`;
+            if (badalKind === "اشتمال")
+                return `${key} هنا (${targetText}) معنى أو صفة يشتمل عليها (${matbu3}) وليست جزءًا ماديًا منه.`;
+            return key;
         }
-        return `صحيح؛ علاقة (${targetText}) بـ(${matbu3}) هي بدل ${badalKind ? `(${badalKind})` : ""}.`;
+        if (pickedText.includes("تصف"))
+            return `هذه قرينة النعت. في البدل يكون التابع نفسه هو المقصود بالحكم، لا مجرد وصف للمتبوع.`;
+        if (pickedText.includes("توكيد") || pickedText.includes("يكرر"))
+            return `هذه قرينة التوكيد. في البدل التابع نفسه هو المقصود بالحكم، لا مجرد تقوية معنى المتبوع.`;
+        if (pickedText.includes("حرف عطف"))
+            return `هذه قرينة عطف النسق. في هذا المثال لا يقوم حرف عطف بهذه الوظيفة؛ اختبر من المقصود بالحكم.`;
+        return `صحيح؛ ثبت أن التابع هو المقصود بالحكم، ونحدد نوع البدل في الخطوة التالية.`;
+    }
+    if (id === "tawabi_badal_kind") {
+        const badalKind = String(facts?.badalKind || "");
+        if (isHelp) {
+            if (badalKind === "مطابق")
+                return `(${targetText}) هو عين (${matbu3}) نفسه ويمكن أن يحل محله؛ فهذا بدل مطابق.`;
+            if (badalKind === "بعض من كل")
+                return `(${targetText}) جزء مادي حقيقي من (${matbu3})؛ فهذا بدل بعض من كل.`;
+            return `(${targetText}) معنى أو صفة يشتمل عليها (${matbu3}) وليست جزءًا ماديًا منه؛ فهذا بدل اشتمال.`;
+        }
+        if (pickedText.includes("مطابق") && badalKind !== "مطابق")
+            return badalKind === "بعض من كل"
+                ? `البدل المطابق يكون التابع فيه هو المبدل منه نفسه، أما (${targetText}) هنا فهو جزء حقيقي من (${matbu3})؛ لذلك ليس بدلًا مطابقًا.`
+                : `البدل المطابق يكون التابع فيه هو المبدل منه نفسه، أما (${targetText}) هنا فمعنى يشتمل عليه (${matbu3}) وليس هو عينه.`;
+        if (pickedText.includes("بعض") && badalKind !== "بعض من كل")
+            return `بدل بعض من كل يكون جزءًا ماديًا حقيقيًا من المبدل منه. هذه ليست العلاقة هنا.`;
+        if (pickedText.includes("اشتمال") && badalKind !== "اشتمال")
+            return `بدل الاشتمال معنى أو صفة يشتمل عليها المبدل منه وليست جزءًا ماديًا منه. هذه ليست العلاقة هنا.`;
+        return badalKind === "مطابق"
+            ? `صحيح؛ (${targetText}) بدل مطابق لأنه هو (${matbu3}) نفسه.`
+            : badalKind === "بعض من كل"
+              ? `صحيح؛ (${targetText}) بدل بعض من كل لأنه جزء حقيقي من (${matbu3}).`
+              : `صحيح؛ (${targetText}) بدل اشتمال لأنه معنى يتعلق بـ(${matbu3}) وليس جزءًا ماديًا منه.`;
     }
     if (id === "tawabi_entry") {
         if (isHelp)
@@ -107,21 +174,42 @@ export function tawabiStudentHintText(node: PedagogyNode | null | undefined, pic
         if (isHelp)
             return kind === "lafzi"
                 ? `لاحظ أن (${targetText}) أعادت اللفظ نفسه؛ إذن هذا توكيد لفظي.`
-                : `لاحظ أن (${targetText}) من ألفاظ التوكيد المعنوي، وفيها غالبًا ضمير يعود على المؤكَّد.`;
+                : `لاحظ أن (${targetText}) من ألفاظ التوكيد المعنوي: نفس، عين، كل، جميع، عامة، كلا، كلتا، واتصل باللفظ ضمير يعود على المؤكَّد.`;
         if (kind === "lafzi" && !pickedText.includes("تكرار"))
             return `اخترتَ «${pickedText}»، لكن التوكيد هنا حصل بتكرار اللفظ نفسه؛ لذلك هو توكيد لفظي، لا معنوي.`;
         if (kind === "manawi" && !pickedText.includes("ألفاظ"))
-            return `اخترتَ «${pickedText}»، لكن اللفظ نفسه لم يتكرر؛ بل جاءت كلمة من ألفاظ التوكيد المعنوي مثل: نفس، عين، كل، جميع، كلا، كلتا.`;
+            return `اخترتَ «${pickedText}»، لكن اللفظ نفسه لم يتكرر؛ بل جاءت كلمة من ألفاظ التوكيد المعنوي: نفس، عين، كل، جميع، عامة، كلا، كلتا، واتصل باللفظ ضمير يعود على المؤكَّد.`;
         return kind === "lafzi" ? "صحيح؛ هذا توكيد لفظي لأنه أعاد اللفظ." : "صحيح؛ هذا توكيد معنوي لأنه جاء بلفظ من ألفاظه.";
     }
-    if (id === "tawabi_case") {
+    if (id === "tawabi_case" && String(facts?.tawabiTerm || "") === "naat" && (roleKind === "sentence" || roleKind === "shibh")) {
+        const phraseLabel = roleKind === "sentence" ? "الجملة" : "شبه الجملة";
+        const locus = String(facts?.case || "") === "raf3"
+            ? "في محل رفع نعت"
+            : String(facts?.case || "") === "nasb"
+              ? "في محل نصب نعت"
+              : "في محل جر نعت";
         if (isHelp)
+            return `(${matbu3}) ${matbu3Role}. و(${targetText}) ${phraseLabel} نعت له؛ لذلك لا نبحث عن حركة على التركيب كله، بل عن محله: ${locus}.`;
+        if (!pickedText.includes(locus))
+            return `راجع محل المنعوت: (${matbu3}) ${matbu3Role}. إذن ${phraseLabel} (${targetText}) تكون ${locus}.`;
+        return `صحيح؛ ${phraseLabel} (${targetText}) ${locus}.`;
+    }    if (id === "tawabi_case") {
+        const inPosition = roleKind === "sentence" || roleKind === "shibh";
+        if (isHelp) {
+            if (inPosition)
+                return `(${targetText}) ${roleKind === "sentence" ? "جملة" : "شبه جملة"} تابعة لـ(${matbu3}). لا نضع حركة على التركيب كله؛ نقول «في محل» بحسب المتبوع. (${matbu3}) ${matbu3Role}، فحدد المحل الموافق.`;
             return `المتبوع هو (${matbu3})، وإعرابه: ${matbu3Role}. لذلك حالة (${targetText}) هي ${correctCase}.`;
+        }
+        if (inPosition) {
+            const wanted = correctCase.includes("رفع") ? "في محل رفع" : correctCase.includes("نصب") ? "في محل نصب" : "في محل جر";
+            if (!pickedText.includes(wanted.replace("في محل ", "")))
+                return `اختيار «${pickedText}» لا يوافق إعراب (${matbu3}) وهو ${matbu3Role}. ولأن (${targetText}) تركيب تابع، عبّر عن موقعه بصيغة «في محل ...».`;
+            return `صحيح؛ (${targetText}) ${wanted} لأنه تابع لـ(${matbu3}) وهو ${matbu3Role}.`;
+        }
         if (!pickedText.includes(correctCase.replace("ال", "")))
             return `راجع المتبوع لا التابع وحده: (${matbu3}) ${matbu3Role}. إذن التابع يأخذ ${correctCase}، وليس ${pickedText}.`;
         return `صحيح؛ لأن (${matbu3}) ${matbu3Role}، أخذ (${targetText}) منه ${correctCase}.`;
-    }
-    if (id === "tawabi_form") {
+    }    if (id === "tawabi_form") {
         if (isHelp) {
             if (roleKind === "sentence")
                 return `(${targetText}) جملة كاملة، لا نعرب الفعل أو الاسم الأول وحده. وهي نعت جملة لأن المنعوت (${matbu3}) نكرة، وفيها رابط: ${facts?.linkText || "ضمير يعود على المنعوت"}.`;

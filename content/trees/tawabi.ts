@@ -3,123 +3,184 @@ import type { ExerciseNode, ExerciseTree } from "../../lib/exercise/model";
 const tawabiSourceTree: ExerciseTree = {
     startNodeId: "tawabi_entry",
     nodes: {
+        // TAWABI_RELATION_FIRST_V22
+        // القرار الأول في كل تابع يميّز نوع العلاقة فقط: نعت / توكيد / عطف / بدل.
+        // التصنيف الفرعي والحالة الإعرابية ينتقلان إلى خطوات مستقلة.
         tawabi_naat_discovery: {
             id: "tawabi_naat_discovery",
             type: "question",
-            context: "قبل الإعراب نثبت سبب دخول الكلمة في باب النعت؛ فالمصطلح يأتي بعد فهم العلاقة.",
-            text: "ما الدليل الذي يثبت أن الكلمة المحددة نعت للاسم السابق؟",
-            hint: "النعت يصف اسمًا قبله أو يخصصه بصفة فيه. لا تخلطه بالخبر الذي يتمم معنى الجملة، ولا بالحال التي تبين الهيئة وقت الفعل.",
+            context: "لا تعتمد على اسم الباب؛ ميّز نوع العلاقة أولًا، ثم حدّد صورة النعت في خطوة مستقلة.",
+            text: "أي قرينة تميّز علاقة التابع بالاسم السابق في الجملة؟",
+            hint: "ابدأ بنوع العلاقة فقط: وصف، توكيد، عطف، أو بدل. بعد ثبوت النعت سنحدد هل جاء كلمة أم جملة أم شبه جملة.",
             answers: [
                 {
-                    id: "description",
-                    text: "تصف الاسم السابق وتبين صفة فيه",
-                    next: "tawabi_case",
+                    id: "relation_description",
+                    text: "التابع يصف الاسم السابق ويبيّن صفة فيه",
+                    next: "tawabi_naat_kind",
                     eval: { fact: "relationKind", equals: "description" },
-                    hint: "ابحث عن الصفة التي أضافتها الكلمة إلى الاسم السابق؛ هذه هي علاقة النعت بالمنعوت."
+                    hint: "هذه قرينة النعت: التابع يضيف وصفًا للاسم السابق نفسه."
                 },
                 {
-                    id: "predicate",
-                    text: "تتم معنى الجملة عن مبتدأ كخبر",
+                    id: "relation_emphasis",
+                    text: "التابع يكرر المعنى أو يأتي بلفظ مخصوص للتوكيد",
                     next: "tawabi_naat_discovery",
                     correct: false,
-                    hint: "الخبر ركن يتمم الجملة، أما الكلمة هنا فترجع إلى اسم قبلها وتصفه."
+                    hint: "هذه قرينة التوكيد، لا النعت."
                 },
                 {
-                    id: "state",
-                    text: "تبين هيئة صاحبها وقت حدوث الفعل كحال",
+                    id: "relation_coordination",
+                    text: "سبق التابع حرف عطف فأشركه مع ما قبله في الحكم",
                     next: "tawabi_naat_discovery",
                     correct: false,
-                    hint: "الحال يبين الهيئة وقت الفعل، أما النعت فيبين صفة في الاسم السابق نفسه."
+                    hint: "هذه قرينة عطف النسق، لا النعت."
+                },
+                {
+                    id: "relation_substitution",
+                    text: "التابع هو المقصود بالحكم والمتبوع تمهيد له ويمكن غالبًا حذفه",
+                    next: "tawabi_naat_discovery",
+                    correct: false,
+                    hint: "هذه قرينة البدل. في النعت يبقى الاسم السابق هو الموصوف، والتابع يبين صفة فيه."
+                }
+            ]
+        },
+        tawabi_naat_kind: {
+            id: "tawabi_naat_kind",
+            type: "question",
+            context: "ثبت أن العلاقة نعت؛ نحدد الآن صورة النعت فقط.",
+            text: "ما صورة النعت في هذا المثال؟",
+            hint: "انظر إلى المحدد كله: كلمة واحدة، أم جملة فيها إسناد، أم شبه جملة من جار ومجرور أو ظرف؟",
+            answers: [
+                {
+                    id: "naat_word",
+                    text: "نعت مفرد: كلمة واحدة",
+                    next: "tawabi_case",
+                    eval: { fact: "roleKind", equals: "mu3rab" },
+                    hint: "النعت المفرد كلمة واحدة تصف المنعوت مباشرة."
+                },
+                {
+                    id: "naat_sentence",
+                    text: "نعت جملة: جملة كاملة تصف نكرة قبلها",
+                    next: "tawabi_case",
+                    eval: { fact: "roleKind", equals: "sentence" },
+                    hint: "الجمل وشبه الجمل بعد النكرات تكون صفات غالبًا، ويكون في الجملة رابط يعود على المنعوت."
+                },
+                {
+                    id: "naat_shibh",
+                    text: "نعت شبه جملة: جار ومجرور أو ظرف يصف نكرة قبله",
+                    next: "tawabi_case",
+                    eval: { fact: "roleKind", equals: "shibh" },
+                    hint: "شبه الجملة بعد النكرة يكون صفة غالبًا إذا جاء ليصفها."
                 }
             ]
         },
         tawabi_atf_discovery: {
             id: "tawabi_atf_discovery",
             type: "question",
-            context: "قبل نقل الإعراب نثبت سبب العطف من تركيب الجملة نفسها.",
-            text: "ما الدليل الذي جعل الكلمة المحددة معطوفة على الاسم السابق؟",
-            hint: "ابحث قبل الكلمة عن حرف عطف مثل: الواو، الفاء، ثم، أو. الحرف يشرك ما بعده مع ما قبله في الحكم.",
+            context: "لا تعتمد على اسم الباب؛ ميّز نوع العلاقة أولًا، ثم انقل الحالة الإعرابية في خطوة مستقلة.",
+            text: "أي قرينة تميّز علاقة التابع بالاسم السابق في الجملة؟",
+            hint: "ابحث عن حرف عطف ظاهر. من حروف العطف: الواو، الفاء، ثم، أو، أم، بل، لا، لكن، حتى. بعد ثبوت العطف، المعطوف يتبع المعطوف عليه في الحالة الإعرابية.",
             answers: [
                 {
-                    id: "coordination",
-                    text: "حرف العطف أشرك الكلمة مع ما قبلها في الحكم",
+                    id: "relation_coordination",
+                    text: "سبق التابع حرف عطف فأشركه مع ما قبله في الحكم",
                     next: "tawabi_case",
                     eval: { fact: "relationKind", equals: "coordination" },
-                    hint: "حدّد حرف العطف في المثال، ثم لاحظ أن الكلمة بعده شاركت الاسم السابق في الحكم."
+                    hint: "هذه قرينة العطف: حرف العطف يربط التابع بما قبله ويشركه معه في الحكم."
                 },
                 {
-                    id: "description",
-                    text: "وصفت الاسم السابق بصفة جديدة",
+                    id: "relation_description",
+                    text: "التابع يصف الاسم السابق ويبيّن صفة فيه",
                     next: "tawabi_atf_discovery",
                     correct: false,
-                    hint: "وجود حرف العطف هو المؤثر هنا؛ الكلمة شاركت ما قبلها في الحكم ولم تأت لوصفه."
+                    hint: "هذه قرينة النعت. في العطف ابحث عن حرف عطف ظاهر قبل التابع."
                 },
                 {
-                    id: "emphasis",
-                    text: "أكدت الاسم السابق من غير حرف عطف",
+                    id: "relation_emphasis",
+                    text: "التابع يكرر المعنى أو يأتي بلفظ مخصوص للتوكيد",
                     next: "tawabi_atf_discovery",
                     correct: false,
-                    hint: "التوكيد لا يحتاج حرف عطف، أما هنا فحرف العطف هو الذي ربط الكلمتين."
+                    hint: "هذه قرينة التوكيد، لا العطف."
+                },
+                {
+                    id: "relation_substitution",
+                    text: "التابع هو المقصود بالحكم والمتبوع تمهيد له ويمكن غالبًا حذفه",
+                    next: "tawabi_atf_discovery",
+                    correct: false,
+                    hint: "هذه قرينة البدل. في العطف يشترك الطرفان في الحكم بسبب حرف العطف."
                 }
             ]
         },
         tawabi_tawkid_discovery: {
             id: "tawabi_tawkid_discovery",
             type: "question",
-            context: "نثبت أولًا وظيفة الكلمة في المعنى، ثم نحدد نوع التوكيد.",
-            text: "ماذا فعلت الكلمة المحددة بالاسم السابق؟",
-            hint: "التوكيد يقوي المعنى أو يرفع الشك، ولا يضيف صفة جديدة ولا يفسر اسمًا غامضًا.",
+            context: "لا تعتمد على اسم الباب؛ ميّز نوع العلاقة أولًا، ثم حدّد نوع التوكيد في خطوة مستقلة.",
+            text: "أي قرينة تميّز علاقة التابع بالاسم السابق في الجملة؟",
+            hint: "التوكيد يقوّي معنى الاسم السابق ولا يضيف وصفًا جديدًا. بعد إثبات التوكيد سنحدد هل هو لفظي أم معنوي.",
             answers: [
                 {
-                    id: "emphasis",
-                    text: "أكدته وقوّت معناه من غير أن تضيف صفة جديدة",
+                    id: "relation_emphasis",
+                    text: "التابع يكرر المعنى أو يأتي بلفظ مخصوص للتوكيد",
                     next: "tawabi_tawkid_kind",
                     eval: { fact: "relationKind", equals: "emphasis" },
-                    hint: "اسأل: هل الكلمة كررت اللفظ أو جاءت بلفظ من ألفاظ التوكيد مثل نفس وكل وجميع؟"
+                    hint: "هذه قرينة التوكيد. بعد ثبوت العلاقة نحدد هل التوكيد لفظي أم معنوي."
                 },
                 {
-                    id: "description",
-                    text: "وصفته بصفة جديدة",
+                    id: "relation_description",
+                    text: "التابع يصف الاسم السابق ويبيّن صفة فيه",
                     next: "tawabi_tawkid_discovery",
                     correct: false,
-                    hint: "الوصف يضيف صفة، أما الكلمة هنا فثبتت المعنى الموجود ولم تضف وصفًا جديدًا."
+                    hint: "هذه قرينة النعت؛ النعت يضيف وصفًا جديدًا."
                 },
                 {
-                    id: "substitution",
-                    text: "فسرت المقصود منه بوصفها بدلًا",
+                    id: "relation_coordination",
+                    text: "سبق التابع حرف عطف فأشركه مع ما قبله في الحكم",
                     next: "tawabi_tawkid_discovery",
                     correct: false,
-                    hint: "البدل يوضح المقصود أو جزءًا منه، أما هذه الكلمة فغرضها تقوية المعنى."
+                    hint: "هذه قرينة عطف النسق، لا التوكيد."
+                },
+                {
+                    id: "relation_substitution",
+                    text: "التابع هو المقصود بالحكم والمتبوع تمهيد له ويمكن غالبًا حذفه",
+                    next: "tawabi_tawkid_discovery",
+                    correct: false,
+                    hint: "هذه قرينة البدل. التوكيد يثبت معنى المؤكَّد ولا يحل محله."
                 }
             ]
         },
         tawabi_badal_discovery: {
             id: "tawabi_badal_discovery",
             type: "question",
-            context: "قبل الإعراب نثبت علاقة البدل بالمبدل منه، ثم ننقل الحالة الإعرابية.",
-            text: "ما العلاقة التي تثبت أن الكلمة المحددة بدل من الاسم السابق؟",
-            hint: "البدل يوضح المقصود من الاسم السابق، أو يذكر جزءًا حقيقيًا منه، أو معنى يشتمل عليه. وفي بدل البعض والاشتمال يوجد غالبًا ضمير يعود على المبدل منه.",
+            context: "لا تعتمد على اسم الباب؛ ميّز نوع العلاقة أولًا، ثم حدّد نوع البدل في خطوة مستقلة.",
+            text: "أي قرينة تميّز علاقة التابع بالاسم السابق في الجملة؟",
+            hint: "مفتاح البدل: التابع هو المقصود بالحكم، والمتبوع تمهيد له ويمكن غالبًا حذفه. بعد ثبوت البدل نحدد نوعه.",
             answers: [
                 {
-                    id: "substitution",
-                    text: "توضح المقصود منه أو تذكر جزءًا أو معنى مرتبطًا به",
+                    id: "relation_substitution",
+                    text: "التابع هو المقصود بالحكم والمتبوع تمهيد له ويمكن غالبًا حذفه",
                     next: "tawabi_badal_kind",
                     eval: { fact: "relationKind", equals: "substitution" },
-                    hint: "اختبر العلاقة: أهي الاسم المقصود نفسه، أم جزء منه، أم معنى يشتمل عليه؟ هذه صور البدل الأساسية."
+                    hint: "هذه قرينة البدل: التابع نفسه هو المقصود بالحكم."
                 },
                 {
-                    id: "description",
-                    text: "تصف الاسم السابق بصفة فيه",
+                    id: "relation_description",
+                    text: "التابع يصف الاسم السابق ويبيّن صفة فيه",
                     next: "tawabi_badal_discovery",
                     correct: false,
-                    hint: "النعت يصف، أما البدل فيوضح المقصود أو يذكر جزءًا أو معنى من المبدل منه."
+                    hint: "هذه قرينة النعت. في البدل يكون التابع نفسه هو المقصود بالحكم."
                 },
                 {
-                    id: "emphasis",
-                    text: "تؤكد الاسم السابق ولا تضيف معنى جديدًا",
+                    id: "relation_emphasis",
+                    text: "التابع يكرر المعنى أو يأتي بلفظ مخصوص للتوكيد",
                     next: "tawabi_badal_discovery",
                     correct: false,
-                    hint: "التوكيد يقوي المعنى، أما الكلمة هنا فتفسر المقصود أو تبين جزءًا أو معنى منه."
+                    hint: "هذه قرينة التوكيد. التوكيد يقوي معنى المتبوع، أما البدل فالبدل نفسه هو المقصود بالحكم."
+                },
+                {
+                    id: "relation_coordination",
+                    text: "سبق التابع حرف عطف فأشركه مع ما قبله في الحكم",
+                    next: "tawabi_badal_discovery",
+                    correct: false,
+                    hint: "هذه قرينة عطف النسق، لا البدل."
                 }
             ]
         },
@@ -128,14 +189,14 @@ const tawabiSourceTree: ExerciseTree = {
             type: "question",
             context: "ثبت أن الكلمة بدل. نحدد الآن نوع العلاقة قبل نقل الحالة الإعرابية من المبدل منه.",
             text: "ما نوع البدل في هذا المثال؟",
-            hint: "إذا كانت الكلمة الثانية هي المقصودة نفسها ويمكن أن تحل محل الأولى فهي بدل مطابق. وإذا كانت جزءًا حقيقيًا منها فهي بعض من كل. وإذا كانت معنى أو صفة تشتمل عليها وليست جزءًا ماديًا فهي بدل اشتمال.",
+            hint: "إذا كان التابع هو المبدل منه نفسه فهو بدل مطابق. وإذا كان جزءًا حقيقيًا منه فهو بعض من كل. وإذا كان معنى أو صفة يشتمل عليها وليس جزءًا ماديًا فهو بدل اشتمال.",
             answers: [
-                { id: "matched", text: "بدل مطابق", next: "tawabi_case", eval: { fact: "badalKind", equals: "مطابق" }, hint: "جرّب حذف المبدل منه ووضع البدل مكانه؛ إذا بقي المعنى مستقيمًا وكانت الكلمة الثانية هي المقصودة نفسها، فهو بدل مطابق." },
-                { id: "part", text: "بدل بعض من كل", next: "tawabi_case", eval: { fact: "badalKind", equals: "بعض من كل" }, hint: "ابحث عن جزء حقيقي من المبدل منه، وغالبًا يتصل بالبدل ضمير يعود عليه." },
-                { id: "inclusion", text: "بدل اشتمال", next: "tawabi_case", eval: { fact: "badalKind", equals: "اشتمال" }, hint: "ابحث عن معنى أو صفة تتعلق بالمبدل منه وليست جزءًا ماديًا منه، وغالبًا يتصل بها ضمير يعود عليه." },
+                { id: "matched", text: "بدل مطابق", next: "tawabi_case", eval: { fact: "badalKind", equals: "مطابق" }, hint: "في البدل المطابق يكون التابع هو المبدل منه نفسه، ويمكن إحلاله محله دون اختلال المعنى." },
+                { id: "part", text: "بدل بعض من كل", next: "tawabi_case", eval: { fact: "badalKind", equals: "بعض من كل" }, hint: "بدل بعض من كل جزء حقيقي من المبدل منه، وغالبًا يتصل به ضمير يعود عليه." },
+                { id: "inclusion", text: "بدل اشتمال", next: "tawabi_case", eval: { fact: "badalKind", equals: "اشتمال" }, hint: "بدل الاشتمال معنى أو صفة تتعلق بالمبدل منه وليست جزءًا ماديًا منه، وغالبًا يتصل بها ضمير يعود عليه." }
             ]
         },
-                tawabi_entry: {
+        tawabi_entry: {
             id: "tawabi_entry",
             type: "question",
             context: "في الجملة قد تكون الكلمة ركنًا مستقلًا، وقد تكون راجعة إلى اسم قبلها تكمله أو تؤكده أو تشاركه أو تفسره. نبدأ من هذا الفرق قبل المصطلح.",
@@ -227,7 +288,7 @@ const tawabiSourceTree: ExerciseTree = {
             type: "question",
             context: "عرفنا أن الكلمة أكدت ما قبلها. الآن نحدد كيف حصل التوكيد دون إطالة المسار.",
             text: "كيف أكدت الكلمة ما قبلها؟",
-            hint: "إن أعادت الكلمة اللفظ نفسه فهو توكيد لفظي. وإن جاءت بألفاظ مثل: نفس، عين، كل، جميع، كلا، كلتا؛ فهو توكيد معنوي.",
+            hint: "إن أعادت الكلمة اللفظ نفسه فهو توكيد لفظي. وإن جاءت بأحد ألفاظ التوكيد المعنوي: نفس، عين، كل، جميع، عامة، كلا، كلتا، واتصل باللفظ ضمير يعود على المؤكَّد؛ فهو توكيد معنوي.",
             answers: [
                 {
                     id: "lafzi",
@@ -238,10 +299,10 @@ const tawabiSourceTree: ExerciseTree = {
                 },
                 {
                     id: "manawi",
-                    text: "جاءت بأحد ألفاظ التوكيد المعنوي مثل: نفس، عين، كل، جميع، كلا، كلتا",
+                    text: "جاءت بأحد ألفاظ التوكيد المعنوي: نفس، عين، كل، جميع، عامة، كلا، كلتا، واتصل باللفظ ضمير يعود على المؤكَّد",
                     next: "tawabi_case",
                     eval: { fact: "tawkidKind", equals: "manawi" },
-                    hint: "التوكيد المعنوي يكون بألفاظ مخصوصة، ويحتاج غالبًا ضميرًا يعود على المؤكَّد، مثل: نفسُه، كلُّهم، جميعُهم."
+                    hint: "التوكيد المعنوي يكون بألفاظ مخصوصة: نفس، عين، كل، جميع، عامة، كلا، كلتا، ويتصل باللفظ ضمير يعود على المؤكَّد، مثل: نفسُه، كلُّهم، كلاهما."
                 }
             ]
         },
@@ -324,16 +385,35 @@ function createTawabiBranchTree(startNodeId: string, practiceStartNodeId: string
     const queue = [startNodeId];
     const branchNodes: Record<string, ExerciseNode> = {};
     const skipFormQuestion = allowedForms.length === 1 && allowedForms[0] === "mu3rab";
+    const naatFormIsClassifiedBeforeCase = startNodeId === "tawabi_naat_discovery";
     const nodeForBranch = (id: string) => {
         const source = tawabiSourceTree.nodes[id];
         if (!source)
             throw new Error(`عقدة التوابع غير موجودة: ${id}`);
-        if (id === "tawabi_case" && skipFormQuestion) {
+        if (id === "tawabi_case" && (skipFormQuestion || naatFormIsClassifiedBeforeCase)) {
             if (source.type !== "question")
                 throw new Error("عقدة tawabi_case يجب أن تكون سؤالًا.");
+            if (!naatFormIsClassifiedBeforeCase) {
+                return {
+                    ...source,
+                    answers: source.answers.map((answer) => ({ ...answer, next: "tawabi_shape" })),
+                };
+            }
             return {
                 ...source,
-                answers: source.answers.map((answer) => ({ ...answer, next: "tawabi_shape" })),
+                answers: source.answers.map((answer) => ({
+                    ...answer,
+                    next: "tawabi_shape",
+                    nextByFact: {
+                        fact: "roleKind",
+                        map: {
+                            mu3rab: "tawabi_shape",
+                            sentence: "tawabi_sentence_type",
+                            shibh: "R_tawabi_shibh",
+                        },
+                        default: "tawabi_shape",
+                    },
+                })),
             };
         }
         if (id !== "tawabi_form") return source;
@@ -369,8 +449,9 @@ function createTawabiBranchTree(startNodeId: string, practiceStartNodeId: string
 // عقد الاكتشاف الأربع مخصّصة للأبواب المنفصلة. أمّا التدريب المختلط
 // فيبدأ من مدخل التوابع العام ثم يكتشف نوع العلاقة؛ لذلك نحذف هذه
 // العقد من شجرته بدل إبقائها عقدًا غير قابلة للوصول.
-const branchDiscoveryNodeIds = new Set([
+const branchOnlyNodeIds = new Set([
     "tawabi_naat_discovery",
+    "tawabi_naat_kind",
     "tawabi_atf_discovery",
     "tawabi_tawkid_discovery",
     "tawabi_badal_discovery",
@@ -380,13 +461,13 @@ export const tawabiTree: ExerciseTree = {
     startNodeId: tawabiSourceTree.startNodeId,
     practiceStartNodeId: tawabiSourceTree.practiceStartNodeId,
     nodes: Object.fromEntries(
-        Object.entries(tawabiSourceTree.nodes).filter(([id]) => !branchDiscoveryNodeIds.has(id))
+        Object.entries(tawabiSourceTree.nodes).filter(([id]) => !branchOnlyNodeIds.has(id))
     ),
 };
 
-// في التعلّم نبدأ بسبب التبعية حتى يبني الطالب الحكم بالتسلسل.
-// في التدريب السريع نبدأ من الحالة أو نوع التوكيد للمحافظة على الاختصار.
-export const tawabiNaatTree = createTawabiBranchTree("tawabi_naat_discovery", "tawabi_case", ["mu3rab", "sentence", "shibh"]);
-export const tawabiAtfTree = createTawabiBranchTree("tawabi_atf_discovery", "tawabi_case", ["mu3rab"]);
-export const tawabiTawkidTree = createTawabiBranchTree("tawabi_tawkid_discovery", "tawabi_tawkid_kind", ["mu3rab"]);
-export const tawabiBadalTree = createTawabiBranchTree("tawabi_badal_discovery", "tawabi_case", ["mu3rab"]);
+// في التعلّم والتدريب المتخصص نبدأ من العلاقة نفسها، ثم ننتقل إلى
+// التصنيف الفرعي عند الحاجة، فالحالة الإعرابية، ثم العلامة.
+export const tawabiNaatTree = createTawabiBranchTree("tawabi_naat_discovery", "tawabi_naat_discovery", ["mu3rab", "sentence", "shibh"]);
+export const tawabiAtfTree = createTawabiBranchTree("tawabi_atf_discovery", "tawabi_atf_discovery", ["mu3rab"]);
+export const tawabiTawkidTree = createTawabiBranchTree("tawabi_tawkid_discovery", "tawabi_tawkid_discovery", ["mu3rab"]);
+export const tawabiBadalTree = createTawabiBranchTree("tawabi_badal_discovery", "tawabi_badal_discovery", ["mu3rab"]);

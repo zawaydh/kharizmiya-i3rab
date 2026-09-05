@@ -296,11 +296,20 @@ function localizeQuizOptionToExample(option: string, example?: QuizExampleLike |
   const head = quizTargetHead(example);
   if (separatorIndex <= 0 || !head) return localized;
   lines[0] = `${head}${first.slice(separatorIndex)}`;
-  return toStudentArabicOption(lines.join("\n"));
+  return lines.join("\n").trim();
 }
 
 export function localQuizExpectedLabel(label: string, example?: QuizExampleLike | null) {
   return localizeQuizOptionToExample(label, example);
+}
+
+export function quizOptionDisplayText(value: unknown) {
+  return String(value || "")
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => toStudentArabicOption(line, ""))
+    .filter(Boolean)
+    .join(" — ");
 }
 
 function swapCandidates(
@@ -563,9 +572,13 @@ export function safeFinalLabel(
   fallbackCoverage?: string
 ) {
   const fromExample = String(example?.correctI3rab || example?.facts?.finalI3rab || "").trim();
-  if (fromExample && !looksLikeProgrammingOption(fromExample)) return toStudentArabicOption(fromExample);
+  if (fromExample && !looksLikeProgrammingOption(fromExample)) {
+    return localizeQuizOptionToExample(fromExample, example);
+  }
   const fromResult = findResultLabelByCoverage(tree, fallbackCoverage);
-  if (fromResult && !looksLikeProgrammingOption(fromResult)) return toStudentArabicOption(fromResult);
+  if (fromResult && !looksLikeProgrammingOption(fromResult)) {
+    return localizeQuizOptionToExample(fromResult, example);
+  }
   return coverageDisplayLabel(fallbackCoverage);
 }
 

@@ -152,6 +152,7 @@ export function renderSentence(sentence?: string, target?: string, onTerm?: (ter
   });
 }
 
+
 export function renderSmartText(
   text?: string,
   onTerm?: (term: string) => void,

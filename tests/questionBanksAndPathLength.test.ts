@@ -104,12 +104,11 @@ describe("تقليل الخطوات المتكررة", () => {
 
   test("فروع التوابع المنفصلة أقصر من التدريب المختلط", () => {
     const limits: Record<string, { learn: number; practice: number }> = {
-      // يضيف التعلم خطوة اكتشاف دلالية واحدة، بينما يبقى التدريب السريع مختصرًا.
-      "tawabi-naat": { learn: 5, practice: 4 },
-      "tawabi-atf": { learn: 4, practice: 3 },
-      "tawabi-tawkid": { learn: 5, practice: 4 },
-      // البدل يحتاج خطوة دلالية صريحة حتى لا يقفز الطالب من العلاقة إلى الحالة.
-      "tawabi-badal": { learn: 5, practice: 3 },
+      // القرار الأول يميز نوع التابع، ثم يأتي التصنيف الفرعي عند الحاجة.
+      "tawabi-naat": { learn: 5, practice: 5 },
+      "tawabi-atf": { learn: 4, practice: 4 },
+      "tawabi-tawkid": { learn: 5, practice: 5 },
+      "tawabi-badal": { learn: 5, practice: 5 },
     };
 
     for (const [code, limit] of Object.entries(limits)) {
@@ -121,26 +120,47 @@ describe("تقليل الخطوات المتكررة", () => {
     }
 
     expect(topic("tawabi-naat").tree.startNodeId).toBe("tawabi_naat_discovery");
-    expect(topic("tawabi-naat").tree.practiceStartNodeId).toBe("tawabi_case");
+    expect(topic("tawabi-naat").tree.practiceStartNodeId).toBe("tawabi_naat_discovery");
     expect(topic("tawabi-atf").tree.startNodeId).toBe("tawabi_atf_discovery");
     expect(topic("tawabi-tawkid").tree.startNodeId).toBe("tawabi_tawkid_discovery");
-    expect(topic("tawabi-tawkid").tree.practiceStartNodeId).toBe("tawabi_tawkid_kind");
+    expect(topic("tawabi-tawkid").tree.practiceStartNodeId).toBe("tawabi_tawkid_discovery");
     expect(topic("tawabi-badal").tree.startNodeId).toBe("tawabi_badal_discovery");
 
-    // لا نعرض سؤالًا بخيار واحد في العطف والتوكيد والبدل؛ ننتقل من الحالة إلى صورة الاسم مباشرة.
-    for (const code of ["tawabi-atf", "tawabi-tawkid", "tawabi-badal"]) {
+    // التصنيف الفرعي المتخصص يغني عن سؤال الصورة العام في الأبواب المنفصلة.
+    for (const code of ["tawabi-naat", "tawabi-atf", "tawabi-tawkid", "tawabi-badal"]) {
       expect(topic(code).tree.nodes.tawabi_form).toBeUndefined();
     }
 
-    expect(String(topic("tawabi-naat").tree.nodes.tawabi_naat_discovery?.text || "")).toContain("ما الدليل");
-    expect(String(topic("tawabi-atf").tree.nodes.tawabi_atf_discovery?.text || "")).toContain("ما الدليل");
+    const openingNodes = [
+      ["tawabi-naat", "tawabi_naat_discovery"],
+      ["tawabi-atf", "tawabi_atf_discovery"],
+      ["tawabi-tawkid", "tawabi_tawkid_discovery"],
+      ["tawabi-badal", "tawabi_badal_discovery"],
+    ] as const;
+    for (const [code, nodeId] of openingNodes) {
+      const node = topic(code).tree.nodes[nodeId] as QuestionNode;
+      expect(node.answers, `${code}/${nodeId}: القرار الأول يجب أن يكون أربع علاقات فقط`).toHaveLength(4);
+      const labels = node.answers.map((answer) => answer.text).join(" | ");
+      expect(labels).toMatch(/تصف|صفة/u);
+      expect(labels).toMatch(/توكيد|يكرر/u);
+      expect(labels).toMatch(/حرف عطف/u);
+      expect(labels).toMatch(/المقصود بالحكم/u);
+    }
+
+    const naatKind = topic("tawabi-naat").tree.nodes.tawabi_naat_kind as QuestionNode;
+    expect(naatKind.answers).toHaveLength(3);
+    expect(naatKind.answers.map((answer) => answer.text).join(" | ")).toMatch(/مفرد.*جملة.*شبه جملة/u);
+
+    expect(String(topic("tawabi-naat").tree.nodes.tawabi_naat_discovery?.text || "")).toContain("أي قرينة");
+    expect(String(topic("tawabi-atf").tree.nodes.tawabi_atf_discovery?.text || "")).toContain("أي قرينة");
     expect(String(topic("tawabi-atf").tree.nodes.tawabi_atf_discovery?.hint || "")).toContain("حرف عطف");
-    expect(String(topic("tawabi-tawkid").tree.nodes.tawabi_tawkid_discovery?.text || "")).toContain("ماذا فعلت");
-    expect(String(topic("tawabi-badal").tree.nodes.tawabi_badal_discovery?.text || "")).toContain("ما العلاقة");
+    expect(String(topic("tawabi-tawkid").tree.nodes.tawabi_tawkid_discovery?.text || "")).toContain("أي قرينة");
+    expect(String(topic("tawabi-badal").tree.nodes.tawabi_badal_discovery?.text || "")).toContain("أي قرينة");
 
     const mixed = topic("tawabi");
     for (const branchOnlyId of [
       "tawabi_naat_discovery",
+      "tawabi_naat_kind",
       "tawabi_atf_discovery",
       "tawabi_tawkid_discovery",
       "tawabi_badal_discovery",

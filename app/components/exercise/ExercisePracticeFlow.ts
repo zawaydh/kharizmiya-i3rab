@@ -249,7 +249,7 @@ function alignPracticeResultTarget(
   // "التاء في (فهمتُ)" legitimately begin with a shorter grammatical label.
   if (/\s|[()]/u.test(rawTarget)) return value;
 
-  const firstLabel = value.match(/^([^:：]{1,40})[:：]\s*/u)?.[1]?.trim() || "";
+  const firstLabel = value.match(/^([^:：.!؟،؛]{1,40})[:：]\s*/u)?.[1]?.trim() || "";
   if (!firstLabel) return value;
 
   if (
@@ -259,7 +259,7 @@ function alignPracticeResultTarget(
     return value;
   }
 
-  return value.replace(/^([^:：]{1,40})([:：]\s*)/u, `${rawTarget}$2`);
+  return value.replace(/^([^:：.!؟،؛]{1,40})([:：]\s*)/u, `${rawTarget}$2`);
 }
 
 export function practiceOptionScope(label: string): PracticeOptionScope {
@@ -338,6 +338,7 @@ export function buildPracticeDirectOptions({
     correct,
     ...contextualPracticeDistractors(correct, facts, topicId),
   ]
+    .map((option) => normalizePresentBuiltSubjectReference(option))
     .filter(
       (option, index, items) =>
         items.findIndex((item) => isSameQuizAnswer(item, option)) === index,
@@ -408,6 +409,20 @@ export function walkCorrectPracticeRoute(
 }
 
 
+function normalizePresentBuiltSubjectReference(text: string): string {
+  const value = oneLine(text);
+  if (!/فعل مضارع مبني/u.test(value)) return value;
+
+  // PRESENT_BUILT_SUBJECT_REFERENCE_V2
+  // المحل الإعرابي يعود إلى «الفعل المضارع»، لذلك مرجعه «فهو».
+  // نعالج الصيغ المولدة: «، في محل»، «. في محل»، «فهي في محل»،
+  // مع إبقاء «نون النسوة ... في محل رفع فاعل» كما هي.
+  return value.replace(
+    /^(فعل مضارع مبني[^.!؟]*?)(?:[،.]?\s*)(?:(?:فهي|فهو)\s+)?في محل\s+(رفع|نصب|جزم)(?=$|[.،؛\s])/u,
+    "$1، فهو في محل $2",
+  );
+}
+
 export function practiceExpectedLabelFromRoute(args: {
   tree: ExerciseTree;
   mode?: Mode;
@@ -420,7 +435,30 @@ export function practiceExpectedLabelFromRoute(args: {
   });
   const node = args.tree.nodes[finalState.currentNodeId];
   const routeResult = node?.type === "result" ? String(node.text || "") : "";
-  const routeLabel = practiceExpectedLabelForExample(routeResult, args.example);
+
+  // PRESENT_PRACTICE_FULL_RESULT_V1
+  // For an inflected present verb, the terminal result is the canonical
+  // pedagogical answer: case + marker. Keep both for "طبّق ما تعلمته" and for
+  // the ordered correction card instead of reducing the decision to case only.
+  const directRouteResult = practiceFinalAnswerText(routeResult);
+  const presentConnection = String(
+    args.example?.facts?.buildConnection || "",
+  ).toLowerCase();
+  const completeInflectedPresentResult =
+    presentConnection === "none" &&
+    /فعل مضارع/u.test(directRouteResult) &&
+    /علامة (?:رفعه|نصبه|جزمه)/u.test(directRouteResult);
+
+  if (completeInflectedPresentResult) {
+    return practiceTargetOnlyResult(
+      directRouteResult,
+      args.example?.target,
+    );
+  }
+
+  const routeLabel = normalizePresentBuiltSubjectReference(
+    practiceExpectedLabelForExample(routeResult, args.example),
+  );
 
   // Some trees intentionally keep the terminal node concise. If that concise
   // label is too generic for a direct-practice question, recover the canonical
@@ -433,9 +471,11 @@ export function practiceExpectedLabelFromRoute(args: {
   const primaryCoverage = String(quizExample?.covers?.[0] || "");
   if (!quizExample || !primaryCoverage) return routeLabel;
 
-  const coverageLabel = practiceExpectedLabelForExample(
-    safePracticeFinalLabel(args.tree, quizExample, primaryCoverage),
-    args.example,
+  const coverageLabel = normalizePresentBuiltSubjectReference(
+    practiceExpectedLabelForExample(
+      safePracticeFinalLabel(args.tree, quizExample, primaryCoverage),
+      args.example,
+    ),
   );
 
   return policyPracticeOptionScope(coverageLabel) !== "generic"
@@ -1699,13 +1739,24 @@ function practiceReviewFinalPresentSteps(
 
   const marker = practiceReviewFinalMarker(expected);
 
+  const markerLine =
+    !marker
+      ? ""
+      : shape === "five"
+        ? state === "مرفوع"
+          ? `الأفعال الخمسة تُرفع بثبوت النون؛ لذلك علامة رفع «${target}» ثبوت النون.`
+          : state === "منصوب"
+            ? `الأفعال الخمسة تُنصب بحذف النون؛ لذلك علامة نصب «${target}» حذف النون.`
+            : `الأفعال الخمسة تُجزم بحذف النون؛ لذلك علامة جزم «${target}» حذف النون.`
+        : shape === "weak" && state === "مجزوم"
+          ? `الفعل المضارع المعتل الآخر يُجزم بحذف حرف العلة؛ لذلك علامة جزم «${target}» ${marker}.`
+          : `وبحسب صورة الفعل، علامة ${action.replace(/^ال/u, "")} «${target}» ${marker}.`;
+
   return [
     `«${target}» فعل مضارع معرب؛ فلم تتصل به نون النسوة ولا نون التوكيد.`,
     factorLine,
     shapeLine,
-    marker
-      ? `وبحسب صورة الفعل، علامة ${action} هنا ${marker}.`
-      : "",
+    markerLine,
   ].filter(Boolean).slice(0, 4);
 }
 

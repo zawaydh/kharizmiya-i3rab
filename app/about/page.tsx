@@ -92,7 +92,7 @@ export default function AboutPage() {
 
         <div className="home-clean-after">
           <h3>السؤال الذي نريد أن تتعلم الإجابة عنه:</h3>
-          <p className="home-entry-lead"><strong>كيف وصلتُ إلى هذا الإعراب؟</strong></p>
+          <p className="home-entry-lead about-thinking-question"><strong>كيف وصلتُ إلى هذا الإعراب؟</strong></p>
           <p className="home-registration-note">
             عند الخطأ، تساعدك التلميحات والمراجعة على العودة إلى خطوات التفكير واكتشاف موضع الخطأ.
           </p>

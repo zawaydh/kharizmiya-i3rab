@@ -47,6 +47,7 @@ function AuthForm() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [msg, setMsg] = useState<string | null>(() =>
     passwordResetDone
@@ -441,13 +442,23 @@ function AuthForm() {
                     id="auth-password"
                     className="input"
                     autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                     placeholder={mode === "signup" ? "6 أحرف على الأقل" : "كلمة المرور"}
                     dir="ltr"
                   />
+                  <button
+                    type="button"
+                    className="btn btn-soft"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-pressed={showPassword}
+                    aria-controls="auth-password"
+                  >
+                    {/* AUTH_PASSWORD_VISIBILITY_V3 */}
+                    {showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                  </button>
                 </div>
 
                 <button className="btn btn-primary auth-submit-btn" type="submit" disabled={loading}>

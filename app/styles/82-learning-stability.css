@@ -123,7 +123,9 @@ html body .exercise-page-shell .question-content-motion.question-text-entering {
 html body .exercise-page-shell .question-content-motion.question-text-idle,
 html body .exercise-page-shell .question-content-motion.question-text-success {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  transform: none;
+  will-change: auto;
+  backface-visibility: visible;
   pointer-events: auto;
 }
 

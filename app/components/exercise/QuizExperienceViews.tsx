@@ -7,10 +7,10 @@ import {
   coverageDisplayLabel,
   explainDistractor,
   isSameQuizAnswer,
+  quizOptionDisplayText,
   type QuizAnswerRow,
   type QuizExampleLike,
 } from "../../../lib/exercise/quiz";
-import { toStudentArabicOption } from "../../../lib/studentOptionText";
 import { ghostActionStyle, primaryActionStyle } from "./exerciseViewStyles";
 
 type RenderSentence = (sentence?: string, target?: string) => React.ReactNode;
@@ -89,7 +89,7 @@ export function RemedialTrainingView({
             <div className="remedial-origin-card">
               <span>موضع الضعف الذي نعالجه</span>
               <p>{renderSentence(example.facts.remedialOrigin.sentence, example.facts.remedialOrigin.target)}</p>
-              <div><strong>اختيارك السابق:</strong> {toStudentArabicOption(example.facts.remedialOrigin.actualLabel || "لم تُسجَّل إجابة")}</div>
+              <div><strong>اختيارك السابق:</strong> {quizOptionDisplayText(example.facts.remedialOrigin.actualLabel || "لم تُسجَّل إجابة")}</div>
             </div>
           ) : null}
 
@@ -118,7 +118,7 @@ export function RemedialTrainingView({
                   }}
                 >
                   <span className="quiz-option-dot">{index + 1}</span>
-                  <span>{toStudentArabicOption(option)}</span>
+                  <span>{quizOptionDisplayText(option)}</span>
                 </button>
               );
             })}
@@ -131,7 +131,7 @@ export function RemedialTrainingView({
                 <p className="remedial-choice-reason"><strong>لماذا لم يناسب اختيارك؟</strong> {explainDistractor(selected, expectedLabel, example)}</p>
               ) : null}
               <p><strong>شرح خطوات الحل:</strong> {buildRemedialTeacherExplanation(example, expectedLabel)}</p>
-              <div className="remedial-final-answer"><strong>الإجابة الصحيحة:</strong> {expectedLabel}</div>
+              <div className="remedial-final-answer"><strong>الإجابة الصحيحة:</strong> {quizOptionDisplayText(expectedLabel)}</div>
             </div>
           ) : null}
 
@@ -223,8 +223,8 @@ export function QuizSummaryView({
           <div key={answer.exampleId} className={`exercise-review-card ${answer.isCorrect ? "is-correct" : "is-wrong"}`} style={{ padding: 12, border: `1px solid ${answer.isCorrect ? "#168544" : "#c93645"}`, borderRadius: 16, background: answer.isCorrect ? "#edf9f1" : "#fff1f3", color: answer.isCorrect ? "#145a31" : "#852433" }}>
             <div style={{ fontWeight: 800, marginBottom: 6 }}>السؤال {index + 1}: {answer.isCorrect ? "✅ صحيح" : "❌ خطأ"}</div>
             <div style={{ marginBottom: 6 }}>الجملة: <span style={{ fontSize: 18 }}>{renderSentence(answer.sentence, answer.target)}</span></div>
-            <div style={{ marginBottom: 4 }}><strong>إجابتك:</strong> {answer.actualLabel || "لم يختر إجابة"}</div>
-            <div style={{ marginBottom: 4 }}><strong>الإجابة الصحيحة:</strong> {answer.expectedLabel || coverageDisplayLabel(answer.expectedCoverage)}</div>
+            <div style={{ marginBottom: 4 }}><strong>إجابتك:</strong> {quizOptionDisplayText(answer.actualLabel || "لم يختر إجابة")}</div>
+            <div style={{ marginBottom: 4 }}><strong>الإجابة الصحيحة:</strong> {quizOptionDisplayText(answer.expectedLabel || coverageDisplayLabel(answer.expectedCoverage))}</div>
             {!answer.isCorrect && answer.actualOptionReason ? <div style={{ marginTop: 6, color: "#852433", lineHeight: 1.8 }}><strong>سبب خطأ اختيارك:</strong> {answer.actualOptionReason}</div> : null}
             {!answer.isCorrect && answer.whyCorrect ? <div style={{ marginTop: 6, color: "#145a31", lineHeight: 1.8 }}><strong>كيف نصل إلى الصواب:</strong> {answer.whyCorrect}</div> : null}
           </div>
@@ -288,7 +288,7 @@ export function QuizQuestionView({
             }}
           >
             <span className="quiz-option-dot">{index + 1}</span>
-            <span>{toStudentArabicOption(option)}</span>
+            <span>{quizOptionDisplayText(option)}</span>
           </button>
         ))}
       </div>

@@ -78,6 +78,22 @@ describe("تصحيحات الإصدار النهائي", () => {
     }
   });
 
+  it("يوفر إظهار وإخفاء كلمة المرور دون إضافة CSS جديد", () => {
+    const auth = read("app/auth/page.tsx");
+    const reset = read("app/auth/reset-password/page.tsx");
+
+    expect(auth).toContain("AUTH_PASSWORD_VISIBILITY_V3");
+    expect(auth).toContain('type={showPassword ? "text" : "password"}');
+    expect(auth).toContain("إظهار كلمة المرور");
+    expect(auth).toContain("إخفاء كلمة المرور");
+    expect(auth).toContain('aria-controls="auth-password"');
+
+    expect(reset).toContain('type={showPassword ? "text" : "password"}');
+    expect(reset).toContain('type={showConfirmation ? "text" : "password"}');
+    expect(reset).toContain('aria-controls="new-password"');
+    expect(reset).toContain('aria-controls="confirm-new-password"');
+    expect(reset).toContain("إظهار كلمة المرور");
+  });
   it("يوفر استعادة كلمة المرور كاملة عبر Supabase", () => {
     const auth = read("app/auth/page.tsx");
     const reset = read("app/auth/reset-password/page.tsx");
@@ -106,5 +122,24 @@ describe("تصحيحات الإصدار النهائي", () => {
     const packageJson = JSON.parse(read("package.json"));
     expect(packageJson.dependencies.react).toBe("18.3.1");
     expect(packageJson.devDependencies["@types/react"]).toMatch(/^18\./);
+  });
+
+  it("يعرض حروف العطف كاملة ويجعل قرينة قابلة للنقر عبر قاموس الموقع", () => {
+    const hints = read("app/components/exercise/TawabiStudentHints.ts");
+    const feedback = read("app/components/exercise/TawabiChoiceFeedback.ts");
+    const textViews = read("app/components/exercise/ExerciseTextViews.tsx");
+    const sharedViews = read("app/components/exercise/ExerciseSharedViews.tsx");
+
+    const conjunctions = "الواو، الفاء، ثم، أو، أم، بل، لا، لكن، حتى؛ وهذه قرينتك";
+    expect(hints).toContain(conjunctions);
+    expect(feedback).toContain(conjunctions);
+
+    expect(sharedViews).toContain('"قرينة": { title: "القرينة"');
+    expect(sharedViews).toContain('"قرينتك": { title: "القرينة"');
+    expect(sharedViews).toContain("تعني هنا: دليلك");
+    expect(textViews).toContain('className="smart-term"');
+    expect(textViews).toContain("onClick={() => onTerm?.(part)}");
+    expect(textViews).not.toContain("INLINE_MEANING_HELP_V18");
+    expect(textViews).not.toContain("InlineMeaningTerm");
   });
 });
