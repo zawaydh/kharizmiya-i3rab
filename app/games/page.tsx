@@ -28,7 +28,7 @@ export default function GamesPage() {
           <div>
             <span className="games-hub-badge games-hub-badge-secondary">تصنيف سريع</span>
             <h2>مَنْ مَعِي؟</h2>
-            <p>اجمع فريق المنصوبات ثم المرفوعات والمجرورات والمبنيات والمجزومات. الصحيح يقفز ثم ينضم إلى فريقه، والخطأ يبقى ويشرح سبب انتمائه إلى فريق آخر.</p>
+            <p>صنّف الكلمات المعربة إلى مرفوعات ومنصوبات ومجرورات ومجزومات، واجمع المبنيات في فريق مستقل داخل اللعبة فقط؛ فالكلمة المبنية قد تكون مع ذلك في محل رفع أو نصب أو جر.</p>
           </div>
           <Link href="/games/who-is-with-me" className="btn btn-soft games-hub-open-button">ابدأ اللعبة</Link>
         </article>

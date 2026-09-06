@@ -6,22 +6,22 @@ export const firstWordExamples: Example[] = [
   { id: "fw-02", sentence: "كتبَ الطالبُ الدرسَ.", target: "كتبَ", facts: { wordType: "verb", verbType: "past" }, covers: ["first.verb.past"] },
   { id: "fw-03", sentence: "يقرأُ الولدُ القصةَ.", target: "يقرأُ", facts: { wordType: "verb", verbType: "present" }, covers: ["first.verb.present"] },
   { id: "fw-04", sentence: "اكتبْ بخطٍّ جميلٍ.", target: "اكتبْ", facts: { wordType: "verb", verbType: "imperative" }, covers: ["first.verb.imperative"] },
-  { id: "fw-05", sentence: "لن يضيعَ الحقُّ.", target: "لن", facts: { wordType: "particle", afterParticle: "verb" }, covers: ["first.particle.verb"] },
-  { id: "fw-06", sentence: "في المدرسةِ طلابٌ.", target: "في", facts: { wordType: "particle", afterParticle: "noun" }, covers: ["first.particle.noun"] },
+  { id: "fw-05", sentence: "لن يضيعَ الحقُّ.", target: "لن", facts: { wordType: "particle", afterParticle: "verb", afterVerbType: "present" }, covers: ["first.particle.verb"] },
+  { id: "fw-06", sentence: "في المدرسةِ طلابٌ.", target: "في", facts: { wordType: "particle", afterParticle: "noun", particleEffect: "jarr" }, covers: ["first.particle.noun"] },
   { id: "fw-07", sentence: "العلمُ نورٌ.", target: "العلمُ", facts: { wordType: "noun", finalI3rab: "مبتدأ مرفوع وعلامة رفعه الضمة الظاهرة على آخره." }, covers: ["first.noun"] },
   { id: "fw-08", sentence: "نجحَ الفريقُ.", target: "نجحَ", facts: { wordType: "verb", verbType: "past" }, covers: ["first.verb.past"] },
   { id: "fw-09", sentence: "تشرقُ الشمسُ صباحًا.", target: "تشرقُ", facts: { wordType: "verb", verbType: "present" }, covers: ["first.verb.present"] },
   { id: "fw-10", sentence: "احفظْ وقتَكَ.", target: "احفظْ", facts: { wordType: "verb", verbType: "imperative" }, covers: ["first.verb.imperative"] },
-  { id: "fw-11", sentence: "لم يتأخرْ القطارُ.", target: "لم", facts: { wordType: "particle", afterParticle: "verb" }, covers: ["first.particle.verb"] },
-  { id: "fw-12", sentence: "على الطاولةِ كتابٌ.", target: "على", facts: { wordType: "particle", afterParticle: "noun" }, covers: ["first.particle.noun"] }
+  { id: "fw-11", sentence: "لم يتأخرْ القطارُ.", target: "لم", facts: { wordType: "particle", afterParticle: "verb", afterVerbType: "present" }, covers: ["first.particle.verb"] },
+  { id: "fw-12", sentence: "على الطاولةِ كتابٌ.", target: "على", facts: { wordType: "particle", afterParticle: "noun", particleEffect: "jarr" }, covers: ["first.particle.noun"] }
 ];
 const resultByCover: Record<string, string> = {
-  "first.noun": "عرفت مفتاح الجملة: الكلمة الأولى اسم. راجع باب المبتدأ والخبر لاستكمال تعلّم موقع الاسم وما يتمم معناه في الجملة",
+  "first.noun": "عرفت مفتاح الجملة: الكلمة الأولى اسم. إذا كانت البداية جملة اسمية فابدأ بفحص المبتدأ والخبر، ولا تحكم بأن كل اسم في أول الكلام مبتدأ قبل النظر إلى تركيب الجملة.",
   "first.verb.past": "عرفت مفتاح الجملة: الكلمة الأولى فعل ماضٍ. راجع باب الفعل الماضي لاستكمال تعلّم أحكامه وعلامات بنائه",
   "first.verb.present": "عرفت مفتاح الجملة: الكلمة الأولى فعل مضارع. راجع باب الفعل المضارع لاستكمال تعلّم رفعه ونصبه وجزمه وبنائه",
   "first.verb.imperative": "عرفت مفتاح الجملة: الكلمة الأولى فعل أمر. راجع باب فعل الأمر لاستكمال تعلّم أحكامه وعلامات بنائه",
-  "first.particle.verb": "عرفت مفتاح الجملة: بدأت بحرف وبعده فعل. راجع باب الفعل المضارع لاستكمال تعلّم أثر الأداة في الفعل",
-  "first.particle.noun": "عرفت مفتاح الجملة: بدأت بحرف وبعده اسم. في أمثلة حروف الجر تتكوّن شبه جملة؛ راجع باب الخبر لاستكمال تعلّم شبه الجملة والخبر المقدّم"
+  "first.particle.verb": "حرف وبعده فعل: حدّد زمن الفعل وأثر الحرف، ثم اختر الباب المناسب",
+  "first.particle.noun": "حرف وبعده اسم: حدّد نوع الحرف وأثره، ثم اختر الباب المناسب"
 };
 function firstWordOptionReason(ex: Example, option: string, correct: string): string {
   if (option === correct) return `صحيح؛ الكلمة «${ex.target}» تقود إلى هذا المسار بعد تحديد نوعها وما يتصل به.`;

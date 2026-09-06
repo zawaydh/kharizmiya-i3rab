@@ -18,10 +18,7 @@ export function mafoolStudentHintText(node: PedagogyNode | null | undefined, pic
         const taweel = String(facts.taweel || "المصدر المؤول");
         const fiveConditions = "مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم";
         if (id === "mafool_context") {
-            if (pickedText.includes("جملة اسمية")) {
-                return `انظر إلى بداية الجملة: (${firstWord}). هذه كلمة تدل على حدث وزمن، فهي فعل. والجملة التي تبدأ بالفعل غالبًا تكون جملة فعلية.`;
-            }
-            return `انظر إلى أول الجملة: هل بدأت بفعل يدل على حدث وزمن؟ بعد ذلك نبحث عن الفاعل، ثم عمّا وقع عليه الفعل.`;
+            return `لا تنظر إلى أول كلمة وحدها. ابحث عن الفعل الذي تتعلق به (${targetText}) داخل الجملة، ثم اسأل: ${objectQuestion}`;
         }
         if (id === "mafool_role") {
             if (pickedText === "فعل") {

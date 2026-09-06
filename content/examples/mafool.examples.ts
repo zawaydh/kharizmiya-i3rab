@@ -15,11 +15,11 @@ export const mafoolCoverageKeysOrdered = [
   "mafool.connected_na",
   "mafool.masdar_an",
   "mafool.masdar_arju",
-  "mafool.masdar_ma"
+  "mafool.masdar_an_alt"
 ];
 
 const verbal = { contextType: "verbal" };
-const fiveConditions = "مفردة، مضافة، ومضافة إلى غير ياء المتكلم";
+const fiveConditions = "مفردة، مكبرة، مضافة، ومضافة إلى غير ياء المتكلم";
 
 export const mafoolExamples: Example[] = [
   {
@@ -215,16 +215,12 @@ export const mafoolExamples: Example[] = [
   },
   {
     id: "mf-14",
-    sentence: "كرهتُ ما فعلتَ.",
-    target: "ما فعلتَ",
-    facts: {
-      ...verbal,
-      roleKind: "masdar",
-      objectQuestion: "ماذا كرهت؟",
-      taweel: "فعلَك",
-      finalI3rab: `ما فعلتَ: مصدر مؤول في محل نصب مفعول به.\nوالتقدير: كرهتُ فعلَك.\nسبب الاختيار: لأن الذي كرهته هو فعلك.`
-    },
-    covers: ["mafool.masdar_ma"]
+    sentence: "أريدُ أن تتعلّمَ.",
+    target: "أن تتعلّمَ",
+    facts: { ...verbal, roleKind: "masdar", objectQuestion: "ماذا أريد؟", taweel: "تعلُّمَك", finalI3rab: `أن تتعلّمَ: مصدر مؤول في محل نصب مفعول به.
+والتقدير: أريدُ تعلُّمَك.
+سبب الاختيار: لأن المراد هو حدوث التعلّم.` },
+    covers: ["mafool.masdar_an_alt"]
   }
 ];
 

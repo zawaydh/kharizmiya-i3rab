@@ -4,6 +4,8 @@ import { buildTopicQuizExamples } from "./extended_topic_quiz";
 export const istithnaCoverageKeysOrdered = [
   "istithna.complete.affirmative.singular",
   "istithna.complete.affirmative.dual",
+  "istithna.complete.affirmative.jfs",
+  "istithna.complete.affirmative.jt",
   "istithna.complete.negative.nasb",
   "istithna.complete.negative.follow",
   "istithna.mufarragh.fael",
@@ -86,7 +88,20 @@ export const istithnaExamples: ExerciseExample[] = [
     },
     covers: ["istithna.mufarragh.majrur"],
   },
-];
+  {
+    id: "is-08",
+    sentence: "حضرَ الناسُ إلا الطالباتِ.",
+    target: "الطالباتِ",
+    facts: { hasIlla: true, isComplete: true, isAffirmative: true, exceptRole: "must_nasb", shape: "jfs", nasbMark: "kasra", excludedFrom: "الناس", finalI3rab: "الطالباتِ: مستثنى منصوب بـ«إلا»، وعلامة نصبه الكسرة نيابةً عن الفتحة؛ لأنه جمع مؤنث سالم.\nسبب الاختيار: لأن الاستثناء تام مثبت." },
+    covers: ["istithna.complete.affirmative.jfs"],
+  },
+  {
+    id: "is-09",
+    sentence: "حضرَ القومُ إلا رجالًا.",
+    target: "رجالًا",
+    facts: { hasIlla: true, isComplete: true, isAffirmative: true, exceptRole: "must_nasb", shape: "jt", nasbMark: "fatha", excludedFrom: "القوم", finalI3rab: "رجالًا: مستثنى منصوب بـ«إلا»، وعلامة نصبه الفتحة الظاهرة؛ لأنه جمع تكسير.\nسبب الاختيار: لأن الاستثناء تام مثبت." },
+    covers: ["istithna.complete.affirmative.jt"],
+  },];
 
 export const istithnaQuizExamples = buildTopicQuizExamples(
   istithnaExamples,

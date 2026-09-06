@@ -21,7 +21,7 @@ export default function AboutPage() {
           <p className="home-entry-lead">
             {PLATFORM_NAME} منصة تعليمية تساعد الطالب على فهم طريقة الوصول إلى الإعراب،
             لا حفظ الإجابة فقط. تقوده خطوة خطوة ليحدد نوع الكلمة ووظيفتها في الجملة،
-            ثم يستنتج حكمها ويختار علامة الإعراب المناسبة.
+            ثم يستنتج حكمها وإعرابها المناسب: علامةً أو محلًّا بحسب الحالة.
           </p>
         </div>
       </section>
@@ -36,7 +36,7 @@ export default function AboutPage() {
           <article className="home-clean-stage">
             <span>1</span>
             <div>
-              <h3>تعلّم</h3>
+              <h3>التعلّم الموجّه</h3>
               <p>افهم مسار الحل وسبب كل خطوة.</p>
             </div>
           </article>
@@ -44,7 +44,7 @@ export default function AboutPage() {
           <article className="home-clean-stage">
             <span>2</span>
             <div>
-              <h3>تدرّب</h3>
+              <h3>التدريب</h3>
               <p>طبّق ما فهمته، واستفد من التلميحات عند الحاجة.</p>
             </div>
           </article>
@@ -52,7 +52,7 @@ export default function AboutPage() {
           <article className="home-clean-stage">
             <span>3</span>
             <div>
-              <h3>اختبر نفسك</h3>
+              <h3>الاختبار النهائي</h3>
               <p>حل باستقلال وتحقق من إتقانك.</p>
             </div>
           </article>

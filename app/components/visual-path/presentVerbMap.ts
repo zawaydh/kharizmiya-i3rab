@@ -62,10 +62,10 @@ export function buildPresentVerbVisualMap(example: Example | null): VisualMap {
       },
       {
         id: "none",
-        label: "غير متصل بهما",
+        label: "لا نون النسوة ولا نون التوكيد",
         target: "present:factor",
         test: { fact: "buildConnection", equals: "none" },
-        conceptText: `${target}: لم يتصل بهما\nفهو فعل مضارع معرب`,
+        conceptText: `${target}: لم يتصل بنون النسوة ولا بنون التوكيد\nفهو فعل مضارع معرب`,
       },
     ],
   });
@@ -77,7 +77,7 @@ export function buildPresentVerbVisualMap(example: Example | null): VisualMap {
     choices: [
       { id: "nasb", label: "ناصب", target: "present:result:niswa:nasb", test: { fact: "tool", equals: "nasb" } },
       { id: "jazm", label: "جازم", target: "present:result:niswa:jazm", test: { fact: "tool", equals: "jazm" } },
-      { id: "raf", label: "لم يُسبق بعامل", target: "present:result:niswa:raf", test: { fact: "tool", equals: "none" } },
+      { id: "raf", label: "لا ناصب ولا جازم قبله", target: "present:result:niswa:raf", test: { fact: "tool", equals: "none" } },
     ],
   });
   addFactOptions(nodes, edges, {
@@ -87,7 +87,7 @@ export function buildPresentVerbVisualMap(example: Example | null): VisualMap {
     choices: [
       { id: "nasb", label: "ناصب", target: "present:result:tawkid:nasb", test: { fact: "tool", equals: "nasb" } },
       { id: "jazm", label: "جازم", target: "present:result:tawkid:jazm", test: { fact: "tool", equals: "jazm" } },
-      { id: "raf", label: "لم يُسبق بعامل", target: "present:result:tawkid:raf", test: { fact: "tool", equals: "none" } },
+      { id: "raf", label: "لا ناصب ولا جازم قبله", target: "present:result:tawkid:raf", test: { fact: "tool", equals: "none" } },
     ],
   });
 
@@ -112,7 +112,7 @@ export function buildPresentVerbVisualMap(example: Example | null): VisualMap {
       },
       {
         id: "raf",
-        label: "لم يُسبق بعامل",
+        label: "لا ناصب ولا جازم قبله",
         target: "present:raf:shape",
         test: { fact: "tool", equals: "none" },
         conceptText: "فعل مضارع مرفوع",

@@ -8,31 +8,19 @@ export const mafoolTree: ExerciseTree = {
     mafool_context: {
       id: "mafool_context",
       type: "question",
-      context: "نبدأ من السياق قبل أن نحدد الدور.",
-      text: "ما السياق الذي وردت فيه الكلمة المحددة؟",
-      hint: "انظر إلى أول الجملة: هل بدأت بفعل يدل على حدث وزمن، أم بدأت باسم؟ ",
+      context: "نبدأ بالفعل الذي تتعلق به الكلمة، لا بشكل بداية الجملة الكبرى.",
+      text: "هل يوجد في الجملة فعل تتعلق به الكلمة المحددة؟",
+      hint: "قد تبدأ الجملة بفعل، وقد تبدأ باسم ويأتي في خبرها فعل مثل «الطالبُ كتبَ الواجبَ». في الحالتين نبحث عن الفعل الذي وقع على الكلمة.",
       answers: [
-        {
-          id: "verbal",
-          text: "جملة فعلية",
-          next: "mafool_role",
-          eval: { fact: "contextType", equals: "verbal" },
-          hint: "الجملة الفعلية تبدأ غالبًا بفعل يدل على حدث وزمن، ثم نبحث عن الفاعل والمفعول به."
-        },
-        {
-          id: "nominal",
-          text: "جملة اسمية",
-          next: "mafool_context",
-          correct: false,
-          hint: "إذا بدأت الجملة بفعل مثل: كتبَ أو رأيتُ أو شكرَ، فهي جملة فعلية غالبًا."
-        },
+        { id: "with-verb", text: "نعم، ترتبط بفعل داخل الجملة", next: "mafool_role", eval: { fact: "contextType", anyOf: ["verbal", "nominal_with_verb"] } },
+        { id: "without-verb", text: "لا يوجد فعل تتعلق به", next: "mafool_context", correct: false, hint: "ابحث في الجملة كلها عن الفعل الذي يمكن أن يتعلق بالكلمة، ولا تحكم من أول كلمة فقط." },
       ]
     },
 
     mafool_role: {
       id: "mafool_role",
       type: "question",
-      context: "بما أن الكلمة وردت في جملة فعلية، فلنحدد دورها في هذه الجملة.",
+      context: "بما أن الكلمة ترتبط بفعل داخل الجملة، فلنحدد دورها بالنسبة إلى هذا الفعل.",
       text: "ما دور الكلمة المحددة في الجملة؟",
       hint: "اسأل: من الذي فعل؟ فهذا هو الفاعل. ثم اسأل: على من أو على ماذا وقع الفعل؟ فهذا هو المفعول به.",
       answers: [
@@ -48,7 +36,7 @@ export const mafoolTree: ExerciseTree = {
           text: "فاعل",
           next: "mafool_role",
           correct: false,
-          hint: "الفاعل هو من قام بالفعل. أما المفعول به فهو ما وقع عليه فعل الفاعل."
+          hint: "الفاعل هو ما أُسند إليه الفعل: من قام به أو اتصف به. أما المفعول به فهو ما وقع عليه الفعل."
         },
         {
           id: "mafool",
@@ -81,7 +69,7 @@ export const mafoolTree: ExerciseTree = {
       hint: "إذا أمكن تأويل المحدد بمصدر صريح مثل «أن تنجح» = «نجاحك»، فهو تركيب في تأويل اسم. أما الاسم أو الضمير فهو كلمة مفردة في هذا المستوى.",
       answers: [
         { id: "word", text: "كلمة مفردة", next: "mafool_word_inflection", eval: { fact: "roleKind", anyOf: ["visible", "mabni", "connected"] }, hint: "إذا كان المحدد اسمًا أو ضميرًا مفردًا ننتقل إلى تحديد: معرب أم مبني." },
-        { id: "masdar", text: "تركيب في تأويل اسم", next: "mafool_masdar_term", eval: { fact: "roleKind", equals: "masdar" }, hint: "جرّب التأويل: «أن تنجح» = «نجاحك»، و«ما فعلت» = «فعلك». إذا استقام المعنى نسمّي هذا التركيب في الخطوة التالية." },
+        { id: "masdar", text: "تركيب في تأويل اسم", next: "mafool_masdar_term", eval: { fact: "roleKind", equals: "masdar" }, hint: "جرّب التأويل: «أن تنجح» = «نجاحك». إذا استقام المعنى نسمّي هذا التركيب في الخطوة التالية." },
       ]
     },
 

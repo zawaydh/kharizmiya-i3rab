@@ -50,14 +50,14 @@ export const faelTree: ExerciseTree = {
           text: "فاعل",
           next: "fael_hukm",
           eval: { fact: "roleKind", anyOf: ["visible", "mabni", "connected", "masdar"] },
-          hint: "الفاعل هو من قام بالفعل أو ما دل على سبب الفعل."
+          hint: "الفاعل هو الاسم أو الضمير الذي أُسند إليه الفعل: من قام بالفعل أو اتصف به."
         },
         {
           id: "c",
           text: "مفعول به",
           next: "fael_role_verbal",
           correct: false,
-          hint: "المفعول به هو ما وقع عليه الفعل، أما الفاعل فهو من قام بالفعل أو ما أحدثه."
+          hint: "المفعول به هو ما وقع عليه الفعل، أما الفاعل فهو ما أُسند إليه الفعل: من قام به أو اتصف به."
         },
       ]
     },
@@ -129,7 +129,7 @@ export const faelTree: ExerciseTree = {
       hint: "إذا أمكن تأويل التركيب بمصدر صريح، مثل «أن تنجح» = «نجاحك»، فهو تركيب في تأويل اسم. أما الاسم أو الضمير فهو كلمة مفردة في هذا المستوى من المسار.",
       answers: [
         { id: "word", text: "كلمة مفردة", next: "fael_word_inflection", eval: { fact: "roleKind", anyOf: ["visible", "mabni", "connected"] }, hint: "إذا كان المحدد اسمًا أو ضميرًا مفردًا ننتقل إلى تحديد: معرب أم مبني." },
-        { id: "masdar", text: "تركيب في تأويل اسم", next: "fael_masdar_term", eval: { fact: "roleKind", equals: "masdar" }, hint: "جرّب التأويل بمصدر صريح: «أن تنجح» = «نجاحك»، و«ما فعلت» = «فعلك». إذا استقام المعنى نسمّي هذا التركيب في الخطوة التالية." },
+        { id: "masdar", text: "تركيب في تأويل اسم", next: "fael_masdar_term", eval: { fact: "roleKind", equals: "masdar" }, hint: "جرّب التأويل بمصدر صريح: «أن تنجح» = «نجاحك». إذا استقام المعنى نسمّي هذا التركيب في الخطوة التالية." },
       ]
     },
 

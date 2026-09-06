@@ -22,7 +22,7 @@ export const faelCoverageKeysOrdered = [
   "fael.hidden_nahnu",
   "fael.hidden_anta",
   "fael.masdar_an",
-  "fael.masdar_ma"
+  "fael.masdar_an_alt"
 ];
 
 const verbal = { contextType: "verbal" };
@@ -221,12 +221,12 @@ export const faelExamples: Example[] = [
   },
   {
     id: "fa-21",
-    sentence: "أعجبني ما فعلتَ.",
-    target: "ما فعلتَ",
-    facts: { ...verbal, roleKind: "masdar", actionQuestion: "ما الذي أعجبني؟", finalI3rab: `ما فعلتَ: مصدر مؤول في محل رفع فاعل.
-والتقدير: أعجبني فعلُك.
-سبب الاختيار: لأن الذي أعجبني هو فعلك.` },
-    covers: ["fael.masdar_ma"]
+    sentence: "يسرّني أن تجتهدَ.",
+    target: "أن تجتهدَ",
+    facts: { ...verbal, roleKind: "masdar", actionQuestion: "ما الذي يسرّني؟", taweel: "اجتهادك", finalI3rab: `أن تجتهدَ: مصدر مؤول في محل رفع فاعل.
+والتقدير: يسرّني اجتهادُك.
+سبب الاختيار: لأن الذي يسرّني هو اجتهادك.` },
+    covers: ["fael.masdar_an_alt"]
   }
 ];
 

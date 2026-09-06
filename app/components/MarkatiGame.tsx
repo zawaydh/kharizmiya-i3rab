@@ -7,6 +7,19 @@ import { MARKATI_ROUNDS, type MarkatiChoice } from "../../content/games/markati"
 
 type Feedback = { choice: MarkatiChoice; correct: boolean } | null;
 
+function kindHelp(kind: string): string {
+  if (kind.includes("اسم مفرد")) return "اسم يدل هنا على واحد أو واحدة، وتظهر عليه العلامة الأصلية غالبًا.";
+  if (kind.includes("مثنى")) return "اسم يدل على اثنين أو اثنتين؛ يرفع بالألف وينصب ويجر بالياء.";
+  if (kind.includes("جمع مذكر سالم")) return "جمع لمذكر عاقل غالبًا؛ يرفع بالواو وينصب ويجر بالياء.";
+  if (kind.includes("جمع مؤنث سالم")) return "جمع مختوم بألف وتاء زائدتين غالبًا؛ يرفع بالضمة، وينصب بالكسرة نيابة عن الفتحة، ويجر بالكسرة.";
+  if (kind.includes("الأسماء الخمسة")) return "أب، أخ، حم، فو، ذو إذا استوفت شروط الإعراب بالحروف؛ ترفع بالواو وتنصب بالألف وتجر بالياء.";
+  if (kind.includes("منقوص")) return "اسم معرب آخره ياء لازمة مكسور ما قبلها، مثل القاضي؛ تقدر الضمة والكسرة على الياء وتظهر الفتحة.";
+  if (kind.includes("مقصور")) return "اسم معرب آخره ألف لازمة، مثل الفتى؛ تقدر عليه الحركات الثلاث للتعذر.";
+  if (kind.includes("ممنوع من الصرف")) return "اسم لا ينون، ويجر بالفتحة إذا لم يضف ولم يعرف بـ«الـ»، ويجر بالكسرة إذا أضيف أو دخلت عليه «الـ».";
+  if (kind.includes("مبني")) return "كلمة تلزم صورة واحدة؛ نذكر علامة بنائها، ثم نذكر محلها الإعرابي إذا كان لها محل.";
+  return `نوع الكلمة هنا: ${kind}. اربط النوع بالحكم قبل اختيار العلامة.`;
+}
+
 const FINAL_I3RAB_MARKS = /[\u064B-\u0652\u0670]+$/u;
 
 function concealedI3rab(target: string) {
@@ -106,6 +119,10 @@ export default function MarkatiGame() {
               <p className="markati-speaking-line">تقول <strong>{feedback?.correct === true ? challenge.target : concealedI3rab(challenge.target)}</strong>:</p>
               <h2 className="markati-prompt">{challenge.prompt}</h2>
               <small style={{ color: "var(--game-accent-strong)", fontWeight: 750 }}>{challenge.roleLabel} — {challenge.caseLabel} — {challenge.kindLabel}</small>
+              <details style={{ marginTop: 10 }}>
+                <summary style={{ cursor: "pointer", fontWeight: 800 }}>ما معنى «{challenge.kindLabel}»؟</summary>
+                <p style={{ margin: "8px 0 0" }}>{kindHelp(challenge.kindLabel)}</p>
+              </details>
             </div>
 
             {!feedback ? (

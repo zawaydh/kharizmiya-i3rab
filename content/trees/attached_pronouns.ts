@@ -19,9 +19,9 @@ export const attachedPronounsTree: ExerciseTree = {
         "pronoun_position": {
             "id": "pronoun_position",
             "type": "question",
-            "context": "نبحث عن موقع الضمير.",
+            "context": "نبحث عن موقع الضمير، ثم نقرأ وظيفته من علاقته بما حوله في الجملة.",
             "text": "هل حلّ محل اسم مرفوع أم منصوب أم مجرور؟",
-            "hint": "ضع اسمًا ظاهرًا مكان الضمير، ثم ميز: هل جاء بعد حرف جر، أم صار مضافًا إليه، أم شغل موقعًا مرفوعًا أو منصوبًا؟",
+            "hint": "ضع اسمًا ظاهرًا مكان الضمير، ثم ميّز: هل جاء بعد حرف جر، أم صار مضافًا إليه، أم شغل موقعًا مرفوعًا أو منصوبًا؟ المحل وحده لا يحدد الوظيفة؛ السياق هو الذي يحددها.",
             "answers": [
                 {
                     "id": "a",
@@ -110,32 +110,31 @@ export const attachedPronounsTree: ExerciseTree = {
             "id": "R_pronoun_raf3_attached",
             "type": "result",
             "coverage": "pronoun.raf3.attached",
-            "text": "ضمير متصل مبني في محل رفع فاعل."
+            "text": "ضمير رفع متصل مبني في محل رفع. في أمثلة هذا المسار هو فاعل، لكن لا نعمم ذلك على كل ضمير متصل؛ فقد يكون نائب فاعل أو اسمًا لناسخ بحسب السياق."
         },
         "R_pronoun_raf3_separate": {
             "id": "R_pronoun_raf3_separate",
             "type": "result",
             "coverage": "pronoun.raf3.separate",
-            "text": "ضمير منفصل مبني في محل رفع مبتدأ."
+            "text": "ضمير رفع منفصل مبني في محل رفع. في أمثلة هذا المسار هو مبتدأ، وتحدد الوظيفة دائمًا من موقعه في الجملة."
         },
         "R_pronoun_nasb_attached": {
             "id": "R_pronoun_nasb_attached",
             "type": "result",
             "coverage": "pronoun.nasb.attached",
-            "text": "ضمير متصل مبني في محل نصب مفعول به."
+            "text": "ضمير نصب متصل مبني في محل نصب. في أمثلة هذا المسار هو مفعول به، لكن وظيفته الدقيقة تحدد من العامل والسياق."
         },
         "R_pronoun_nasb_separate": {
             "id": "R_pronoun_nasb_separate",
             "type": "result",
             "coverage": "pronoun.nasb.separate",
-            "text": "ضمير منفصل مبني في محل نصب مفعول به مقدم."
+            "text": "ضمير نصب منفصل مبني في محل نصب. في أمثلة «إيّا» هنا هو مفعول به مقدّم، وتثبت الوظيفة من السياق."
         },
         "R_pronoun_jar": {
             "id": "R_pronoun_jar",
             "type": "result",
             "coverage": "pronoun.jar",
-            "text": "ضمير متصل مبني في محل جر مضاف إليه."
+            "text": "ضمير متصل مبني في محل جر. في «كتابُه» هو مضاف إليه؛ أمّا في «به» فهو في محل جر بحرف الجر. إذن سبب الجر يحدد من الكلمة التي اتصل بها."
         }
     }
 };
-

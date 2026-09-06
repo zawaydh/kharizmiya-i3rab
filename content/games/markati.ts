@@ -8,7 +8,7 @@ export type MarkatiChallenge = {
   id: string;
   sentence: string;
   target: string;
-  caseLabel: "مرفوع" | "منصوب" | "مجرور";
+  caseLabel: "مرفوع" | "منصوب" | "مجرور" | "في محل رفع" | "في محل نصب" | "في محل جر";
   kindLabel: string;
   roleLabel: string;
   prompt: string;
@@ -181,7 +181,7 @@ export const MARKATI_ROUNDS: MarkatiRound[] = [
       },
       {
         id: "mixed-built",
-        sentence: "مَرَرْتُ بِهَذَا.", target: "هَذَا", caseLabel: "مجرور", kindLabel: "اسم إشارة مبني", roleLabel: "اسم مجرور بحرف الجر",
+        sentence: "مَرَرْتُ بِهَذَا.", target: "هَذَا", caseLabel: "في محل جر", kindLabel: "اسم إشارة مبني", roleLabel: "اسم إشارة مبني في محل جر بحرف الجر",
         prompt: "أنا في موقع الجر، لكنني اسم إشارة مبني؛ كيف تعبّر عن إعرابي؟", correctChoiceId: "mahal-jarr",
         choices: [choice("mahal-jarr", "مبني في محل جر", "صحيح؛ الاسم المبني لا تظهر عليه علامة جر متغيرة، فنذكر محله الإعرابي."), choice("kasra", "الكسرة الظاهرة", "اسم الإشارة «هذا» مبني، فلا تتغير حركة آخره إلى كسرة بسبب الجر."), choice("yaa", "الياء", "الياء علامة جر لبعض الأسماء المعربة، أما «هذا» فاسم مبني."), choice("fatha", "الفتحة", "لا نبحث عن فتحة أو كسرة في الاسم المبني؛ نحدد المحل الإعرابي.")],
         finalI3rab: "هَذَا: اسم إشارة مبني في محل جر بالباء.",

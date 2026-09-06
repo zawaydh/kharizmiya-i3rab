@@ -39,7 +39,7 @@ describe("محرك الخرائط المفاهيمية التفاعلية", () =
 
     const niswaFactor = map.nodes.find((node) => node.id === "present:niswa:factor");
     expect(niswaFactor?.text).toContain("هل سُبق الفعل");
-    expect(niswaFactor?.choices?.map((choice) => choice.label)).toEqual(["ناصب", "جازم", "لم يُسبق بعامل"]);
+    expect(niswaFactor?.choices?.map((choice) => choice.label)).toEqual(["ناصب", "جازم", "لا ناصب ولا جازم قبله"]);
     expect(niswaFactor?.choices?.every((choice) => choice.action.targetId?.includes("present:result:niswa"))).toBe(true);
 
     const connectionOutcome = map.nodes.find((node) => node.kind === "outcome" && node.text.includes("مبني على السكون"));

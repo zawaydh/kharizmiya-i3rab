@@ -1,11 +1,12 @@
 "use client";
 
-import type React from "react";
+import React from "react";
 import type { ExerciseAnswer, ExerciseTree, Mode } from "../../../lib/exercise/model";
 import type { AnswerFeedbackState } from "../../../lib/exercise/answerSession";
 import { toStudentArabicOption } from "../../../lib/studentOptionText";
 import type { QuestionCardPhase } from "./useQuestionMotion";
 import { renderSmartText } from "./ExerciseTextViews";
+import { SMART_GLOSSARY } from "./ExerciseSharedViews";
 
 type Props = {
   answers: ExerciseAnswer[];
@@ -26,8 +27,17 @@ export function ExerciseChoiceAnswers({
   onGlossary,
   onPickAnswer,
 }: Props) {
+  const visibleTerms = React.useMemo(() => {
+    const optionText = answers.map((answer) => toStudentArabicOption(answer.text)).join(" ");
+    return Object.keys(SMART_GLOSSARY)
+      .filter((term) => optionText.includes(term))
+      .sort((a, b) => b.length - a.length)
+      .slice(0, 6);
+  }, [answers]);
+
   return (
-    <div className="clean-answer-grid stage-one-draggable-grid">
+    <>
+      <div className="clean-answer-grid stage-one-draggable-grid">
       {answers.map((answer) => {
         const answerClass = [
           "exercise-answer-btn",
@@ -56,6 +66,18 @@ export function ExerciseChoiceAnswers({
           </button>
         );
       })}
-    </div>
+      </div>
+
+      {visibleTerms.length ? (
+        <div className="exercise-option-glossary" aria-label="شرح المصطلحات في الخيارات" style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 10, fontSize: 14 }}>
+          <span style={{ fontWeight: 800 }}>مصطلح غير واضح؟</span>
+          {visibleTerms.map((term) => (
+            <button key={term} type="button" className="smart-term" onClick={() => onGlossary(term)}>
+              {term} ؟
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </>
   );
 }

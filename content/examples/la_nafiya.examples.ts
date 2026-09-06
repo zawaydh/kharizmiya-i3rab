@@ -4,6 +4,7 @@ import { buildTopicQuizExamples } from "./extended_topic_quiz";
 export const laNafiyaCoverageKeysOrdered = [
   "la.mufrad.singular",
   "la.mufrad.dual",
+  "la.mufrad.jfs",
   "la.mudaf.singular",
   "la.shibh.singular",
   "la.mudaf.dual",
@@ -82,7 +83,16 @@ export const laNafiyaExamples: ExerciseExample[] = [
     },
     covers: ["la.mudaf.five"],
   },
-];
+  {
+    id: "la-08",
+    sentence: "لا طالباتِ مهملاتٌ.",
+    target: "طالباتِ",
+    facts: {
+      laWorks: true, isLaName: true, laNameKind: "mufrad", buildMark: "kasra",
+      finalI3rab: "طالباتِ: اسم «لا» النافية للجنس مبني على الكسرة في محل نصب؛ لأنه جمع مؤنث سالم، واسم «لا» المفرد في اصطلاح الباب يبنى على ما ينصب به.\nتنبيه: «مفرد» هنا يعني غير مضاف ولا شبيه بالمضاف، لا واحدًا في العدد.",
+    },
+    covers: ["la.mufrad.jfs"],
+  },];
 
 export const laNafiyaQuizExamples = buildTopicQuizExamples(
   laNafiyaExamples,

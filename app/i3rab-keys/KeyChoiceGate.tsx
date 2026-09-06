@@ -25,7 +25,7 @@ type StartConfig = {
 const STARTS: Record<StartKey, StartConfig> = {
   name: {
     label: "بدأت باسم",
-    note: "اسم ظاهر أو اسم مبني",
+    note: "إذا كانت البداية جملة اسمية فابدأ بفحص المبتدأ والخبر",
     questions: [
       {
         example: "هذا كتابٌ.",
@@ -96,8 +96,8 @@ const STARTS: Record<StartKey, StartConfig> = {
   },
 
   tool: {
-    label: "بدأت بأداة",
-    note: "اسأل: تعمل أم لا؟",
+    label: "بدأت بأداة منفردة",
+    note: "مثل: هل، لن، لم، إنَّ، يا",
     questions: [
       {
         example: "هل حضرَ الطالبُ؟",
@@ -213,8 +213,8 @@ const STARTS: Record<StartKey, StartConfig> = {
   },
 
   shibh: {
-    label: "بدأت بشبه جملة",
-    note: "لا تحكم فورًا",
+    label: "بدأت بجار ومجرور أو ظرف",
+    note: "مثل: في البيت، أمام المدرسة",
     questions: [
       {
         example: "في الفصلِ طلابٌ.",

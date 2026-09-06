@@ -146,7 +146,7 @@ ${layout}`;
     expect(model).toContain('label: "نون التوكيد"');
     expect(model).toContain('label: "ناصب"');
     expect(model).toContain('label: "جازم"');
-    expect(model).toContain('label: "لم يُسبق بعامل"');
+    expect(model).toContain('label: "لا ناصب ولا جازم قبله"');
     expect(model).toContain('text: `ما صورة الفعل ${target}؟`');
     expect(model).toContain('label: "صحيح الآخر"');
     expect(model).toContain('label: "معتل الآخر"');

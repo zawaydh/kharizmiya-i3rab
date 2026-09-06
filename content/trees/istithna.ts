@@ -68,7 +68,9 @@ export const istithnaTree: ExerciseTree = {
       answers: [
         { id: "singular", text: "مفرد", next: "istithna_mark", eval: { fact: "shape", equals: "singular" }, hint: "إذا كان المستثنى المنصوب مفردًا، فعلامة نصبه الأصلية الفتحة؛ لا تستخدم علامة المثنى أو الجمع." },
         { id: "dual", text: "مثنى", next: "istithna_mark", eval: { fact: "shape", equals: "dual" }, hint: "إذا كان المستثنى يدل على اثنين وكان مثنى، فعلامة نصبه الياء، لا الفتحة." },
-        { id: "jms", text: "جمع مذكر سالم", next: "istithna_mark", eval: { fact: "shape", equals: "jms" }, hint: "إذا كان المستثنى جمع مذكر سالم، فعلامة نصبه الياء؛ افحص صورة الاسم قبل اختيار العلامة." },
+        { id: "jms", text: "جمع مذكر سالم", next: "istithna_mark", eval: { fact: "shape", equals: "jms" }, hint: "إذا كان المستثنى جمع مذكر سالم، فعلامة نصبه الياء." },
+        { id: "jfs", text: "جمع مؤنث سالم", next: "istithna_mark", eval: { fact: "shape", equals: "jfs" }, hint: "جمع المؤنث السالم ينصب بالكسرة نيابة عن الفتحة." },
+        { id: "jt", text: "جمع تكسير", next: "istithna_mark", eval: { fact: "shape", equals: "jt" }, hint: "جمع التكسير ينصب في الأصل بالفتحة." },
       ],
     },
     istithna_mark: {
@@ -76,10 +78,11 @@ export const istithnaTree: ExerciseTree = {
       type: "question",
       context: "عرفنا أنه مستثنى منصوب وعرفنا صورة الاسم؛ بقيت العلامة.",
       text: "ما علامة النصب؟",
-      hint: "الفتحة للمفرد، والياء للمثنى وجمع المذكر السالم.",
+      hint: "الفتحة للمفرد وجمع التكسير، والياء للمثنى وجمع المذكر السالم، والكسرة لجمع المؤنث السالم.",
       answers: [
         { id: "fatha", text: "الفتحة الظاهرة", next: "R_istithna_nasb", eval: { fact: "nasbMark", equals: "fatha" }, hint: "الفتحة علامة النصب الأصلية للمفرد." },
         { id: "yaa", text: "الياء", next: "R_istithna_nasb", eval: { fact: "nasbMark", equals: "yaa" }, hint: "الياء علامة نصب المثنى وجمع المذكر السالم." },
+        { id: "kasra", text: "الكسرة نيابةً عن الفتحة", next: "R_istithna_nasb", eval: { fact: "nasbMark", equals: "kasra" }, hint: "الكسرة تنوب عن الفتحة في نصب جمع المؤنث السالم." },
       ],
     },
     R_istithna_nasb: { id: "R_istithna_nasb", type: "result", text: "مستثنى منصوب في هذا المثال." },

@@ -13,8 +13,8 @@ describe("صفحة تعريف المنصة", () => {
     expect(about).toContain("تعلّم الإعراب عبر التفكير التفاعلي لا التلقين");
     expect(about).toContain("كيف وصلتُ إلى هذا الإعراب؟");
     expect(about).toContain("تعلّم");
-    expect(about).toContain("تدرّب");
-    expect(about).toContain("اختبر نفسك");
+    expect(about).toContain("التدريب");
+    expect(about).toContain("الاختبار النهائي");
     expect(about).not.toMatch(/Supabase|Vercel|SMTP|GitHub/u);
   });
 

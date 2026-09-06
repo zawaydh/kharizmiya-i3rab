@@ -5,6 +5,7 @@ import { toStudentArabicOption } from "../../../lib/studentOptionText";
 import type { QuestionCardPhase } from "./useQuestionMotion";
 import type { PracticeWrongPanel } from "./ExerciseQuestionStageTypes";
 import { renderSmartText } from "./ExerciseTextViews";
+import { SMART_GLOSSARY } from "./ExerciseSharedViews";
 import { cleanPracticeTeacherPart } from "./ExercisePedagogy";
 import { practiceOptionScope } from "./ExercisePracticeFlow";
 import { practiceTargetUnit } from "../../../lib/exercise/practiceGrammarPolicy";
@@ -43,6 +44,10 @@ export function ExercisePracticeQuestion({
     directOptions.every((option) => practiceOptionScope(option) === "routing");
   const targetUnit = practiceTargetUnit(facts || {}, directOptions[0] || "");
   const targetHasMultipleWords = currentTarget.trim().split(/\s+/u).length > 1;
+  const optionGlossaryTerms = Object.keys(SMART_GLOSSARY)
+    .filter((term) => directOptions.some((option) => toStudentArabicOption(option).includes(term)))
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 6);
 
   const structurePrompt =
     targetUnit === "verbal-sentence"
@@ -129,6 +134,16 @@ export function ExercisePracticeQuestion({
               </button>
             ))}
           </div>
+          {optionGlossaryTerms.length ? (
+            <div className="exercise-option-glossary" aria-label="شرح المصطلحات في الخيارات" style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 10, fontSize: 14 }}>
+              <span style={{ fontWeight: 800 }}>مصطلح غير واضح؟</span>
+              {optionGlossaryTerms.map((term) => (
+                <button key={term} type="button" className="smart-term" onClick={() => onGlossary(term)}>
+                  {term} ؟
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div className="hint-after-options practice-hint-inline">
             <button
               type="button"

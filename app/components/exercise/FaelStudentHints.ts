@@ -39,8 +39,8 @@ export function faelStudentHintText(node: PedagogyNode | null | undefined, picke
         if (id === "fael_role_verbal") {
             if (pickedText === "فعل") {
                 if (roleKind === "masdar") {
-                    const q = targetText.includes("ما فعلت") ? "ما الذي أعجبني؟" : "ما الذي سرّني؟";
-                    const taweel = targetText.includes("ما فعلت") ? "فعلك" : "نجاحك";
+                    const q = actionQuestion || "ما الذي أُسند إليه الفعل؟";
+                    const taweel = String(facts.taweel || "مصدر صريح");
                     return `داخل (${targetText}) يوجد فعل فعلًا، لكننا لا نعرب الفعل وحده هنا؛ نعرب التركيب كله. هذا التركيب يؤول بمصدر في معنى اسم: (${taweel}). لذلك ننظر إلى دوره في الجملة ونسأل: ${q}`;
                 }
                 if (roleKind === "connected") {

@@ -9,6 +9,8 @@ export const munadaCoverageKeysOrdered = [
   "munada.nakira_ghayr",
   "munada.mudaf.dual",
   "munada.mudaf.jms",
+  "munada.mudaf.jfs",
+  "munada.nakira_ghayr.jt",
   "munada.five",
 ];
 
@@ -93,7 +95,20 @@ export const munadaExamples: ExerciseExample[] = [
     },
     covers: ["munada.five"],
   },
-];
+  {
+    id: "mn-09",
+    sentence: "يا طالباتِ العلمِ، اجتهدنَ.",
+    target: "طالباتِ",
+    facts: { isMunada: true, munadaKind: "mudaf", shape: "jfs", nasbMark: "kasra", finalI3rab: "طالباتِ: منادى مضاف منصوب، وعلامة نصبه الكسرة نيابةً عن الفتحة؛ لأنه جمع مؤنث سالم، وهو مضاف.\nالعلمِ: مضاف إليه مجرور." },
+    covers: ["munada.mudaf.jfs"],
+  },
+  {
+    id: "mn-10",
+    sentence: "يا رجالًا، تعاونوا.",
+    target: "رجالًا",
+    facts: { isMunada: true, munadaKind: "nakira_ghayr_maqsuda", shape: "jt", nasbMark: "fatha", finalI3rab: "رجالًا: منادى نكرة غير مقصودة منصوب، وعلامة نصبه الفتحة الظاهرة؛ لأنه جمع تكسير." },
+    covers: ["munada.nakira_ghayr.jt"],
+  },];
 
 export const munadaQuizExamples = buildTopicQuizExamples(
   munadaExamples,

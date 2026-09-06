@@ -139,6 +139,9 @@ export default function WhoIsWithMeGame() {
 
             {!roundComplete ? (
               <section className="place-game-stage" aria-live="polite">
+                <div className="exercise-practice-warning" style={{ marginBottom: 12 }}>
+                  قاعدة هذه اللعبة: فرق الرفع والنصب والجر والجزم للكلمات المعربة، أمّا المبنيات فنجمعها في فريق مستقل حتى لا تتداخل الفرق. هذا لا يلغي محلها الإعرابي؛ فالاسم المبني قد يكون في محل رفع أو نصب أو جر.
+                </div>
                 <div className="place-game-word-card" style={gameWarmCardStyle}>
                   <span>اجمع فريقك</span>
                   <strong>مَنْ مَعِي؟ — {WHO_WITH_ME_GROUP_LABELS[target]}</strong>

@@ -76,7 +76,7 @@ export function RemedialTrainingView({
     <section className="exercise-panel remedial-stage" style={panelStyle}>
       <div className="remedial-stage-head">
         <div>
-          <span>عالج ضعفي</span>
+          <span>تدرّب على أخطائك</span>
           <h2>نفهم موضع الخطأ ثم نحل مثالًا جديدًا</h2>
           <p>مثال {Math.min(cursor + 1, total)} من {total}</p>
         </div>
@@ -295,7 +295,7 @@ export function QuizQuestionView({
 
       <div className="quiz-form-actions">
         <button type="button" onClick={onPrevious} style={ghostActionStyle} disabled={cursor <= 0}>السابق</button>
-        <button type="button" onClick={onRestart} style={ghostActionStyle}>إعادة</button>
+        <button type="button" onClick={onRestart} style={ghostActionStyle}>إعادة الاختبار من البداية</button>
         <button type="button" onClick={onNext} style={primaryActionStyle} disabled={!selected}>
           {cursor + 1 >= total ? "تسليم الاختبار النهائي" : "التالي"}
         </button>
