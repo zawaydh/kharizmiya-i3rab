@@ -194,18 +194,11 @@ test.describe("public and protected flows", () => {
     }
   });
 
-  test("a protected visual path preserves its safe return address", async ({ page }) => {
+  test("a public visual path opens without authentication", async ({ page }) => {
     await page.goto("/paths?topic=present-verb");
-
-    await expect(page.getByRole("heading", {
-      level: 1,
-      name: "سجّل الدخول لفتح المسار البصري",
-    })).toBeVisible();
-    const loginLink = page.getByRole("main").getByRole("link", { name: "تسجيل الدخول" });
-    await expect(loginLink).toHaveAttribute(
-      "href",
-      "/auth?next=%2Fpaths%3Ftopic%3Dpresent-verb",
-    );
+    await expect(page.locator(".visual-path-card")).toBeVisible();
+    await expect(page.locator(".visual-path-stage")).toBeVisible();
+    await expect(page).toHaveURL(/\/paths\?topic=present-verb/);
   });
 
   test("the progress API rejects unauthenticated writes", async ({ request }) => {
