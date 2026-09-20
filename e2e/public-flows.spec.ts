@@ -155,7 +155,7 @@ test.describe("public and protected flows", () => {
   });
 
   test("ready nested routes are registered and never fall through to 404", async ({ page }) => {
-    const protectedLearningRoutes = [
+    const publicLearningRoutes = [
       "/learn/inna-wa-akhawatuha",
       "/learn/ism-manqous",
       "/learn/la-nafiya",
@@ -163,14 +163,15 @@ test.describe("public and protected flows", () => {
       "/learn/naib-fael",
       "/learn/mafoolat",
     ];
-    for (const route of protectedLearningRoutes) {
+    for (const route of publicLearningRoutes) {
       await test.step(route, async () => {
         const response = await page.goto(route);
         expect(response?.status()).toBe(200);
+        await expect(page.locator(".exercise-page-shell")).toBeVisible();
         await expect(page.getByRole("heading", {
           level: 1,
           name: "سجّل الدخول لتبدأ التعلّم الموجّه",
-        })).toBeVisible();
+        })).toHaveCount(0);
         await expect(page.getByText("This page could not be found", { exact: false })).toHaveCount(0);
       });
     }

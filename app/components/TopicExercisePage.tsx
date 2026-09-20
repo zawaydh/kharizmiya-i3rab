@@ -70,7 +70,9 @@ export default function TopicExercisePage({ topicCode, mode }: Props) {
     </>
   );
 
-  const gatedPlayer = mode === "learn" ? player : (
+  if (mode === "learn") return player;
+
+  const gatedPlayer = (
     <StageAccessGate
       topicCode={topic.code}
       level={topic.level ?? 2}

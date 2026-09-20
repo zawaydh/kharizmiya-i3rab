@@ -13,13 +13,13 @@ describe("تصحيحات الإصدار النهائي", () => {
     expect(source).toContain("encodeURIComponent(destination)");
   });
 
-  it("يصف التسجيل كما يعمل فعليًا دون وعد متناقض", () => {
-    const gate = read("app/components/AuthLockGate.tsx");
+  it("يفتح مدرّب التفكير والتعلّم الموجّه للزائر ويبقي الحفظ للحساب", () => {
+    const topics = read("app/topics/page.tsx");
+    const topicExercise = read("app/components/TopicExercisePage.tsx");
     const auth = read("app/auth/page.tsx");
-    expect(gate).toContain("التسجيل مطلوب للدخول إلى المراحل التفاعلية");
-    expect(auth).toContain("التسجيل مطلوب للدخول إلى التعلّم الموجّه");
-    expect(gate).not.toContain("ليس لفتح محتوى مختلف");
-    expect(auth).not.toContain("يمكنك التعلّم بالمحتوى نفسه");
+    expect(topics).not.toContain("AuthLockGate");
+    expect(topicExercise).toContain('if (mode === "learn") return player;');
+    expect(auth).toContain("يمكنك التعلّم الموجّه كزائر دون حساب");
   });
 
   it("لا يحذف المسافات من كلمة المرور", () => {

@@ -190,11 +190,20 @@ export function useStageSession({
           saveFailed: false,
         };
       } catch (error) {
+        const saveError = error instanceof Error ? error.message : "PROGRESS_SAVE_FAILED";
+        if (saveError === "NOT_AUTH" || saveError === "NOT_AUTHENTICATED") {
+          savedResultKeysRef.current.add(resultKey);
+          return {
+            percent: update.percent,
+            missingCoverage: !update.hasCoverageKey,
+            saveFailed: false,
+          };
+        }
         return {
           percent: update.percent,
           missingCoverage: !update.hasCoverageKey,
           saveFailed: true,
-          saveError: error instanceof Error ? error.message : "PROGRESS_SAVE_FAILED",
+          saveError,
         };
       } finally {
         saveInFlightRef.current.delete(resultKey);

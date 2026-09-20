@@ -1,19 +1,15 @@
-import AuthLockGate from "../components/AuthLockGate";
 import { getReadyTopicMetadata, getTopicRoutes } from "../../lib/topicCatalog";
 
 export default function TopicsPage() {
   const topics = getReadyTopicMetadata();
 
   return (
-    <AuthLockGate
-      title="اختيار الموضوع يفتح بعد تسجيل الدخول"
-      text="سجّل الدخول لاختيار الموضوع."
-    >
-      <div className="topics-branch-page">
+    <div className="topics-branch-page">
         <section className="card topics-branch-hero student-compact-hero">
           <span className="section-kicker">تطبيق خوارزمية الإعراب خطوةً خطوة</span>
           <h1 className="h1">مدرّب التفكير</h1>
           <p>اختر الموضوع وطبّق خوارزميته على أمثلة تفاعلية متدرجة.</p>
+          <p>يمكنك البدء مباشرةً كزائر. سجّل الدخول فقط إذا أردت حفظ تقدمك ومتابعته لاحقًا.</p>
         </section>
 
         <section className="topics-branch-grid">
@@ -33,6 +29,5 @@ export default function TopicsPage() {
           })}
         </section>
       </div>
-    </AuthLockGate>
-  );
+);
 }

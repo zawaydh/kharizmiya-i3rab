@@ -229,7 +229,7 @@ export default function Navbar() {
               currentCode={currentTopicCode}
               buttonLabel="مدرّب التفكير"
               className={topicSectionActive ? "is-active" : ""}
-              locked={locked}
+              locked={false}
               onNavigate={closeMobile}
               icon="topics"
             />

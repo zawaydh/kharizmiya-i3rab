@@ -35,7 +35,7 @@ export default function HomePage() {
             <Link href="/guide" className="btn home-guide-primary">اقرأ تعليمات قبل التدريب</Link>
             <a href="/topics" className="btn home-trainer-secondary">ادخل إلى مدرّب التفكير</a>
           </div>
-          <p className="home-registration-note">التسجيل مطلوب للدخول إلى مراحل التعلّم الموجّه والتدريب والاختبار النهائي، ويتيح حفظ تقدم الطالب وتمييز مرحلته الحالية وعرض إنجازه في لوحة التقدم.</p>
+          <p className="home-registration-note">يمكنك الدخول إلى مدرّب التفكير والتعلّم الموجّه كزائر. سجّل الدخول لحفظ تقدمك، والوصول إلى التدريب والاختبار النهائي، وعرض إنجازك في لوحة التقدم.</p>
         </div>
       </section>
 
