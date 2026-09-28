@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+﻿import { expect, test, type Page } from "@playwright/test";
 import axe from "axe-core";
 
 type AxeRuntime = {
@@ -72,7 +72,7 @@ async function expectDesktopShellToTrackSidebar(page: Page) {
 
   const body = page.locator("body");
   if (await body.evaluate((element) => element.classList.contains("nav-collapsed"))) {
-    await page.getByRole("button", { name: "توسيع القائمة" }).click();
+    await page.getByRole("button", { name: "طھظˆط³ظٹط¹ ط§ظ„ظ‚ط§ط¦ظ…ط©" }).click();
     await expect(body).not.toHaveClass(/nav-collapsed/u);
     await page.waitForTimeout(240);
   }
@@ -83,7 +83,7 @@ async function expectDesktopShellToTrackSidebar(page: Page) {
   expect(expanded!.mainRight).toBeLessThanOrEqual(expanded!.sidebarLeft + 1);
   expect(expanded!.overflow).toBeLessThanOrEqual(1);
 
-  await page.getByRole("button", { name: "طي القائمة" }).click();
+  await page.getByRole("button", { name: "ط·ظٹ ط§ظ„ظ‚ط§ط¦ظ…ط©" }).click();
   await expect(body).toHaveClass(/nav-collapsed/u);
   await page.waitForTimeout(240);
 
@@ -94,7 +94,7 @@ async function expectDesktopShellToTrackSidebar(page: Page) {
   expect(collapsed!.mainWidth).toBeGreaterThan(expanded!.mainWidth + 30);
   expect(collapsed!.overflow).toBeLessThanOrEqual(1);
 
-  await page.getByRole("button", { name: "توسيع القائمة" }).click();
+  await page.getByRole("button", { name: "طھظˆط³ظٹط¹ ط§ظ„ظ‚ط§ط¦ظ…ط©" }).click();
   await expect(body).not.toHaveClass(/nav-collapsed/u);
   await page.waitForTimeout(240);
 }
@@ -103,17 +103,17 @@ test.describe("public and protected flows", () => {
   test("the home page leads to the algorithm guide", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page).toHaveTitle(/إِعْرَابُكَ/u);
+    await expect(page).toHaveTitle(/ط¥ظگط¹ظ’ط±ظژط§ط¨ظڈظƒظژ/u);
     await expect(page.getByRole("heading", {
       level: 1,
-      name: "الإعراب خطوات؛ كل خطوة تفتح مسارًا وتغلق آخر.",
+      name: "ط§ظ„ط¥ط¹ط±ط§ط¨ ط®ط·ظˆط§طھط› ظƒظ„ ط®ط·ظˆط© طھظپطھط­ ظ…ط³ط§ط±ظ‹ط§ ظˆطھط؛ظ„ظ‚ ط¢ط®ط±.",
     })).toBeVisible();
 
     await expectDesktopShellToTrackSidebar(page);
 
-    await page.getByRole("link", { name: "اقرأ تعليمات قبل التدريب" }).click();
+    await page.getByRole("link", { name: "ط§ظ‚ط±ط£ طھط¹ظ„ظٹظ…ط§طھ ظ‚ط¨ظ„ ط§ظ„طھط¯ط±ظٹط¨" }).click();
     await expect(page).toHaveURL(/\/guide$/u);
-    await expect(page.getByRole("heading", { level: 1, name: "تعليمات قبل التدريب" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "طھط¹ظ„ظٹظ…ط§طھ ظ‚ط¨ظ„ ط§ظ„طھط¯ط±ظٹط¨" })).toBeVisible();
    
   });
 
@@ -143,15 +143,15 @@ test.describe("public and protected flows", () => {
   test("the place game explains a wrong location and accepts the correct one", async ({ page }) => {
     await page.goto("/games/where-is-my-place");
 
-    await expect(page.getByRole("heading", { level: 1, name: "أين مكاني؟" })).toBeVisible();
-    await page.getByRole("button", { name: /كَرَّمَ المُعَلِّمُ/u }).click();
-    await expect(page.getByText("هذه البوابة تحتاج صورة أخرى للكلمة")).toBeVisible();
-    await expect(page.getByText("الطَّالِبَ", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "ط£ظٹظ† ظ…ظƒط§ظ†ظٹطں" })).toBeVisible();
+    await page.getByRole("button", { name: /ظƒظژط±ظ‘ظژظ…ظژ ط§ظ„ظ…ظڈط¹ظژظ„ظ‘ظگظ…ظڈ/u }).click();
+    await expect(page.getByText("ظ‡ط°ظ‡ ط§ظ„ط¨ظˆط§ط¨ط© طھط­طھط§ط¬ طµظˆط±ط© ط£ط®ط±ظ‰ ظ„ظ„ظƒظ„ظ…ط©")).toBeVisible();
+    await expect(page.getByText("ط§ظ„ط·ظ‘ظژط§ظ„ظگط¨ظژ", { exact: true })).toBeVisible();
 
-    await page.getByRole("button", { name: "جرّب مكانًا آخر" }).click();
-    await page.getByRole("button", { name: /حَضَرَ/u }).click();
+    await page.getByRole("button", { name: "ط¬ط±ظ‘ط¨ ظ…ظƒط§ظ†ظ‹ط§ ط¢ط®ط±" }).click();
+    await page.getByRole("button", { name: /ط­ظژط¶ظژط±ظژ/u }).click();
     await expect(page.getByText("+60")).toBeVisible();
-    await expect(page.getByRole("button", { name: "إلى المهمّة التالية" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "ط¥ظ„ظ‰ ط§ظ„ظ…ظ‡ظ…ظ‘ط© ط§ظ„طھط§ظ„ظٹط©" })).toBeVisible();
   });
 
   test("ready nested routes are registered and never fall through to 404", async ({ page }) => {
@@ -167,10 +167,14 @@ test.describe("public and protected flows", () => {
       await test.step(route, async () => {
         const response = await page.goto(route);
         expect(response?.status()).toBe(200);
+        const startLearningButton = page.getByRole("button", { name: "ابدأ التعلّم" });
+        if (await startLearningButton.isVisible()) {
+          await startLearningButton.click();
+        }
         await expect(page.locator(".exercise-page-shell")).toBeVisible();
         await expect(page.getByRole("heading", {
           level: 1,
-          name: "سجّل الدخول لتبدأ التعلّم الموجّه",
+          name: "ط³ط¬ظ‘ظ„ ط§ظ„ط¯ط®ظˆظ„ ظ„طھط¨ط¯ط£ ط§ظ„طھط¹ظ„ظ‘ظ… ط§ظ„ظ…ظˆط¬ظ‘ظ‡",
         })).toHaveCount(0);
         await expect(page.getByText("This page could not be found", { exact: false })).toHaveCount(0);
       });
@@ -231,7 +235,7 @@ test.describe("public and protected flows", () => {
 
   test("the guide has no horizontal overflow", async ({ page }) => {
     await page.goto("/guide");
-    await expect(page.getByRole("heading", { level: 1, name: "تعليمات قبل التدريب" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "طھط¹ظ„ظٹظ…ط§طھ ظ‚ط¨ظ„ ط§ظ„طھط¯ط±ظٹط¨" })).toBeVisible();
 
     const overflow = await page.evaluate(() => ({
       document: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -264,17 +268,17 @@ test.describe("public and protected flows", () => {
     });
 
     const steps = [
-      { question: "ما نوع كلمة «يأتوا»؟", answer: "فعل" },
-      { question: "ما نوع الفعل «يأتوا»؟", answer: "مضارع" },
-      { question: "ما العامل الذي سبق الفعل «يأتوا»؟", answer: "سبق بأداة جزم" },
-      { question: "هل الفعل «يأتوا» من الأفعال الخمسة؟", answer: "نعم، من الأفعال الخمسة" },
+      { question: "ظ…ط§ ظ†ظˆط¹ ظƒظ„ظ…ط© آ«ظٹط£طھظˆط§آ»طں", answer: "ظپط¹ظ„" },
+      { question: "ظ…ط§ ظ†ظˆط¹ ط§ظ„ظپط¹ظ„ آ«ظٹط£طھظˆط§آ»طں", answer: "ظ…ط¶ط§ط±ط¹" },
+      { question: "ظ…ط§ ط§ظ„ط¹ط§ظ…ظ„ ط§ظ„ط°ظٹ ط³ط¨ظ‚ ط§ظ„ظپط¹ظ„ آ«ظٹط£طھظˆط§آ»طں", answer: "ط³ط¨ظ‚ ط¨ط£ط¯ط§ط© ط¬ط²ظ…" },
+      { question: "ظ‡ظ„ ط§ظ„ظپط¹ظ„ آ«ظٹط£طھظˆط§آ» ظ…ظ† ط§ظ„ط£ظپط¹ط§ظ„ ط§ظ„ط®ظ…ط³ط©طں", answer: "ظ†ط¹ظ…طŒ ظ…ظ† ط§ظ„ط£ظپط¹ط§ظ„ ط§ظ„ط®ظ…ط³ط©" },
     ];
 
     for (const [index, step] of steps.entries()) {
       await expect(page.locator("#start-current-question")).toContainText(step.question);
       if (index === 2) {
-        await page.getByRole("button", { name: "أحتاج تلميحًا" }).click();
-        await page.getByRole("button", { name: "شرح أداة نصب" }).click();
+        await page.getByRole("button", { name: "ط£ط­طھط§ط¬ طھظ„ظ…ظٹط­ظ‹ط§" }).click();
+        await page.getByRole("button", { name: "ط´ط±ط­ ط£ط¯ط§ط© ظ†طµط¨" }).click();
         const glossary = page.getByRole("dialog");
         await expect(glossary).toBeVisible();
         const glossarySurface = await glossary.evaluate((element) => {
@@ -292,7 +296,7 @@ test.describe("public and protected flows", () => {
         expect(glossarySurface.backgroundColor).toBe("rgb(255, 248, 223)");
         expect(glossarySurface.left).toBeGreaterThanOrEqual(-1);
         expect(glossarySurface.right).toBeLessThanOrEqual(glossarySurface.viewport + 1);
-        await glossary.getByRole("button", { name: "×" }).click();
+        await glossary.getByRole("button", { name: "أ—" }).click();
       }
       await page.getByRole("button", { name: step.answer, exact: true }).click();
       if (index < steps.length - 1) {
@@ -303,14 +307,14 @@ test.describe("public and protected flows", () => {
 
     const resultCard = page.locator(".start-finish-card");
     await expect(resultCard).toBeVisible({ timeout: 4_000 });
-    await expect(resultCard.locator("h2")).toContainText("فعل مضارع مجزوم بـ(لم)");
+    await expect(resultCard.locator("h2")).toContainText("ظپط¹ظ„ ظ…ط¶ط§ط±ط¹ ظ…ط¬ط²ظˆظ… ط¨ظ€(ظ„ظ…)");
     await expect(resultCard).toHaveCSS("display", "grid");
-    await resultCard.getByText("عرض التفسير والاقتراحات").click();
+    await resultCard.getByText("ط¹ط±ط¶ ط§ظ„طھظپط³ظٹط± ظˆط§ظ„ط§ظ‚طھط±ط§ط­ط§طھ").click();
     const firstTopic = resultCard.locator(".start-topic-card").first();
     await expect(firstTopic).toBeVisible();
     await expect(firstTopic).toHaveCSS("background-color", "rgb(237, 249, 248)");
     await expect(firstTopic.locator("strong")).toHaveCSS("color", "rgb(15, 118, 110)");
-    expect(await seriousAccessibilityViolations(page), "مخالفات الوصول بعد إكمال المثال").toEqual([]);
+    expect(await seriousAccessibilityViolations(page), "ظ…ط®ط§ظ„ظپط§طھ ط§ظ„ظˆطµظˆظ„ ط¨ط¹ط¯ ط¥ظƒظ…ط§ظ„ ط§ظ„ظ…ط«ط§ظ„").toEqual([]);
     const resultBounds = await resultCard.evaluate((element) => {
       const rect = element.getBoundingClientRect();
       return { left: rect.left, right: rect.right, viewport: window.innerWidth };
@@ -323,7 +327,8 @@ test.describe("public and protected flows", () => {
     for (const path of ["/", "/guide", "/learn/start"]) {
       await page.goto(path);
       await expect(page.getByRole("main")).toBeVisible();
-      expect(await seriousAccessibilityViolations(page), `مخالفات الوصول في ${path}`).toEqual([]);
+      expect(await seriousAccessibilityViolations(page), `ظ…ط®ط§ظ„ظپط§طھ ط§ظ„ظˆطµظˆظ„ ظپظٹ ${path}`).toEqual([]);
     }
   });
 });
+
