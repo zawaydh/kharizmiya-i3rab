@@ -3,6 +3,8 @@ import AuthLockGate from "./AuthLockGate";
 import ExercisePlayer from "./ExercisePlayer";
 import StageAccessGate from "./StageAccessGate";
 import { stageExampleVariants } from "../../lib/exercise/stageExampleVariants";
+import { ENABLE_GUIDED_LEARNING_INTROS } from "../../lib/featureFlags";
+import TopicIntroGate from "./TopicIntroGate";
 
 type ExercisePageMode = "learn" | "practice" | "quiz";
 
@@ -53,7 +55,7 @@ export default function TopicExercisePage({ topicCode, mode }: Props) {
     </section>
   ) : null;
 
-  const player = (
+  const exercisePlayer = (
     <>
       {topicIntro}
       <ExercisePlayer
@@ -69,6 +71,12 @@ export default function TopicExercisePage({ topicCode, mode }: Props) {
       />
     </>
   );
+
+  const useReversibleIntro = mode === "learn"
+    && ENABLE_GUIDED_LEARNING_INTROS;
+  const player = useReversibleIntro
+    ? <TopicIntroGate topicName={topic.name_ar}>{exercisePlayer}</TopicIntroGate>
+    : exercisePlayer;
 
   if (mode === "learn") return player;
 

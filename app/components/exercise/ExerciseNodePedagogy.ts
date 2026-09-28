@@ -100,9 +100,9 @@ export function cleanQuestionText(node: PedagogyNode | null | undefined) {
     if (id === "wordType")
         return "هل الكلمة اسم أم فعل أم حرف؟";
     if (id === "nounKind")
-        return "هل المحدد كلمة مفردة أم تركيب في تأويل اسم؟";
+        return "هل المحدد كلمة واحدة أم مصدر مؤول؟";
     if (id === "khabar_single_start")
-        return "هل الخبر كلمة مفردة أم تركيب في تأويل اسم؟";
+        return "هل الخبر كلمة واحدة أم مصدر مؤول؟";
     if (id === "khabar_single_number" || id === "i3rabNumber")
         return "هل الاسم مفرد أم مثنى أم جمع؟";
     if (text === "ماذا نتحقق الآن؟")

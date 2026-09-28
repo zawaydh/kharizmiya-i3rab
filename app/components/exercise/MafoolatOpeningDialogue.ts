@@ -38,11 +38,11 @@ export function mafoolatOpeningDialogueLine(
     }
     if (nodeId === "mafoolat_form") {
         if (roleKind === "masdar")
-            return `عرفنا أن (${target}) ${mafoolLabel}. الآن نحدد البنية: هل هو تركيب يمكن تأويله بمصدر صريح، أم كلمة مفردة؟`;
-        return `عرفنا أن (${target}) ${mafoolLabel}. قبل العلامة أو المحل نحدد صورة المحدد؛ فالصورة هي التي تحدد العلامة أو المحل: هل هو كلمة مفردة، أم تركيب في تأويل اسم؟`;
+            return `عرفنا أن (${target}) ${mafoolLabel}. هل المحدد كلمة واحدة أم مصدر مؤول؟`;
+        return `عرفنا أن (${target}) ${mafoolLabel}. الصورة هي التي تحدد العلامة أو المحل؛ لذلك نسأل: هل هو كلمة واحدة أم مصدر مؤول؟`;
     }
     if (nodeId === "mafoolat_word_inflection") {
-        return `ثبت أن (${target}) كلمة مفردة في هذا المستوى. الآن نحدد هل هي اسم معرب أم اسم مبني؛ فالضمير المتصل من الأسماء المبنية.`;
+        return `ثبت أن (${target}) كلمة واحدة. اختبر الآن: هل تتغير علامة آخرها بتغيّر الموقع، أم تلزم صورة واحدة؟`;
     }
     if (nodeId === "mafoolat_shape") {
         return `عرفنا أن (${target}) ${mafoolLabel} منصوب، وأنه اسم ظاهر معرب. نحدد الآن نوع الاسم قبل العلامة: ما نوع (${target})؟`;

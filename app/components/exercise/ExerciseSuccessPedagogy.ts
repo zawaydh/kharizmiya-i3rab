@@ -69,7 +69,7 @@ export function teacherSuccessText(node: PedagogyNode | null | undefined, picked
         }
         if (id === "khabar_single_start") {
             return String(facts.nounKind || "") === "masdar"
-                ? `«${target}» تركيب يمكن تأويله بمصدر صريح؛ لذلك هو تركيب في تأويل اسم.`
+                ? `«${target}» مصدر مؤول يمكن تحويله إلى مصدر صريح، ويعمل عمل الاسم ويأخذ موقعه الإعرابي.`
                 : `«${target}» خبر مفرد من جهة نوع الخبر، وهو هنا كلمة اسمية مفردة في البنية.`;
         }
         if (id === "khabar_sentence_type") {
@@ -102,4 +102,3 @@ export function builtNounTypeHintByValue(value?: string) {
             return "حدّد نوع الاسم المبني أولًا.";
     }
 }
-

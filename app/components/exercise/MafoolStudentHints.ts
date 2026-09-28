@@ -51,15 +51,15 @@ export function mafoolStudentHintText(node: PedagogyNode | null | undefined, pic
         if (id === "mafool_form") {
             if (roleKind === "masdar") {
                 if (pickedText.includes("كلمة"))
-                    return `(${targetText}) ليست كلمة مفردة؛ هي تركيب يمكن تأويله بمصدر صريح: (${taweel}). لذلك نختار «تركيب في تأويل اسم»، ثم نعربه مصدرًا مؤولًا في محل نصب مفعول به.`;
-                return `جرّب أن تستبدل (${targetText}) بمصدر صريح يؤدي معناها: (${taweel}). إذا استقام المعنى، فالمحدد تركيب في تأويل اسم، أي مصدر مؤول.`;
+                    return `(${targetText}) مصدر مؤول، وليس كلمة واحدة؛ يؤول بمصدر صريح: (${taweel})، ويعمل عمل الاسم، وهنا هو في محل نصب مفعول به.`;
+                return `(${targetText}) مصدر مؤول؛ يؤول بمصدر صريح: (${taweel})، ويعمل عمل الاسم، وهنا هو في محل نصب مفعول به.`;
             }
             if (pickedText.includes("تركيب"))
                 return `(${targetText}) ليست تركيبًا يؤول بمصدر؛ هي كلمة واحدة في هذا المستوى من التحليل. بعد ذلك نحدد: أهي اسم معرب أم اسم مبني؟`;
             return `انظر إلى المحدد كله: هل هو كلمة واحدة، أم تركيب يمكن تأويله باسم صريح مثل «أن تنجح» = «نجاحك»؟`;
         }
         if (id === "mafool_masdar_term") {
-            return `ثبت أن (${targetText}) تركيب في تأويل اسم؛ لأننا نستطيع تأويله بمصدر صريح. هذا يسمى «مصدرًا مؤولًا»، وهو هنا في محل نصب مفعول به.`;
+            return `(${targetText}) مصدر مؤول؛ يمكن تأويله بمصدر صريح، ويعمل عمل الاسم، وهنا هو في محل نصب مفعول به.`;
         }
         if (id === "mafool_word_inflection") {
             if (pickedText.includes("معرب") && roleKind !== "visible") {

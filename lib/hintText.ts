@@ -221,7 +221,7 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     if (id === "mubtada_word_type")
         return `انظر إلى ${quoted}: أهي اسم أو في معنى الاسم، أم فعل يدل على حدث وزمن، أم حرف لا يستقل معناه؟`;
     if (id === "inna_ism_start")
-        return `ثبت أن ${quoted} اسم الحرف الناسخ. إن كانت كلمة مفردة فاسأل: أهي اسم معرب، أم اسم مبني مثل ضمير متصل أو اسم إشارة أو اسم موصول؟ أمّا إن كانت تركيبًا يؤول بمصدر صريح فنسلك مسار المصدر المؤول.`;
+        return `ثبت أن ${quoted} اسم الحرف الناسخ. حدّد الآن: أهو اسم معرب، أم اسم مبني مثل ضمير متصل أو اسم إشارة أو اسم موصول، أم مصدر مؤول يؤول بمصدر صريح ويعمل عمل الاسم؟`;
     if (id === "kana_khabar_entry") {
         if (/يؤول/.test(q))
             return `ابحث في ${quoted} عن حرف مصدري مع فعل، ثم جرّب تحويل التركيب إلى مصدر صريح.`;
@@ -239,7 +239,7 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
     if (["inna_ism_number", "inna_khabar_single_number"].includes(id))
         return `افحص صورة ${quoted}: مفرد أو جمع تكسير، مثنى، جمع مذكر سالم، جمع مؤنث سالم، أم من الأسماء الخمسة؟`;
     if (["fael_form", "mafool_form", "mafoolat_form", "naib_form"].includes(id))
-        return `افحص المحدد كله: أهو كلمة مفردة، أم تركيب يمكن تأويله باسم صريح؟ إذا كان كلمة مفردة ننتقل بعد ذلك إلى سؤال: أهي معربة أم مبنية؟`;
+        return `هل المحدد كلمة واحدة أم مصدر مؤول؟ المصدر المؤول مثل «أن تنجح» ويؤول بـ«نجاحك»، ويعمل عمل الاسم ويأخذ موقعه الإعرابي.`;
     if (["mafoolat_shape", "naib_shape", "munada_shape", "la_nasb_shape", "tawabi_shape"].includes(id))
         return `افحص صورة ${quoted} من لفظها: مفرد، مثنى، جمع، أم من الأسماء الخمسة؟`;
     if (id === "hal_shape")

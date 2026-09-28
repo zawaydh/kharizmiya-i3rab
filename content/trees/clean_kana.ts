@@ -56,20 +56,20 @@ export const cleanKanaTree: ExerciseTree = {
         "kana_ism_start": {
             "id": "kana_ism_start",
             "type": "question",
-            "context": "ثبت أن المحدد شغل موقع اسم الفعل الناسخ. الآن نميّز بين الكلمة المفردة والتركيب الذي يؤول باسم قبل أي تفصيل صرفي.",
-            "text": "هل المحدد كلمة مفردة أم تركيب في تأويل اسم؟",
-            "hint": "إذا كان المحدد تركيبًا من حرف مصدري وفعل ويمكن أن نستبدله بمصدر صريح، مثل: أن تتجاهل = تجاهلُك، فهو تركيب في تأويل اسم. وإلا فهو كلمة مفردة نحدد بعدها: معربة أم مبنية.",
+            "context": "ثبت أن المحدد شغل موقع اسم الفعل الناسخ. ننظر الآن إلى حدود الجزء المحدد.",
+            "text": "هل المحدد كلمة واحدة أم مصدر مؤول؟",
+            "hint": "المصدر المؤول تركيب من حرف مصدري وما بعده، مثل «أن تتجاهل»، ويؤول بمصدر صريح: «تجاهلُك». يعمل عمل الاسم ويأخذ موقعه الإعرابي. أما الكلمة الواحدة فنحدد بعدها: أهي معربة أم مبنية؟",
             "answers": [
-                { "id": "word", "text": "كلمة مفردة", "next": "kana_ism_inflection", "eval": { "fact": "nounKind", "anyOf": ["mu3rab", "mabni"] } },
-                { "id": "source", "text": "تركيب في تأويل اسم", "next": "kana_masdar_name", "eval": { "fact": "nounKind", "equals": "masdar" }, "hint": "جرّب تأويل التركيب بمصدر صريح. إذا استقام المعنى فهو مصدر مؤول." }
+                { "id": "word", "text": "كلمة واحدة", "next": "kana_ism_inflection", "eval": { "fact": "nounKind", "anyOf": ["mu3rab", "mabni"] } },
+                { "id": "source", "text": "مصدر مؤول", "next": "kana_masdar_site", "eval": { "fact": "nounKind", "equals": "masdar" }, "hint": "المصدر المؤول تركيب من حرف مصدري وما بعده يؤول بمصدر صريح، ويعمل عمل الاسم ويأخذ موقعه الإعرابي." }
             ]
         },
         "kana_ism_inflection": {
             "id": "kana_ism_inflection",
             "type": "question",
-            "context": "عرفنا أن المحدد كلمة اسمية مفردة في البنية، فنحدد الآن هل هي معربة أم مبنية.",
+            "context": "عرفنا أن المحدد كلمة واحدة، فنختبر الآن هل تتغير علامة آخره أم تلزم صورته.",
             "text": "هل اسم الفعل الناسخ معرب أم مبني؟",
-            "hint": "الاسم المعرب يتغير آخره بحسب موقعه، أما الاسم المبني فيلزم صورة واحدة مثل الضمائر وأسماء الإشارة والموصولات.",
+            "hint": "المعرب يقبل حركة موقعه وتتغير حركة آخره، فنقول: مرفوع أو منصوب أو مجرور. أما المبني فلا تتغير حركة آخره، فنقول: مبني في محل رفع أو نصب أو جر؛ مثل الضمائر وأسماء الإشارة والأسماء الموصولة.",
             "answers": [
                 { "id": "a", "text": "اسم معرب", "next": "kana_ism_number", "eval": { "fact": "nounKind", "equals": "mu3rab" } },
                 { "id": "b", "text": "اسم مبني", "next": "kana_ism_built", "eval": { "fact": "nounKind", "equals": "mabni" } }
@@ -151,11 +151,11 @@ export const cleanKanaTree: ExerciseTree = {
             "id": "kana_khabar_single_start",
             "type": "question",
             "context": "ثبت أن المحدد خبر مفرد في اصطلاح الباب، أي ليس جملة ولا شبه جملة. الآن نميّز بنيته.",
-            "text": "هل الخبر كلمة مفردة أم تركيب في تأويل اسم؟",
+            "text": "هل الخبر كلمة واحدة أم مصدر مؤول؟",
             "hint": "إذا كان تركيبًا من حرف مصدري وفعل ويمكن تأويله بمصدر صريح مثل: أن أتميّز = تميّزي، فهو مصدر مؤول. وإلا فهو كلمة مفردة نكمل إلى صورتها وعلامة نصبها.",
             "answers": [
-                { "id": "a", "text": "كلمة مفردة", "next": "kana_khabar_single_number", "eval": { "fact": "nounKind", "equals": "mu3rab" } },
-                { "id": "c", "text": "تركيب في تأويل اسم", "next": "kana_masdar_name", "eval": { "fact": "nounKind", "equals": "masdar" }, "hint": "جرّب التأويل بمصدر صريح: أن أتميّز = تميّزي." }
+                { "id": "a", "text": "كلمة واحدة", "next": "kana_khabar_single_number", "eval": { "fact": "nounKind", "equals": "mu3rab" } },
+                { "id": "c", "text": "مصدر مؤول", "next": "kana_masdar_site", "eval": { "fact": "nounKind", "equals": "masdar" }, "hint": "مثل «أن أتميّز» = «تميّزي». يعمل عمل الاسم، ويأخذ هنا موقع خبر الفعل الناسخ." }
             ]
         },
         "kana_khabar_single_number": {
@@ -217,22 +217,10 @@ export const cleanKanaTree: ExerciseTree = {
                 { "id": "b", "text": "خبر الفعل الناسخ", "next": "kana_damir_site", "correct": false, "hint": "الخبر هو (مطمئنًا)، أما التاء فهي صاحب معنى كان." }
             ]
         },
-        "kana_masdar_name": {
-            "id": "kana_masdar_name",
-            "type": "question",
-            "context": "عرفنا أن التركيب بدأ بحرف مصدري وفعل، ويمكن تأويله باسم: أن أتميز = تميزي.",
-            "text": "ماذا يسمى تركيب الحرف المصدري مع الفعل؟",
-            "hint": "المصدر المؤول تركيب من حرف مصدري وفعل ويؤول باسم.",
-            "answers": [
-                { "id": "a", "text": "مصدر مؤول", "next": "kana_masdar_site", "correct": true },
-                { "id": "b", "text": "اسم ظاهر معرب", "next": "kana_masdar_name", "correct": false, "hint": "ليس كلمة واحدة ظاهرة، بل تركيب: أن + فعل." },
-                { "id": "c", "text": "اسم مبني", "next": "kana_masdar_name", "correct": false, "hint": "ليس اسمًا مبنيًا مثل هذا أو الذي؛ إنه تركيب يؤول باسم." }
-            ]
-        },
         "kana_masdar_site": {
             "id": "kana_masdar_site",
             "type": "question",
-            "context": "عرفنا أن المحدد مصدر مؤول، أي تركيب في تأويل اسم. بقي أن نربط هذا التركيب بوظيفته التي ثبتت في الجملة.",
+            "context": "عرفنا أن المحدد مصدر مؤول يعمل عمل الاسم. بقي أن نحدد موقعه الإعرابي في الجملة.",
             "text": "ما موقع المصدر المؤول بعد الفعل الناسخ؟",
             "hint": "أعد المصدر المؤول إلى مصدر صريح، ثم اسأل: أهو صاحب المعنى الذي شغل موقع اسم الناسخ، أم المعلومة التي أتمت المعنى عنه؟",
             "answers": [
@@ -286,4 +274,3 @@ export const cleanKanaTree: ExerciseTree = {
     }
 };
 // PEDAGOGY NOTE: relation -> function -> factor -> final parsing.
-

@@ -29,17 +29,17 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
         }
         if (id === "kana_ism_start" || id === "kana_khabar_single_start") {
             const isSource = String(state?.facts?.nounKind || "") === "masdar";
-            if (pickedText.includes("كلمة") && isSource) return `(${currentTarget}) ليس كلمة مفردة؛ يمكن تأويل التركيب بمصدر صريح، لذلك هو تركيب في تأويل اسم.`;
-            if (pickedText.includes("تركيب") && !isSource) return `(${currentTarget}) كلمة واحدة في هذا المثال، وليست تركيبًا من حرف مصدري وفعل. بعد ذلك نحدد هل هي معربة أم مبنية.`;
+            if (pickedText.includes("كلمة") && isSource) return `(${currentTarget}) مصدر مؤول، وليس كلمة واحدة؛ يمكن تحويله إلى مصدر صريح، ويعمل عمل الاسم ويأخذ موقعه الإعرابي.`;
+            if (pickedText.includes("مصدر") && !isSource) return `(${currentTarget}) كلمة واحدة في هذا المثال، وليست مصدرًا مؤولًا. بعد ذلك نحدد هل هي معربة أم مبنية.`;
             return isSource
-                ? `جرّب تأويل (${currentTarget}) بمصدر صريح. إذا استقام المعنى فهو مصدر مؤول، أي تركيب في تأويل اسم.`
+                ? `(${currentTarget}) مصدر مؤول؛ حوّله إلى مصدر صريح، ثم حدّد الموقع الإعرابي الذي شغله.`
                 : `انظر إلى (${currentTarget}) نفسها: هي كلمة واحدة، ثم ننتقل إلى سؤال المعرب والمبني.`;
         }
         if (id === "kana_ism_inflection") {
             const kind = String(state?.facts?.nounKind || "");
             if (pickedText.includes("معرب") && kind === "mabni") return `(${currentTarget}) تلزم صورة واحدة، لذلك هي اسم مبني. بعد ثبوت البناء نحدد نوعها من المبنيات.`;
             if (pickedText.includes("مبني") && kind === "mu3rab") return `(${currentTarget}) اسم معرب يتغير آخره بحسب موقعه؛ لذلك نكمل إلى صورته وعلامة رفعه.`;
-            return `ثبت أنها كلمة اسمية. افحص (${currentTarget}): هل تتغير علامتها بحسب الموقع، أم تلزم صورة واحدة؟`;
+            return `المعرب يقبل حركة موقعه ويتغير آخره، فنقول مرفوع أو منصوب أو مجرور. المبني يلزم حركة واحدة، فنقول مبني في محل رفع أو نصب أو جر؛ مثل الضمائر وأسماء الإشارة والأسماء الموصولة.`;
         }
         if (id === "kana_masdar_name") {
             if (pickedText.includes("ظاهر"))
@@ -136,10 +136,10 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
                 return `افحص (${currentTarget}) نفسها: هل هي اسم ظاهر يمكن أن تتغير علامته؟ إذا نعم فهي اسم معرب، ثم ننتقل إلى العدد وآخر الكلمة.`;
             }
             if (id === "inna_khabar_single_start") {
-                if (pickedText.includes("كلمة") && nounKind === "masdar") return `اخترتَ «كلمة مفردة»، لكن (${currentTarget}) تركيب يمكن تأويله بمصدر صريح، مثل «أن تنجح» = «نجاحك»؛ لذلك نختار «تركيب في تأويل اسم».`;
-                if (pickedText.includes("تركيب") && nounKind !== "masdar") return `اخترتَ «تركيب في تأويل اسم»، لكن (${currentTarget}) كلمة واحدة في هذا المثال ولا يمكن تأويلها بمصدر صريح؛ لذلك نعاملها كلمة مفردة ثم نحدد: معربة أم مبنية.`;
-                if (nounKind === "masdar") return `جرّب أن تؤوّل (${currentTarget}) بمصدر صريح؛ مثل «أن تنجح» = «نجاحك». إذا استقام المعنى فقد ثبت أنه تركيب في تأويل اسم.`;
-                return `انظر إلى الخبر المحدد كله: هل هو كلمة واحدة، أم تركيب يمكن تأويله بمصدر صريح مثل «أن تنجح» = «نجاحك»؟`;
+                if (pickedText.includes("كلمة") && nounKind === "masdar") return `(${currentTarget}) مصدر مؤول، وليس كلمة واحدة؛ مثل «أن تنجح» = «نجاحك». يعمل عمل الاسم، وهنا هو في محل رفع خبر.`;
+                if (pickedText.includes("مصدر") && nounKind !== "masdar") return `(${currentTarget}) كلمة واحدة في هذا المثال، وليست مصدرًا مؤولًا؛ لذلك نحدد بعدها: أهي معربة أم مبنية؟`;
+                if (nounKind === "masdar") return `(${currentTarget}) مصدر مؤول؛ يؤول بمصدر صريح ويعمل عمل الاسم، وهنا هو في محل رفع خبر.`;
+                return `هل الخبر المحدد كلمة واحدة أم مصدر مؤول؟`;
             }
             if (id === "inna_khabar_masdar_term") {
                 return `ثبت أن (${currentTarget}) تركيب يمكن تأويله بمصدر صريح مثل «نجاحك». هذا التركيب يسمى «مصدرًا مؤولًا»، وهو هنا في محل رفع خبر ${innaParticleName(state)}.`;
@@ -223,7 +223,7 @@ export function nasikhStudentHintText(node: PedagogyNode | null | undefined, pic
         if (id === "inna_ism_start") {
             if (pickedText.includes("مبني")) return `اخترت أن (${currentTarget}) اسم مبني. تذكر: الاسم المبني ليس حرفًا؛ هو من الأسماء لكنه ثابت الآخر. افحص الكلمة نفسها: هل هي ضمير مثل الكاف في إنك؟ هل هي اسم إشارة مثل هذا؟ هل هي اسم موصول مثل الذي؟ أم أنها كلمة يتغير آخرها بحسب موقعها؟`;
             if (pickedText.includes("مصدر")) return `المصدر المؤول تركيب مثل: أن تنجح أو أن تتعلم، ويؤول إلى مصدر: نجاحك أو تعلمك. هل (${currentTarget}) تركيب من هذا النوع أم كلمة واحدة؟`;
-            if (pickedText.includes("معرب")) return `الاسم المعرب يتغير آخره بحسب موقعه. اختبر (${currentTarget}): هل تظهر عليه العلامة أو يمكن أن تتغير، أم يلزم صورة واحدة مثل الضمائر وأسماء الإشارة والموصولات؟`;
+            if (pickedText.includes("معرب")) return `المعرب يقبل حركة موقعه ويتغير آخره، فنقول مرفوع أو منصوب أو مجرور. أما المبني فيلزم حركة واحدة، فنقول مبني في محل رفع أو نصب أو جر؛ مثل الضمائر وأسماء الإشارة والأسماء الموصولة.`;
         }
         if (id === "inna_ism_built" || id === "inna_khabar_single_built") {
             if (state?.facts?.nounKind === "connected_damir" && !pickedText.includes("ضمير")) return `(${currentTarget}) يدل على متكلم أو مخاطب أو غائب واتصل بالحرف الناسخ؛ لذلك هو ضمير متصل، والضمير من الأسماء المبنية.`;

@@ -1,0 +1,97 @@
+.shell {
+  width: min(760px, calc(100% - 24px));
+  margin: 28px auto 48px;
+}
+
+.card {
+  padding: clamp(22px, 5vw, 38px);
+  text-align: right;
+}
+
+.kicker {
+  width: fit-content;
+  margin: 0 0 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  color: var(--primary, #166534);
+  background: color-mix(in srgb, var(--primary, #166534) 10%, white);
+  font-weight: 800;
+}
+
+.card h1 {
+  margin: 0;
+  font-size: clamp(1.55rem, 4vw, 2.15rem);
+  line-height: 1.45;
+}
+
+.lead {
+  margin: 10px 0 22px;
+  /* لون ثابت لأن بعض السمات تعرّف --text بلون فاتح مخصص للخلفية الداكنة. */
+  color: #526078;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.9;
+}
+
+.steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--primary, #166534) 16%, #d1d5db);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--primary, #166534) 3%, white);
+}
+
+.steps li > span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  color: white;
+  background: var(--primary, #166534);
+  font-weight: 900;
+}
+
+.steps p {
+  margin: 0;
+  line-height: 1.65;
+  font-weight: 700;
+}
+
+.note {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border-inline-start: 4px solid var(--primary, #166534);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary, #166534) 7%, white);
+  line-height: 1.8;
+}
+
+.start {
+  width: 100%;
+  margin-top: 20px;
+  min-height: 50px;
+  font-size: 1.05rem;
+}
+
+@media (max-width: 520px) {
+  .shell {
+    width: min(100% - 16px, 760px);
+    margin-top: 14px;
+  }
+
+  .card {
+    padding: 18px 14px;
+  }
+}

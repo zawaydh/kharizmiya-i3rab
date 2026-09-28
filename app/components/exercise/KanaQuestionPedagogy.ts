@@ -252,11 +252,11 @@ export function customKanaPedagogyNode(node: PedagogyNode | null | undefined, st
             return {
                 ...node,
                 context: `عرفنا أن (${target}) أتمت معنى الجملة عن (${subject}).`,
-                text: `هل يمكن أن يؤول (${target}) باسم؟ اختر الإجابة الصحيحة مما يلي:`,
-                hint: "انظر هل بدأ التركيب بحرف مصدري مثل (أن)، ثم جرّب تأويله باسم.",
+                text: `ما صورة (${target}) في الجملة؟`,
+                hint: `المصدر المؤول تركيب من حرف مصدري وما بعده، ويؤول بمصدر صريح؛ مثل «أن أتميّز» = «تميّزي». يعمل عمل الاسم، وهنا يشغل موقع خبر (${nasikh}).`,
                 answers: [
-                    { id: "a", text: "نعم، يؤول باسم", next: "kana_masdar_name", correct: true },
-                    { id: "b", text: "لا، هو اسم ظاهر مفرد", next: "kana_khabar_entry", correct: false, hint: `(${target}) تركيب من حرف مصدري وفعل، وليس اسمًا ظاهرًا مفردًا.` },
+                    { id: "a", text: "مصدر مؤول", next: "kana_masdar_site", correct: true },
+                    { id: "b", text: "كلمة واحدة", next: "kana_khabar_entry", correct: false, hint: `(${target}) مصدر مؤول؛ يمكن تحويله إلى مصدر صريح ويعمل عمل الاسم.` },
                 ],
             };
         }
@@ -354,4 +354,3 @@ export function customKanaPedagogyNode(node: PedagogyNode | null | undefined, st
     }
     return null;
 }
-

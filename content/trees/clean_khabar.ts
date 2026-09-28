@@ -33,12 +33,12 @@ export const cleanKhabarTree: ExerciseTree = {
     khabar_single_start: {
       id: "khabar_single_start",
       type: "question",
-      context: "ثبت أن الخبر ليس جملة ولا شبه جملة. نميز الآن هل المحدد كلمة مفردة أم تركيبًا في تأويل اسم.",
-      text: "هل الخبر كلمة مفردة أم تركيب في تأويل اسم؟",
-      hint: "إذا أمكن تأويل التركيب بمصدر صريح مثل «أن تنجح» = «نجاحك»، فهو تركيب في تأويل اسم. أما الاسم المفرد فينتقل بعد ذلك إلى سؤال: معرب أم مبني.",
+      context: "ثبت أن الخبر ليس جملة ولا شبه جملة. ننظر الآن إلى حدود الجزء المحدد.",
+      text: "هل الخبر كلمة واحدة أم مصدر مؤول؟",
+      hint: "المصدر المؤول تركيب من حرف مصدري وما بعده، مثل «أن تنجح»، ويؤول بمصدر صريح: «نجاحك». يعمل عمل الاسم، وهنا يكون في محل رفع خبر. أما الكلمة الواحدة فنحدد بعدها: أهي معربة أم مبنية؟",
       answers: [
-        { id: "word", text: "كلمة مفردة", next: "khabar_single_inflection", eval: { fact: "nounKind", anyOf: ["mu3rab", "mabni"] }, hint: "إذا كان الخبر كلمة واحدة نحدد بعد ذلك هل هي معربة أم مبنية." },
-        { id: "source", text: "تركيب في تأويل اسم", next: "khabar_masdar_discovery", eval: { fact: "nounKind", equals: "masdar" }, hint: "جرّب التأويل بمصدر صريح: «أن تنجح» = «نجاحك». إذا استقام المعنى فهو مصدر مؤول." }
+        { id: "word", text: "كلمة واحدة", next: "khabar_single_inflection", eval: { fact: "nounKind", anyOf: ["mu3rab", "mabni"] }, hint: "المقصود كلمة واحدة في الكتابة، لا مفردًا في العدد." },
+        { id: "source", text: "مصدر مؤول", next: "R_khabar_single_masdar", eval: { fact: "nounKind", equals: "masdar" }, hint: "المصدر المؤول مثل «أن تنجح» ويؤول بـ«نجاحك». يعمل عمل الاسم، وهنا هو في محل رفع خبر." }
       ]
     },
 
@@ -47,7 +47,7 @@ export const cleanKhabarTree: ExerciseTree = {
       type: "question",
       context: "بما أن الخبر كلمة مفردة، نحدد هل الاسم معرب أم مبني قبل العلامة أو المحل.",
       text: "هل الخبر اسم معرب أم اسم مبني؟",
-      hint: "الاسم المعرب تتغير علامته بحسب موقعه، أما الاسم المبني فيلزم صورة واحدة ويكون هنا في محل رفع خبر.",
+      hint: "المعرب يقبل حركة موقعه وتتغير حركة آخره، فنقول: مرفوع أو منصوب أو مجرور. أما المبني فلا تتغير حركة آخره، فنقول: مبني في محل رفع أو نصب أو جر؛ مثل الضمائر وأسماء الإشارة والأسماء الموصولة.",
       answers: [
         { id: "mu3rab", text: "اسم معرب", next: "khabar_single_number", eval: { fact: "nounKind", equals: "mu3rab" }, hint: "الاسم المعرب إذا وقع خبرًا يكون مرفوعًا بعلامة ظاهرة أو مقدرة أو فرعية." },
         { id: "mabni", text: "اسم مبني", next: "khabar_single_built", eval: { fact: "nounKind", equals: "mabni" }, hint: "الاسم المبني يلزم صورة واحدة؛ فإذا وقع خبرًا قلنا: مبني في محل رفع خبر." }
@@ -64,19 +64,6 @@ export const cleanKhabarTree: ExerciseTree = {
         { id: "a", text: "ضمير منفصل", next: "R_khabar_single_damir", hint: "الضمير المنفصل كلمة مستقلة تدل على متكلم أو مخاطب أو غائب، مثل: أنا، نحن، أنت، هو، هي، هم.", eval: { fact: "mabniType", equals: "damir" } },
         { id: "b", text: "اسم إشارة", next: "R_khabar_single_ishara", hint: "اسم الإشارة يدل على شيء نشير إليه، مثل: هذا، هذه، هؤلاء، ذلك، تلك.", eval: { fact: "mabniType", equals: "ishara" } },
         { id: "c", text: "اسم موصول", next: "R_khabar_single_mawsool", hint: "الاسم الموصول يحتاج جملة بعده توضحه تسمى صلة الموصول، مثل: الذي خلقنا، التي اجتهدت.", eval: { fact: "mabniType", equals: "mawsool" } }
-      ]
-    },
-
-    khabar_masdar_discovery: {
-      id: "khabar_masdar_discovery",
-      type: "question",
-      context: "المصدر المؤول تركيب يؤدي وظيفة الاسم. نكتشفه بتحويله إلى مصدر صريح.",
-      text: "لو حولنا المصدر المؤول إلى كلمة واحدة، ماذا يصبح غالبًا؟",
-      hint: "المصدر المؤول قد يبدو كأنه جملة لأنه يحتوي فعلًا مضارعًا، لكن إذا سبق الفعل بحرف مصدري مثل (أن) فإنه يؤول بمصدر. جرّب السؤال: ما الذي سرني؟ أن تنجح. ثم نؤولها: نجاحك. وكذلك: هدفي أن تنجح، أي هدفي نجاحك.",
-      answers: [
-        { id: "a", text: "مصدر صريح مثل: نجاحك أو تفوقك", next: "R_khabar_single_masdar", correct: true },
-        { id: "b", text: "صفة مفردة مثل: ناجح", next: "khabar_masdar_discovery", correct: false, hint: "المصدر المؤول لا يتحول إلى صفة، بل إلى مصدر صريح: أن تنجح تعني نجاحك." },
-        { id: "c", text: "فعل مستقل لا علاقة له بما قبله", next: "khabar_masdar_discovery", correct: false, hint: "نعم، في التركيب فعل مضارع، لكنه مسبوق بحرف مصدري هو (أن)، لذلك لا نعده جملة فعلية مستقلة هنا، بل نؤوله بمصدر: أن تنجح = نجاحك." }
       ]
     },
 
