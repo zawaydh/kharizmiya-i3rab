@@ -17,12 +17,12 @@ describe("contextual grammar help and consolidated topics", () => {
     expect(dropdown).not.toContain('قريبًا');
   });
 
-  it("keeps internal reusable topics out of the student catalog", () => {
+  it("lists the completed pronoun topic and keeps internal reusable topics hidden", () => {
     expect(getTopicMeta("attached-pronouns")?.isReady).toBe(true);
-    expect(getTopicMeta("attached-pronouns")?.isListed).toBe(false);
+    expect(getTopicMeta("attached-pronouns")?.isListed).toBe(true);
     expect(getTopicMeta("mafool-bih")?.isListed).toBe(false);
     const listed = getReadyTopicMetadata().map((topic) => topic.code);
-    expect(listed).not.toContain("attached-pronouns");
+    expect(listed).toContain("attached-pronouns");
     expect(listed).not.toContain("mafool-bih");
     expect(listed).toContain("mafoolat");
   });

@@ -1781,9 +1781,11 @@ function practiceReviewFinalAttachedPronounSteps(
         ? "مبتدأ"
         : role === "mafool"
           ? "مفعول به"
-          : role === "mafool_muqaddam"
-            ? "مفعول به مقدم"
-            : "مضاف إليه";
+        : role === "mafool_muqaddam"
+            ? "مفعول به مقدَّم"
+            : role === "majrur_bi_harf"
+              ? "اسم مجرور بحرف الجر"
+              : "مضاف إليه";
 
   const formLabel = form === "separate" ? "منفصل" : "متصل";
 
@@ -1794,6 +1796,8 @@ function practiceReviewFinalAttachedPronounSteps(
         ? `جاء الضمير مستقلًا وأسند إليه ما بعده؛ لذلك وظيفته مبتدأ.`
         : role === "mudaf_ileyh"
           ? `اتصل الضمير بالاسم ودل على المضاف إليه؛ لذلك وظيفته مضاف إليه.`
+          : role === "majrur_bi_harf"
+            ? `اتصل الضمير بحرف الجر؛ لذلك هو في محل جر بحرف الجر.`
           : `دل الضمير على من وقع عليه الفعل؛ لذلك وظيفته ${roleLabel}.`;
 
   return [

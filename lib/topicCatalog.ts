@@ -187,7 +187,7 @@ export const TOPIC_CATALOG: TopicMetadata[] = [
     quizCount: 8,
     level: 2,
     isReady: true,
-    isListed: false,
+    isListed: true,
   },
   {
     code: "ism-manqous",

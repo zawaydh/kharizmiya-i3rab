@@ -15,7 +15,7 @@ export const attachedPronounsExamples: Example[] = [
   { id: "pr-04", sentence: "إيّاكَ نعبدُ.", target: "إيّاكَ", facts: { position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
   { id: "pr-05", sentence: "هذا كتابُهُ.", target: "هُ", facts: { position: "jar", form: "attached", role: "mudaf_ileyh" }, covers: ["pronoun.jar"] },
 
-  { id: "pr-06", sentence: "شارَكْنا في المسابقةِ.", target: "نا", facts: { position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
+  { id: "pr-06", sentence: "كتبْنا الواجبَ.", target: "نا", facts: { position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
   { id: "pr-07", sentence: "الطالباتُ كتبْنَ الواجبَ.", target: "نَ", facts: { position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
   { id: "pr-08", sentence: "هو يحفظُ القصيدةَ.", target: "هو", facts: { position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
   { id: "pr-09", sentence: "نحنُ نحترمُ النظامَ.", target: "نحنُ", facts: { position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
@@ -24,15 +24,16 @@ export const attachedPronounsExamples: Example[] = [
   { id: "pr-12", sentence: "إيّاهُ قصدتُ.", target: "إيّاهُ", facts: { position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
   { id: "pr-13", sentence: "إيّانا شجّعَ المدربُ.", target: "إيّانا", facts: { position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
   { id: "pr-14", sentence: "دفترُكَ منظّمٌ.", target: "كَ", facts: { position: "jar", form: "attached", role: "mudaf_ileyh" }, covers: ["pronoun.jar"] },
-  { id: "pr-15", sentence: "رأيُهُ سديدٌ.", target: "هُ", facts: { position: "jar", form: "attached", role: "mudaf_ileyh" }, covers: ["pronoun.jar"] },
+  { id: "pr-15", sentence: "سلّمتُ عليهِ.", target: "هِ", facts: { position: "jar", form: "attached", role: "majrur_bi_harf" }, covers: ["pronoun.jar"] },
 ];
 
 const resultByRole: Record<string, string> = {
   "raf3.attached.fael": "ضمير متصل مبني في محل رفع فاعل",
   "raf3.separate.mubtada": "ضمير منفصل مبني في محل رفع مبتدأ",
   "nasb.attached.mafool": "ضمير متصل مبني في محل نصب مفعول به",
-  "nasb.separate.mafool_muqaddam": "ضمير منفصل مبني في محل نصب مفعول به مقدم",
+  "nasb.separate.mafool_muqaddam": "ضمير منفصل مبني في محل نصب مفعول به مقدَّم",
   "jar.attached.mudaf_ileyh": "ضمير متصل مبني في محل جر مضاف إليه",
+  "jar.attached.majrur_bi_harf": "ضمير متصل مبني في محل جر بحرف الجر",
 };
 
 function resultFor(ex: Example) {
@@ -48,21 +49,35 @@ function pronounOptionReason(ex: Example, option: string, correct: string): stri
   const actualPosition = String(ex.facts.position || "");
   const actualForm = String(ex.facts.form || "");
   if (selectedPosition && selectedPosition !== actualPosition) {
-    const actualRole = ex.facts.role === "fael" ? "فاعل" : ex.facts.role === "mubtada" ? "مبتدأ" : ex.facts.role === "mafool" ? "مفعول به" : ex.facts.role === "mafool_muqaddam" ? "مفعول به مقدّم" : "مضاف إليه";
+    const actualRole = ex.facts.role === "fael" ? "فاعل" : ex.facts.role === "mubtada" ? "مبتدأ" : ex.facts.role === "mafool" ? "مفعول به" : ex.facts.role === "mafool_muqaddam" ? "مفعول به مقدَّم" : ex.facts.role === "majrur_bi_harf" ? "اسم مجرور بحرف الجر" : "مضاف إليه";
     const actualCase = actualPosition === "raf3" ? "الرفع" : actualPosition === "nasb" ? "النصب" : "الجر";
     const formNote = selectedForm === "attached"
       ? "، كما يفترض أنه ضمير متصل"
       : selectedForm === "separate"
         ? "، كما يفترض أنه ضمير منفصل"
         : "";
-    return `هذا الاختيار يضع الضمير في محل ${selectedPosition === "raf3" ? "رفع" : selectedPosition === "nasb" ? "نصب" : "جر"}${formNote}، لكن «${ex.target}» شغل موقع ${actualRole}؛ ولذلك محله ${actualCase} وصورته ${actualForm === "attached" ? "متصلة" : "منفصلة"}.`;
+    return `الاختيار «${option}» يضع الضمير في محل ${selectedPosition === "raf3" ? "رفع" : selectedPosition === "nasb" ? "نصب" : "جر"}${formNote}، لكن «${ex.target}» شغل موقع ${actualRole}؛ ولذلك محله ${actualCase} وصورته ${actualForm === "attached" ? "متصلة" : "منفصلة"}.`;
   }
   if (selectedForm && selectedForm !== actualForm) {
     return selectedForm === "attached"
-      ? `هذا الاختيار يجعله متصلًا، لكن «${ex.target}» كلمة مستقلة لا تلتصق بما قبلها؛ لذلك هو ضمير منفصل.`
-      : `هذا الاختيار يجعله منفصلًا، لكن «${ex.target}» ملتصق بكلمة قبله ولا يستقل عنها؛ لذلك هو ضمير متصل.`;
+      ? `الاختيار «${option}» يجعله متصلًا، لكن «${ex.target}» كلمة مستقلة لا تلتصق بما قبلها؛ لذلك هو ضمير منفصل.`
+      : `الاختيار «${option}» يجعله منفصلًا، لكن «${ex.target}» ملتصق بكلمة قبله ولا يستقل عنها؛ لذلك هو ضمير متصل.`;
   }
-  return `هذا الإعراب لا يجمع بين موقع «${ex.target}» الصحيح وصورته متصلًا أو منفصلًا.`;
+  const selectedRole = option.includes("مضاف إليه")
+    ? "مضافًا إليه"
+    : option.includes("بحرف الجر")
+      ? "مجرورًا بحرف الجر"
+      : option.includes("مفعول به مقدَّم")
+        ? "مفعولًا به مقدَّمًا"
+        : option.includes("مفعول به")
+          ? "مفعولًا به"
+          : option.includes("مبتدأ")
+            ? "مبتدأ"
+            : option.includes("فاعل")
+              ? "فاعلًا"
+              : "وظيفة أخرى";
+  const actualRole = ex.facts.role === "fael" ? "فاعل" : ex.facts.role === "mubtada" ? "مبتدأ" : ex.facts.role === "mafool" ? "مفعول به" : ex.facts.role === "mafool_muqaddam" ? "مفعول به مقدَّم" : ex.facts.role === "majrur_bi_harf" ? "مجرور بحرف الجر" : "مضاف إليه";
+  return `هذا الاختيار يعرب «${ex.target}» ${selectedRole}، لكن علاقته بما حوله تدل على أن وظيفته ${actualRole}؛ لذلك لا يطابق الإعراب سياق الجملة.`;
 }
 
 export const attachedPronounsQuizExamples = attachedPronounsExamples.map((ex, i) => {

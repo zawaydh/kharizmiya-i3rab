@@ -81,6 +81,7 @@ const TOPIC_TREE: TopicTreeNode[] = [
     id: "nouns",
     label: "الأسماء وعلاماتها",
     children: [
+      { id: "pronouns", label: "الضمائر المتصلة والمنفصلة", topicCode: "attached-pronouns" },
       { id: "manqous", label: "الاسم المنقوص", topicCode: "ism-manqous" },
     ],
   },

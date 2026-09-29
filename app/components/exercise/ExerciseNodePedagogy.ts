@@ -22,6 +22,14 @@ function getNodeContext(node: PedagogyNode | null | undefined, state: PedagogySt
 }
 function currentStepIntro(node: PedagogyNode | null | undefined, tokens: string[] = []) {
     const id = String(node?.id || "");
+    if (id === "pronoun_relation_gate")
+        return "نبدأ من وظيفة الضمير في الجملة";
+    if (id === "pronoun_position")
+        return "حددنا أن الضمير مبني، والآن نحدد محلَّه الإعرابي";
+    if (id === "pronoun_form_raf3")
+        return "ثبت أن الضمير في محل رفع، وبقي أن نحدد صورته";
+    if (id === "pronoun_form_nasb")
+        return "ثبت أن الضمير في محل نصب، وبقي أن نحدد صورته";
     if (id === "fw_decision_1")
         return "نبدأ بتحديد نوع الكلمة";
     if (id === "fw_verb_tense")

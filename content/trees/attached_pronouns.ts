@@ -19,8 +19,8 @@ export const attachedPronounsTree: ExerciseTree = {
         "pronoun_position": {
             "id": "pronoun_position",
             "type": "question",
-            "context": "نبحث عن موقع الضمير، ثم نقرأ وظيفته من علاقته بما حوله في الجملة.",
-            "text": "هل حلّ محل اسم مرفوع أم منصوب أم مجرور؟",
+            "context": "الضمير مبني، لكن له محل إعرابي تحدده وظيفته في الجملة.",
+            "text": "ما المحل الإعرابي للضمير في هذه الجملة؟",
             "hint": "ضع اسمًا ظاهرًا مكان الضمير، ثم ميّز: هل جاء بعد حرف جر، أم صار مضافًا إليه، أم شغل موقعًا مرفوعًا أو منصوبًا؟ المحل وحده لا يحدد الوظيفة؛ السياق هو الذي يحددها.",
             "answers": [
                 {
@@ -55,13 +55,13 @@ export const attachedPronounsTree: ExerciseTree = {
         "pronoun_form_raf3": {
             "id": "pronoun_form_raf3",
             "type": "question",
-            "context": "عرفنا أن محل الضمير رفع.",
-            "text": "ما شكل الضمير؟",
+            "context": "ثبت من وظيفته أن الضمير في محل رفع، والآن نحدد صورته.",
+            "text": "هل الضمير متصل بكلمة قبله أم منفصل عنها؟",
             "hint": "الضمير المتصل لا يستقل بنفسه مثل التاء في كتبتُ، والضمير المنفصل كلمة مستقلة مثل أنا وهو.",
             "answers": [
                 {
                     "id": "a",
-                    "text": "ضمير رفع متصل",
+                    "text": "متصل بكلمة قبله",
                     "next": "R_pronoun_raf3_attached",
                     "eval": {
                         "fact": "form",
@@ -70,7 +70,7 @@ export const attachedPronounsTree: ExerciseTree = {
                 },
                 {
                     "id": "b",
-                    "text": "ضمير رفع منفصل",
+                    "text": "منفصل؛ جاء كلمة مستقلة",
                     "next": "R_pronoun_raf3_separate",
                     "eval": {
                         "fact": "form",
@@ -82,13 +82,13 @@ export const attachedPronounsTree: ExerciseTree = {
         "pronoun_form_nasb": {
             "id": "pronoun_form_nasb",
             "type": "question",
-            "context": "عرفنا أن محل الضمير نصب.",
-            "text": "ما شكل الضمير؟",
-            "hint": "إياك ضمير منفصل في محل نصب، والكاف أو الهاء إذا اتصلتا بالفعل فهما ضميران متصلان في محل نصب.",
+            "context": "ثبت من وظيفته أن الضمير في محل نصب، والآن نحدد صورته.",
+            "text": "هل الضمير متصل بكلمة قبله أم منفصل عنها؟",
+            "hint": "المتصل جزء من كلمة ولا يستقل عنها، مثل الكاف في «أكرمَكَ». والمنفصل يُكتب كلمة مستقلة، مثل «أنا» و«إيّاكَ».",
             "answers": [
                 {
                     "id": "a",
-                    "text": "ضمير نصب متصل",
+                    "text": "متصل بكلمة قبله",
                     "next": "R_pronoun_nasb_attached",
                     "eval": {
                         "fact": "form",
@@ -97,7 +97,7 @@ export const attachedPronounsTree: ExerciseTree = {
                 },
                 {
                     "id": "b",
-                    "text": "ضمير نصب منفصل",
+                    "text": "منفصل؛ جاء كلمة مستقلة",
                     "next": "R_pronoun_nasb_separate",
                     "eval": {
                         "fact": "form",
@@ -128,7 +128,7 @@ export const attachedPronounsTree: ExerciseTree = {
             "id": "R_pronoun_nasb_separate",
             "type": "result",
             "coverage": "pronoun.nasb.separate",
-            "text": "ضمير نصب منفصل مبني في محل نصب. في أمثلة «إيّا» هنا هو مفعول به مقدّم، وتثبت الوظيفة من السياق."
+            "text": "ضمير نصب منفصل مبني في محل نصب. في أمثلة «إيّا» هنا هو مفعول به مقدَّم، وتثبت الوظيفة من السياق."
         },
         "R_pronoun_jar": {
             "id": "R_pronoun_jar",
