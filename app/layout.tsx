@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
   description: PLATFORM_DESCRIPTION,
   applicationName: PLATFORM_NAME,
-  keywords: [PLATFORM_NAME, "إعرابك", PLATFORM_TAGLINE, "خوارزمية الإعراب", "التفكير النحوي", "التفكير الإعرابي", "تعلم الإعراب", "شرح الإعراب", "تعلم النحو", "الجملة الاسمية", "الفعل المضارع", "المبتدأ والخبر"],
+  keywords: [PLATFORM_NAME, "إعرابك", "اعرابك", PLATFORM_TAGLINE, "خوارزمية الإعراب", "التفكير النحوي", "التفكير الإعرابي", "تعلم الإعراب", "شرح الإعراب", "تعلم النحو", "الجملة الاسمية", "الفعل المضارع", "المبتدأ والخبر"],
   icons: {
     icon: "/brand-icon.svg",
     shortcut: "/brand-icon.svg",
