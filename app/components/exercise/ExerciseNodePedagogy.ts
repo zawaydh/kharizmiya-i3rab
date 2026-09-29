@@ -7,6 +7,7 @@ import { customKanaPedagogyNode, customKanaResultNode } from "./KanaPedagogy";
 import { customInnaResultNode, innaGenericLabel } from "./InnaPedagogy";
 import { customTawabiPedagogyNode } from "./TawabiStudentHints";
 import { isFiveVerbDecision } from "./ExerciseDecisionHelpers";
+import { pronounResultText } from "./PronounPedagogy";
 
 function getNodeContext(node: PedagogyNode | null | undefined, state: PedagogyState) {
     if (node?.context)
@@ -157,23 +158,9 @@ export function finalThinkingTextForDisplay(node: PedagogyNode | null | undefine
     const haystack = `${target} ${sentence}`;
     const explicitFinalI3rab = String(state?.facts?.finalI3rab || "").trim();
 
-    if (node?.type === "result" && String(node?.id || "").startsWith("R_pronoun_")) {
-        const facts = state?.facts || {};
-        const form = facts.form === "separate" ? "منفصل" : "متصل";
-        const position = facts.position === "raf3" ? "رفع" : facts.position === "nasb" ? "نصب" : "جر";
-        const role = facts.role === "fael"
-            ? "فاعل"
-            : facts.role === "mubtada"
-                ? "مبتدأ"
-                : facts.role === "mafool"
-                    ? "مفعول به"
-                    : facts.role === "mafool_muqaddam"
-                        ? "مفعول به مقدَّم"
-                        : facts.role === "majrur_bi_harf"
-                            ? "بحرف الجر"
-                            : "مضاف إليه";
-        return `«${target}»: ضمير ${form} مبني في محل ${position} ${role}.`;
-    }
+    const pronounResult = pronounResultText(node, state, target);
+    if (pronounResult)
+        return pronounResult;
 
     // مفتاح الكلمة الأولى باب توجيه، لذلك نظهر نتيجة المسار نفسها.
     if (node?.type === "result" && String(node?.id || "").startsWith("R_first_")) {
