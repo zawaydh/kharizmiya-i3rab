@@ -22,14 +22,18 @@ function getNodeContext(node: PedagogyNode | null | undefined, state: PedagogySt
 }
 function currentStepIntro(node: PedagogyNode | null | undefined, tokens: string[] = []) {
     const id = String(node?.id || "");
-    if (id === "pronoun_relation_gate")
-        return "نبدأ من وظيفة الضمير في الجملة";
+    if (id === "pronoun_relation")
+        return "نبدأ من علاقة الضمير بما حوله";
+    if (id === "pronoun_role")
+        return "حددنا علاقة الضمير، والآن نحدد وظيفته";
     if (id === "pronoun_position")
         return "حددنا أن الضمير مبني، والآن نحدد محلَّه الإعرابي";
     if (id === "pronoun_form_raf3")
         return "ثبت أن الضمير في محل رفع، وبقي أن نحدد صورته";
     if (id === "pronoun_form_nasb")
         return "ثبت أن الضمير في محل نصب، وبقي أن نحدد صورته";
+    if (id === "pronoun_form_jar")
+        return "ثبت أن الضمير في محل جر، وبقي أن نحدد صورته";
     if (id === "fw_decision_1")
         return "نبدأ بتحديد نوع الكلمة";
     if (id === "fw_verb_tense")
@@ -152,6 +156,24 @@ export function finalThinkingTextForDisplay(node: PedagogyNode | null | undefine
     const sentence = String(state?.currentSentence || state?.sentence || "");
     const haystack = `${target} ${sentence}`;
     const explicitFinalI3rab = String(state?.facts?.finalI3rab || "").trim();
+
+    if (node?.type === "result" && String(node?.id || "").startsWith("R_pronoun_")) {
+        const facts = state?.facts || {};
+        const form = facts.form === "separate" ? "منفصل" : "متصل";
+        const position = facts.position === "raf3" ? "رفع" : facts.position === "nasb" ? "نصب" : "جر";
+        const role = facts.role === "fael"
+            ? "فاعل"
+            : facts.role === "mubtada"
+                ? "مبتدأ"
+                : facts.role === "mafool"
+                    ? "مفعول به"
+                    : facts.role === "mafool_muqaddam"
+                        ? "مفعول به مقدَّم"
+                        : facts.role === "majrur_bi_harf"
+                            ? "بحرف الجر"
+                            : "مضاف إليه";
+        return `«${target}»: ضمير ${form} مبني في محل ${position} ${role}.`;
+    }
 
     // مفتاح الكلمة الأولى باب توجيه، لذلك نظهر نتيجة المسار نفسها.
     if (node?.type === "result" && String(node?.id || "").startsWith("R_first_")) {

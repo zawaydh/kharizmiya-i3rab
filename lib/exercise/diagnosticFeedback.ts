@@ -105,15 +105,16 @@ function pronounDiagnostic(input: DiagnosticFeedbackInput): string | null {
   const inSentence = sentenceLabel(input.sentence);
   const position = clean(facts.position);
   const role = clean(facts.role);
+  const attachment = clean(facts.attachment);
   const expectedRole = ROLE_LABELS[role] || "وظيفته في الجملة";
 
-  if (id === "pronoun_relation_gate") {
-    if (picked.includes("حركة")) {
-      return `اخترتَ البحث عن حركة آخر الضمير «${target}»، لكن الضمير اسم مبني فلا تتبدل حركة آخره لتكشف الإعراب. ضع اسمًا ظاهرًا مكانه${inSentence} وحدد الوظيفة التي شغلها أولًا.`;
-    }
-    if (picked.includes("فاعل")) {
-      return `اخترتَ عدَّ «${target}» فاعلًا مباشرة، لكن الضمير قد يشغل وظائف مختلفة. استبدله باسم ظاهر${inSentence} واسأل: أهو من قام بالفعل، أم وقع عليه الفعل، أم بدأنا الحديث عنه، أم جاء في إضافة؟`;
-    }
+  if (id === "pronoun_relation") {
+    const actualRelation = attachment === "verb" ? "متصل بفعل" : attachment === "noun" ? "متصل باسم" : attachment === "preposition" ? "متصل بحرف جر" : "ضمير منفصل جاء كلمة مستقلة";
+    return `اخترتَ أن «${target}» ${picked}${inSentence}، لكن رسمه وعلاقته بالكلمة المجاورة يبينان أنه ${actualRelation}. افصل الضمير ذهنيًا عن الكلمة ثم تحقق مما يبقى قبل تحديد وظيفته.`;
+  }
+
+  if (id === "pronoun_role") {
+    return `اخترتَ وظيفة «${picked}» للضمير «${target}»${inSentence}، لكن علاقته بما حوله تدل على أنه ${expectedRole}. حدّد من قام بالفعل أو وقع عليه، أو افحص اتصاله باسم أو حرف جر.`;
   }
 
   if (id === "pronoun_position") {
@@ -128,7 +129,7 @@ function pronounDiagnostic(input: DiagnosticFeedbackInput): string | null {
     }
   }
 
-  if (id === "pronoun_form_raf3" || id === "pronoun_form_nasb") {
+  if (id === "pronoun_form_raf3" || id === "pronoun_form_nasb" || id === "pronoun_form_jar") {
     const form = clean(facts.form);
     if (picked.includes("متصل") && form !== "attached") {
       return `اخترتَ «ضمير متصل». المتصل لا يقف كلمة مستقلة، بل يلتصق بما قبله مثل التاء في «كتبتُ». أمّا «${target}»${inSentence} فتظهر كلمة مستقلة؛ استخدم شكلها الكتابي للحكم.`;

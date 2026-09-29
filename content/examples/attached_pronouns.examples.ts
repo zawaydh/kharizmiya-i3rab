@@ -9,22 +9,22 @@ export const attachedPronounsCoverageKeysOrdered = [
 ];
 
 export const attachedPronounsExamples: Example[] = [
-  { id: "pr-01", sentence: "كتبتُ الدرسَ.", target: "تُ", facts: { position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
-  { id: "pr-02", sentence: "أنا أقرأُ القصةَ.", target: "أنا", facts: { position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
-  { id: "pr-03", sentence: "أكرمَكَ المعلمُ.", target: "كَ", facts: { position: "nasb", form: "attached", role: "mafool" }, covers: ["pronoun.nasb.attached"] },
-  { id: "pr-04", sentence: "إيّاكَ نعبدُ.", target: "إيّاكَ", facts: { position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
-  { id: "pr-05", sentence: "هذا كتابُهُ.", target: "هُ", facts: { position: "jar", form: "attached", role: "mudaf_ileyh" }, covers: ["pronoun.jar"] },
+  { id: "pr-01", sentence: "كتبتُ الدرسَ.", target: "تُ", facts: { attachment: "verb", position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
+  { id: "pr-02", sentence: "أنا أقرأُ القصةَ.", target: "أنا", facts: { attachment: "independent", position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
+  { id: "pr-03", sentence: "أكرمَكَ المعلمُ.", target: "كَ", facts: { attachment: "verb", position: "nasb", form: "attached", role: "mafool" }, covers: ["pronoun.nasb.attached"] },
+  { id: "pr-04", sentence: "إيّاكَ نعبدُ.", target: "إيّاكَ", facts: { attachment: "independent", position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
+  { id: "pr-05", sentence: "هذا كتابُهُ.", target: "هُ", facts: { attachment: "noun", position: "jar", form: "attached", role: "mudaf_ileyh" }, covers: ["pronoun.jar"] },
 
-  { id: "pr-06", sentence: "كتبْنا الواجبَ.", target: "نا", facts: { position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
-  { id: "pr-07", sentence: "الطالباتُ كتبْنَ الواجبَ.", target: "نَ", facts: { position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
-  { id: "pr-08", sentence: "هو يحفظُ القصيدةَ.", target: "هو", facts: { position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
-  { id: "pr-09", sentence: "نحنُ نحترمُ النظامَ.", target: "نحنُ", facts: { position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
-  { id: "pr-10", sentence: "شجّعَني أبي.", target: "ني", facts: { position: "nasb", form: "attached", role: "mafool" }, covers: ["pronoun.nasb.attached"] },
-  { id: "pr-11", sentence: "زارَهم المديرُ.", target: "هم", facts: { position: "nasb", form: "attached", role: "mafool" }, covers: ["pronoun.nasb.attached"] },
-  { id: "pr-12", sentence: "إيّاهُ قصدتُ.", target: "إيّاهُ", facts: { position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
-  { id: "pr-13", sentence: "إيّانا شجّعَ المدربُ.", target: "إيّانا", facts: { position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
-  { id: "pr-14", sentence: "دفترُكَ منظّمٌ.", target: "كَ", facts: { position: "jar", form: "attached", role: "mudaf_ileyh" }, covers: ["pronoun.jar"] },
-  { id: "pr-15", sentence: "سلّمتُ عليهِ.", target: "هِ", facts: { position: "jar", form: "attached", role: "majrur_bi_harf" }, covers: ["pronoun.jar"] },
+  { id: "pr-06", sentence: "كتبْنا الواجبَ.", target: "نا", facts: { attachment: "verb", position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
+  { id: "pr-07", sentence: "الطالباتُ كتبْنَ الواجبَ.", target: "نَ", facts: { attachment: "verb", position: "raf3", form: "attached", role: "fael" }, covers: ["pronoun.raf3.attached"] },
+  { id: "pr-08", sentence: "هو يحفظُ القصيدةَ.", target: "هو", facts: { attachment: "independent", position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
+  { id: "pr-09", sentence: "نحنُ نحترمُ النظامَ.", target: "نحنُ", facts: { attachment: "independent", position: "raf3", form: "separate", role: "mubtada" }, covers: ["pronoun.raf3.separate"] },
+  { id: "pr-10", sentence: "شجّعَني أبي.", target: "ني", facts: { attachment: "verb", position: "nasb", form: "attached", role: "mafool" }, covers: ["pronoun.nasb.attached"] },
+  { id: "pr-11", sentence: "زارَهم المديرُ.", target: "هم", facts: { attachment: "verb", position: "nasb", form: "attached", role: "mafool" }, covers: ["pronoun.nasb.attached"] },
+  { id: "pr-12", sentence: "إيّاهُ قصدتُ.", target: "إيّاهُ", facts: { attachment: "independent", position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
+  { id: "pr-13", sentence: "إيّانا شجّعَ المدربُ.", target: "إيّانا", facts: { attachment: "independent", position: "nasb", form: "separate", role: "mafool_muqaddam" }, covers: ["pronoun.nasb.separate"] },
+  { id: "pr-14", sentence: "دفترُكَ منظّمٌ.", target: "كَ", facts: { attachment: "noun", position: "jar", form: "attached", role: "mudaf_ileyh" }, covers: ["pronoun.jar"] },
+  { id: "pr-15", sentence: "سلّمتُ عليهِ.", target: "هِ", facts: { attachment: "preposition", position: "jar", form: "attached", role: "majrur_bi_harf" }, covers: ["pronoun.jar"] },
 ];
 
 const resultByRole: Record<string, string> = {

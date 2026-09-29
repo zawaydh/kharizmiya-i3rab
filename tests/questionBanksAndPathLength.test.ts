@@ -92,7 +92,7 @@ describe("تقليل الخطوات المتكررة", () => {
     const pronounsLearnMax = Math.max(...pronouns.examples.map((example: ExerciseExample) => countCorrectPathQuestions(pronouns.tree, example, "learn")));
     const pronounsPracticeMax = Math.max(...pronouns.examples.map((example: ExerciseExample) => countCorrectPathQuestions(pronouns.tree, example, "practice")));
     expect(pronounsLearnMax, "attached-pronouns: مسار التعلم طويل").toBeLessThanOrEqual(4);
-    expect(pronounsPracticeMax, "attached-pronouns: مسار التدريب طويل").toBeLessThanOrEqual(2);
+    expect(pronounsPracticeMax, "attached-pronouns: مسار التدريب يجب أن يثبت الوظيفة ثم المحل ثم الصورة").toBeLessThanOrEqual(3);
 
     const manqous = topic("ism-manqous");
     const manqousLearnMax = Math.max(...manqous.examples.map((example: ExerciseExample) => countCorrectPathQuestions(manqous.tree, example, "learn")));

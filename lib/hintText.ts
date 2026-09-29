@@ -208,9 +208,13 @@ export function firstLevelHintText(nodeId?: string, rawHint?: string, target?: s
         if (cleanedTawabi) return cleanedTawabi;
         return `ارجع إلى الاسم الذي قبل ${quoted}: اثبت العلاقة بينهما أولًا، ثم انقل الحالة الإعرابية، وبعدها اختر علامة ${quoted} من صورتها هي.`;
     }
-    if (id === "pronoun_relation_gate" || id === "pronoun_position")
-        return `ضع اسمًا ظاهرًا مكان ${quoted}: ما الموقع الذي يشغله الاسم البديل؟`;
-    if (id === "pronoun_form_raf3" || id === "pronoun_form_nasb")
+    if (id === "pronoun_relation")
+        return `افحص ${quoted} داخل الجملة: هل هو جزء من فعل أو اسم أو حرف جر، أم جاء كلمة مستقلة؟ لا تحدد الوظيفة قبل تثبيت هذه العلاقة.`;
+    if (id === "pronoun_role")
+        return `بعد معرفة ما اتصل به ${quoted}، اسأل: أيدل على من قام بالفعل، أم من وقع عليه، أم جاء بعد اسم أو حرف جر، أم أُسند إليه ما بعده؟`;
+    if (id === "pronoun_position")
+        return `اربط وظيفة ${quoted} بحكمها: الفاعل والمبتدأ في محل رفع، والمفعول به في محل نصب، والمضاف إليه وما اتصل بحرف الجر في محل جر.`;
+    if (id === "pronoun_form_raf3" || id === "pronoun_form_nasb" || id === "pronoun_form_jar")
         return `هل ${quoted} كلمة مستقلة، أم جزء ملتصق بكلمة قبلها؟`;
     if (id === "tawabi_term")
         return `ارجع إلى العلاقة التي اكتشفتها بين ${quoted} والاسم السابق، ثم اختر اسمها النحوي.`;
